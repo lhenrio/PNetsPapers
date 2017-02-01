@@ -1,0 +1,4562 @@
+% !TEX TS-program = pdflatex
+
+
+\documentclass{lncs/llncs}
+
+\usepackage[T1]{fontenc}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+%\geometry{a4paper}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+
+%\usepackage{amsfonts}
+%\usepackage{fancyhdr}
+%\usepackage{cite}
+%\usepackage{ifthen}
+%\usepackage{amssymb}
+%\usepackage{fancyhdr}
+%\usepackage{pifont}
+\usepackage{stmaryrd}
+\usepackage{mathtools,mathpartir}
+\usepackage{proof}
+%\usepackage{setspace}
+%\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,amscd,mathrsfs}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\usepackage{epsfig,color,subfigure,enumitem}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
+\newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
+\newcommand{\LUDO}[1]{\textcolor{green}{#1}}
+\newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
+\makeatletter
+\newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
+\newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
+\makeatother
+
+\usepackage{macrospNets}
+
+\def\AlgT{\mathcal{T}}
+\def\AlgE{\mathcal{E}}
+\def\AlgA{\mathcal{A}}
+\def\AlgAS{\mathcal{A}_S}
+\def\AlgB{\mathcal{B}}
+\def\AlgI{\mathcal{I}}
+\newcommand{\set}[1]{\overline{#1}}
+\newcommand{\Pred}{\symb{Pred}}
+\newcommand{\Post}{\symb{Post}}
+%\usepackage[math]{cellspace}
+%\setlength\cellspacetoplimit{ 37pt}
+%\setlength\cellspacebottomlimit{18pt}
+
+\pagestyle{plain}
+
+% addition to the mathpartir package for red dotted rules,
+% that we use for open-transitions
+
+\makeatletter
+\def \dotover {\textcolor{red}{\leavevmode\cleaders\hb@xt@ .22em{\hss $\cdot$\hss}\hfill\kern\z@}}
+\def \reddottedrule #1#2{\hbox {\advance \hsize by -0.5em
+%\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$} \phantom{\copy0} %
+ {\ooalign{\vphantom{$\genfrac{}{}{0pt}{0}{#1}{#2}$}\cr\dotover\cr$\genfrac{}{}{0pt}{0}{#1}{#2}$\cr}}}}
+
+ \def \dottedrule #1#2 {
+  {\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$}%
+    \vphantom{\copy0}%
+    \ooalign{%
+      \hidewidth
+      $\vcenter{\moveright\nulldelimiterspace
+        \hbox to\wd0{%
+         \xleaders\hbox{\kern.5pt\vrule height 0.4pt width 1.5pt\kern.5pt}\hfill
+          \kern-1.5pt
+        }%
+      }$
+      \hidewidth\cr
+    \box0\cr}}
+}
+
+\let \defaultfraction \mpr@@fraction
+\makeatother
+
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{cor}[theorem]{Corollary}
+%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{algorithm}[theorem]{Algorithm}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{example}[theorem]{Example}
+%\newtheorem{problem}[theorem]{Problem}
+%\newtheorem{proof}[theorem]{Proof}
+
+% Macros for the SOS rules and proof trees:
+%\newcommand\openrule[2]{\redinfer{#1}{#2}}
+\newcommand\openrule[2]{\inferrule*[myfraction=\reddottedrule,center]{#1}{#2}}
+%\newcommand\openrule[2]{\inferrule*{#1}{#2}}
+%\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
+\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+\newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
+
+
+
+
+\DeclareMathOperator{\card}{card}
+\DeclareMathOperator{\Flat}{Flat}
+\renewcommand{\P}{\mathcal P}
+
+
+\title{A Theory for the Composition of Concurrent Processes\thanks{This work was partially 
+funded by the Associated Team FM4CPS
+  between INRIA and ECNU, Shanghai}}
+\author{ Ludovic Henrio\inst{1}  \ \ \  Eric Madelaine\inst{1,2} \ \ \ Min Zhang\inst{3}}
+\institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
+	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
+\and Shanghai Key Laboratory of Trustworthy Computing, ECNU, China}
+\date{}                                           % Activate to display a given date or no date
+
+                          % Activate to display a given date or no date
+
+
+\begin{document}
+
+\maketitle
+
+%\section{}
+%\subsection{}
+
+
+\begin{abstract}
+ In this paper, we provide a theory for the operators composing 
+ concurrent processes.  
+   Open pNets  (parameterised networks of synchronised automata) are
+  new semantic objects that we propose for defining the semantics of
+  composition operators. This paper defines the  operational semantics of open pNets, 
+  using ``open
+  transitions'' that include symbolic hypotheses on the behaviour of the
+  pNets ``holes''. 
+  We discuss when this semantics can be finite and how
+  to compute it symbolically, and we illustrate this construction
+  on a simple operator. This paper also defines a
+   bisimulation equivalence between open pNets, and shows its decidability.
+%  \TODO{chose between british and en\_US spelling (e.g. synchronised / synchronised)}
+
+\end{abstract}
+
+
+\section{Introduction}
+
+ In the nineties, several 
+works extended the basic behavioural models based on labelled
+transition systems to address value-passing or parameterised systems, using
+various symbolic encodings of the
+transitions~\cite{deSimone85,Larsen87,HennessyLin:TCS95,Linconcur96}. 
+In \cite{Linconcur96}, H.M. Lin addressed value-passing calculi, for which he
+developed a symbolic behavioural semantics, and proved algebraic properties.
+Separately J. Rathke~\cite{HennessyRathke:TCS98} defined another
+symbolic semantics for 
+a parameterised broadcast calculus, together with strong and weak bisimulation
+equivalences, and developed a symbolic model-checker based on a tableau
+method for these processes. 30 years later, no
+practical verification approach and no verification platform are
+using this kind of approaches to provide proof methods for
+value-passing processes or open process expressions. 
+This article proposes a new approach to   study concurrent and
+distributed systems based on a semantic formalism featuring:
+1) low-level description of behaviours (transition systems) with explicit
+data parameters, and hierarchical structure, 2) flexible composition
+and synchronisation mechanism, 3) finite representation of the
+behavioural semantics using symbolic representations of sets of behaviours.
+
+Parameterised Networks of synchronised automata (pNets) was proposed
+to give a behavioural specification formalism for distributed systems.
+It inherited from the work of
+Arnold on synchronisation vectors~\cite{Arnold1982}. 
+% The pNet model is  built on top of parameterised labelled
+% transition systems(pLTS), extended with explicit data handling, and with
+%hierarchical structuring mechanism.
+In previous work~\cite{HMZ:PDP15}, we
+showed that pNets can be used to represent the behavioural semantics
+of a system 
+including value-passing and many kinds of synchronisation methods. We
+used these results to give the semantics of various constructs and
+languages for distributed objects, and to build a platform for design
+and verification of distributed software components
+\cite{CM:FMCO08,HKM-FASE16}. 
+The parameterised and hierarchical nature of pNets allows for compact
+models easy to generate from applications in high-level languages.
+Their structure is static, but unbounded, and this allows for model-checking
+approaches even for reconfigurable applications.
+Closed pNets were used to encode fully defined programs or systems,
+while open pNets have ``holes'', playing the role of process
+parameters. Such open systems can be used to define composition operators.
+The challenge raised by the research on open pNets is due to its
+``open'' nature and to the existence of holes and parameters.
+
+\paragraph{Contribution}
+The aim of this paper is to  provide a theory for the operators
+composing concurrent processes. This theory is based on the definition of operators 
+as open pNets. By defining the operational semantics of open pNets, using
+open  transitions that include symbolic hypotheses on the behaviour of
+the pNets holes, we  can define a strong bisimulation equivalence
+between open pNets, and show its decidability. This work highlights the possibility to 
+automatically infer proof obligations, in the form of predicate inclusion, that have to 
+be verified to prove the equivalence of operators. These results allow us to envision the 
+semi-automatic proof of equivalence between operators for composing processes.
+
+
+\paragraph{Related works}
+
+A number of fundamental works have been published on symbolic or open
+bisimulations, with varying  vocabulary. In this section, we only list works that are
+directly related to our approach.
+
+The closest research (and oldest) is from R. De Simone
+\cite{deSimone85}, who defines {\em Specification
+Rules} and a {\em FH-bisimulation} equivalence, that were one of our main inspiration for 
+the open-transition
+concept.
+Some years later, A. Rensink \cite{Rensink97} defines a generic
+notion of conditional
+  transition systems and studies relations between FH-bisimulation and
+  others. We believe that in the work of De Simone context and in ours, the relations
+  coincide, and that Rensink work differs mainly in presence of
+  recursive binding constructs that we do not consider.
+
+ In~\cite{HennessyLin:TCS95,Linconcur96} M. Hennessy and H.M. Lin developed
+ the theory of symbolic transition graphs (STG), and the associated
+ symbolic (early and late) bisimulations, they also study STGs with assignments which can 
+ be a 
+ model for message-passing processes. These are clearly related to our
+ parameterised LTSs, though they are more specifically addressing the
+ action algebra of value-passing
+ CCS expressions. \cite{HennessyLin:TCS95} also gives an algorithm for
+ computing symbolic bisimulation, but only for symbolic finite trees.
+ %% \item Later,
+ %% in~\cite{LinFORTE98},  H.M. Lin proposed a technology using 
+ %% "instantiate input variables on-the-fly" which can deal with
+ %% infinite value domain based on the STGs.
+ An interesting variant was developped by Hennessy, and
+ Rathke \cite{HennessyRathke:TCS98}, concerning a calculus of
+ broadcasting systems (CBS) and a symbolic bisimulation. The main characteristic of 
+ this calculus is that communication is
+ ``one-to-many'', and non blocking, so the definitions of semantics
+ and equivalences differ significantly from previous works.
+ Later, J. Rathke proposed 
+ a model-checker for CBS based on a sound tableau method over
+ symbolic graphs.  
+ Another important similarity between the works on STGs, CBS, and
+ ours is the use of an auxiliary proof system on
+ value expressions. Remark that pNets can encode both value-passing
+ CCS and CBS, but also other communication and synchronisation schemas.
+
+More recently, Y.X. Deng~\cite{Deng2001} gave an open bisimulation
+ for $\pi$-calculus based on STG, which used a 
+ predicate equation system whose greatest solution characterizes the
+ condition under which the two STGs are bisimilar. There is here a
+ potential relation with our work: if the number of states and
+ branching  of the symbolic model is finite, then their algorithm can
+ terminate; a similar approach may help us to compute our 
+ FH-bisimulation.  
+ 
+    %% For the value-passing  processes, one solution is to give a
+    %% symbolic transition graph model.   In the ~\cite{Linconcur96},
+    %% H.M. Lin extended  the symbolic transition graph with assignments
+    %% which can be a model for message-passing processors. Based on this
+    %% model, he gave a symbolic operational semantics which is helpful
+    %% for computing the symbolic bisimulation. In the
+    %% ~\cite{LinFORTE98}, H.M. Lin proposed the technology  of
+    %% "instantiate input  variables on-the-fly" which can deal with
+    %% infinite value domain based on the STGs. In the ~\cite{Deng2001},
+    %% Y.X. Deng gave another open bisimulation based on STG, which is
+    %% different from our open automata. They used the predicate equation
+    %% system whose greatest solution characterizes the condition under
+    %% which  the two STGs are bisimular. 
+ 
+ %% \item\TODO{to be checked...}
+%% \TODO{Min ??? missing cav97 paper... DONE}
+%%   T.Bultan etc~\cite{Bultan97} proposed a model checker to verify the safety
+%% and liveness properties on infinite-state programmes. The idea they used is
+%% to symbolically encodes  transition relation and sets of states using affine
+%% constraints  on integer variables, logical connectives and quantifiers and
+%% formed the state-partitions over Cartesian-product of all variable domains.
+
+ 
+Finally, there are numerous works on subclasses of
+infinite-state programs or parameterised systems, seeking
+decidability properties, and sometimes model-checking or equivalence
+checking algorithms.
+For example~\cite{Bultan97} proposed a model
+checker to verify the safety and liveness properties on infinite-state
+programs. They symbolically encode transitions and states using
+predicates, including affine constraints on integer variables.
+Another very different approach is used by 
+\cite{ClarkeGJ97}, relying on a dedicated model based on network grammars
+and regular languages.
+
+
+\paragraph{Structure.}
+Section \ref{section:pnets} extends the previous definition of pNets~\cite{HMZ:PDP15} to 
+fit the needs of the open
+pNets. Section~\ref{section:op-semantics} gives their operational
+semantics based on open transitions, and proves that this semantics is finite under 
+reasonable
+conditions. In Section \ref{section:bisimulation} we introduce an
+equivalence called FH-bisimulation, and prove its decidability.
+All sections are illustrated by a running example encoding a Lotos operator.
+Finally Section \ref{section:conclusion} concludes and discusses future work.
+
+
+
+\section{Parameterised Networks (pNets): definition}
+\label{section:pnets}
+
+This section introduces pNets and the notations we will use in
+this paper. Then it gives the formal definition of pNet structures,
+together with an operational semantics for open pNets.
+
+pNets are tree-like structures, where the leaves are either
+\emph{parameterised labelled transition systems (pLTSs)}, expressing the
+behaviour of basic processes, or \emph{holes}, used as placeholders
+for unknown processes, of which we only specify the set of possible
+actions, this set is named the \emph{sort}.
+Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+set of \emph{synchronisation vectors} that express the possible
+synchronisation between the parameterised actions of a subset of the
+sub-trees.
+
+
+%\smallskip\noindent
+\paragraph*{Notations.}
+We extensively use indexed structures
+over some countable indexed sets, which are equivalent to mappings over
+the countable set. % . The indexes will usually be
+% integers, bounded or not. Such an indexed family is
+%denoted
+%follows:
+$a_i^{i\in I}$
+%, or equivalently  $(i\mapsto a_i)^{i\in I}$
+denotes a family of elements $a_i$ indexed over the
+set $I$. % Such a family
+% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+% To specify the set over which the structure is indexed,
+% indexed structures are always denoted with an exponent of the form $i\in I$
+% (arithmetic only appears in the indexes if necessary).
+$a_i^{i\in I}$ defines both $I$ the set over which the family is
+indexed (called \emph{range}), and $a_i$ the elements of the family.
+E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
+$3$ ; abbreviated $(3\mapsto a)$ in the following.
+When this is not
+ambiguous, we shall use notations for sets, and typically write
+``indexed set over I'' when formally we should speak of multisets, and
+write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
+family is denoted $\emptyset$. We
+denote classically $\overline{a}$ a family when the indexing set is
+not meaningful.  $\uplus$ is the disjoint union on
+indexed sets.
+
+% \TODO{Check whether we really use all these notations}
+
+\paragraph*{Term algebra.}
+Our models rely on a notion of parameterised actions, that are
+symbolic expressions using data types and variables. As our model aims
+at encoding the low-level behaviour of possibly very different
+programming languages, we do not want to impose one specific algebra
+for denoting actions, nor any specific communication mechanism. So we
+leave unspecified the constructors of the algebra that will allow building
+expressions and actions. Moreover, we use a generic {\em action interaction}
+mechanism, based on (some sort of) unification between two or more action
+expressions, to express various kinds of communication or
+synchronisation mechanisms.
+
+\def\Talg{\mathcal{T}_{\Sigma,\P}}
+Formally, we assume the existence of a term algebra $\Talg$,
+where $\Sigma$ is the signature of the data and action constructors,
+and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
+data expressions $\mathcal{E}_\P$, including a set of boolean
+expressions $\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
+On top of $\mathcal{E}_\P$ we build the action algebra
+$\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
+\mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
+naturally action terms will use data expressions as subterms.
+To be able to reason about the data flow between pLTSs, we
+distinguish \emph{input variables} of the form $?x$ within terms; the function
+$\vars(t)$ identifies the set of variables in a term
+$t\in\AlgT$, and $iv(t)$ returns its input variables.
+
+
+pNets can encode naturally the notion of input actions in value-passing CCS
+\cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
+for more general mechanisms, like gate negociation in Lotos, or broadcast
+communications. Using our notations, value-passing actions \emph{\`a la} CCS would be
+encoded as $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs (in which $v_i$ are 
+action terms containing no input variables). 
+%For Lotos-style
+%distributed synchronisation, we use synchronisation vectors that encode matching data
+%offers on a common gate; or 
+We can also use more complex action structure such as Meije-SCCS action
+monoids, like in $a.b$, $a^{f(n)}$ (see \cite{deSimone85}). The expressiveness of the synchronisation constructs
+will depend on the action algebra.
+
+
+
+
+\subsection{The (open) pNets Core Model}
+\label{section:pNets}
+
+
+A pLTS is a labelled transition system with variables; variables can be
+manipulated, defined, or accessed inside states, actions, guards, and
+assignments. Without loss of generality and to simplify the formalisation, we suppose 
+here that 
+variables are local to each 
+state: each state has its set of variables disjoint from the others. Transmitting 
+variable values from one state to the other can be done by explicit assignment. 
+%Similarly, to simplify the management of variables and without loss of expressivity, we 
+%suppose that transitions looping to the same state does not do assignments.
+Note that we make no assumption on finiteness of the set of states nor
+on finite branching of the transition relation.
+
+We first define the set of actions a pLTS can use, let $a$
+range over action labels, $\symb{op}$ are operators, and $x_i$ range over
+variable names. Action terms are:
+\[
+\begin{array}[l]{rcl@{\quad}p{5.5cm}}
+  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
+  p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
+  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
+\end{array}
+\]
+The input variables in an action term are those marked with a
+$\symb{?}$.
+We additionally suppose that each input variable does not
+appear somewhere else in the same action term:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+
+\begin{definition}[pLTS]
+\label{pLTS}
+A pLTS is a tuple
+$pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
+\begin{itemize}
+\item[$\bullet$]
+$S$ is a set of states.
+\item[$\bullet$]
+$s_0 \in S$ is the initial state.
+%\item[$\bullet$]
+ %Variables in
+%$\iv(\alpha)$ are assigned by the action, other variables can be assigned
+%by the additional assignments.
+\item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
+$L$ is the set of labels of the form
+$\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
+where $\alpha \in\AlgA$ is a parameterised action, $e_b \in
+\AlgB$ is a guard, and the variables $x_j\in P$
+are assigned the expressions $e_j\in \AlgE$.
+If 
+$s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+		J}\rangle} s'\in \to $ then $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
+		$\vars(e_b)\!\subseteq\! \vars(s')$, and
+		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
+		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		
+\end{itemize}
+\end{definition}
+
+Now we define
+pNet nodes, as constructors for hierarchical behavioural structures.
+A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
+set of Holes, playing the role of process parameters.
+
+A composite pNet consists of a set of sub-pNets exposing
+a set of actions, each of them triggering internal actions in each of
+the sub-pNets. The synchronisation between global actions and
+internal actions is given by  \emph{synchronisation vectors}: a
+synchronisation vector synchronises one or several internal actions, and
+exposes a single resulting global action.
+Actions involved at the pNet level (in the synchronisation vectors) do
+not need to distinguish between input and output
+variables. Action terms for pNets are defined as follows:
+\[\begin{array}[l]{rcl@{\quad}l}
+  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
+\end{array}
+\]
+
+
+
+\begin{definition}[pNets]\label{def-pnets}
+A pNet is a hierarchical structure where leaves are pLTSs and holes:\\
+$\pNet\triangleq pLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$
+where
+\begin{itemize}
+\item[$\bullet$] $I \in \I$ is the set over which sub-pNets are indexed.
+\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
+%  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which sub-pNets are indexed.
+
+\item[$\bullet$] $J\in\I_\P$ is the set over which holes are indexed.
+$I$ and $J$ are \emph{disjoint}: $I\cap J=\emptyset$,  $I\cup J\neq\emptyset$
+\item[$\bullet$] $S_j \subseteq \AlgAS$ is a set of action terms, denoting the $\Sort$ of
+hole $j$.
+
+\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
+  synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
+  $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
+  $\forall i\!\in\!
+  I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
+  J_k.\,\alpha_{j}\!\in\!S_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
+  J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
+$\Label(\symb{SV}_k) = \alpha'_k$.
+
+
+\end{itemize}
+\end{definition}
+
+The preceding definition relies on the auxiliary functions below:
+
+\begin{definition}[Sorts, Holes, Leaves of pNets]
+  \begin{itemize}
+  \item The sort of a pNet is its signature, i.e. the set of actions it can
+perform. In the definition of sorts, we do not need to distinguish
+input variables (that specify the dataflow within LTSs), so for
+computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in K}$ is the parallel substitution 
+operation.} to remove the
+\emph{input marker} of variables. Formally:
+\[
+\begin{array}{l}
+\Sort(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
+x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+		J}\rangle} s'\in \to \} \\ \Sort(\mylangle
+\set{\pNet}, \set{\symb{S}}, \set{\symb{SV}}\myrangle) =\{\alpha'_k |\, \alpha_j^{j\in J_k}\to\alpha'_k\in\set{\symb{SV}}\}
+\end{array}
+\]
+
+\item
+The set of holes of a pNet is defined inductively; the sets of holes
+in a pNet node and its subnets are all disjoint:
+  \[\begin{array}{l}
+\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
+\Holes(\mylangle \pNet_i^{i\in I}\!,S_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) =J\cup{\displaystyle \bigcup_{i\in I}\Holes(\pNet_i)}\\
+\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
+\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  \Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
+\end{array}\]
+\item
+The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined inductively as:
+\[\begin{array}{l}
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\! \{ \mylangle S,s_0, \to\myrangle \}\\
+\Leaves(\mylangle \pNet_i^{i\in I}\!,S_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \bigcup_{i\in I}\Leaves(\pNet_i)}
+\end{array}\]
+\end{itemize}
+\end{definition}
+
+A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
+is said to be \emph{open}.
+
+\paragraph{Alternative syntax.}
+When describing examples, we usually deal with pNets with finitely
+many sub-pNets and holes, and it is convenient to have a more concrete
+syntax for synchronisation vectors. When $I\cup J\!=\!\![0..n]$  we
+denote
+% the pNet as $\mylangle \pNet_{1}, \ldots,
+% \pNet_n,\symb{SV}\myrangle$,  and
+synchronisation vectors as
+$<\alpha_1,..,\alpha_n> \to\!\alpha$, and elements not
+taking part in the
+synchronisation  are denoted $-$ as in: $< -, -, \alpha, -, - > \to\!
+\alpha$.
+
+\begin{figure}[t]
+\begin{minipage}{6.1cm}
+
+  \includegraphics[width=\linewidth]{XFIG/Enable1}
+  \\[1.3ex]
+ \includegraphics[width=\linewidth]{XFIG/Enable2}
+  \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
+\end{minipage}
+  \hspace{2mm}
+\begin{minipage}{6cm}
+  \includegraphics[width=\linewidth]{XFIG/P-QR}
+  \caption{Composed pNet for ``P>>(Q>>R)''}  \label{schema:enable-composed}
+\end{minipage}
+
+\end{figure}
+
+\begin{example}
+	
+	To give simple intuitions of the open pNet model and its semantics, we use
+	here a small  example coming from the Lotos specification language. It will be used 
+	as  an illustrative example in the whole paper.
+	We already have shown in \cite{HMZ:PDP15} how to encode non trivial
+	operators using synchronisation vectors and one or several pLTSs used
+	as controllers, managing the state changes of the operators.
+	In Fig. \ref{schema:enable-pnets}, we show 2 possible encodings of the Lotos 
+	``Enable''
+	operator.
+	In the Enable expression ``P>>Q'', an \texttt{exit(x)} statement within P
+	terminates the current process, carrying a value $x$ that
+	is captured by the \texttt{accept(x)} statement of Q. 
+	
+	We use a simple action algebra,
+	containing two constructors $\delta(x)$ and $acc(x)$, for any
+	possible data type of the variable $x$, corresponding to the
+	statements \texttt{exit(x)} and \texttt{accept(x)}. Both $\delta(x)$
+	and $acc(x)$ actions are
+	implicitly included in the sorts of all processes.
+	We need no specific predicate over the action expressions, apart
+	from equality of actions. 
+	In the first encoding $Enable1$, in the upper part of
+	Fig. \ref{schema:enable-pnets}, we use a controller $C_1$ with two
+	states, and simple control actions $l, r, \delta$. The second encoding
+	$Enable2$ uses a data-oriented style, with a single state controller, and a
+	state-variable $s_0$, with values in $\{0,1\}$.
+
+        In this example we use a specific notation for \emph{local
+          actions}, that cannot be further synchronised, like the
+        $\tau$ silent action of CCS. We name them \emph{synchronised
+          actions}, and denote them as any action expression with the text
+        underlined, as e.g. $\underline{\delta(x_2)}$. Such
+        synchronised actions do not play any special role for defining
+        strong bisimulation, but as one can expect, will be crucial
+        for weak equivalences.
+	
+	Note that synchronisation vectors are defined in a parameterised
+	manner:  the first and third lines represent one vector
+	for each parameterised action in the Sort of hole $P$
+	(resp. $Q$). This notation can also use predicates, as in the first
+	case, in which we want the vector to apply to any action of $P$
+	except $\delta(x)$.
+	
+	In Fig. \ref{schema:enable-composed}, we enrich our example by
+	composing 2 occurences of the Enable1 pNet. To simplify,
+	we only have represented one instance of the synchronisation vector set,
+	and of the controller.
+%	
+%	We will use these pNets to
+%	illustrate the formal definition in the next section, then their
+%	operational semantics and their equivalence.
+	
+	The reader can easily infer from these two figures the
+	following sets:
+	
+~~~~	{\small
+$\begin{array}{l}
+			\Holes(EnableCompL) = \{P,Q,R\}\\		
+		\Leaves(EnableCompL)) = \{C_3,C_4\}\\	
+		\Sort(C_1) = \Sort(C_2) = \Sort(C_4) = \{l,\delta,r\})\\		
+		\Sort(EnableCompL) = \Sort(P)\backslash\{\delta(x)\}\cup
+		\Sort(Q)\backslash\{\delta(x)\}\cup  \Sort(R)
+		\cup \{\underline{\delta(x)}\} %,\underline{\delta(y)}\}_
+		%{\delta(x)\in\Sort(P), \delta(y)\in\Sort(Q)}
+		
+          \end{array}$	}
+
+%	We shall continue using these pNet examples to illustrate the
+%	behavioural semantics construction, and the bisimulation equivalence.
+\end{example}
+
+
+
+
+
+
+\section{Operational Semantics for Open pNets}
+\label{section:op-semantics}
+
+In \cite{HMZ:PDP15} we defined an operational semantics for closed
+pNets, expressed in a {\sl late style}, where states and transition
+were defined for a specific valuation of all the pNet variables.
+Here we have a very different approach: we build a direct symbolic
+operational semantics for open pNets,
+encoding formally hypotheses about the
+behaviour of the holes, and dealing symbolically with the variables.
+This will naturally lead us in the following sections to the
+definition of an open bisimulation equivalence, playing explicitly
+with predicates on the action of holes, and values of variables.
+
+The idea is
+to consider an open pNet as an expression similar to an open process
+expression in a process algebra. pNet expressions can be combined to
+form bigger expressions, at the leaves pLTSs are constant expressions,
+and holes play the role of process parameters.
+In an open pNet, pLTSs naturally have states, and holes have no state;
+furthermore, the shape of the pNet expression is not modified during
+operational steps, only the state of its pLTSs can change.
+
+The semantics of open pNets will be defined  as an open automaton. An open
+automaton is an automaton where each transition composes transitions of several LTSs with
+action of some holes, the transition occurs if some predicates hold, and can involve a 
+set of state modifications.
+%\TODO{adopt a uniform notation for open transitions, almost each instance has a 
+%different 
+%notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
+\begin{definition}[Open transitions]
+	\label{def:OpenTransitions}
+	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
+	I}$ of LTSs, a
+	set $J$ of holes with sorts $Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is a structure of the form:	
+	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
+		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred, \Post}
+	{s \xrightarrow {v}s'}
+	\end{mathpar}
+	Where $s, s'\in\mathcal{S}$ and for all
+        $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
+	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
+        is a transition of the hole $j$, for any action $b_j$ in the
+        sort $Sort_j$. \Pred\ is a predicate
+	over the different variables of the
+	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
+	hold \emph{after the open transition}, they are represented as a substitution of the 
+	form $\{x_k\gets e_k\}^{k\in K}$ 
+	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are expressions over the other 
+	variables of the open transition.
+\end{definition}
+
+\begin{example}\emph{An open-transition.}
+  \label{OT:enable-composed}
+  The \texttt{EnableCompL} pNet of Fig. \ref{schema:enable-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
+
+ \smallskip
+ $  OT_2  = \openrule{
+                       0 \xrightarrow{\delta}_{C_3} 1 ~~
+                            0 \xrightarrow{l}_{C_4} 0  ~~                 
+                            \xrightarrow{\delta(x4)}_P ~~
+                            \xrightarrow{accept(x4)}_Q 
+                      }
+  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
+    {A1_0 \xrightarrow{\underline{\delta(x4)}} A1_1}
+  $
+\end{example}
+
+
+\begin{definition}[Open automaton]
+	\label{def:open-automaton}
+	An \emph{open automaton} is a structure\\ $A =
+	<LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	\begin{itemize}
+		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
+		\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
+		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
+		among $\mathcal{S}$,
+		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
+		$t\in \mathcal{T}$ there exist $I'$, $J'$ with $I'\subseteq I$, $J'
+		\subseteq J$, such that $t$ is an open transition over $LTS_i^{i\in I'}$, $J'$,
+		and  $\mathcal{S}$.
+		
+	\end{itemize}
+\end{definition}
+	
+
+%
+%Then the semantics of a pNet is characterized by a set of {\em open
+%transitions}, where the hypotheses on process parameters are
+%replaced by 1) transitions of the pLTSs at the leaves, and 2) formal
+%hypotheses on the transitions of the holes. A {\em predicate} is used
+%to relate the parameters and names appearing in the actions of the
+%leaves and the holes involved in the rules, but also appearing in  the resulting action.
+
+
+\begin{definition}[States of open pNets]\label{def-states}
+  A state of an open pNet is a tuple (not necessarily finite) of the
+  states of its leaves (in which we denote tuples
+  in structured states as $\triangleleft\ldots\triangleright$ for better readability).
+
+  For any pNet p, let $\overline{Leaves} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
+  then $States(p) = \{\triangleleft s_i^{i\in L}
+  \triangleright| \forall i\in L. s_i \in S_i\}$.
+A pLTS being its own single leave:
+  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
+
+The initial state is defined as:
+$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
+\end{definition}
+
+%% \begin{example} \emph{State of a pNet}
+%%   The states of pNet \texttt{EnableCompL} are:
+%%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 \triangleright$
+%% \end{example}
+
+\paragraph{Predicates:}
+Let
+$\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
+be a pNet. Consider a synchronisation vector $SV_k$, for $k\in K$. We define a
+predicate $\Pred$ relating
+the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
+\[\Pred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+\begin{array}{l}
+\exists {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+\\~~\land
+\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\end{array}\]
+In any other case (if the action families do not match or if there is no valuation of
+variables such that the above formula can be ensured) the predicate is undefined.
+
+This definition is not constructive but it is easy to build the predicate constructively
+by brute-force unification of the sub-pNets
+actions with the corresponding vector actions, possibly followed by a simplification
+step.
+
+
+We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
+the leaves of the pNet structure, and the states are given by 
+Definition~\ref{def-states}. The open transitions first
+ project the global state into states of the leaves, then apply
+pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
+%structure does not appear in the open-automaton, only the
+%set of Holes and the set of Leaves.
+The semantics   regularly instantiates \emph{fresh} variables, and uses a
+\emph{clone} operator that clones a term replacing each variable with a
+fresh one.
+
+\begin{definition}[Operational semantics of open pNets]
+	\label{def:operationalSemantics}
+	The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
+	\mathcal{T}>$ where:
+	\begin{itemize}
+		\item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
+		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+		\item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+		\item $\mathcal{T}$ is the smallest set of open transitions
+		satisfying the rules below:
+	\end{itemize}
+	
+	%% \TODO{ We should be careful here: after (re) reading "Huimin
+	%% 	Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
+	%% 	think handling assignments is not trivial, even for comparisons of pLTSs. }
+
+	
+	The rule for a pLTS $p$  checks that the guard 
+	is verified and transforms assignments into post-conditions:
+	
+	\begin{description}
+		\item[{\bf Tr1:}]
+		$\inferrule
+		{ s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+					J}\rangle} s'\in \to  }
+		{ p = \mylangle  S,s_0, \to \myrangle
+			\models
+			\inferrule*[myfraction=\reddottedrule]
+			{\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
+			e_b,\left\{x_j\gets e_j\right\}^{j\in J}}
+			{\ostate{s} \xrightarrow{\alpha} \ostate{s'}}
+		}
+		$
+	\end{description}
+%	Note that this note is greatly simplified by the fact that variables are local to 
+%	thread; introducing global state variables or accepting loops to the same 
+%	state would 
+%	require to reason 
+%	on the scope of 
+%	each variables, and to introduce additional variables to handle the several occurence 
+%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
+%	transitions 
+%	ensure that the same variable never appears both on the left and on the right of the 
+%	equations of a predicate.
+	
+	The second rule deals with pNet nodes: for each possible
+	synchronisation vector applicable to the rule subject, the premisses
+	include one {\em open transition} for each sub-pNet involved, one possible
+	{\em action} for each Hole involved, and the predicate relating these
+	with the resulting action of the vector.
+	A key to understand this rule is that the open transitions are
+	expressed in terms of the leaves and holes of the pNet structure,
+	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+	Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+	are disjoint subsets of $L$. Thus the states in the open transitions,
+	at each level, are tuples including states of all the
+	leaves of the pNet, not only those involved in the chosen
+	synchronisation vector.
+	
+	\begin{description}
+		\item[{\bf Tr2:}]
+	\end{description}
+	
+	\noindent
+    $\inferrule
+    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
+    \alpha'_k \\
+    	Leaves(p) \!=\! \pLTS_l^{l\in L} \\    	
+    	\forall m\in I_k.
+    	\pNet_m \models
+    	\inferrule*[myfraction=\reddottedrule]
+    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+    	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
+    		\ostate{s_{i}^{\prime\ i \in L_m}}}
+    	%\land
+    	%Leaves(\pNet_m) = \overline{pLTS}^{L_k})
+    	\\
+    	I' = \biguplus_{m\in I_k}\!\! I_m'
+    	\\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k 	\\
+    	\Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
+    	\Pred(SV,a_i^{i\in I_k},b_j^{j\in J_k},v)\\
+    	\forall j\!\!\in\!\! J_k. {\tt 
+    		fresh}(b_j) \\ {\tt fresh}(v) \\ 
+    	\forall i\in
+    	L\backslash I'.\,s'_i=s_i 
+    }
+    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
+    	\models
+    	{\inferrule*[myfraction=\reddottedrule]
+    		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
+    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+    		\Post_m}
+    		{\ostate{s_i^{i\in L}} \xrightarrow {v}
+    			\ostate{s_i^{\prime i\in L}}}
+    	}
+    }
+    $
+	
+
+
+
+	
+	\medskip
+%        \TODO{may be explain how $\Pred(SV,a_i^{i\in I_k},b_j^{j\in
+%            J_k},v)$ is built ? You mean more than what is written on previous page????}
+	%%    \TODO{I have tentatively added the sort constraint on hole actions, that was
+	%%not included in the first version... I'm unsure whether this is the best place to
+	%%include it, because it may change the decidability conditions on predicates}
+	
+\end{definition}
+%
+%%
+%%
+%%Each synchronisation vector $\symb{SV}_k$ has the form
+%%$(\!\alpha_{m}^{m\in I_k}, \alpha_{j}^{j\in J_{k}})\to\alpha'$
+%%with $I_k$ ranging over its sub-pNets, and $J_k$ ranging over its holes.
+%%
+%%The actions $\alpha_{m}$, $\alpha_{j}$, and $\alpha'$ are expressions from the action
+%%algebras potentially containing variables (data parameters) relating
+%%the actions of the involved sub-pNets and the resulting actions. These
+%%relations are conditions for this synchronisation to
+%%happen: the synchronisation occurs when a unification of the sub-pNets
+%%actions with the corresponding vector actions exists; this unification
+%%yields an instanciation, that is applied to the global action of the
+%%vector $\alpha'$.
+%%
+%%\TODO{Something is missing here... we remove the formal def pf
+%%  predicates, but we should have something short instead.}
+%
+%% \begin{definition}[Synchronisation Predicate]
+%% Let $V_k$ be the set of variables in the action expressions of $\symb{SV}_k$.
+%% We call {\sl synchronisation predicate}, and denote as
+%% $Pred(V_k, a_i^{i\in I'}, b_j^{j\in J'}, v)$
+%% the predicate relating the actions of the leaves and holes
+%% involved in $\symb{SV}_k$ with its resulting (global) action. This predicate
+%% will be used in the SOS rule defining the bahaviour of a pNet.
+%% \end{definition}
+%
+%
+%
+%\begin{definition}[Open transitions]
+%\label{def:OpenTransitions}
+%For any open \pNet\  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
+%  K}\myrangle$, let $s_i, s_i^{\prime}$ range over the states of its set of leaves
+%$pLTS_i^{i\in L}$, and let $Holes_j^{j\in J}$ denote its set of holes.
+%
+%An \emph{open transition} of this open \pNet \ is a rule:
+%   \begin{mathpar}
+%     \inferrule*[myfraction=\reddottedrule]
+%         {\{s_i\xrightarrow{a_i} s_i^{\prime}\}_{i\in L^\prime},
+%           \{\xrightarrow{b_j}\}_{j\in J^\prime}, \Pred(SV_k, a_i^{i\in L'}, b_j^{j\in
+%           J'}, v)}
+%         {\ostate{s_i^{i\in L}} \xrightarrow {v} \ostate{s_i^{\prime i\in L}}}
+%\end{mathpar}
+%in which $L^\prime\subseteq L$ and $J^\prime\subseteq J$ are the sets
+%of leaves and holes {\bf involved} in this rule, and for
+%$i\notin L'$, $s_i^\prime = s_i$.  $\Pred(SV_k, a_i^{i\in L'}, b_j^{j\in J'}, v)$ is a
+%predicate relating the actions of the leaves and holes
+%involved in $\symb{SV}_k$ with its resulting (global) action.
+%
+%\end{definition}
+%
+%
+%%% \TODO{question: is this rule GSOS format compliant ? I suppose no, because
+%%%   of our complex sets/indexes syntax, and GSOS is about syntax... Different manner to
+%%%set this question, considering 2 different point of views: the open-transition is a
+%%%structure (symbolic) of the automaton model; while the specification rule is an
+%%%artifact
+%%%used for building derivation trees, that can be compared to GSOS style formats.}
+%
+%We build the semantics of open pNets as a set of open transitions,
+%that we call an {\bf open automaton}. States are the states of the pNet
+%expressions, so they only encode the states of its leaves. The pNet
+%structure itself does not appear in the open-automaton structure, only a
+%set of Holes and a set of Leaves.
+%
+%
+%
+%
+%\begin{definition}[Operational semantics of open pNets]
+%  \label{def:operationalSemantics}
+%The semantics of a pNet $p$ is an open automaton $A = <L,J,\overline{\mathcal{S}},
+%\mathcal{S}_0, \mathcal{T}>$ where:
+%\begin{itemize}
+%\item $L$ is the indices of the leaves of $p$: $Leaves(p) =
+%  \pLTS_i^{i\in L}$; and $J$ the indices of the holes: $Holes(p)= H_j^{j\in J}$.
+%%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+%  \item $\overline{\mathcal{S}} = States(p)$
+%  \item $\mathcal{S}_0 = InitState(p)$
+%  \item $\mathcal{T}$ is the smallest set of open transitions
+%      satisfying the rules below:
+%\end{itemize}
+%
+%\TODO{First version, without handling of local variables and
+%  assignments. We should be careful here: after (re) reading "Huimin
+%  Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
+%  think handling assignments is not trivial, even for comparisons of pLTSs. }
+%
+%The rule for pLTS (Tr1) is straightforward:
+%
+%\begin{description}
+%  \item[{\bf Tr1:}]
+%    $\inferrule
+%    { s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+%      J}\rangle} s'\in \to }
+%   { p = \mylangle  S,s_0, \to \myrangle
+%     \models
+%     \inferrule*[myfraction=\reddottedrule]
+%         {\{s \xrightarrow{\alpha} s'\} \quad \emptyset \quad e_b}
+%         {\ostate{s} \xrightarrow{\alpha} \ostate{s'}}
+%   }
+%               $
+%  \end{description}
+%
+%The second rule deals with pNet nodes: for each possible
+%synchronisation vector applicable to the rule subject, the premisses
+%include one {\em open transition} for each sub-pNet involved, one possible
+%{\em action} for each Hole involved, and the predicate relating these
+%with the resulting action of the vector.
+%
+%A key to understand this rule is that the open transitions are
+%expressed in terms of the leaves and holes of the pNet structure,
+%i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+%Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+%are disjoint subsets of $L$. Thus the states in the open transitions,
+%at each level, are tuples including states of all the
+%leaves of the pNet, not only those involved in the chosen
+%synchronisation vector.
+%
+%   \begin{description}
+%   \item[{\bf Tr2:}]
+%   \end{description}
+%
+%\noindent
+%
+%
+%    \medskip\noindent
+%    in which :\\
+%- all variables in the synchronisation vector $SV_k$ are fresh\\
+%- the resulting $Pred$ is a predicate collecting the constraints from the premisses of
+%the rule, namely:
+%
+%    \noindent
+%    $Pred = \bigwedge_{m\in I_k} Pred_m \land \bigwedge_{m\in I_k} v_m = \alpha_m \land
+%\bigwedge_{j\in J_k} (b_j = \alpha_j \land b_j \in Sort_j) \land v = \alpha_k'$
+%
+%    \medskip
+%%%    \TODO{I have tentatively added the sort constraint on hole actions, that was not
+%%%included in the first version... I'm unsure whether this is the best place to include
+%%%it,
+%%%because it may change the decidability conditions on predicates}
+%
+%\end{definition}
+
+\begin{example} \emph{Using the operational rules to compute
+    open-transitions}
+  In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
+  open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:enable-composed}).
+  The rule uses TR1 for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
+  
+\begin{figure}[tb]
+\begin{mathpar}
+  \small
+  \inferrule
+    {\inferrule
+        {0 \xrightarrow {\delta}_{C_3} 1}
+        {C_3
+          \models
+            \openrule{
+              0 \xrightarrow {\delta}_{C_3} 1,\,
+              \{\xrightarrow{\delta(x_1)}_P\},\,
+              v_1=\delta(x_1)}
+                      {\ostate{0}\xrightarrow{v_1}\ostate{1}}
+        }\\
+%      \sm{fresh}v         \\
+      \inferrule%*[right={L_1}]
+        {
+%          \sm{fresh}{a_Q} \\
+          \inferrule
+              {0 \xrightarrow{l}_{C_4} 0}
+              % {\ostate{0}\xrightarrow{l}\ostate{0}}
+              {C_4
+                \models
+                \openrule{
+                      0 \xrightarrow l_{C_4} 0,\,
+                      \sm{Pred}_{C_4}}
+                      {\ostate{0}\xrightarrow{l}\ostate{0}}
+              }
+        }
+        {
+          \textrm{Q>>R}\models
+              \openrule
+                  { 0 \xrightarrow {l}_{C_4} 0,\,
+                    \{\xrightarrow{acc(x_2)}_Q\},\,
+                    \ v_2=acc(x_2)
+                  }
+                  {\ostate{0}\xrightarrow{v_2}\ostate{0}}
+        }   
+    }
+    {
+     \textrm{P>>(Q>>R)}
+     \models
+     \openrule
+         { 0 \xrightarrow{\delta}_{C_3} 1, \\ 0 \xrightarrow{l}_{C_4} 0,\\
+           \{\xrightarrow{\delta(x)}_P,\,\xrightarrow{acc(x)}_Q\}, \\
+            a_3=v_1 \wedge v=a_3 \wedge x_1=x_2
+           }
+         {\ostate{00} \xrightarrow{v} \ostate{10}}
+      }\vspace{-4ex}
+\end{mathpar}
+  \caption{Proof of transition $OT_2$ (with interaction of processes $P$ and $Q$) for ``P>>(Q>>R)''}
+  \label{usingrules:OT2}
+\end{figure}
+
+\end{example}
+
+    
+
+Note that while the scenario above is expressed as a single
+instantiation of the possible behaviours, the constructions below are
+kept symbolic, and each open-transition deduced expresses a whole family of
+behaviours, for any possible values of the variables.
+
+\paragraph{Variable management.}
+The variables in each synchronisation vector are considered local:
+for a given pNet expression, we must have fresh local variables for
+each occurrence of a vector (= each time we instantiate rule
+Tr2). Similarly the state variables of each copy of a
+given pLTS in the system, must be distinct, and those created for each
+application of Tr2 have to be fresh and all distinct. 
+This will be implemented within the open-automaton generation algorithm,
+e.g. using name generation using a global counter as a suffix.
+
+
+
+\subsection{Computing and using open automata}
+In this section we present a simple algorithm to construct the open
+automaton representing the behaviour of an open pNet, and we prove that
+under reasonable conditions this automaton is finite.
+
+\begin{algorithm}[Behavioural semantics of open pNets: Sketch]
+This is a standard residual algorithm over a set of open-automaton
+states, but where transitions are open transitions
+constructively ``proven'' by deduction trees.
+
+1) Start with a set of unexplored states containing the initial state
+of the automaton, and an empty set of explored states.
+
+2) While there are unexplored states:
+
+2a) pick one state from the unexplored set and add it to the explored
+set. From this state
+build all possible deduction trees by application of the structural
+rules Tr1 and Tr2, using all applicable combinations
+of synchronisation vectors.
+
+2b) For each of the obtained deduction trees, extract the resulting
+open-transition, with its predicate and \Post\ assignments by exploring the structure of 
+the pNet.
+
+2c) Optionally, simplifying the predicate at this point may minimize the
+resulting transitions, or even prune the search-space.
+
+2d) For each open-transition from step 2b, add the
+resulting state in the unexplored set if it is not already in the
+explored set, and add the transition in the outgoing transitions of
+the current state.
+
+%3) this ends with the "while" from step 2, when we have no more
+%unexplored set.
+\end{algorithm}
+
+To have some practical interest, it is important to know when this
+algorithm terminates. The following theorem shows that an open-pNet
+with finite synchronisation sets, finitely many leaves and
+holes, and each pLTS at leaves having a finite number of states and
+(symbolic) transitions, has a finite automaton:
+
+\begin{theorem}[Finiteness of open-automata.]\\
+Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+  J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
+  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+  are finite, and if
+$\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+has a finite number of state variables, then Algorithm 1 terminates
+and produces an open automaton 
+$\mathcal{T}$ with finitely many states and transitions.
+
+
+% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
+%     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%   J}$,
+% build its semantics as in algorithm 1.
+
+% We have:
+
+% $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
+%   \to finite{(\mathcal{T})}$$
+\end{theorem}
+
+\begin{proof}
+  The possible set of states of the open-automaton is the cartesian
+  product of the states of its leaves $pLTS_i^{i\in L}$, that is finite by
+  hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
+  iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
+  number of applications of rules Tr2 on the structure of the
+  pNet tree, with a finite number of synchronisation vectors applying
+  at each node the number of global open transition is finite. Similarily rule Tr1 is 
+  applied finitely if the number
+  of transitions of each pLTS is finite. So we get finitely many deduction trees, and
+  open-transitions which ensures that each internal loop of Algorithm 1 terminates.
+  \qed
+  \end{proof}
+%  
+%\begin{theorem}[ Finiteness of open-automata.]
+%
+%Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in 
+%K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%  J}$, if $ finite{(L)}$ and  $ finite{(J)} $ and $ finite{(K)} $  and 
+%$\forall i \in L. $,  $ finite{(states(pLTS_i))} $ and $ pLTS_i$
+%has a finite number of state variables, then Algorithm 1 terminates
+%and produces an open automaton 
+%  $\mathcal{T}$ with finitely many states and transitions.
+%
+%
+%
+%\end{theorem}
+%
+%\begin{proof}
+% Min's :  The set of states of the open-automaton is the cartesian product of the states 
+%of its leaves $pLTS_i^{i\in L}$ . It is finite because of hypothesis. According to the 
+%algorithm 1, starting with the initial state of the automaton, it can be terminate to 
+%build all possible deduction trees by rules Tr1 and Tr2.  Because each pLTS is finite, 
+%the number of applications of Tr1 is finite; because the set of synchronisation vectors 
+%is finite ($ finite{(K)} $ ) , the number of applications Tr2 is finite. So we can get 
+%finite open transitions. 
+%  \end{proof}
+
+
+%% \subsection{Simplication of predicates}
+%% \TODO{Two facets here: \\
+%% 1) The operational rules generate and assemble a large number of
+%% predicate fragments, with many variables. It can be possible using a
+%% solver to prove satisfiability, unsatisfiability, or to simplify these
+%% predicates. This has 2 kinds of benefits: eliminate uneccessary
+%% variables and reduce the predicate size; and prune the research space
+%% when predicates are unsatisfiable.\\
+%% 2) We have quite a specific form of building our predicates, with
+%%   many simple equations having a fresh variable on the left. Only the
+%%   predicate from the Sort membership is different... Can we
+%%   derive a notion of normal form, or some simplification principle ?}.\\
+%% Deciding what strategy using simlificatiom would be the most efficient
+%% depends on the generation algorithm, and we need time for this.
+%% For this paper, we can simply comment on these remarks, and leave
+%% deeper study for future work.
+
+\section{Bisimulation}
+\label{section:bisimulation}
+
+	Now we use our symbolic operational semantics to define a notion of
+	strong (symbolic) bisimulation.Moreover this equivalence is decidable whenever we 
+	have some
+	decision procedure on the predicates of the action algebra.
+
+
+%% , that we prove compatible with the
+%% composition of open pNets. \TODO{do we really know this ?}
+
+The equivalence we need is a strong bisimulation between
+pNets having exactly the same Holes with the same sorts, but using a
+flexible matching 
+between open transition, to accommodate comparisons between pNet
+expressions with different architectures.
+ We name it FH-bisimulation,
+ as a short cut for the ``Formal Hypotheses'' manipulated in the
+ transitions, but also as a reference to the work of De Simone~\cite{deSimone85},
+ that pioneered this idea. Formally:
+
+
+
+ \begin{definition}[FH-bisimulation]\label{def-FH-bisim} 
+
+\noindent
+\begin{minipage}{0.69\linewidth} 	Suppose that
+   $A_1 = <L_1,J,\mathcal{S}_1, s^1_0,
+   \mathcal{T}_1>$ and $A_2 = <L_2,J,\mathcal{S}_2,s^2_0, \mathcal{T}_2>$
+   are open automata where the set
+   of holes are equal %\LUDO{added:} 
+   and of the same sort.  %\LUDO{changed:} 
+      Let 
+      $(s^1,s^2|\Pred)\in\mathcal{R}$ be a
+      relation over the sets 
+      $\mathcal{S}_1$ and $\mathcal{S}_2$ 
+      constrained by a predicate.  More precisely, for any pair $(s^1,s^2)$, there is a 
+      single
+      $(s^1,s^2|\Pred)\in\mathcal{R}$  stating that $s^1$ and $s^2$ are related if \Pred\ 
+      is 
+      true.
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{0.30\linewidth}
+	\includegraphics[width=\linewidth]{XFIG/Bisim}
+\end{minipage}
+ Then 
+   $\mathcal{R}$ is an FH-bisimulation iff for any  states
+   $s^1\in\mathcal{S}_1$ and\\ $s^2\in\mathcal{S}_2$, $(s^1,s^2|\Pred)\in\mathcal{R}$, we 
+   have
+   the following:
+
+
+ %  \TODO{Eric: Still have to check fresh variables in predicates}
+
+ \begin{itemize}
+ \item  For any open transition $OT$ in $\mathcal{T}_1$:
+ \begin{mathpar}
+     \inferrule*[myfraction=\reddottedrule]
+         {\{s^1_i\xrightarrow{a_i}_i s^{1'}_i\}^{i\in I_1}, % , s^1_i,s^{1'}_i\in 
+         %States(I_1)
+           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s^1 \xrightarrow {v} s^{1'}}
+
+\end{mathpar}
+ there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2$:
+ \begin{mathpar}
+%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+    \inferrule*[myfraction=\reddottedrule]
+         {\{s^{2}_i\xrightarrow{a_{i x}}_i s^{2}_{i x}\}^{i\in I_{2 x}},
+           \{\xrightarrow{b_{j x}}_j\}^{j\in J_{2x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {s^2 \xrightarrow {v_x} s^{2}_x}
+%         \right)
+\end{mathpar}
+ such that  $\forall x, J_1=J_{2x}, (s^{1'},s^{2'}_x|\Pred_{target_x})\in \mathcal{R}$; 
+ and  \\
+ $\Pred \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+   \left( \forall j. b_j=b_{jx}  \Rightarrow \Pred_{OT_x}
+     \land v\!=\!v_x \land  
+     \Pred_{target_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
+     %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x}) \right)$.
+ \item  and symmetrically any open transition from $s^2$ in $\mathcal{T}_2$ can be 
+      covered by a set of transitions from $t^1$ in $\mathcal{T}_1$.
+ \end{itemize}
+%Where $\symb{Subst}(\Pred,\Post)$ is the parallel substitution of all
+%assigned variables.
+Two pNets are  FH-bisimilar if there exist a relation between their associated 
+automata that is an FH-bisimulation.
+
+ \end{definition}
+Classically, $\Pred_{target_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}$
+applies in parallel the  
+substitutions $\Post_{OT}$ and $\Post_{OT_x}$ (parallelism is crucial
+inside each $\Post$ set but $\Post_{OT}$ is independent from
+$\Post_{OT_x}$), applying the assignments of the involved rules.
+
+%%   such that  $\forall x, J_1=J_{2x}, (s^{1'},s^{2'}_x|\Pred_x)\in R$; and  \\
+%%   $Pred \land {\Pred\,}' \implies (\bigvee_x {Pred_x}') \land \forall x. 
+%%   ({\Pred_x}'\Rightarrow v\!=\!v_x \land \forall j\!\in\! J_1. b_j \!=\! b_{j x}\land 
+%%   \Pred_x)$.
+%%   \TODO{[LUDO] I believe this is still wrong -- see email on pred}
+%%    %%% LUDO: NOTE that here there is an implicit universal quantification 
+%%    %%% on free variables
+%%   \item  and symmetrically any open transition from $s_2$ in $\mathcal{T}_2$ can be 
+%%   covered by a set of transitions from $t_1$ in $\mathcal{T}_1$.
+
+%%  \end{itemize}
+%%  \end{definition}
+
+%%  Alternatives:
+%% je suis d accord avec ta derniere proposition de ce matin au tableau:
+%%   $Pred \land {\Pred\,}' \implies (\bigvee_x {Pred_x}') \land \forall x.
+%%   ({\Pred_x}'\Rightarrow v\!=\!v_x \land \forall j\in J_1. b_j = b_{j x}\land
+%%   \Pred_x)$.
+
+%% est la meme chose que
+
+%%   $Pred \land {\Pred\,}' \implies \bigvee_x \left({Pred_x}' \land  
+%% (  {\Pred_x}'\Rightarrow v\!=\!v_x \land \forall j\in J_1. b_j = b_{j x}\land
+%%   \Pred_x)\right)$.
+
+%% c est aussi la meme chose que ce que l on avait avant (sans le implique!)
+
+%% En fait je pense que ce que l on veut c est dans l autre sens:
+%%   $Pred\implies (\bigvee_x {Pred_x}窶�) \Rightarrow {\Pred\,}窶� $
+%% AND
+%%   $ \forall x. Pred \land {\Pred\,}窶� \land {\Pred_x}'\\implies
+%% v\!=\!v_x \land \forall j\in J_1. b_j = b_{j x}\land
+%%   \Pred_x$.
+
+ 
+
+
+
+%% \TODO{Example of strong bisimulation, for associativity of the Enable operator in Lotos.\\
+%% %- \textcolor{blue}{ Eric: Xfig with the structure of pNets DONE}\\
+%% %-\textcolor{blue}{  Min: build a full detailed deduction tree for the $a_q$ action of the ``P>>(Q>>R)'' side}\\
+%% - Min: build a full detailed deduction tree for the $\delta$ action of the ``P>>(Q>>R)'' side, to be placed in the appendix\\
+%% - Eric: discuss the bisimulation: exhibit the state partition, and explain which (open) transition are different in the other term, and how to match them.
+%%  }
+
+%     \TODO{Add a couple of sentences explaining that defining weak bisim is easy, only add
+%	invisible open transitions; any change in the predicate?}
+%\paragraph{Weak bisimulation}
+Weak symbolic bisimulation can be defined in a similar way, using  as 
+\emph{invisible actions} a subset of the
+\emph{synchronised actions} defined in Section~\ref{section:pnets}.
+%
+%Proving bisimulation properties on our hierarchical broadcast example
+%would take too much space for this paper. Moreover, interesting
+%properties of the HB example would rather be adequate for weak
+%bisimulation, and its large state-space would require some
+%tool-assistance, both for the generation of the open-automata and for
+%their comparison.
+%Instead, for
+To illustrate our approach on a simple
+example, let us encode the Lotos {\bf Enable} operator using 2
+different encodings, and prove their equivalence. 
+
+
+\begin{example}
+ In Fig.
+  \ref{schema:enable-pnets}, 
+  we proposed two different open pNets
+  encoding the expression \texttt{P>>Q}. 
+  While it is easy to be convinced that they are 
+equivalent, their structures are sufficiently different to show how
+the FH-bisimultion works and addresses the  
+crucial points on the proof of equivalence between operators.
+The open automata of these two pNets are given, together with their
+open transitions in Fig.\ref{schema:enable-auts}.
+\begin{figure}[~tb]
+\centerline{ 
+  \includegraphics[width=0.30\linewidth]{XFIG/Enable1-aut}
+  \hspace{25mm}
+  \includegraphics[width=0.25\linewidth]{XFIG/Enable2-aut}}
+  \begin{minipage}{5.7cm}
+$  \begin{array}{@{}r@{}l@{}}
+    ot_1  = &\openrule{0 \xrightarrow{l}_{C_1} 0,
+    	\\ \xrightarrow{a1}_P,\\ a1\neq\delta(x1)}
+    {A_0 \xrightarrow{a1} A_0}\\
+    ot_2  =& \openrule{
+                       0 \xrightarrow{\delta}_{C_1} 1,\\
+                            \{\xrightarrow{\delta(x2)}_P,\,
+                            \xrightarrow{acc(x2)}_Q\}  }
+    {A_0 \xrightarrow{\underline{\delta(x2)}} A_1}\\
+    ot_3  =& \openrule{
+                       0 \xrightarrow{r}_{C_1} 1,\\
+                            \xrightarrow{a2}_q  }
+    {A_1 \xrightarrow{a2} A_1}
+  \end{array}$
+  \end{minipage}
+  \hspace{2mm}
+  \begin{minipage}{6cm}
+$  \begin{array}{@{}r@{}l@{}}
+    ot'_1  =& \openrule{0 \xrightarrow{l}_{C_2} 0,
+    	~~\xrightarrow{b1}_P, ~~ b1\neq\delta(y1) \!\land\! s_0=0}
+    {B_0 \xrightarrow{b1} B_0}\\
+    ot'_2  =& \openrule{
+                       0 \xrightarrow{\delta}_{C_2} 1,\\
+                            \{\xrightarrow{\delta(y2)}_P,\,
+                            \xrightarrow{acc(y2)}_Q \}, \\
+                                        s_0=0, \\
+                                        \{s_0\gets 1\}}
+    {B_0 \xrightarrow{\underline{\delta(y2)}} B_1}\\
+    ot'_3  =& \openrule{
+                       1 \xrightarrow{r}_{C_2} 1,\\
+                            \xrightarrow{b2}_q, \\ s_0=1 }
+    {B_1 \xrightarrow{b2} B_1}
+  \end{array}$
+  \end{minipage}
+  \caption{The two open automata}
+  \label{schema:enable-auts}
+\end{figure}
+To illustrate the proof of bisimulation, let us build a relation:\\
+\centerline{$  R = \{  (A_0,B_0|s_0=0),   (A_1,B_0|s_0=1) \} $}\\
+and prove that $R$ is a strong FH-bisimulation. For each transition in
+each automaton, we must find a covering set of of transitions, with
+same holes involved, and equivalent target states. Finding the
+matching here is trivial, and all covering sets are reduced to singleton.
+All proofs are pretty similar, so we only show here the details for
+matching (both ways) the open transitions $ot_2$ and $ot'_2$; these are the most
+interesting, because of the presence of the assignment.
+
+%% Pick e.g. transition $ot_1$ of automaton $A$, we have
+%%     $A_0 \xrightarrow{ot_1}_{A} A_0$. In
+%%     $ot_1$ the set of holes involved is $\{P\}$, and
+%%     $Pred_{ot_1} = \big(a1\neq\delta(x1)\big)$.
+%%     On the right hand side, state $B_0$ has a single matching
+%%    transition $B_0 \xrightarrow{ot'_1}_{B} B_0$, the set of holes
+%%    involved is also $\{P\}$ with the same sort,
+%%    with $Pred_{ot'_1} = \big(b1\neq\delta(y1) \land s_0=0\big)$, no assignement, and the
+%%    resulting state is in the bisimulation ($(A_0,B_0|s_0=0)\in \mathcal{R}$). 
+
+%%    To prove that $ot_1$ is covered by $ot'_1$ we generate proof obligation (all variables being universally quantified): \TODO{Eric: build a visual explanation of this}
+%%    $$s_0=0\land a1\neq\delta(x1) \implies (a1=b1  \implies
+%%    b1\neq\delta(y1) \land s_0=0 \land a1=b1 \land s_0=0)$$
+%%    This is  easy to prove.
+%%    The reverse part ($ot'_1$ is covered by $ot_1$) is similar.
+   
+Consider transition $ot_2$ of state $A_0$, and prove that it is covered
+by  $ot'_2$. Let us detail the construction of the proof obligation:
+
+\smallskip
+\noindent  \includegraphics[width=\linewidth]{XFIG/build-obligation}
+\smallskip
+
+The source $\Pred$ for $A_0$ in $ot_2$ is $s_0=0$, and $ot_2$ itself
+has no predicate. Then we find the condition for holes to have the
+same behaviours, and from that we must prove the predicate in $ot'_2$
+holds, and finally the predicate of the target state $(A_1,B_0|s_0=1)$,
+after substitution using the assignment $\subst{s_0\gets 1}$, that is
+$1=1$. This formula (in which all variables are universally quantified)
+is easy to discharge.
+
+   Conversely, transition $ot'_2$ of state $B_0$ matches with $ot_2$ of
+   $A_0$, but now the assignment is on the left hand side, and the
+   proof goal mostly concern the triggered action as $ot_2$ has no predicate:
+
+\centerline{\small{   $s_0=0 \land s_0=0 \implies
+   (\delta(y2)=\delta(x2) \land acc(y2)=acc(x2) \implies 
+   \underline{\delta(x2)}=\underline{\delta(y2)} \land
+   1=1)$}}
+  \qed
+  
+\end{example}
+
+Despite the simplicity of the proven equivalence, the proof of
+bisimulation highlights precisely the use of the different
+predicates. It is also important to see that all the arguments
+necessary for proving the equivalence are well identified and properly
+used, and that we really made a proof about the operator without
+having to refer to the behaviour of the processes that will be put in
+the holes. This simple example shows the expressiveness of our
+approach by illustrating the use of variables, assignments,
+controllers and sort of holes.  
+It is straightforward to prove e.g. that the enable operator is associative, after 
+computing the open automaton of the pNet $EnableComp$ from Fig. 
+\ref{schema:enable-composed}, and a similar one representing \texttt{(P>>Q)>>R)}. Each of 
+the automata has 3 states and 5 open-transitions. For reasons of space we cannot show 
+them here~\cite{HMZ:RR-2016}.
+% The appendix shows examples involving more the hierarchy 
+% of pNets and in particular a proof of associativity of the enable operator.
+We can 
+finally prove that it is decidable whether a relation is a FH-bisimulation provided the 
+logic of the predicates is decidable.
+
+%% \begin{figure}[t]
+%%   %% \includegraphics[width=0.15\linewidth]{XFIG/PQR-automaton}
+%%   \begin{minipage}{2cm}
+%%   \includegraphics[width=\linewidth]{XFIG/PQR-automaton}
+%%   \end{minipage}
+%%   \hspace{5mm}
+%%   \begin{minipage}{7cm}
+%%   \begin{eqnarray*}
+%%     OT_1 & = \openrule{0 \xrightarrow{l}_{C_1} 0
+%%     	\\\xrightarrow{a1}_P\\ a1\neq\delta(x)}
+%% %    \openrule{\xrightarrow{a1}_P\\0 \xrightarrow{l}_{C_1} 0
+%% %      \\ a1\neq\delta(x)\\\{P\}}
+%%     {\ostate{00} \xrightarrow{a1} \ostate{00}}\\
+%% %    OT_1 & = \openrule{\xrightarrow{a1}_P\\0 \xrightarrow{l}_{C_1} 0\\\{P\}}{a1}\\
+%%     OT_2 & = \openrule{
+%%                        0 \xrightarrow{\delta}_{C_1} 1 ~~
+%%                             0 \xrightarrow{l}_{C_2} 0  ~~                 
+%%                             \xrightarrow{\delta(x1)}_P ~~
+%%                             \xrightarrow{accept(x1)}_Q 
+%%                        }
+%%                       {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}    \\
+%%     OT_3 & = \openrule{0 \xrightarrow{l}_{C_2} 0
+%%                         \\1 \xrightarrow{r}_{C_1} 1\\
+%%                         \xrightarrow{a2}_Q\\a2\neq\delta(x)%\\\{Q\}
+%%                         }
+%%     {\ostate{10} \xrightarrow{a2} \ostate{10}}\\
+%%     OT_4 & = \openrule{
+%%                        0 \xrightarrow{\delta}_{C_2} 1 \qquad
+%%                        1 \xrightarrow{r}_{C_1} 1 \qquad
+%%                        \xrightarrow{\delta(x2)}_Q \qquad 
+%%                        \xrightarrow{accept(x2)}_R %\qquad%\{Q,R\}
+%%                        }
+%%                       {\ostate{10} \xrightarrow{\underline{\delta(x2)}} \ostate{11}}    \\
+%%     OT_5 & = \openrule{1 \xrightarrow{r}_{C_1} 1 \\1 \xrightarrow{r}_{C_2} 1 
+%%     	\\\xrightarrow{a3}_R%\\\{R\}
+%%     	}
+%%     {\ostate{11} \xrightarrow{a3} \ostate{11}}
+%%     \end{eqnarray*}
+%%   \end{minipage}
+%%   \caption{Open Automaton for the term ``P>>(Q>>R)''}
+%%   \label{schema:enable3}
+%% \end{figure}
+
+%%  \begin{definition}[Weak bisimulation under formal hypothesis] Suppose that $E$ and $F$ are open automata. Let $R$
+%%    be a binary symmetric relation over states of open automata $E$ and $F$. Then $R$ is an weak FH-bisimulation iff for any states $\ostate{s_i^{i\in L}}$  of $E$ and $\ostate{t_i^{i\in L}}$ of $F$  , $(\ostate{s_i^{i\in L}}, \ostate{t_i^{i\in L}})\in R$, we have the
+%%    follows;
+%%  \begin{itemize}
+
+%%  \item  For any open transition (OT)  in $E$
+%%  \begin{mathpar}
+%%      \inferrule*[myfraction=\reddottedrule]
+%%          {\{s_i\xrightarrow{a_i} s_i^{\prime}\}_{i\in I^\prime},
+%%            \{\xrightarrow{b_j}\}_{j\in J^\prime}, Pred(V_k, a_i^{i\in I'}, b_j^{j\in J'}, v)}
+%%          {\ostate{s_i^{i\in I}} \xrightarrow {v} \ostate{s_i^{\prime i\in L}}}
+%% \end{mathpar}
+%% there exist a set indexed by $\{m\in M\}$ of open transitions  in $F$
+%% \begin{mathpar}
+%%      \inferrule*[myfraction=\reddottedrule]
+%%          {\{s_i\xrightarrow{a_i} s_i^\prime\}_{i\in I_m^{\prime}},
+%%            \{\xrightarrow{b_j}\}_{j\in J_m^\prime}, Pred_m(V_{km}, a_i^{i\in I'_m}, b_j^{j\in J'_m}, v_m)}
+%%          {\ostate{t_i^{i\in I_m}} \xrightarrow {v_m} \ostate{t_i^{\prime i\in I_m}}}
+%% \end{mathpar}
+%% where $v_m=v$ or $\tau$,  such that there exist a set of indexed by $\{n\in N\}$ of open transitions in $F$
+%%  \begin{mathpar}
+%%      \inferrule*[myfraction=\reddottedrule]
+%%          {\{s_i\xrightarrow{a_i} s_i^{\prime}\}_{i\in I^\prime},
+%%            \{\xrightarrow{b_j}\}_{j\in J^\prime},(\land Pred_m)_n((V_{km})_n, a_i^{i\in I'}, b_j^{j\in J'}, v_m)}
+%%          {\ostate{t_i^{i\in I}} \xRightarrow {\tau^\star v\tau^\star} \ostate{t_i^{\prime i\in I}}}
+%% \end{mathpar}
+%% where $I'=\lor I_m^\prime$,$Pred\subseteq \lor_n(\land_m Pred_m)_n$.
+%%  And $(\ostate{t_i^{i\in I}}, \ostate{t_i^{i\in I}}_n)\in R$.
+%%  \end{itemize}
+%%  \end{definition}
+
+
+
+
+
+\begin{theorem}[Decidability of FH-bisimulation]
+Let $A_1$ and $A_2$ be finite open automata
+and $\mathcal{R}$ a relation over their states $\mathcal{S}_1$ and
+$\mathcal{S}_2$ constrained by a set of predicates. Assume that the predicates inclusion is decidable over
+the action algebra $\mathcal{A}_P$. Then it is decidable whether the relation 
+$\mathcal{R}$ is a FH-bisimulation.
+  
+\end{theorem}
+% \input{proofofTh3-new.tex}
+\begin{proof}
+%What we need to find a decidable algorithm to check  $R$ is FH-bisimulation.
+
+%Step 1: We assume that initial states with some predicate $Pred$ are in $R$, that is 
+%$(s_0^1, s_0^2| \Pred)\in R$. 
+%
+%  \ERIC{the state indices were wrong... also I suppose nothing prevents us to have 
+%  several (s1,s2,P) with the same s1,s2, and different Ps, in R}
+% \LUDO{you told me the contrary yesterday so IU changed the text to reflect that!!!}
+% \LUDO{If you do not want that anymore then I shoudl return to the finiteness of R I had 
+% yesterday}
+The principle is to consider each pair of states $(s_1,s_2)$, consider the element   
+$(s_1,s_2|\Pred)$ in $\mathcal{R}$; if \Pred\ is not false
+we consider the (finite) set of open transition having $s_1\xrightarrow{v} 
+s_1'$ as a conclusion. For each of them, to prove the simulation, we can consider all the 
+transitions leaving $s_2$. Let $OT_x$ be the set of all transitions with a conclusion of 
+the 
+form $s_2\xrightarrow{v} s_{2 x}'$ such that the same holes are involved in the open 
+transition and such that there exist $\Pred_{target_x}$ such that $ 
+(s_1',s_{2 x}'|\Pred_{target_x})\in R$. This gives us the predicates and \Post\ 
+assignments 
+corresponding to those open transitions. We then 
+only have to prove:
+{\small  $$\Pred \land \Pred_{OT}
+\Rightarrow \bigvee_{x\in X}
+ \left( \forall j. b_j=b_{jx}  \Rightarrow \Pred_{OT_x}
+ \land v\!=\!v_x \land  
+ \Pred_{target_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$$
+}Which is decidable since predicates inclusion is decidable.
+As the set of elements in  $\mathcal{R}$ is finite and the set of open transitions is 
+finite, it is possible to check them exhaustively. \qed
+\end{proof}
+
+\section{Composability}
+
+The main interest of our symbolic approach is to define a method to
+prove properties directly on open structures, that will be preserved
+by any correct instantiation of the holes. In this section we define a
+composition operator for open pNets, and we prove that it preserves
+FH-bisimulation. More precisely, one can define two preservation
+properties, namely 1) when one hole of a pNet is filled by two bisimilar
+other (open) pNets; and 2) when the same hole in two bisimilar pNets are
+filled by the same pNet, in other words, composing a pNet with two
+bisimilar contexts. The general case will be obtained by
+transitivity of the bisimulation relation. We concentrate here on the
+second property, that is the most interesting.
+
+
+\begin{definition}[pNet composition]
+	An open pNet: $\pNet = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, 
+	\overline{\symb{SV}}\myrangle$
+ can be (partially) filled by providing  a pNets $\pNet'$ of the
+	right sort to fill one of  its holes.	
+	Suppose $j_0\in J$:
+	%% \[\mylangle \pNet_i^{i\in I},S_j^{j\in J}, \symb{SV}_k^{k\in
+	%%   K}\myrangle\left[(\pNet'_i)^{i\in L}\right]= \mylangle \pNet_i^{i\in
+	%%   I}\left[(\pNet'_i)^{i\in L}\right]\uplus(\pNet'_i)^{i\in J\cap L},S_j^{j\in 
+	%%J\setminus L},
+	%% \symb{SV}_k^{k\in K}\myrangle
+	%% \]
+	\[\pNet\left[\pNet'\right]_{j_0}= \mylangle 
+	\pNet_i^{i\in I}\uplus\{j_0\mapsto \pNet'\},S_j^{j\in J\setminus \{j_0\}},
+	\overline{\symb{SV}}\myrangle
+	\]
+\end{definition}
+
+\begin{theorem}[Context equivalence]\label{thm-ctxt-eq}
+	Consider two FH-bisimilar open pNets:
+	$\pNet = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, 
+	\overline{\symb{SV}}\myrangle$ and 	$\pNet' = \mylangle {\pNet'}_i^{i\in I}, 
+	S_j^{j\in 
+	J}, 	\overline{\symb{SV'}}\myrangle$ 
+	(recall they must have the same holes to be bisimilar).
+	Let $j_0\in J$ be a hole, and $Q$ be a pNet such that $\Sort(Q)=S_{j_0}$. Then $\pNet[Q]_{j_0}$ and 
+	$\pNet'[Q]_{j_0}$ are FH-bisimilar.
+\end{theorem}
+%
+%In the following we use $\approx$ to denote equality modulo alpha conversion of free 
+%variables. In practice, $x\approx y$ can be obtained if: $x=clone(a) \land y=clone(a)$.
+
+The proof of theorem \ref{thm-ctxt-eq} relies on two main lemmas,
+dealing respectively with the decomposition of a composed behaviour
+between the context and the internal pNet, and with their recomposition. 
+We start with decomposition: from one open transition of $P[Q]_{j_0}$, we exhibit 
+corresponding behaviours of $P$ and $Q$, and determine the relation between their 
+predicates:
+
+\begin{lemma}[OT decomposition]\label{lem-decompose} 
+	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose:
+	\[ P[Q]_{j_0}   % = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, 
+	%\symb{SV}_k^{k\inK}\myrangle
+		\models
+		{\inferrule*[myfraction=\reddottedrule]
+			{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I},
+				\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred,  
+				\Post}
+			{\ostate{s_i^{i\in L}} \xrightarrow {v}
+				\ostate{s_i^{\prime i\in L}}}
+		}
+	\]
+		with $Q$ ``moving'' (i.e. $J\cap\Holes(Q)\neq\emptyset$ or $I\cap L_Q\neq 
+		\emptyset$).
+		 Then there exist $v_Q$, $\Pred'$, $\Pred''$, 
+		$\Post'$, $\Post''$ s.t.:\\[-2ex]
+		%\[
+		\begin{mathpar}
+		P\models{\inferrule*[myfraction=\reddottedrule]
+			{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\setminus L_Q},
+				\{\xrightarrow{b_j}_j\}^{j\in J\setminus \Holes(Q) \cup \{j_0\}}, 
+				\Pred',  
+				\Post'}
+			{\ostate{s_i^{i\in L\setminus L_Q}} \xrightarrow {v}
+				\ostate{s_i'^{\, i\in L\setminus L_Q}}}
+		}%\]
+	\vspace{-2.2ex}\\\text{and~~}
+		%\[
+		Q\models{\inferrule*[myfraction=\reddottedrule]
+			{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
+				\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred'',  
+				\Post''}
+			{\ostate{s_i^{i\in L_Q}} \xrightarrow {v_Q}
+				\ostate{s_i'^{\, i\in L_Q}}}
+		}%\]
+		\end{mathpar}
+		and  $\Pred\subst{v_Q\leftarrow b_{j_0}} =(\Pred'
+		\land \Pred'')$, $\Post=\Post'\uplus 
+		\Post''$ where $\Post''$ is the restriction of $\Post$ over variables of 
+		$\Leaves(Q)$.
+\end{lemma}
+\begin{small}
+\begin{proof}
+Consider each premise of the open transition (as constructed by rule TR2 in Definition~\ref{def:operationalSemantics}). 
+We know each premise is true for $P[Q]$ and try to prove the equivalent premise for $P$. 
+First, $K$ and the synchronisation vector $SV_k$ are unchanged\footnotemark (however 
+$j_0$ passes from 
+the set of subnets to the set of holes). Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus 
+J_k})$. $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
+Now focus on OTs of the subnets\footnotemark[\thefootnote]:\\[-2ex]
+\[\forall m\in I_k\cup \{j_0\}.
+\pNet_m \models
+\inferrule*[myfraction=\reddottedrule]
+{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
+	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+{\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
+	\ostate{s_{i}^{\prime\ i \in L_m}}}\]
+Only elements of $I_k$ are useful to assert the premise for reduction of $P$; the last 
+one ensures (note that $Q$ is at place $j_0$, and by definition of the open transition 
+for $P[Q]_{j_0}$, $I_{j_0}=I\cap L_Q$, 
+$L_{j_0}=L_Q$):\\[-2ex]
+	\[Q\models{\inferrule*[myfraction=\reddottedrule]
+		{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
+			\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
+			\Post''}
+		{\ostate{s_i^{i\in L_Q}} \xrightarrow {v_{j_0}}
+			\ostate{s_i'^{\, i\in L_Q}}}
+	}\]
+This already ensures the second part of the conclusion if we 
+choose\footnotemark[\thefootnote]  $v_Q=v_{j_0}$ ($\Pred''= \Pred_{j_0}$). Now let $I'= 
+\biguplus I'_m=I\setminus L_Q$, $J'=\biguplus J'_m\uplus J_k 
+\uplus\{j_0\}=J\setminus\Holes(Q)\uplus \{j_0\}$; the predicate is 
+$\Pred'=\bigwedge_{m\in I_k}\Pred_m 
+\land \Pred(SV,a_i^{i\in I_k},b_j^{j\in J_k\cup \{j_0\}},v)$
+where\footnotemark[\thefootnote] $\Pred(SV,a_i^{i\in I_k},b_j^{j\in 
+J_k},v)\Leftrightarrow 
+\forall i\in I_k.\, \alpha_i=a_i\land \forall j \in J_k\cup \{j_0\}.\, \alpha_j=b_j \land 
+v=\alpha'_k 
+$. Modulo renaming of fresh variables, this is identical to the predicate that occurs in 
+the source open transition except $\alpha_{j_0}=v_{j_0}$ has been replaced by  
+$\alpha_{j_0}=b_{j_0}$.
+Thus, $\Pred\subst{v_Q\leftarrow b_{j_0}}=(\Pred' 
+\land \Pred'')$. %\TODO{the argument on renaming has mostly been
+                 %removed is it still OK? yes.}. 
+Finally, Post 
+%conditions are easily split\footnote{\TODO{moved. could
+%    even remove...?}Note that if the rules are not simplified, no
+%  post-condition range over the variables of $P$ and $Q$ at the same
+%  time} 
+into conditions of the context $P$ and the pNet $Q$ (they are
+builts similarly as they only deal with  
+leaves): $\Post=\Post'\uplus \Post''$. This concludes the 
+proof as we checked all the premises of the open transition for both $P$ and $Q$.\qed
+\footnotetext{Cloning and freshness introduce alpha-conversion at many points 
+of the proof; we 
+	only 
+	give major arguments concerning alpha-conversion to make the proof readable; in 
+	general, fresh variables appear in each transition inside
+        terms $b_j$, $v$, and 
+	$\Pred$.}
+\end{proof}
+
+\end{small}
+%% Note that the fact that the sort of $Q$ is included in the sort of the hole is used to 
+%% ensure that \TODO{??? i do not see what the sort endures here}
+
+In general, that the actions that can be emitted by $Q$ is  a subset of the possible 
+actions of the holes, and the predicate involving $v_Q$ and the synchronisation vector is 
+ more restrictive than the one involving only the variable $b_{j_0}$.
+%\TODO{is this useful? = yes, I think }
+
+Lemma \ref{lem-compose} is combining an open transition of $P$ with
+an open transition of $Q$, and building a corresponding transition of
+$P[Q]_{j_0}$, assembling their predicates.
+
+\begin{lemma}[Open transition composition]\label{lem-compose} 
+	Suppose $j_0\in J$ and:\\[-2ex]
+\begin{mathpar}
+%\[
+P\models{\inferrule*[myfraction=\reddottedrule]
+	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I},
+		\{\xrightarrow{b_j}_j\}^{j\in J}, \\\\
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \xrightarrow {v}
+		\ostate{s_i'^{\, i\in L}}}
+}%\]
+\text{~and~}
+%\[
+Q\models{\inferrule*[myfraction=\reddottedrule]
+	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I_Q},
+		\{\xrightarrow{b_j}_j\}^{j\in J_Q},\\\\
+		 \Pred',  
+		\Post'}
+	{\ostate{s_i^{i\in L_Q}} \xrightarrow {v_Q}
+		\ostate{s_i'^{\, i\in L_Q}}}
+}%\]
+\end{mathpar}
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}   % = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, 
+	%\symb{SV}_k^{k\inK}\myrangle
+	\models
+	{\inferrule*[myfraction=\reddottedrule]
+		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I \uplus I_Q},
+			\{\xrightarrow{b_j}_j\}^{j\in J\setminus\{j_0\} \uplus J_Q}, 
+			\Pred\subst{b_{j_0}\leftarrow v_Q}\land\Pred',  
+			\Post\uplus \Post'}
+		{\ostate{s_i^{i\in L\uplus L_Q}} \xrightarrow {v}
+			\ostate{s_i^{\prime i\in L\uplus L_Q}}}
+	}
+	\]
+\end{lemma}
+\begin{small}
+\begin{proof}
+Consider each premise of the open transition (constructed by TR2 in 
+Definition~\ref{def:operationalSemantics}). 
+We know each premise is true for $P$ and try to prove the equivalent premise for 
+$P[Q]_{j_0}$ (using the open transition of $Q$). 
+$K$ and the synchronisation vector are unchanged ($j_0$ is now in the set of sub-pNets); 
+$SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus 
+	J_k})$. $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. All subpNets can be 
+reduced:\\[-2ex]%\footnote{again we skip arguments related to renaming of fresh 
+%variables}:
+\[\forall m\in I_k\cup \{j_0\}.
+\pNet_m \models
+\inferrule*[myfraction=\reddottedrule]
+{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I'_m},
+	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+{\ostate{s_{i}^{i \in L_k}} \xrightarrow {v_m}
+	\ostate{s_{i}^{\prime\ i \in L_k}}}\]
+the last sub-pNet is the one filled by $Q$ which offers an open transition by hypothesis.
+Let $I'=\biguplus_{m\in I_k} I_m \uplus I_Q = I \uplus I_Q$ and $J'= \biguplus_{m\in I_k} 
+J_m \uplus J_Q \uplus J_k = J\setminus\{j_0\}\uplus J_Q$. The predicate for the open 
+transition is: $\Pred''=\bigwedge_{m\in I_k}\Pred_m \land \Pred'
+\land \Pred(SV,a_i^{i\in I_k}\uplus(j_0\mapsto v_Q),b_j^{j\in J_k},v)$. By definition 
+$\Pred(SV,a_i^{i\in I_k}\uplus(j_0\mapsto v_Q),b_j^{j\in J_k},v)\Leftrightarrow
+	\forall i\in I_k.\, a_i=\alpha_i\land \forall j \in J_k.\, b_j=\alpha_j \land 
+	\alpha'_k=v\land v_Q=\alpha_{j_0}$, finally $\Pred''=\Pred\subst{b_{j_0}\leftarrow 
+	v_Q} \land \Pred'$. The post-condition gathers the post-conditions related to all 
+	the leaves; Finally, the composed open transition can be built. \qed
+\end{proof}
+\end{small}
+
+The proof of Theorem~\ref{thm-ctxt-eq} exhibits classically a bisimulation relation for a 
+composed system. It then uses  Lemma~\ref{lem-decompose} to decompose the open transition 
+of $P[Q]$ and obtain an open transition of $P$ on which the FH-bisimulation property can 
+be applied  to obtain an equivalent family of open transitions of $P'$; this family is 
+then recomposed by Lemma~\ref{lem-compose} to build a set of open transitions of $P'[Q]$ 
+that will simulate the original one.
+\begin{small}
+\begin{proof}[of Theorem~\ref{thm-ctxt-eq}] Let $\Leaves(Q)=p_l^{l\in L_Q}$, 
+$\Leaves(P)=p_l^{l\in L}$, $\Leaves(P')={p'}_l^{l\in L'}$.
+	Consider $P$ FH-bisimilar to $P'$. It means that there is a relation 
+	$\mathcal{R}$ that is an FH-bisimulation between the open automata of the two pNets. 
+	We will consider the relation $\mathcal{R}'=\{(s_1,s_2|\Pred)|s_1=s'_1\uplus s \land 
+	s_2=s'_2\uplus s \land s\in \mathcal{S}_Q \land (s_1',s_2'|\Pred)\in\mathcal{R}\}$ 
+	where $\mathcal{S}_Q$ is the set of states of the open automaton of $Q$.	We will prove 
+	that $\mathcal{R}'$ is an open FH-bisimulation. Consider a pair of FH-bisimilar 
+	states: $(\ostate{s_{1 i}^{i \in L\uplus L_Q}},\ostate{{s}_{2 i}^{i \in L'}\uplus 
+	{s}_{1 i}^{i \in L_Q}}|\Pred)\in\mathcal{R}'$. %Those are states of the open 
+%	automata of 
+%	the pNets $P[Q]_{j_0}$ and $P'[Q]_{j_0}$. 
+Consider an 
+	open transition $OT$ of $P[Q]_{j_0}$. %We need to find a family ${OT}_x^{x\in X}$ of 
+%	open transitions of $P'[Q]_{j_0}$ that satisfy the conditions of
+%	Definition~\ref{def-FH-bisim}. $OT$ is of the form 
+\\[-2ex]     
+	\[\inferrule*[myfraction=\reddottedrule]
+	{\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I}, % , s^1_i,s^{1'}_i\in 
+		%States(I_1)
+		\{\xrightarrow{b_j}_j\}^{j\in J},\Pred_{OT},\Post_{OT}}
+	{ \ostate{s_{1 i}^{i \in L\uplus L_Q}}\xrightarrow {v} \ostate{{s'}_{1 i}^{i \in 
+	L\uplus 
+	L_Q}}}\]
+Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By 
+	Lemma~\ref{lem-decompose} we have :\\[-2ex]
+			\begin{mathpar}
+				P\models{\inferrule*[myfraction=\reddottedrule]
+				{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\setminus L_Q},
+					\{\xrightarrow{b_j}_j\}^{j\in J'}, \\\\
+					\Pred',  
+					\Post'}
+				{\ostate{s_{1 i}^{i\in L}} \xrightarrow {v}
+					\ostate{s_{1 i}'^{\, i\in L}}}
+			}\qquad
+			Q\models{\inferrule*[myfraction=\reddottedrule]
+				{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
+					\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)},\\\\ \Pred'',  
+					\Post''}
+				{\ostate{s_{1 i}^{i\in L_Q}} \xrightarrow {v_Q}
+					\ostate{s_{1 i}'^{\, i\in L_Q}}}
+			}\end{mathpar}
+			and  $\Pred_{OT}\subst{v_Q\leftarrow b_{j_0}} =(\Pred'
+			\land \Pred'')$, $\Post_{OT}=\Post'\uplus 
+			\Post''$ ($\Post''$ is the restriction of $\Post$ over variables of 
+			$\Leaves(Q)$). As $P$ is FH-bisimilar to $P'$ and $(\ostate{s_{1 i}^{i \in 
+			L}},\ostate{{s}_{2 i}^{i \in L'}}|\Pred)\in\mathcal{R}$ there is a family 
+			$OT'_x$ 
+			of 	open transitions of the automaton of $P'$ such that\\[-2ex] 
+			\begin{mathpar}
+			%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+			\inferrule*[myfraction=\reddottedrule]
+			{\{s_{2 i}\xrightarrow{a_{i x}}_i s_{2 i x}\}^{i\in I_{x}},
+				\{\xrightarrow{b_{j x}}_j\}^{j\in J'}, 
+				\Pred_{OT_x},\Post_{OT_x}}
+			{\ostate{s_{2 i}^{i\in L'}} \xrightarrow {v_x} \ostate{s_{2 i x}^{i\in L'}}}
+			%         \right)
+			\end{mathpar}
+			and  $\forall x, (\ostate{s_{1 i}^{i\in L}},\ostate{s_{2 i x}^{i\in 
+			L'}}|\Pred_{tgt_x})\in 
+			\mathcal{R}$; 
+			and  \\
+			$\Pred \land \Pred'
+		 \Rightarrow \bigvee_{x\in X}
+			\left( \forall j\in J'. b_j=b_{jx}  \Rightarrow 
+			\Pred_{OT_x}
+			\land v\!=\!v_x \land  
+			\Pred_{tgt_x}\subst{\Post'}\subst{\Post_{OT_x}}\right)$
+			%     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x}) \right)$.
+			
+			We can now apply Lemma~\ref{lem-compose} on each of the $OT'_x$ together with 
+			the transition of $Q$ and obtain a new family $OT_x$ of open transitions (where for 
+			$i\in L_Q$, $s_{2 i}=s_{1 i}$ and $s_{2 i x}=s'_{1 i}$, and for $j\in Holes(Q)$, 
+			$b_{j x}=b_j$):\\[-2ex]
+				\[ P'[Q]_{j_0}   % = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, 
+				%\symb{SV}_k^{k\inK}\myrangle
+				\models
+				{\inferrule*[myfraction=\reddottedrule]
+					{\{s_{2 i}\xrightarrow{a_{i x}}_i {s}_{2 i x}\}^{i\in I_x \uplus 
+					(I\cap L_Q)},
+						\{\xrightarrow{b_{j x}}_j\}^{j\in J}, \\
+						\Pred_{OT_x}\subst{b_{j_0 x}\leftarrow v_Q}\land\Pred'',  
+						\Post_{OT_x}\uplus \Post''}
+					{\ostate{s_{2 i x}^{i\in L'\uplus L_Q}} \xrightarrow {v_x}
+						\ostate{{s}_{2 i}^{i\in L'\uplus L_Q}}}
+				}
+				\]
+			Observe that $J=(J\setminus\Holes(Q)\cup \{j_0\})\setminus\{j_0\}\cup 
+			(J\cap\Holes(Q))$. Now we have to verify the conditions for the 
+			FH-bisimulation between $OT$ and $OT_x$.
+			 $\forall x, (\ostate{{s'}_{1 i}^{i\in L\uplus L_Q}},\ostate{s_{2 i 
+			x}^{i\in L'\uplus L_Q}}|\Pred_{tgt_x})\in 
+			\mathcal{R}'$ (by definition of
+                        $\mathcal{R}'$) and in three steps we get:
+
+\noindent                        
+$\Pred \land \Pred_{OT} \Rightarrow
+ \Pred\land(\Pred'\land \Pred'')\subst{b_{j_0}\leftarrow v_Q}\\ % reversed substitution 
+ \implies 
+ (\Pred\land\Pred')\subst{b_{j_0}\leftarrow v_Q}\land \Pred''\\ % $b_{j_0}$ only appears 
+ %in $\Pred'$
+ \implies  \hspace{-2ex}
+{\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. b_j\!=\!b_{jx}  
+\Rightarrow \!
+\Pred_{OT_x}\subst{b_{j_0}\!\!\leftarrow\!\! v_Q}
+\land v\!=\!v_x}} %\\ \hspace*{40mm} %
+\land \Pred_{tgt_x}\subst{\Post'}\subst{\Post_{OT_x}}) \land
+\Pred''\\ % 
+			%FH for P
+ \implies  \hspace{-2ex}
+ {\displaystyle{\bigvee_{x\in X}\!( \forall j\!\in\! J'. b_j\!=\!b_{jx} \Rightarrow 
+\Pred_{OT_x}\subst{b_{j_0}\!\!\leftarrow\!\! v_Q}\!\land\! \Pred''%\\ \hspace*{40mm}
+\!\land\! v\!=\!v_x \!\land\!  
+\Pred_{tgt_x}\subst{\Post'}\subst{\Post_{OT_x}})}} 			
+$
+
+%\TODO{There was a confusion between the $\Rightarrow$ between the
+%  steps, and the $\implies$ inside the formulas...}
+
+Explanations: first, we reversed the substitution; then we
+restricted the 
+substitution as $b_{j_0}$ only appears in $\Pred'$; then we
+applied the property of FH-bisimulation for $P$ and rearranged the
+terms. The obtained formula reaches the goal except for two points:\\[-4.3ex] 
+\begin{itemize}
+	\item We need $\forall j\!\in\! J$ instead of $\forall j\!\in\! J'$ with 
+	$J'\!=\!J\!\setminus\! \Holes(Q) \cup \{j_0\}$ but the formula under the quantifier 
+	does not depend on 
+	$b_{j_0}$ now (thanks to 
+	the substitution). Concerning $\Holes(Q)$, adding quantification on new variables 
+	does not 
+	change the formula.
+	\item We need $\Pred_{tgt_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}\uplus \Post''}$ 
+	but by Lemma~\ref{lem-compose}, this is equivalent to:
+	$\Pred_{tgt_x}\subst{Post'\uplus Post''}\subst{\Post_{OT_x}\uplus \Post''}$. We 
+	can conclude by observing that	$\Pred_{tgt_x}$ does not use any variable of $Q$ 
+	and thus $\subst{Post''}$ has no effect.
+\end{itemize}	
+This proves the  condition of the FH-simulation, the other direction is 
+similar.\qed
+\end{proof}
+\end{small}
+This section proved the most interesting part of the congruence property for 
+FH-bisimulation. The details of the additional lemmas are not only crucial for the proof 
+but also shows that open transitions reveal to be a very powerful tool for proving 
+properties on equivalences and systems. Indeed they show how open transitions can be 
+composed and decomposed in the general case.
+
+\section{Conclusion and Discussion}
+\label{section:conclusion}
+In this paper, we built up theoretical foundation for the analysis of open parameterised 
+automatas. pNets can be seen as a generalisation  of labelled transition systems, and of 
+generic composition systems. By studying open pNets, i.e. pNets with holes, we target not 
+only a generalised point of view on process calculi, but also on concurrent process 
+operators. The semantics and the bisimulation theory presented in this paper bring a 
+strong formal background for the study of open systems and of system composition. In the 
+past, we used pNets for building formal models of distributed component systems, and 
+applied them in a wide range of case-studies on closed finitely instantiated distributed 
+application. This work opens new directions that will allow us to
+study open parameterised systems in a systematic, and hopefully fully
+automatised way.
+%% \TODO{We showed in this paper 
+%% this potential by illustrating our approach on a hierarchical broadcast where the 
+%% system structure is fixed but the processes involved in the composition are still 
+%% undefined, allowing our results to be valid independently of the processes involved in 
+%% the composition. We also proved generic results on a complex composition operator in a 
+%% novel and 
+%% powerful way}.
+%% Those examples illustrated the wide range of verification possibilities 
+%% offered by open pNets.
+
+We are currently extending this work,  looking at  both further properties of 
+FH-bisimulation, but also
+the relations with existing equivalences on closed systems.
+We also plan to apply open pNets to the study of complex composition
+operators in a symbolic way, for example in the area of parallel
+skeletons, or distributed algorithms.
+We have started developping some tool support for computing the
+symbolic semantics in term of open-automata. The following steps will
+be the development of algorithms and tools for checking 
+FH-bisimulations, and interfacing with decision engines for
+predicates, typically SMT solvers. Those tools will include
+an algorithm that partitions the states and generates the right
+conditions (automatically or with user input) for checking
+whether two open pNets are bisimilar.
+Independently, it is clear that most interesting properties of
+such complex systems will not be provable by strong bisimulation.
+Next steps will include the investigation of weak
+versions of the FH-bisimulation, using the notion of
+\emph{synchronised actions} mentionned in the paper.
+%We are convinced that this work will contribute to the design of tools for
+%verifying open distributed systems.  
+
+\bibliographystyle{lncs/splncs}
+
+% \bibliography{oasis,biblio}
+\bibliography{biblio}
+
+\newpage
+\appendix
+
+\section{Proof of associativity of Enable pNet.}
+\label{appendix:assoc}
+
+Using the usual encoding of the Lotos Enable operator (see
+Fig. \ref{schema:enable-pnets}), we build now open automata for two  
+open pNets \texttt{P>>(Q>>R)} and \texttt{(P>>Q)>>R)}, and 
+prove their bisimilarity.
+\begin{figure}[t]
+\centerline{ % \includegraphics[width=0.5\linewidth]{XFIG/Struct-P-QR}
+% \includegraphics[width=0.35\linewidth]{XFIG/Struct-PQ-R}}
+  \includegraphics[width=0.60\linewidth]{XFIG/P-QR}
+  \hspace{5mm}
+ \includegraphics[width=0.27\linewidth]{XFIG/PQ-R}}
+  \caption{Structure of the pNets for ``P>>(Q>>R) and (P>>Q)>>R''}
+  \label{schema:enable-assoc}
+\end{figure}
+
+The two open pNets are drawn in Fig. \ref{schema:enable-assoc}. To
+alleviate the drawing, we have only 
+  given one instance (C2) of the enable controller pLTSs, and one example of
+  the set of synchronisation vectors.
+
+  Below we give the two open automata for these pNets. In the
+  open-transitions in these 
+    automata, the predicates are very simple, and for readability
+    we show them directly in the transitions.
+    Remark that while the structure of the automaton states is useful
+    for their construction, it is not relevant later, so we have
+    dropped this structure when drawing the automaton.
+
+\begin{figure}[h]
+  \begin{minipage}{2cm}
+  \includegraphics[width=\linewidth]{XFIG/PQR-automaton}
+  \end{minipage}
+  \hspace{10mm}
+  \begin{minipage}{7cm}
+  \begin{eqnarray*}
+    OT_1 & = \openrule{0 \xrightarrow{l}_{C_3} 0
+    	\\\xrightarrow{a1}_P\\ a1\neq\delta(x)}
+    {\ostate{00} \xrightarrow{a1} \ostate{00}}\\
+    OT_2 & = \openrule{
+                       0 \xrightarrow{\delta}_{C_3} 1, ~~
+                            0 \xrightarrow{l}_{C_4} 0,  ~~                 
+                            \{\xrightarrow{\delta(x1)}_P, ~~
+                            \xrightarrow{acc(x1)}_Q\}
+                      }
+                      {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}    \\
+    OT_3 & = \openrule{0 \xrightarrow{l}_{C_4} 0,
+                        \\1 \xrightarrow{r}_{C_3} 1,\\
+                        \xrightarrow{a2}_Q,\\a2\neq\delta(x)
+                        }
+    {\ostate{10} \xrightarrow{a2} \ostate{10}}\\
+    OT_4 & = \openrule{
+                       0 \xrightarrow{\delta}_{C_4} 1, \qquad
+                       1 \xrightarrow{r}_{C_3} 1, \qquad
+                       \{\xrightarrow{\delta(x2)}_Q, \qquad 
+                       \xrightarrow{acc(x2)}_R\} 
+                       }
+                      {\ostate{10} \xrightarrow{\underline{\delta(x2)}} \ostate{11}}    \\
+    OT_5 & = \openrule{1 \xrightarrow{r}_{C_3} 1, \\1 \xrightarrow{r}_{C_4} 1, 
+    	\\\xrightarrow{a3}_R
+    	}
+    {\ostate{11} \xrightarrow{a3} \ostate{11}}
+    \end{eqnarray*}
+  \end{minipage}
+  \caption{Open Automaton for the term ``P>>(Q>>R)''}
+  \label{schema:enable3bis}
+\end{figure}
+
+\begin{figure}[t]
+  \begin{minipage}{2cm}
+  \includegraphics[width=\linewidth]{XFIG/PQR2-automaton}
+  \end{minipage}
+  \hspace{10mm}
+  \begin{minipage}{7cm}
+  \begin{eqnarray*}
+    OT'_1 & = \openrule
+             {
+               0 \xrightarrow{l}_{C_3} 0,~~0 \xrightarrow{l}_{C_4} 0,~~
+               \{\xrightarrow{b1}_P\},~~ b1\neq\delta(y)
+               }
+             {\ostate{00} \xrightarrow{b1} \ostate{00}}\\
+    OT'_2 & = \openrule
+             {
+                       0 \xrightarrow{l}_{C_5} 0, ~~
+                       0 \xrightarrow{\delta}_{C_6} 1,  ~~
+              \{\xrightarrow{\delta(y1)}_P,~~      \xrightarrow{acc(y1)}_Q\}~~ 
+                      }
+             {\ostate{00} \xrightarrow{\underline{\delta(y1)}} \ostate{01}}\\
+    OT'_3 & = \openrule
+             {
+               0 \xrightarrow{l}_{C_5} 0,\\0 \xrightarrow{r}_{C_6} 0,
+               \\ \{\xrightarrow{b2}_Q\},\\b2\neq\delta(y)
+               }
+    {\ostate{01} \xrightarrow{b2} \ostate{01}}\\
+    OT'_4 & = \openrule
+             {
+                       0 \xrightarrow{\delta}_{C_5} 1, ~~
+                       1 \xrightarrow{r}_{C_6} 1, ~~\{\xrightarrow{\delta(y2)}_Q, ~~
+                    \xrightarrow{accept(y2)}_R\} 
+                                 }
+             {\ostate{01} \xrightarrow{\underline{\delta(y2)}} \ostate{11}}    \\
+    OT'_5 & = \openrule
+             {1 \xrightarrow{r}_{C_5} 1,\\\{\xrightarrow{b3}_R\}
+             	}
+             {\ostate{11} \xrightarrow{b3} \ostate{11}}
+    \end{eqnarray*}
+  \end{minipage}
+%  \label{schema:enable5}
+\end{figure}
+
+In this example, we have no state variables in the pNets leaves, so we
+need no auxiliary predicate in the FH-bisimulation.
+
+Let us build a relation
+    $R = \{(A1_0,A2_0), (A1_1,A2_1), (A1_2,A2_2)\}$, and prove that
+    $R$ is a strong FH-bisimulation.
+
+    Pick e.g. transition $OT_1$ of automaton $A1$, we have
+    $A1_0 \xrightarrow{OT_1}_{A1} A1_0$. The matching transition from
+    $A2_0$ is $OT'_1$, with 
+    $A2_0 \xrightarrow{OT'_1}_{A2} A2_0$, the set of holes involved in
+    both transitions is $\{P\}$, and the resulting state is in the
+    bisimulation ($A1_0 ~ A2_0$).
+    The proof obligation is:
+    
+    $$  a1\neq\delta(x) \implies
+         a1=b1 \implies b1\neq\delta(y) \land a1=b1 $$
+
+    The proof obligation for $OT_2$ versus $OT'_2$ is still simpler:
+
+    $$ \delta(x_1)=\delta(y_1) \land acc(x_1)=acc(y_1)
+       \implies \underline{\delta(x_1)}=\underline{\delta(y_1)} $$
+
+       the 3 other cases, and the 5 in the other direction, are left
+       to the reader. All are simple to prove, so $R$ is a
+       FH-bisimulation, and the initial states of the 2 pNets are equivalent.
+           \qed
+       
+       This proof shows how the flattening induced by the open transitions makes the 
+       reasoning on hierarchical structures easy, while keeping a structured view of the 
+       compared systems.
+
+
+
+\end{document}
+
+\begin{figure}[h]
+  \input{PQR.tex}
+  \caption{Proof of the transition $OT_3$ (were process $Q$ moves) for ``P>>(Q>>R)''}
+  \label{deductiontree:OT3}
+\end{figure}
+
+
+\begin{figure}[h]
+  \input{PQR-2.tex}
+  \caption{Proof of the transition $OT_2$ (were interaction of processes $P$ and $Q$ ) for ``P>>(Q>>R)''}
+  \label{deductiontree:OT2}
+\end{figure}
+
+\newpage
+\subsection{Open automaton for \texttt{(P>>Q)>>R}}
+\label{appendix:PQ-R}
+
+
+Let us give here some details on the open-automaton generation
+procedure, about variable management, and predicate simplification.
+
+\paragraph{Fresh variables} We have seen in the previous example,
+appendix \ref{appendix:HB-tr2}, 
+how local state variables are managed for each occurence of a pLTS.
+Now fresh variables are generated at each application of rule TR2, 
+for actions of holes, for variables of synchronisation vectors, and
+for intermediaite resulting actions. In practice we use a variable
+name generator with a counter for each of these categories, so in the
+open-transitions below you will see:
+\begin{itemize}
+\item $b_i$ for behaviours of holes
+\item $y_j$ for variables of the $\delta$ synchronisation vector,
+    and for the predicate of the $left$ vector.
+\end{itemize}
+  Additionally, to help with predicate comparison in the bisimulation
+proof, the variable prefixes are different in the 2 two automata
+(they were $a_i$ and $x_j$ in A1, in Fig. \ref{schema:enable3bis}).
+
+\medskip  
+\centerline{  \includegraphics[width=0.35\linewidth]{XFIG/PQ-R}}
+\newpage
+\section{Enable encodings with  intermediate states}
+\begin{figure}[t]
+\centerline{ % \includegraphics[width=0.5\linewidth]{XFIG/Struct-P-QR}
+% \includegraphics[width=0.35\linewidth]{XFIG/Struct-PQ-R}}
+  \includegraphics[width=0.48\linewidth]{XFIG/Enable1bis}
+  \hspace{5mm}
+ \includegraphics[width=0.48\linewidth]{XFIG/Enable2bis}}
+  \caption{Two pNet encodings for the Enable operator}
+  \label{schema:enable++-pnets}
+\end{figure}
+
+\begin{example}
+  An encoding of the Enable operator of Lotos in terms of
+  pNets was defined in \cite{Henrio15}. In Figure
+  \ref{schema:enable++-pnets}, 
+  we use two variants of this pNet to build the two open pNets
+  encoding the expression \texttt{P>>Q}. 
+  The $\delta(x)$ action is a special construct of Lotos, expressing
+  termination of the current process in the left operand of the
+  enable operator. It carries a data value, that is captured
+  by the $acc(x)$ action of the right operand. Both are
+  implicitly included in the sorts of all processes.
+
+  \TODO{change back to 2/1 states}
+  The two pNets differ by the structure of their controllers: the
+first one ($C1$) has 2 states, and simple transitions without
+guards. The second one ($C2$) has a single state, and on state 0 there
+is a state variable  $s_0$ used in the guards of the transitions.
+In these LTSs, the states $0'$ have been introduced for technical
+reasons: in $C2$ to split in 2 parts a transition that otherwise would
+have both tested and assigned variable $s_0$ (breaking condition
+????); and in $C1$ in order to be able to prove strong bisimulation
+between the two expression, by introducing a $\tau$-transition
+matching the corresponding one in $C2$.
+
+While it is easy to convince yourself that they are 
+equivalent, they are sufficient to show how the FH-bisimultion works,
+when the structure of controllers, and their state-variables, differ
+between two open pNets.
+
+The open automata of these two pNets are given, together with their
+open transitions, in Fig.\ref{schema:enable++-auts}.
+
+\newpage
+\begin{figure}[h]
+\centerline{ 
+  \includegraphics[width=0.35\linewidth]{XFIG/Enable1bis-aut}
+  \hspace{25mm}
+  \includegraphics[width=0.25\linewidth]{XFIG/Enable2bis-aut}}
+  \begin{minipage}{6cm}
+  \begin{eqnarray*}
+    ot_1 & = \openrule{0 \xrightarrow{l}_{C_1} 0
+    	\\\xrightarrow{a1}_P\\ a1\neq\delta(x1)}
+    {A_0 \xrightarrow{a1} A_0}\\
+    ot_2 & = \openrule{
+                       0 \xrightarrow{\delta}_{C_1} 1 ~~
+                            \xrightarrow{\delta(x2)}_P ~~
+                            \xrightarrow{acc(x2)}_Q  }
+    {A_0 \xrightarrow{\underline{\delta(x2)}} A_{0'}}\\
+    ot_3 & = \openrule{ }
+    {A_{0'} \xrightarrow{\underline{\tau}} A_1}\\
+    ot_4 & = \openrule{
+                       0 \xrightarrow{r}_{C_1} 1 ~~
+                            \xrightarrow{a2}_q  }
+    {A_1 \xrightarrow{\underline{a2}} A_1}
+    %% ot_1 & = \openrule{0 \xrightarrow{l}_{C_1} 0
+    %% 	\\\xrightarrow{a1}_P\\ a1\neq\delta(x1)}
+    %% {\ostate{0} \xrightarrow{a1} \ostate{0}}\\
+    %% ot_2 & = \openrule{
+    %%                    0 \xrightarrow{\delta}_{C_1} 1 ~~
+    %%                         \xrightarrow{\delta(x2)}_P ~~
+    %%                         \xrightarrow{acc(x2)}_Q  }
+    %% {\ostate{0} \xrightarrow{\underline{\delta(x2)}} \ostate{0'}}\\
+    %% ot_3 & = \openrule{ }
+    %% {\ostate{0'} \xrightarrow{\underline{\tau}} \ostate{1}}\\
+    %% ot_4 & = \openrule{
+    %%                    0 \xrightarrow{r}_{C_1} 1 ~~
+    %%                         \xrightarrow{a2}_q  }
+    %% {\ostate{1} \xrightarrow{\underline{a2}} \ostate{1}}
+  \end{eqnarray*}
+  \end{minipage}
+  \hspace{5mm}
+  \begin{minipage}{7cm}
+  \begin{eqnarray*}
+    ot'_1 & = \openrule{0 \xrightarrow{l}_{C_2} 0
+    	\\\xrightarrow{b1}_P \\ b1\neq\delta(y1) \land s_0=0}
+    {B_0 \xrightarrow{b1} B_0}\\
+    ot'_2 & = \openrule{
+                       0 \xrightarrow{\delta}_{C_2} 1 ~~
+                            \xrightarrow{\delta(y2)}_P ~~
+                            \xrightarrow{acc(y2)}_Q \\ s_0=0 }
+    {B_0 \xrightarrow{\underline{\delta(y2)}} B_{0'}}\\
+    ot'_3 & = \openrule{ s'_0=1 }
+    {B_{0'} \xrightarrow{\underline{\tau}} B_1}\\
+    ot'_4 & = \openrule{
+                       1 \xrightarrow{r}_{C_2} 1 ~~
+                            \xrightarrow{b2}_q \\ s_0=1 }
+    {B_1 \xrightarrow{\underline{b2}} B_1}
+  \end{eqnarray*}
+  \end{minipage}
+  \caption{The two open automata}
+  \label{schema:enable++-auts}
+\end{figure}
+
+To illustrate the proof of bisimulation, let us build a relation
+$$
+\begin{array}{lll}
+    R = \{ & (A_0,B_0,[s_0=0]), & (A_{0'},B_0,[s_0=0,s'=1]), \\
+           & (A_1,B_0,[s_0=1]), & (A_{0'},B_{0'})\}
+\end{array}
+$$
+    and prove that 
+    $R$ is a strong FH-bisimulation.
+    Pick e.g. transition $ot_1$ of automaton $A$, we have
+    $A_0 \xrightarrow{ot_1}_{A} A_0$. In
+    $ot_1$ the set of holes involved $\{P\}$, and
+    $Pred_{ot_1} = a1\neq\delta(x1)$.
+    
+   On the right hand side, state $B_0$ has a single matching
+   transition $B_0 \xrightarrow{ot'_1}_{B} B_0$, the set of holes
+   involved is also $\{P\}$,
+   with $Pred_{ot'_1} = b1\neq\delta(y1) \land s_0=0$, and the
+   resulting state is in the bisimulation ($(A_0,B_0,[s_0=0])\in \mathcal{R}$). 
+
+   So we have to prove that
+   $Pred_{ot_1} \land [s_0=0] \implies Pred_{ot'_1}$
+   
+   That is (all variables being universally quantified):
+   
+   $a1=b1 \land a1\neq\delta(x1) \land [s_0=0] \implies
+   b1\neq\delta(y1) \land s_0=0 \land a1=b1 \land s_0=0$
+   
+   Similarily, $ot_2$ and $ot'_2$ match, with a proof obligation as:
+
+   $\delta(x2)=\delta(y2) \land acc(x2)=acc(y2) \land [s_0=0] \implies
+   s_0=0 \land \delta(x2)=\delta(y2)$
+
+   Then $ot_3$ and $ot'_3$ match, with:
+   
+   $true \land [s_0=1] \implies \tau=\tau \land [s0=1]$  
+   
+  \qed
+\end{example}
+
+  \newpage
+
+  \section{Running example: Hierarchical Broadcast}
+
+Hierarchical Broadcast (HB) is a way of implementing broadcasting
+algorithms within a large set of processes, with better performances
+and scalability. There have been many proposals for hierarchical
+broadcast algorithms (cite...), most of them focussing on specific
+architectures or features (in particular fault tolerance), and on
+performance analysis. Very few have given a formal description of the
+algorithm, allowing to reason about their safety properties.
+In this paper, we choose HB as a running example because it is a
+complex interaction pattern on which the topology and the
+parameterised nature plays a crucial role.
+
+We give here the description of one simple HB algorithm, inspired
+from\cite{Taguchi03}. For the formal description, we define a
+pNet template, that can be used as a building node in a hierarchical
+assembly of processes, organised in a tree of sub-groups. Inside each
+sub-group, messages are sent using  local broadcast; associated to
+each sub-group is a ``gateway'' in charge of the
+transmission of messages, up and down, between the subgroups. The
+gateways are described as generic pLTSs, playing the role of
+``controllers'' in the pNet node.
+
+\begin{figure}[t]
+\centerline{  \includegraphics[width=0.9\linewidth]{XFIG/SchemaHB2}}
+  \caption{Principle of a Hierarchical Broadcast structure and protocol}
+  \label{fig:hb-scenario}
+\end{figure}
+
+Figure \ref{fig:hb-scenario} shows an instantiation of a HB
+structure, and a possible scenario:
+\begin{itemize}
+\item
+  The HB tree has 3 sub-groups, each with its gateway process, and 6
+  processes scattered in the sub-groups.
+\item
+  The path in green shows the sequence of message exchanges when Process P21 (within
+  group G2) sends a message to process P111 (within group G11).
+\item
+  As the target is not within the local group to which P21 belongs,
+  the initial message $m(111)$ is sent up to group 2, and
+  arrives in gateway $gw2$.
+\item
+  Now the destination belongs to a group that is a sibling of G2, so
+  it is broadcast to all its siblings (sent as $bm(111)$, and
+  received as $m(111)$). It will be simply discarded by
+  gateways or processes that are not involved (here P3), while $gw1$
+  will recognize as being of interest, and in next step send it down
+  to its group.
+\item
+  Sending down is again a broadcast, to all members of sub-group
+  G1. Process P12 will ignore it, while gateway $gw11$ in turn
+  will recognize and forward the message.
+\item
+  Within group G11, process P111 will finally receives message
+  $m(111)$, that terminates our scenario.
+\end{itemize}
+
+Along this paper, we will use this example to illustrate the use of
+pNets as a structured semantic model, with a stress on the fact that
+we represent here HB as a program schema, with unspecified process
+arguments, using open pNets. We will show how the symbolic operational
+semantics of open pNets computes the dynamics of the HB in term of a
+symbolic representation that we call open-transitions, and how we can
+prove equivalences between open systems.
+
+\begin{example} \emph{First step: define the action algebra, with data domains,
+    operators and predicates.}
+  For our HB structure, we use send and receive messages encoded
+  respectively as $m(arg)$ and $im(?var)$ with
+  $arg$ of type \texttt{Address}. HB has a message-based
+  structure, and by convention action names for action reception will
+  be prefix by the letter "i". We abstract away
+  from the payload of the messages, keeping only target addresses in the HB
+  tree as an argument to all messages. Addresses are finite sequences
+  of natural numbers written \texttt{s.i}
+  with \texttt{s} a sequence and i a number. In concrete instantiations, we
+  assume numbers are simple digits, and we write the sequences without
+  the dot, as in ``121''. Then in the model of the
+  gateways, we must be able to decide whether an address is below/above the
+  current address, or in some specific relation, using
+  predicates:\\
+  - \emph{i==j} Syntactic equality between two sequences.\\
+  - \emph{is\_ancestor(i,j)}: $i$ is a (strict) prefix of $j$.\\
+  - \emph{is\_direct\_relative(i,j)}: $i$ and $j$ have a common prefix $k$, $i=k.i1$, $j=k.j1$, with $i1$ of length 1, but $j1$ can be of length equal or greater than 1 ($j$ is a brother or a nephew in the genealogy).\\
+  - \emph{is\_other\_relative(i,j)}: all other cases.\\
+  Note that these 4 predicates are exclusive.
+\end{example}
+
+\begin{example}  \emph{Second step: define the gateway behaviour as a pLTS.}
+
+\begin{figure}[h]
+\centerline{  \includegraphics[width=0.85\linewidth]{ATG/GatewayHB}}
+\caption{Behaviour of a Gateway controller %\TODO{ERIC: change the action syntax}
+  }
+  \label{fig:hb-HBgateway}
+\end{figure}
+Figure \ref{fig:hb-HBgateway} shows the pLTS representing the generic
+gateway controller. From its initial state, it can receive messages
+$ium(?tgt)$ from the subgroup below, or $im(?tgt)$
+coming either from above or from an horizontal broadcast. The details will
+be explained later, together with the model structure and the
+protocol.
+To simplify the notation in the pLTS drawings, we use the following
+conventions: state variables are implicitely subscripted by the
+adequate state number (e.g. $ium(?tgt)$ means $ium(?tgt_2)$), and we
+have ``global'' variables that are defined in all states (here $gid$
+means $gid_0,gid_1,gid_2$).
+
+Note that we use \texttt{if-then-else} or \texttt{case}
+constructs in the pLTS labels. These are mere abbreviations, that can
+be expanded as a set of transitions carrying simple labels with adequate guards.
+\end{example}
+
+\begin{example} \emph{Sorts of pLTSs:}
+  The sort of the gateway in Figure \ref{fig:hb-HBgateway} is:\\
+  $\large\{ um(tgt_s), im(tgt_s), dm(tgt_s), bm(tgt_s), um(tgt_s),
+  ium(tgt_s), DISCARD, \\ERROR(name) \large\}_{s\in\{1,2\}}$
+\end{example}
+
+\begin{figure}[t]
+  \includegraphics[width=1.0\linewidth]{ATG/Inst5}
+  \caption{A Hierarchical Broadcast pNet Structure}\label{fig:hb-pnet-graphical}
+ \end{figure}
+
+\begin{example} \emph{pNet structure, and graphical representation}  
+Here we show some parts of the pNet tree expressing our HB
+structure. Figure \ref{fig:hb-pnet-graphical} shows the full pNet
+model in a graphical format, where each box represents a pNet node
+(Groot, G1, ..., G11), a pLTS (gw1, ..., gw11), or a process (P3, ...,
+P111).
+The actions in the sorts of the nodes appear as ports on the boxes,
+and the synchronisation vectors as arrows, or multipoint ``webs''
+drawn as ellipses. For
+example, the webs
+%labelled \texttt{tau}
+in the Groot box
+  correspond to synchronisation vectors expressing a broadcast
+  communication from one of the subnets of Groot (gw1, gw2, or P3), to
+  the others.
+
+  Formally, the root pNet has a structure $<gw1, gw2, G1, G2, P3>$,
+  with G1 and G2 sub-pNets, their associated gateways gw1, gw2
+  pLTSs, and P3 a process Hole. We have 4 possible broadcast communications at the
+  root, corresponding to as many synchronisation vectors; e.g. if gw2 is the sender:
+  $< im(a), bm(a), -, -, im(a)> \to\!\underline{bm(a)}$.
+
+  We define the synchronisation vectors in a parameterised way
+  (independently of a specific HB network configuration) for any
+  pNet node in a HB structure. Let $\widetilde{i}$ be the position of this pNet in the
+  structure.
+   We define here 4 of these synchronisation vectors, that we will
+   use in the next sections to illustrate the semantic rules.
+   %; the full table is listed in Appendix \ref{Appendix:SynchVectors}.
+   In the
+  vectors below,
+  $\widetilde{I_G}=\{gw\widetilde{i}1,..,gw\widetilde{i}p,G\widetilde{i}1,..,G\widetilde{i}p\}$
+   and
+  $\widetilde{I_P}=\{P\widetilde{i}1,..,P\widetilde{i}p\}$ are the sets
+  containing respectively the indexes of sub-nets and holes of the
+  pNet node, $\widetilde{I_{G+P}}$ their union.
+
+  \begin{figure}[h!]
+  \label{fig:HBvectors}
+  \begin{tabular}{|p{1.4cm}|p{11cm}|}
+%% \hline\hline
+%% \multicolumn{3}{|l|}{Hierarchical broadcasting}\\
+  \hline
+  \hline
+$(UG)_{\widetilde{i}k}$\newline
+ $k\leq g$&\raisebox{-2pt}{
+ $\begin{array}[t]{@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}}
+ &gw\widetilde{i}1,..&,gw\widetilde{i}k,&..,gw\widetilde{i}g,G\widetilde{i}1,..&,G\widetilde{i}k,&..,G\widetilde{i}g,P\widetilde{i}1,..,P\widetilde{i}p\\
+<\!& -\,-\,-\    &  ,ium(\widetilde{t}),& -\ -\ -\  &,um(\widetilde{t}),&, -\ -\ -\
+&\!>\longrightarrow \underline{um_{\widetilde{i}.k}(\widetilde{t})}
+% $
+%     \symb{sv}_{u(\widetilde{i}k)}\triangleq
+%     <ium_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}}\otimes
+%     um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%  -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+%         k\}}}>\longrightarrow
+%     \underline{um(\widetilde{t})}$
+\end{array}$}  \raisebox{-19pt}{~}  \\
+\hline
+     &{\ERIC{Up gateway}: message m is sent
+  up from a group to its gateway, received by the ium action. The
+  resulting action is visible as the (synchronised) $\underline{um}$ }\\
+\hline
+ $(UM)_{\widetilde{i}k}$\newline$k\leq g$
+ &\raisebox{-2pt}{$\begin{array}[t]{@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}}
+ &gw\widetilde{i}1,..&,gw\widetilde{i}k,&..,gw\widetilde{i}g,G\widetilde{i}1,..,G\widetilde{i}g,P\widetilde{i}1,..,P\widetilde{i}p\\
+ <\!& -\,-\,-\    &  ,um(\widetilde{t}),& -\ -\ -\   -\ -\ -\
+ &\!>\longrightarrow \underline{um(\widetilde{t})}
+ \end{array}$}\raisebox{-18pt}{~}\\
+\hline
+$(UM)_{\widetilde{i}k}$\newline$k\leq p$
+&\raisebox{-2pt}{$\begin{array}[t]{@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}}
+&gw\widetilde{i}1,..,gw\widetilde{i}g,G\widetilde{i}1,..,,G\widetilde{i}g,P\widetilde{i}1,..&,P\widetilde{i}k,&..,P\widetilde{i}p\\
+<\!& -\ -\ -\      -\ -\ -\ &,um(\widetilde{t}),&   -\, -\, -
+&\!>\longrightarrow \underline{um(\widetilde{t})}
+\end{array}$}\raisebox{-18pt}{~}
+ % &
+%$\symb{sv}_{!\widetilde{i}}\triangleq
+%    <um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%    -^{\widetilde{I_G}}>\longrightarrow
+%    um_{\widetilde{i}.k}(\widetilde{t})$
+\\
+\hline
+     &{\ERIC{Up Message}: message m is sent up from a process
+  or a gateway to the enclosing (= parent) group}\\
+\hline
+
+%% $(BG)_{\widetilde{k}} \ERIC{HB}$ &
+$(HB)_{\widetilde{i}k}$ \newline $k \leq g$
+&\raisebox{-2pt}{$\begin{array}[t]{@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}c@{}}
+&gw\widetilde{i}1,...&,gw\widetilde{i}k,&..,gw\widetilde{i}g,&G\widetilde{i}1,..,,G\widetilde{i}g&,P\widetilde{i}1,..,
+P\widetilde{i}p \\
+<\!& im(\widetilde{t}), .., im(\widetilde{t}) &, bm(\widetilde{t}),& im(\widetilde{t}),
+..
+im(\widetilde{t}),& -\ -\ -\  &,im(\widetilde{t}),..,im(\widetilde{t})
+&\!>\longrightarrow \underline{bm(\widetilde{t})}
+\end{array}$}\raisebox{-18pt}{~}
+     \\
+\hline
+     &{\ERIC{Horizontal Broadcast}: message m, from a process or a
+  gateway, is broadcast to all its siblings (processes and gateways)
+  inside its group}\\
+\hline\hline\end{tabular}
+\caption{Synchronisation vectors modeling the communication through the HB hierarchy}
+\end{figure}
+
+\end{example}
+
+  \begin{example}\emph{An open-transition.}\label{example:open-trans}
+	After introducing the operational semantics rules, in example
+        \ref{example:deduction-trees}, we shall explain how we 
+	construct this transition using the rules.
+	The transition below corresponds to the application of vector
+        UG at position k=2, and gateway gw2 executing transition
+        $0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2$, storing some address in
+        the state variable $tgt_2$ of gw2..
+	
+	\centerline{
+		$\openrule
+		{0 \xrightarrow{a}_{gw2} 2 \\
+			\xrightarrow{b}_{P21}
+			\\ \sm{Pred}_{Root} \\ \emptyset}
+		{\ostate{000} \xrightarrow{v} \ostate{020}}
+		$
+	}
+	
+	With the predicates
+	
+	$\Pred_{Root} = ( a \!=\! ium(?tgt2_2) \land b\!=\!um(t2) \land b\in
+	Sort_{P21} \land t2 = tgt2_2
+	\land v \!= \! \underline{um(t2)} )  $
+	In the broadcast examples, we do not use assignments and will omit the \Post part of 
+	the open transition.
+\end{example}
+
+\begin{example} \emph{State of a pNet}
+The pNet from Fig. \ref{fig:hb-pnet-graphical} has three leaves (gw1,
+gw2, gw11). So its states will be tuples of length 3,
+e.g. $\triangleleft 102 \triangleright$.
+\end{example}
+
+\begin{example} \emph{Using the operational rules to compute
+    open-transitions}
+  \label{example:deduction-trees}
+
+To build a proof tree, we have to choose one synchronisation vector at
+each instantiation of rule Tr2, and one pLTS transition at each
+instantiation of rule Tr1. Each stage in the proof tree builds one
+open-transition of the corresponding pNet node.  Let us explain in
+detail the first two steps of the
+scenario from Fig. \ref{fig:hb-scenario}:
+
+\begin{figure}[h]
+\centerline{ \includegraphics[width=5cm]{XFIG/HB2} }
+\caption{(open) simplified pNet structure of Hierarchical Broadcast example}
+\label{fig:flattening}
+\end{figure}
+
+\begin{itemize}
+\item Process P21 sends a message towards P111, the combination of sync vectors UM\_21/UG\_2 conveys this message to gateway gw2.
+\item The target address is a relative of gateway gw2, so it
+  broadcasts the message to its siblings using vector HB\_2.
+\end{itemize}
+\end{example}
+
+%% \TODO{but not for local variables of a given pLTS, that MUST keep their
+%%   names through successive use, to keep the dataflow
+%%   information. Still, of course, several instantiations of the same
+%%   pLTS (like gw1, gw2) have distinct local varaibles.}
+
+\paragraph{Building the first transition:}
+
+We use instantiations of the synch vector UM at position 21 (that is a
+hole), and of UG at position 2 (sub-group SG2 in the broadcast hierarchy) gives us :
+\medskip
+
+
+\noindent
+UM\_21 : $< um(t1), - > \to\!um(t1)$\\
+UG\_2 : $< -, ium(t2), -, -, um(t2) > \longrightarrow \underline{um(t2)}$
+
+\smallskip\noindent
+where the first synch vector (for sub-group SG2) has length 2, and the
+second one (for the root pNet) has length 5. Using once the rule Tr1,
+and twice rule Tr2, we build a proof tree, in which the premisses
+define the behaviour of a gateway pLTS (here
+$0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2$, in which $tgt2_2$ stands for
+the variable $tgt$ of state 2 in gw2), or of a process at a hole
+(e.g. $\xrightarrow{b}_{P21}$ for the process at hole 21).
+The conclusion is an open-transition of the root pNet, with the
+composite state encoding the states of the 3 gateways at the Leaves,
+e.g. $\ostate{000}$.
+
+
+
+
+\begin{mathpar}
+  \inferrule
+      {\inferrule*
+        {0 \xrightarrow{ium(?tgt2_2), True, \emptyset}_{gw2} 2}
+        {\sm{gw2} \models
+             \openrule {0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2}
+                       {\ostate{0} \xrightarrow{ium(?tgt2_2)} \ostate{2} }
+             }
+        \quad
+        \inferrule* [right={[UM\_21]}]
+           {
+             %\sm{fresh}(b_{P21},v_{SG2})
+           }
+           {\sm{SG2} \models
+             \openrule {\xrightarrow{b}_{P21} \quad \sm{Pred}_{UM\_21}}
+                       {\ostate{-} \xrightarrow{v_{SG2}} \ostate{-} }
+             }
+%           \\ {\sm{fresh}(t1,t2,v) }
+           \quad
+           \sm{Pred}_{UG\_2}
+      }
+      {p\_Root
+     \models
+     \openrule
+         {0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2 \\
+           \xrightarrow{b}_{P21}
+          \\ \sm{Pred1}}
+         {\ostate{000} \xrightarrow{v} \ostate{020}}
+      }      ~~ [UG\_2]
+\end{mathpar}
+With:
+
+$Pred_{UM\_21} =  [um(t1)=b \land b\in Sort_{P21} \land um(t1)=v_{SG2}]$
+
+%% $Pred_{UG\_2} = [ium(?t2) = um(t2) \land v_{SG2} = um(t2) ]$
+
+%% $Pred_{Root} = [ium(?t2) = ium(t2) \land b=um(t1) \land
+%%   b\in Sort_{P21} \land v_{SG2}=um(t1) \land v_{SG2} = um(t2)
+%%   \land v = \tau]  $
+
+$Pred_{UG\_2} = [ium(t2) = ium(?tgt2_2) \land um(t2) = v_{SG2} \land
+  v = \underline{um(t2)} ]$
+
+$Pred1 = [Pred_{UM\_21} \land Pred_{UG\_2}]  $
+
+That can be simplified (eliminating the vector local variables and the
+intermediate resulting actions), as: $Pred1 = [b\in Sort_{P21}
+  \land b=um(tgt2_2) \land v=\underline{b} ]  $
+
+%% \TODO{Beware, problem with the ? of ?tgt2: I would prefer having no
+%%   binder (? marker) in the open-automaton predicates, but I do not see
+%% yet how the dataflow will be represented there. OOOOps no more input
+%% var in this transition, t1 is a variable coming from P21.}
+
+
+
+\section{Building more transitions of the HB example:}
+\label{appendix:HB-tr2}
+Here we detail the construction of the second transition of our
+scenario:
+
+\begin{mathpar}
+     \openrule
+         {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad
+           2 \xrightarrow{bm(tgt2_2)}_{gw2} 0 \quad
+           \xrightarrow{b}_{P3}
+           \quad Pred_{Root}}
+         {\ostate{020} \xrightarrow{v} \ostate{100}}
+\end{mathpar}
+with
+$Pred_{Root} = [tgt1_1=tgt2_2 \land b=um(tgt2_2) \land
+  b\in Sort_{P3} \land v = \underline{bm(tgt2_2)}]  $
+
+After the first move described in example \ref{example:deduction-trees}, the pLTS of $gw2$ is
+in state 2, ready to emit. We build one
+open-transition for each item in the case statement of its outgoing
+transition; the one we are interested here for our scenario is the
+case where the target address is below $gw1$, corresponding to the
+predicate [$a$=$bm(tgt2_2)$ $\land$ isDirectRelative(2,$tgt2_2$)], and we
+construct the proof tree, reduced here to applications of rule
+Tr1 for transitions of the pLTSs gw1 and gw2, and a single application of rule
+Tr2 for the synch vector HB at index 2:
+
+\medskip\noindent
+HB\_2 : $< im(t3), bm(t3), im(t3) -, - > \longrightarrow \underline{bm(t3)}$
+
+
+
+This illustrates the flow of data through sequences of symbolic moves
+of our example: in the first open-transition, the value (address) sent
+by P21 was stored in the state variable $tgt2_2$. In the second
+transition here, synchronisation within the vector HB\_2 yield the
+predicate $tgt1_1=tgt2_2$, and thus transfers the address to the state
+variable $tgt1_1$ in gw1.
+
+\begin{mathpar}
+  \inferrule
+      {\inferrule
+        {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1}
+        { \sm{gw1} \models
+          \openrule
+              {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad \sm{True}}
+              {\ostate{0} \xrightarrow{im(?tgt1_1)} \ostate{1}}
+        }
+        \\
+       \inferrule
+           {2 \xrightarrow{bm(tgt2_2)}_{gw2} 0}
+           { \sm{gw2} \models
+             \openrule
+                 {2 \xrightarrow{bm(tgt2_2)}_{gw2} 0 \quad \sm{Pred}_{gw2}}
+                 {\ostate{2} \xrightarrow{bm(tgt2_2)} \ostate{0}}
+           }
+           \quad Pred_{HB\_2}
+      }
+           {p\_Root
+     \models
+     \openrule
+         {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad
+           2 \xrightarrow{bm(tgt2_2)}_{gw2} 0 \quad
+           \xrightarrow{b}_{P3}
+           \quad Pred2}
+         {\ostate{020} \xrightarrow{v} \ostate{100}}}
+      ~~ [HB\_2]
+\end{mathpar}
+
+$Pred_{gw2} = [\sm{isDirectRelative}(2,tgt2_2)]$
+
+$Pred_{HB\_2} = [im(tgt1_1) = im(t3) \land bm(tgt2_2) = bm(t3) \land b= im(t3) \land b\in Sort_{P3}  \land v = \underline{bm(t3)}]$
+
+$Pred2 = [Pred_{gw2} \land Pred_{HB\_2} ] $
+
+\medskip
+This can be simplified, eliminating the intermediate variable $t3$ of vector
+HB\_2, while keeping the state variables of $gw_1$ and $gw_2$, the
+intermediate $v$ created by Tr2, and the action variable of hole 
+$P3$. This yields finally predicate $Pred2$ :
+
+$Pred2 = [tgt1_1=tgt2_2 \land
+  b\in Sort_{P3} \land b=um(tgt2_2) \land v = \underline{bm(tgt2_2)}]
+$
+
+\medskip
+Alternatively, we could also have elimated variable $v$, and directly
+show the resulting action $\underline{bm(t3)}]$ in the open
+  transition. This is slightly more compact, and maybe more readable,
+  so we shall use this way in the open-automaton below.
+
+\newpage
+ 
+Below we show the initial transitions of the automaton of our HB
+system. The full open-automaton has 17 states, and we have not
+computed by hand its full set of transitions. This work would be very
+tedious with pen and paper; we are currently developping a software
+tool to this end.
+
+\begin{figure}[h]
+  \includegraphics[width=0.35\linewidth]{XFIG/HB2}
+\end{figure}
+
+In this open-automaton, we have simplified the predicates and
+eliminated the local variables, excepted those from the occurences of
+the pLTS gw1 and gw2, and from the behaviour of holes.
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{XFIG/HB-OpenAut}
+\end{figure}
+\newpage
+
+\begin{eqnarray*}
+OT_1 & = \openrule
+         {0 \xrightarrow{ium(?tgt2)}_{gw2} 2 \quad
+           \xrightarrow{b1}_{P21}
+          \quad P1}
+         {\ostate{000} \xrightarrow{um(tgt2_2)} \ostate{020}}\\
+ with & P1 = [b1\in Sort_{P21} \land b1=um(tgt2_2) ]
+ \\
+OT_2 & = \openrule
+         {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad
+           2 \xrightarrow{bm(tgt2_2)}_{gw2} 0 \quad
+           \xrightarrow{b2}_{P3}
+           \quad P2}
+         {\ostate{020} \xrightarrow{\underline{bm(tgt2_2)}} \ostate{100}}\\
+         with & P2 = [tgt1_1=tgt2_2 \land IsDirectRelative(2,tgt2_2)
+           \land  b2\in Sort_{P3} \land b2=um(tgt2_2) ]
+         \\
+OT_3 & = \openrule
+         {1 \xrightarrow{dm(tgt1_1)}_{gw1} 0 \quad
+           0 \xrightarrow{im(?tgt11_1)}_{gw11} 1 \quad
+           \xrightarrow{b3}_{P12}
+           \quad P3}
+         {\ostate{100} \xrightarrow{\underline{dm(tgt1_1)}} \ostate{001}}\\
+         with & P3 = [tgt11_1=tgt1_1 \land IsAncestor(1,tgt1_1)
+           \land  b3\in Sort_{P12} \land b3=im(tgt1_1) ]
+         \\
+OT_4 & = \openrule
+         { 1 \xrightarrow{dm(tgt11_1)}_{gw11} 0 \quad
+           \xrightarrow{b4}_{P111}
+           \quad P4}
+         {\ostate{001} \xrightarrow{\underline{dm(tgt11)}} \ostate{000}}\\
+ with & P4 = [ b4=im(tgt11_1) \land  b4\in Sort_{P111} \land IsAncestor(11,tgt11_1) ]
+         \\
+OT_5 & = \openrule
+         {1 \xrightarrow{Discard}_{gw1} 0 \quad
+           \quad P5}
+         {\ostate{100} \xrightarrow{\underline{Discard}} \ostate{000}}\\
+ with & P5 = [IsDirectRelative(1,tgt1_1) ]
+ \\
+OT_6 & = \openrule
+         { 2 \xrightarrow{Discard}_{gw2} 0 \quad
+           \quad P6}
+         {\ostate{020} \xrightarrow{\underline{Discard}} \ostate{000}}\\
+ with & P6 = [ IsAncestor(2,tgt2_2) ]
+ \\
+OT_7 & = \openrule
+         {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad
+          0 \xrightarrow{im(?tgt2_1)}_{gw2} 1 \quad
+          \xrightarrow{b7}_{P3}\quad
+           \quad P7}
+         {\ostate{000} \xrightarrow{im(?a)} \ostate{110}}\\
+ with & P7 = [ tgt1_1 = tgt2_1 = a \land b7\in Sort_{P3} \land b7 = im(?a)  ]
+ \\
+OT_8 & = \openrule
+         {2 \xrightarrow{Discard}_{gw2} 0 \quad
+           \quad P8}
+         {\ostate{110} \xrightarrow{Discard} \ostate{100}}\\
+ with & P8 = [ IsDirectRelative(2,tgt2_1) ]
+\end{eqnarray*}
+
+
+\end{document}
+
+
+
+\section{Discussion on substitution, matching, unification}
+
+\TODO{I think appendices B and C must be removed from the submission
+  (;-). Do we need anything else as an appendix ? Maybe some of the
+  details on Hierarchical Braodcast, when we will deal with the space limit...}
+
+\TODO{this is far from being final... What should we leave here
+  ? a generic definition of what must be part of the Action Algebra
+  definition, substitution, protected variables; and
+  move to other sections the application and examples of these.
+In fact we currently do not use any notion of substitution, nor
+protect variables. Only these predicates, built as sets of equations,
+with a lot of fresh variables...}
+
+\ERIC{[this text in blue is NOT supposed to stay here as such. Just
+    guidelines towards identifying what we need to set up]
+  To define the operational semantics of pNets, we need only two core
+operations on action expressions: specialisation and unification.
+\begin{itemize}
+\item when composing pNets, substituting a pNet for a hole, each action in
+the subnet sort has to match one action of the hole sort, but may be
+more specific (substitution).
+\item when building a proof tree from a synch vector, we collect a
+  number of substitutions from the involved processes, and we have to
+  match them with the action expressions in the vector. The result is
+  a substitution for the variables of the global action, together with
+  a predicate, built from the guards of the controllers and predicates
+  of the subnets.
+\end{itemize}
+In some cases, substitutions are results of full unification between
+action expressions, but in other cases it may be disymetric in the
+sense that some variables can be substituted, and other not. We can
+formalise this in term of ``protected variables'' in the unification,
+opposed to ``input variables'' that can be arbitrarily substituted (=
+can accept any value, like in classical value-passing algebra communication).}
+
+\section{Future papers...}
+
+
+I removed from here all appendices that were not directly related to this paper.
+They will be providing subjects for future research (internships ?) and future papers, including:
+
+\begin{itemize}
+  \item Is open (strong) bisim compatible with pNet composition operator (as defined in PdP paper) ?
+  \item Is Open-bisimulation compatible with closed bisimulation ?
+    \item Effective algorithm for 1) checking strong bisimulation (given a state partition) 2) computing the coarsest partition (if it exists).
+\item Model-checking Open-Automata:
+This may come to be simpler to define and implement than FH-bisimulation.
+\item FH-Refinement (and maybe even weak bisimulation if we do not find the time and/or space to have it here)
+\item Fulll use-case on Hierarchical Broadcast
+\end{itemize}
+
+
+
+
+\section{Full definition of the HB pNet model}
+\label{Appendix:SynchVectors}
+
+  The table in Fig. \ref{fig:HBvectors} lists the synchronisation
+  vectors used in all 3 algorithms and their variants. The vector
+  naming schema is the following: the first letter encodes the direction
+  of the message: U(p), D(own), H(orizontal); the second letter its
+  type: B(roadcast) G(gateway-group) or M(simple message).
+
+  Additionally, there are 2 special vectors, DIS for (silent) Discard
+  events, and ERR for (visible) Error events.
+
+  Among the 6 basic vectors, 3 of them (UG, DG, UM) are shared by all
+  algorithms, DB is used by Full and hierarchical braodcast, while the
+  last 2, HM and HB are specific to horizontal messages of Unicats and
+  hierarchical brodcast respectively.
+
+  \TODO{missing the variants here...}
+
+\begin{figure}[h!]
+  \label{fig:HBvectors}
+\begin{tabular}{|p{1.6cm}|p{8.8cm}|l|}
+%% \hline\hline
+%% \multicolumn{3}{|l|}{Hierarchical broadcasting}\\
+  \hline
+  \hline
+\multicolumn{3}{|p{12cm}|}{\ERIC{Need a short explanation about notations here: indices, indexed actions to be instanciated to match the terms in the sorts, ...? }}\\
+  \hline
+ %% $(UC)_{\widetilde{k}} \ERIC{UG}$ & $
+ $(UG)_{\widetilde{k}}$ & $
+     \symb{sv}_{u(\widetilde{i}.k)}\triangleq
+     <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
+     -^{\widetilde{I_P}}\otimes
+     !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+         k\}}}>\longrightarrow \tau(
+     m_{\widetilde{i}.k}(\widetilde{t}))$ &
+     $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Up gateway}: message m is sent up from a group to its gateway}\\
+\hline
+%% $(DG)_{\widetilde{k}} \ERIC{DB}$&
+$(DB)_{\widetilde{k}}$&
+$\symb{sv}_{?\widetilde{i}}\triangleq
+     <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     -^{\widetilde{I_G}}>\longrightarrow
+     ?dm_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
+     \hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Down Broadcast}: a message m received by a group is
+       forwarded (broadcast) to all elements of the group, meaning to
+       all processes and gateways inside.}\\
+\hline
+$(UM)_{\widetilde{k}}$&
+$\symb{sv}_{!\widetilde{i}}\triangleq
+    <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+    -^{\widetilde{I_G}}>\longrightarrow
+    !um_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Up Message}: message m is sent up from a process
+  or a gateway to the enclosing (= parent) group}\\
+\hline
+
+%% $(BG)_{\widetilde{k}} \ERIC{HB}$ &
+$(HB)_{\widetilde{k}}$ &
+$\symb{sv}_{b(\widetilde{i}.k)}\triangleq
+    <?m_{\widetilde{i}.j}^{\forall j\in I_K}(\widetilde{t})
+    \otimes !bm_{\widetilde{i}.k}(\widetilde{t})
+    \otimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$ &
+    $I_K = \{k/\widetilde{i}.k\in \widetilde{I_{G+P}}\}$, \\ &  &  and
+    $\widetilde{k}=\widetilde{i}.k$ \\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Horizontal Broadcast}: message m, from a process or a
+  gateway, is broadcast to all its siblings (processes and gateways)
+  inside its group}\\
+
+\hline
+%% $(DC)_{\widetilde{k}} \ERIC{DG}$ &
+$(DG)_{\widetilde{k}}$ &
+$\symb{sv}_{?\widetilde{i}}\triangleq
+     <!dm_{\widetilde{i}.k}(\widetilde{t})\otimes
+     -^{\widetilde{I_P}}\otimes
+     ?dm_{\widetilde{i}.k}(\widetilde{t})\otimes
+     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}}
+     >\longrightarrow
+     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
+%      <?m_{\widetilde{i}.k}^{\forall k\in
+%        I_K}(\widetilde{t})\otimes
+%      -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+     %      ?m_{\widetilde{i}}(\widetilde{t})$
+     & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Down Gateway}: message $m$ is sent down from a gateway
+to the corresponding subgroup; it should then be forwarded inside the
+subgroup, e.g. with $(DM)_{\widetilde{k}}$}\\
+\hline
+%% $(DK)_{\widetilde{k}} \ERIC{DM}$&
+$(DM)_{\widetilde{k}}$&
+$\symb{sv}_{!\widetilde{i}}\triangleq
+    <  ?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+    -^{\widetilde{I_G}}>\longrightarrow ?m_{\widetilde{i}}(\widetilde{t})$
+    & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{Down Message}: Unicast version of (DB): m received
+  by a group is forwarded to one specific element $i.k$ of the group}\\
+\hline
+
+$(HM)_{\widetilde{k}}$&
+$\symb{sv}_{!\widetilde{i}}\triangleq
+   $\\
+\hline
+&\multicolumn{2}{|p{10cm}|}{\ERIC{Horizontal Message}: optimized
+  version of Unicast: message m, from a process or a
+  gateway, is broadcast to one of its its siblings
+  inside the same group}\\
+
+
+\hline\hline
+$(DIS)_{\widetilde{k}}$&
+     $\symb{sv}_{u(\widetilde{i}.k)}\triangleq
+     <Discard\otimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+         k\}}}>\longrightarrow \tau(DIS)$ &
+     $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{DISCARD events} occur in gateways
+  under HB protocol, after receiving a broadcast message which
+  target address is a sibling of the gateway; this message is
+  DISCARDED silently }\\
+\hline
+$(ERR)_{\widetilde{k}}$&
+     $\symb{sv}_{u(\widetilde{i}.k)}\triangleq
+     <Error\otimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+         k\}}}>\longrightarrow Error(\widetilde{k})$ &
+     $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+\hline
+     &\multicolumn{2}{|p{10cm}|}{\ERIC{ERROR events} may occur in gateways
+  in 2 cases: either if the message is targeted to a gateway address,
+  that is an error from the emittor (ERR "BadTarget"); or if a gateway
+  receives from its parent or brother a message that should not go
+  within its subgroup, that is a protocol error (ERR "WrongWay").
+  In both cases the ERR message will be transmitted up, for the sake
+  of verification }\\
+\hline\hline\end{tabular}
+\caption{Synchronisation vectors modeling the communication through the HB hierarchy}
+\end{figure}
+
+\section{The  Open Transitions of Broadcasting}
+% \TODO{Min: to modify the tables. }
+
+%%mofication of Table 1
+
+\begin{figure}[h]
+\centerline{ \includegraphics[width=5cm]{XFIG/HB2} }
+\caption{(open) pNet structure of Hierarchical Broadcast example}
+\label{Fig:simpleHBStruct}
+\end{figure}
+
+Figure \ref{Fig:simpleHBStruct} recalls the structure of the pNet tree
+for HB example structure, in which gw1, gw2, gw11 are leaves, and P3,
+P12, P21, P22, P111 are holes.
+
+The following tables list the open-transition derivable from two of
+the first states of the open-automaton of this pNet, including the 2 first
+transitions of our scenario, as explained in section \ref{}.
+
+\noindent
+\begin{tabular}{|p{2.8cm}|p{9cm}|l|}
+\hline\hline
+\multicolumn{3}{|l|}{from state $\ostate{000}$}\\
+\hline
+HB(3) &
+\{gw1, gw2\} \{P3\}  \{$a_{gw1}$=$a_{gw2}$=?m(t), $b_{P3}$=!bm(t'), v=$\tau$,[t=t']\} &
+$\ostate{110}$\\
+\hline
+HB(12)&
+\{gw11\} \{P12\} \{$a_{gw11}$=?m(t), $b_{P12}$=!bm(t'), v=$\tau$, [t=t' ]\} & $\ostate{001}$\\
+\hline
+DB&
+\{gw1, gw2\}\{\}\{$a_{gw1}$=$a_{gw2}$=?m(t), v=?dm(t'),  [t=t']\}&$\ostate{110}$\\
+\hline
+UG(1)(UM(12)) &
+\{gw1\},  \{P12\} \{$a-{gw1}$=?um(t), $b_{P12}$=!um(t'), v=$\tau$, [t=t']\} &
+$\ostate{200}$\\
+\hline
+UG(2)(UM(k)) ${}^{k \in \{21,22\}}$ &
+\{gw2\},  \{Pk\} \{$a_{gw2}$=?um(t), $b_{Pk}$=!um(t'),v=$\tau$, [t=t']\} &
+$\ostate{020}$\\
+\hline
+UG(11)(UM(111)) &
+\{gw11\},  \{P111\} \{$a_{gw11}$=?um(t), $b_{P111}$=!m(t),v=$\tau$, [t=t']\} &
+$\ostate{002}$\\
+\hline\hline
+\end{tabular}
+\vskip 0.3cm
+
+
+\NOTE{Eric: one transition of the <020> table, from the draft on my white board}
+
+\noindent
+\begin{tabular}{|p{2.8cm}|p{9cm}|l|}
+\hline\hline
+\multicolumn{3}{|l|}{from state <020>}\\
+\hline
+HB(2)&
+\{gw1,gw2\} \{P3\} \{a1=?m(t), a2=!bm(t'), a3=?m(t'), v=tau, [t=t'=t'' $\land$ isDirRel(t,2)]\} & <100>\\
+\hline
+HB(12)&
+\{gw11\} \{P12\} \{a11=?m(t), a12=!bm(t'),  v=tau, [t=t']\} & <021>\\
+\hline
+UG(1)(UM(12)) &
+\{gw1\},  \{P12\} \{a1=?um(t), a12=!um(t'), v=tau,  [t=t'] \} &
+<220>\\
+\hline
+UG(11)(UM(111)) &
+\{gw11\},  \{P111\} \{a11=?um(t), P111=!m(t),v=tau, [t=t']\} &
+<022>\\
+\hline
+ERR(2)&
+\{g2\} \{\} \{a2=Error, v=Error2,[t=2]\}&<000>\\
+\hline
+DiS(2)&
+\{g2\} \{\} \{a2=DIS, v=DIS2,[Ancestor(2, t)]\} &
+<000>\\
+\hline
+\hline
+\end{tabular}
+\vskip 0.3cm
+
+
+%
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 1, 0>}\\
+%\hline
+%HB(12)&
+%\{g11\} \{P12\} \{a11=?m(a), a12=!bm(a), v=tau\} & <1, 1, 1>\\
+%\hline
+%UM(k) ${}^{k \in \{3,12\}}$&
+%\{\}\{Pk\}\{ak=!um(a),v=!um(a), isOtherRelative(3, a)\}&<1, 1, 0>\\
+%\hline
+%UM(1)&
+%\{g1\}\{\}\{a1=!um(a),v=!um(a), isOtherRelative(1, a)\}&<0, 1, 0>\\ \hline
+%UM(2)&
+%\{g2\}\{\}\{a2=!um(a),v=!um(a), isOtherRelative(2, a)\}&<1, 0, 0>\\ \hline
+%DG(1)&
+%\{g1\}\{SG1\}\{a1=!dm(a),sg1=?dm(a),v=tau\}&<0, 1, 0>\\ \hline
+%DG(2)&
+%\{g2\}\{SG2\}\{a2=!dm(a),sg2=?dm(a), v=tau\}&<1, 0, 0>\\ \hline
+%
+%DIS(1)&
+%\{g1\} \{\} \{a1=Discard, v=tau\} &
+%<0, 1, 0>\\
+%\hline
+%DIS(2)&
+%\{g2\} \{\} \{a2=Discard, v=tau\} &
+%<1, 0, 0>\\
+%\hline
+%ERR(1)&
+%\{g1\} \{\} \{a1=Error, v=Error1\}, &
+%<0, 1, 0>\\
+%\hline
+%ERR(2)&
+%\{g2\} \{\} \{a2=Error, v=Error2\} &
+%<1, 0, 0>\\
+%\hline
+%UG(11) &
+%\{g11\},  \{SG11\} \{a11=?um(a), sg11=!m(a),v=tau, isOtherRelative(11, a)\} &
+%<1, 1, 2>\\
+%\hline\hline
+%\end{tabular}
+%\vskip 0.3cm
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 0, 1>}\\
+%\hline
+%HB(3) &
+%\{g1, g2\} \{P3\} \hfill \{a1=a2=?m(a), a3=!bm(a), v=tau\} &
+%<1, 1, 1>\\
+%\hline
+%DB &
+%\{g1, g2\} \{\} \{a1=a2=?m(a), v=?dm(a)\} &
+%<1, 1, 1>\\
+%\hline
+%UG(1) &
+%\{g1\},  \{SG1\} \{a1=?um(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 0, 1>\\
+%\hline
+%UG(2) &
+%\{g2\},  \{SG2\} \{a2=?um(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<0, 2, 1>\\
+%\hline
+%DG(11)  &
+%% $\emptyset$
+%\{g11\} \{SG11\} \{a11=!dm(a),sg11=?dm(a) v=tau,\} & <0, 0, 0>\\
+%\hline
+%
+%DIS11 &
+%\{g11\},\{\}\{a11=Discard, v=tau \}&<0, 0, 0>\\
+% \hline
+% ERR11 &
+%\{g11\},\{\}\{a11=Error, v=Error11 \}&<0, 0, 0>\\
+% \hline\hline
+%\end{tabular}
+%
+%\vskip 0.3cm
+%There is the case of Unicast.
+%\vskip 0.3cm
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 0, 0>}\\
+%\hline
+%DM1 &
+%\{g1\} \{P3\}  \{a1=?m(a), a3=!m(a), v=tau, isDirectRelative(1,a)\} &
+%<1, 0, 0>\\
+%\hline
+%DM2 &
+%\{g2\} \{P3\}  \{a1=?m(a), a3=!m(a), v=tau, isDirectRelative(2,a)\} &
+%<0, 1, 0>\\
+%\hline
+%DM11 &
+%\{g11\} \{P13\}  \{a11=?m(a), a13=!m(a), v=tau, isDirectRelative(11,a)\} &
+%<0, 0, 1>\\
+%\hline\hline
+%\end{tabular}
+%\vskip 0.3cm
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 0, 0>}\\
+%\hline
+%DG1 &
+%\{g1\} \{SG1\}  \{a1=!dm(a), sg1=?dm(a), v=tau, isDirectRelative(1,a)\} &
+%<0, 0, 0>\\
+%\hline
+%UM1 &
+%\{g1\} \{\}  \{a1=!um(a), v=!um(a)\} &
+%<0, 0, 0>\\
+%\hline
+%DM2 &
+%\{g2\} \{P3\}  \{a1=?m(a), a3=!m(a), v=tau, isDirectRelative(2,a)\} &
+%<1, 1, 0>\\
+%\hline
+%DM11 &
+%\{g11\} \{P13\}  \{a11=?m(a), a13=!m(a), v=tau, isDirectRelative(11,a)\} &
+%<1, 0, 1>\\
+%\hline
+%ERR(1)&
+%\{g1\} \{\} \{a1=Error, v=tau\} &
+%<0, 0, 0>\\
+%\hline\hline
+%\end{tabular}
+%
+%\vskip 0.3cm
+%
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 1, 0>}\\
+%\hline
+%DG1 &
+%\{g1\} \{SG1\}  \{a1=!dm(a), sg1=?dm(a), v=tau, isDirectRelative(1,a)\} &
+%<0, 1, 0>\\
+%\hline
+%DG2 &
+%\{g2\} \{SG2\}  \{a2=!dm(a), sg2=?dm(a), v=tau, isDirectRelative(2,a)\} &
+%<1, 0, 0>\\
+%\hline
+%UM1 &
+%\{g1\} \{\}  \{a1=!um(a), v=!um(a)\} &
+%<0, 1, 0>\\
+%\hline
+%UM2 &
+%\{g2\} \{\}  \{a2=!um(a), v=!um(a)\} &
+%<1, 0, 0>\\
+%\hline
+%DM11 &
+%\{g11\} \{P13\}  \{a11=?m(a), a13=!m(a), v=tau, isDirectRelative(11,a)\} &
+%<1, 1, 1>\\
+%\hline
+%ERR(1)&
+%\{g1\} \{\} \{a1=Error, v=tau\} &
+%<0, 1, 0>\\
+%\hline
+%ERR(2)&
+%\{g2\} \{\} \{a2=Error, v=tau\} &
+%<1, 0, 0>\\
+%\hline\hline
+%\end{tabular}
+
+
+\section{Encapsulating Process arguments}
+In Section \ref{section:processSort} we described the Sort of
+processes in the holes of the herarchical broadcast architecture.
+Here we present a more general solution, using a small pNet as a
+filter encapsulating each of the holes. The filter is in
+ charge of relabeling the messages
+from the process depending on their destination, and filtering the
+incoming messages, discarding those received by broadcast, but target
+to other processes. This pNet is shown in the following figure:
+
+\centerline{  \includegraphics[width=0.8\linewidth]{ATG/ProcessFilter}}
+
+This solution has the benefit of allowing any process as an argument
+fitting the hole, without specific constraints on its sort. The price
+is that the pNet structure is a bit more complex, so the open
+transitions and open automata will be bigger also. Moreover the filter
+has states, and this introduces some additional states and
+tau-transitions in the open-automaton.
+
+
+\section{{pNets Model for Broadcast Flat groups  (BF-pNets):
+    definition}\label{sec:bf-pnets-def}}
+Given a $HB-\pNet$, we can flatten it to decrease the number of layers
+of hierarchical structures using a {\em Flattening Operator}
+$\bowtie$.
+This operation replaces one or several subgroups in the hierarchical
+structure by their content. The corresponding old controllers
+(gateways) won't exist after flattening. Fig. \ref{fig:flattening}
+shows the flattening operator at work, on 2 subgroups SG1 and SG2, at the
+toplevel of the example.
+\begin{definition}[Flattening Operation]
+Assume a $HB-\pNet$ has the structure:
+$\mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}}\myrangle$
+where
+$ \forall \widetilde{g}\in \widetilde{I_G}$,  the $sg_{\widetilde{g}}$ has the $HB-\pNet$ structure:
+ $\mylangle gw_{\widetilde{g}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}},  pc_{\widetilde{g}\cdot p_j}^{p_j\in I_{P_{\widetilde{g}}}}, sg_{\widetilde{g}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}}\myrangle $.
+ \medskip
+
+ Then
+the flattening map
+$\bowtie_{\widetilde{g}}: HB-pNets\longrightarrow HB-pNets$, where\\
+
+ \medskip
+ $\bowtie_{\widetilde{g}}(HB-\pNet)\triangleq \mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g}\}}, gw_{\widetilde{g}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g}.\cdot p_j}^{p_j\in I_{P_{\widetilde{g}}}},sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g}\}}, sg_{\widetilde{g}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}}\myrangle$.
+ \medskip
+
+
+The flattening operator shows one subgroup $sg_{\widetilde{g}}$ can be flatten to one hole of his father group which is linked the gateway $gw_{\widetilde{g}}$, the gateways,the processes ,and the holes of $sg_{\widetilde{g}}$ become the gateways, the processes, and the holes of his father group instead of itself and the gateway that it is linked.
+
+Actually, for any subgroup (hole) of the group, the flattening operation can be done in parallel without the order.
+We denote that  $\bowtie_{\widetilde{I_G}}\triangleq\Sigma_{\widetilde{g}\in{\widetilde{I_G}}}\bowtie_{\widetilde{g}}$, where:
+
+ $\bowtie_{\widetilde{I_G}}(HB-\pNet)\triangleq \mylangle  gw_{\widetilde{g}\cdot g_i}^{\widetilde{g}\in \widetilde{I_G}, g_i\in I_{G_{\widetilde{g}}}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g}\cdot p_j}^{\widetilde{g}\in \widetilde{I_G}, p_j\in I_{P_{\widetilde{g}}}}, sg_{\widetilde{g}\cdot g_i}^{\widetilde{g}\in \widetilde{I_G}, g_i\in I_{G_{\widetilde{g}}}}\myrangle$.
+\end{definition}
+
+Especially, if some $\widetilde{g_0}\in{\widetilde{I_G}}$, the $sg_{\widetilde{g_0}}$ has the $HB-\pNet_{\widetilde{g_0}}$ structure: $\mylangle -,  pc_{\widetilde{g_0}\cdot p_j}^{p_j\in I_{P_{\widetilde{g}}}}, -\myrangle$.
+
+ $\bowtie_{\widetilde{g_0}}(HB-\pNet)\triangleq \mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g}\}},   pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g_0}\cdot p_j}^{ p_j\in I_{P_{\widetilde{g}}}},sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g}\}}\myrangle$.
+
+% If all the subgroups $sg_{\widetilde{g}}$ have the similar structures to $sg_{\widetilde{g_0}}$, $\forall \widetilde{g}\in \widetilde{I_G}$, we have
+%
+%  $\bowtie_{\widetilde{I_G}}(HB-\pNet)\triangleq \mylangle -,  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g}\cdot p_j}^{\widetilde{g}\in \widetilde{I_G}, p_j\in I_{P_{\widetilde{g}}}}, -\myrangle$.
+
+\medskip
+%
+%\begin{definition}[Equivenlence]
+%\NOTE{The equivalence between $HB-\pNet$ and $BF-\pNet$ should be defined.}
+%\end{definition}
+
+
+ Let $HB-\pNet$ node have the structure $\mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}}\myrangle$, with some subgroup the $sg_{\widetilde{g_0}}$ who has the  structure:
+ $\mylangle gw_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g_0}}}},  pc_{\widetilde{g_0}\cdot p_j}^{p_j\in I_{P_{\widetilde{g_0}}}}, sg_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g_0}}}}\myrangle $, has one corresponding flatten broadcast open $\pNet$ by the flattening operator $\bowtie_{\widetilde{g_0}}$, i.e. $\mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g_0}\}}, gw_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g_0}.\cdot p_j}^{p_j\in I_{P_{\widetilde{g}}}},sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g_0}\}}, sg_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}}\myrangle$.
+
+
+
+\section{Sketch of the proof}
+\label{sec:proof-sketch}
+
+In this section we will describe a proof of equivalence between a HB
+pNet node (seen as an open pNet), with the corresponding flatten
+broadcast open pNet. From this equivalence, it is easy to derive the
+equivalence of a fully instantiated (= closed) HB-pNet structure with
+the corresponding flatten pNet.
+
+\begin{theorem}
+Any $\mathcal{HB-\pNet}$ node is FH-bisimular to the corresponding $\mathcal{BF-\pNet}$ node by the flatting operator $\bowtie$, that is, \\
+$\mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g_0}\}},\mylangle gw_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g_0}}}},  pc_{\widetilde{g_0}\cdot p_j}^{p_j\in I_{P_{\widetilde{g_0}}}}, sg_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g_0}}}}\myrangle  \myrangle \approx_{FH} \\ \mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g_0}\}}, gw_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, pc_{\widetilde{g_0}.\cdot p_j}^{p_j\in I_{P_{\widetilde{g}}}},sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}\setminus\{\widetilde{g_0}\}}, sg_{\widetilde{g_0}\cdot g_i}^{g_i\in I_{G_{\widetilde{g}}}}\myrangle$.
+\end{theorem}
+
+The sketch we give here considers one particular pNet node, with 2
+subgroups, and a specific number of processes in each root- and sub-
+groups. Also we make some hypotheses on the sorts of the processes.
+Clearly the full proof will have to deal with generalisations of this
+particular case.
+
+\begin{figure}[h]
+\includegraphics[width=6cm]{XFIG/HB2}
+\hspace{1cm}
+\includegraphics[width=5cm]{XFIG/B2}
+\caption{(open) pNet structure of Hierarchical and flat example}
+\label{fig:flattening}
+\end{figure}
+
+\paragraph{More precisely:}
+
+\paragraph{Principles of the proof:}
+
+We start from the hierarchical pNet, build all its possible behaviours
+(building proof trees from possible synch vectors of the pNet, and
+possible actions in the sorts of holes), then show that there is a
+corresponding behaviour for the flat pNet. Similar method is then
+applied in the symetrical direction.
+
+A state of the hierarchical pNet will be a hierarchical vector of
+``states'', in which we shall represent the state of a controller with
+its name followed by the state index (gateways have only two states,
+numered \{0,1\}); and state of holes with simply the name of the hole.
+To keep state structure compact and keep readability, we show pLTS
+states by their number, subscripted by the name of the gateway. For
+processes and sub-groups, that have no states, we only show their name.
+%
+%
+%
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 0, 0>}\\
+%\hline
+%Bm(3) &
+%\{g1, g2\} \{P3\} \hfill \{a1=a2=?bm(a), a3=!m(a), v=tau\} &
+%<1, 1, 0>\\
+%\hline
+%Bm(12)&
+%\{g11\} \{P12,P13\} \{a11=a13=?um(a), a12=!m(a), v=tau\} & <0, 0, 1>\\
+%\hline
+%Bm(13)&
+%\{g11\} \{P12,P13\} \{a11=a12=?um(a), a13=!m(a), v=tau\} & <0, 0, 1>\\
+%\hline
+%DA &
+%\{g1, g2\} \{P3\} \{a1=a2=a3=?bm(a), v=?m(a)\} &
+%<1, 1, 0>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?bm(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 0, 0>\\
+%\hline
+%Um(2) &
+%\{g2\},  \{SG2\} \{a2=?bm(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<0, 2, 0>\\
+%\hline
+%Um(11) &
+%\{g11\},  \{SG11\} \{a11=?bm(a), sg11=!m(a),v=tau, isOtherRelative(11, a)\} &
+%<0, 0, 2>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline\hline
+%\end{tabular}
+%
+%\noindent
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 1, 0>}\\
+%\hline
+%Bm(12)&
+%\{g11\} \{P12,P13\} \{a11=a13=?um(a), a12=!m(a), v=tau\} & <1, 1, 1>\\
+%\hline
+%Bm(13)&
+%\{g11\} \{P12,P13\} \{a11=a12=?um(a), a13=!m(a), v=tau\} & <1, 1, 1>\\
+%\hline
+%UA(3)&
+%\{\}\{P3\}\{a3=!um(a),v=!m(a), isOtherRelative(3, a)\}&<1, 1, 0>\\
+%\hline
+%UA(1)&
+%\{g1\}\{\}\{a1=!um(a),v=!m(a), isOtherRelative(1, a)\}&<0, 1, 0>\\ \hline
+%UA(2)&
+%\{g2\}\{\}\{a2=!um(a),v=!m(a), isOtherRelative(2, a)\}&<1, 0, 0>\\ \hline
+%$Dm_1(DA_1)$ &
+%\{g1,g11\}\{SG1,P12,P13\}\{a1=!dm(a), sg1=?m(a),a11=a12=a13=?bm(a), v=tau, isDirectRelative(1,a)\}&<0, 1, 1>\\ \hline
+%$Dm_2(DA_2)$ &
+%\{g2\}\{SG2,P21\}\{a2=!dm(a), sg2=?m(a), a21=?bm(a), v=tau, isDirectRelative(2,a)\}&<1, 0, 0>\\ \hline
+%DISCARD(1)&
+%\{g1\} \{\} \{a11DISCARD, v=tau\} &
+%<0, 1, 0>\\
+%\hline
+%DISCARD(2)&
+%\{g2\} \{\} \{a2=DISCARD, v=tau\} &
+%<1, 0, 0>\\
+%\hline
+%Um(11) &
+%\{g11\},  \{SG11\} \{a11=?bm(a), sg11=!m(a),v=tau, isOtherRelative(11, a)\} &
+%<1, 1, 2>\\
+%\hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 0, 1>}\\
+%\hline
+%Bm(3) &
+%\{g1, g2\} \{P3\} \hfill \{a1=a2=?bm(a), a3=!m(a), v=tau\} &
+%<1, 1, 1>\\
+%\hline
+%DA &
+%\{g1, g2\} \{P3\} \{a1=a2=a3=?bm(a), v=?m(a)\} &
+%<1, 1, 1>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?bm(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 0, 1>\\
+%\hline
+%Um(2) &
+%\{g2\},  \{SG2\} \{a2=?bm(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<0, 2, 1>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 0, 1>\\
+%\hline
+%UA(11)  &
+%% $\emptyset$
+%\{g11\} \{\} \{a11=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%Dm(11)&
+%\{g11\},\{SG1\},\{a11=!dm(a),sg11=?m(a), v=tau, isDirectRelative(11,a)\}&<0, 0, 0>\\
+%\hline
+%DISCARD &
+%\{g11\},\{\}\{a11=DISCARD, v=tau, isOtherRelative(11,a) \}&<0, 0, 0>\\ \hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <2, 0, 0>}\\
+%\hline
+%Bm(12) &
+%\{g11\} \{P12,P13\}  \{a11=a12=?bm(a), a13=!m(a), v=tau\} &
+%<2, 0, 1>\\
+%\hline
+%Bm(13) &
+%\{g11\} \{P12,P13\}  \{a11=a13=?bm(a), a12=!m(a), v=tau\} &
+%<2, 0, 1>\\
+%\hline
+%Bm(1) &
+%\{g1,g2\} \{P3\}  \{a2=a3=?bm(a), a1=!m(a), v=tau\} &
+%<0, 1, 0>\\
+%\hline
+%Um(2) &
+%\{g2\},  \{SG2\} \{a2=?bm(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<2, 2, 0>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <2, 0, 0>\\
+%\hline
+%UA(1)  &
+%% $\emptyset$
+%\{g1\} \{\} \{a1=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%Um(11)&
+%\{g11\}\{SG11\}\{a11=?um(a), sg11=!m(a), v=tau, isOtherRelative(11,a)\}&<2, 0, 2>\\
+%\hline
+%DISCARD(1) &
+%\{g1\},\{\},\{a1=DISCARD, v=tau, isDirectRelative(1,a)\}&<0, 0, 0>\\
+%\hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 2, 0>}\\
+%\hline
+%Bm(12) &
+%\{g11\} \{P12,P13\}  \{a11=a12=?bm(a), a13=!m(a), v=tau\} &
+%<0, 2, 1>\\
+%\hline
+%Bm(13) &
+%\{g11\} \{P12,P13\}  \{a11=a13=?bm(a), a12=!m(a), v=tau\} &
+%<0, 2, 1>\\
+%\hline
+%Bm(2) &
+%\{g1,g2\} \{P3\}  \{a1=a3=?bm(a), a2=!m(a), v=tau\} &
+%<1, 0, 0>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?bm(a), sg1=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<2, 2, 0>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 2, 0>\\
+%\hline
+%UA(2)  &
+%% $\emptyset$
+%\{g2\} \{\} \{a2=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%DISCARD(2)&
+%\{g2\},\{\},\{a2=DISCARD, v=tau, isDirectRelative(2,a)\}&<0, 0, 0>\\
+%\hline
+%Um(11) &
+%\{g11\},\{SG11\}\{a11=?um(a), sg11=!m(a), v=tau, isOtherReltive(11, a) \}&<0, 2, 2>\\ \hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 0, 2>}\\
+%\hline
+%Bm(3) &
+%\{g1, g2\} \{P3\} \hfill \{a1=a2=?bm(a), a3=!m(a), v=tau\} &
+%<1, 1, 2>\\
+%\hline
+%DA &
+%\{g1, g2\} \{P3\} \{a1=a2=a3=?bm(a), v=?m(a)\} &
+%<1, 1, 2>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?bm(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 0, 2>\\
+%\hline
+%Um(2) &
+%\{g2\},  \{SG2\} \{a2=?bm(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<0, 2, 2>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 0, 2>\\
+%\hline
+%UA(11)  &
+%% $\emptyset$
+%\{g11\} \{\} \{a11=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%Bm(11)&
+%\{g11\},\{P12,P13\},\{a11=!m(a),a12=a13=?bm(a), v=tau, \}&<0, 0, 0>\\
+%\hline
+%DISCARD(11)&
+%\{g11\},\{\}\{a11=DISCARD, v=tau, isDirectRelative(11,a) \}&<0, 0, 0>\\ \hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 1, 1>}\\
+%\hline
+%UA(1)&
+%\{g1\}\{\}\{a1=!um(a),v=!m(a), isOtherRelative(1, a)\}&<0, 1, 1>\\
+%\hline
+%UA(2)&
+%\{g2\}\{\}\{a2=!um(a),v=!m(a), isOtherRelative(2, a)\}&<1, 0, 1>\\
+%\hline
+%UA(3)&
+%\{\}\{P3\}\{a3=!um(a),v=!m(a), isOtherRelative(3, a)\}&<1, 1, 1>\\
+%\hline
+%Dm(11)&
+%\{g11\}\{SG11\}\{a11=!dm(a), sg11=?m(a), v=tau, isDirectRelative(11,a)\}&<1, 1, 0>\\ \hline
+%$Dm_2(DA_2)$ &
+%\{g2\}\{SG2,P21\}\{a2=!dm(a), sg2=?m(a),a21=?bm(a), v=tau, isDirectRelative(2,a)\}&<1, 0, 1>\\ \hline
+%DISCARD(1)&
+%\{g1\} \{\} \{a1=DISCARD, v=tau, isOtherRelative(1,a)\} &
+%<0, 1, 1>\\
+%\hline
+%DISCARD(2)&
+%\{g2\} \{\} \{a2=DISCARD, v=tau, isOtherRelative(2,a)\} &
+%<1, 0, 1>\\
+%\hline
+%DISCARD(11)&
+%\{g11\} \{\} \{a11=DISCARD, v=tau, isOtherRelative(11,a)\} &
+%<1, 1, 0>\\
+%\hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 1, 0>}\\
+%\hline
+%Bm(12) &
+%\{g11\} \{P12,P13\}  \{a11=a12=?bm(a), a13=!m(a), v=tau\} &
+%<0, 1, 1>\\
+%\hline
+%Bm(13) &
+%\{g11\} \{P12,P13\}  \{a11=a13=?bm(a), a12=!m(a), v=tau\} &
+%<0, 1, 1>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?um(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 1, 0>\\
+%\hline
+%Um(11) &
+%\{g11\},  \{SG11\} \{a11=?um(a), sg1=!m(a),v=tau, isOtherRelative(11, a)\} &
+%<0, 1, 2>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 1, 0>\\
+%\hline
+%UA(2)  &
+%% $\emptyset$
+%\{g2\} \{\} \{a2=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%$Dm_2(DA_2)$ &
+%\{g2\},\{SG2,P21\},\{a2=!dm(a),sg2=?m(a),a21=?bm(a) v=tau, isDirectRelative(2,a)\}&<0, 0, 0>\\
+%\hline
+%DISCARD(2) &
+%\{g2\},\{\}\{a2=DISCARD, v=tau, isOtherRelative(2,a) \}&<0, 0, 0>\\ \hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1, 0, 0>}\\
+%\hline
+%Bm(12) &
+%\{g11\} \{P12,P13\}  \{a11=a12=?bm(a), a13=!m(a), v=tau\} &
+%<1, 0, 1>\\
+%\hline
+%Bm(13) &
+%\{g11\} \{P12,P13\}  \{a11=a13=?bm(a), a12=!m(a), v=tau\} &
+%<1, 0, 1>\\
+%\hline
+%DISCARD &
+%\{g1\} \{\}  \{a1=DISCARD),  v=tau, isOtherRelative(1,a)\} &
+%<0, 0, 0>\\
+%\hline
+%Um(2) &
+%\{g2\},  \{SG2\} \{a2=?bm(a), sg2=!m(a),v=tau, isOtherRelative(2, a)\} &
+%<1, 2, 0>\\
+%\hline
+%Um(11) &
+%\{g11\},  \{SG11\} \{a11=?bm(a), sg11=!m(a),v=tau, isOtherRelative(11, a)\} &
+%<1, 0, 2>\\
+%\hline
+%UA(k) ${}^{k \in \{3,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <1, 0, 0>\\
+%\hline
+%UA(1)  &
+%% $\emptyset$
+%\{g1\} \{\} \{a1=!um(a), v=!m(a)\} & <0, 0, 0>\\
+%\hline
+%$Dm_1(DA_1)$ &
+%\{g1,g11\},\{SG1, P12, P13\},\{a1=!dm(a),sg11=?m(a), a11=a12=a13=?bm(a), v=tau, isDirectRelative(1,a)\}&<0, 0, 0>\\
+%\hline
+%DA(1) &
+%\{g11\},\{P12,P13\}\{a11=a12=a13=?bm(a), v=?m(a) \}&<1, 0, 0>\\ \hline\hline
+%\end{tabular}
+%\begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0, 1, 1>}\\
+%\hline
+%DISCARD(2) &
+%\{g2\} \{\}  \{a2=DISCARD),  v=tau, isOtherRelative(2,a)\} &
+%<0, 0, 1>\\
+%\hline
+%DISCARD(11) &
+%\{g11\} \{\}  \{a11=DISCARD),  v=tau, isOtherRelative(11,a)\} &
+%<0, 1, 0>\\
+%\hline
+%Um(1) &
+%\{g1\},  \{SG1\} \{a1=?um(a), sg1=!m(a),v=tau, isOtherRelative(1, a)\} &
+%<2, 1, 1>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0, 1, 1>\\
+%\hline
+%UA(2)  &
+%% $\emptyset$
+%\{g2\} \{\} \{a2=!um(a), v=!m(a)\} & <0, 0, 1>\\
+%\hline
+%$Dm_2(DA_2)$&
+%\{g2\},\{SG2,P21\},\{a2=!dm(a),sg2=?m(a),a21=?bm(a), v=tau, isDirectRelative(2,a)\}&<0, 0, 1>\\
+%\hline
+%Dm(11)&
+%\{g11\},\{SG11\},\{a11=!dm(a),sg11=?m(a), v=tau, isDirectRelative(11,a)\}&<0, 1, 0>\\
+%\hline\hline
+%\end{tabular}
+%
+%\noindent
+%\begin{tabular}{|p{2cm}|p{9cm}|l|}
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <0>}\\
+%\hline
+%Bm(3) &
+%\{g11\} \{P3,P12,P13,P21\} \hfill \{a11=a12=a13=a21=?bm(a), a3=!m(a), v=tau\} &
+%<1>\\
+%\hline
+%\multicolumn{2}{|l|}{Bm(12,13,21) are similar} & <1>\\
+%\hline
+%Um(11) &
+%\{g11\} \{SG11\} \{a11=?um(a), sg11=!m(a), v=tau\} & <2>\\
+%\hline
+%DA &
+%\{g11\} \{P3,P12,P13,P21\} \{a3=a11=a12=a13=a21=?bm(a), v=?m(a)\} &
+%<1>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%% $\emptyset$
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <0>\\
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <1>}\\
+%\hline
+%DISCARD&
+%{g11} \{\} \hfill \{a11=DISCARD, v=tau, isDirectRelative(11,a)\} &
+%<0>\\
+%\hline
+%UA(11)& \{g11\} \{\} \{a11=!um(a), v=!m(a), isOtherRelative(11,a)\}& <0>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <1>\\
+%\hline
+%Dm(11)& \{g11\} \{SG11\} \{a11=!dm(a), sg11=?dm(a), v=tau, isAncestor(11,a)\} & <0>\\
+%\hline\hline
+%\multicolumn{3}{|l|}{from state <2>}\\
+%\hline
+%Bm(11) &
+%{g11} \{P3,P12,P13,P21\} \hfill \{a11=!bm(a), a3=a12=a13=a21=?bm(a),
+%v=tau, isDirectRelative(11,a)\} & <0>\\
+%\hline
+%UA(11) &
+%{g11} \{\} \hfill \{a11=!um(a),
+%v=!m(a), isOtherRelative(11,a)\} & <0>\\
+%\hline
+%UA(k) ${}^{k \in \{3,12,13,21\}}$ &
+%\{\} \{Pk\} \{ak=!um(a), v=!m(a)\} & <2>\\
+%\hline
+%DISCARD &
+%{g11} \{\} \hfill \{a11=DISCARD, v=tau, isAncestor(11,a)\} & <0>\\
+%\hline\hline
+%
+%\end{tabular}
+
+\section{Open-bisimulation is compatible with closed bisimulation ?}
+
+\TODO{Underneath is the rules of the closed semantics. Not sure we
+  should keep them here, but we mentionned we should have a proof of
+  the relation between the 2 semantics... In an extended version I
+  suppose (;-)}
+
+\begin{mathpar}
+    \inferrule{\phi,\phi',\phi''\!\in\!\Phi\\s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle} s'\in \to\\\\
+      \phi'\!=\!\phi\!+\!\{x'_i\!\to\!V_i|x'_i\!\in\!\iv(\alpha)\land V_i\!\in\!\mathcal{D}\} \\
+      e_b\phi'\!=\!\symb{True} \\ \phi''\!=\!\phi'+\{x_j\!\to\! e_j\phi'|j\!\in\! J\}}
+    {(s,\phi) \xrightarrow{\alpha\phi'} (s',\phi'') \in\llbracket\mylangle S,s_0,
+      \to\myrangle\rrbracket_\Phi}~~{\bf Tr1}
+%         \end{mathpar}
+% \begin{mathpar}
+
+    \inferrule {\phi,\phi'\in\Phi\\ \alpha_l^{l\in L} \to \alpha \in \overline{\symb{SV}}\\\forall i\in I\phi\setminus
+      L\phi.\,s'_i=s_i
+      \\ %\iv(\alpha)=(x_k)^{k\in K}\\\\
+      \forall l\in L\phi.\,\phi_l\in\Phi\land s_l \xrightarrow{\alpha_l\phi_l} s'_l\in\llbracket\pNet_l\rrbracket_{\Phi}\\\phi'=\phi+\uplus_{l\in L\phi} \phi_{l} }
+{\triangleleft s_i^{i\in I\phi}\triangleright \xrightarrow{\alpha\phi'} \triangleleft{s'_i}^{i\in
+        I\phi'}\triangleright  \in \llbracket\mylangle \pNet_i^{i\in I},\emptyset,\overline{\symb{SV}}\myrangle\rrbracket_\Phi}~~{\bf Tr2}
+\end{mathpar}
+
+
+\section{Model Checking open-automata}
+ \TODO{The following is about the logic formula}
+
+We want to check (and prove) properties on open pNets, using
+model-checking techniques on their open-automata. The properties will be
+expressed in any version of (action-based) branching temporal logics,
+in which we have to add constructs for quantification over the holes
+and/or leaves involved in a transition. For simplicity of the
+definition, we could choose here ACTL \cite{ACTL1990,ACTL1993} or ACTL*
+\cite{DeNicolaVaandrager95}, or the modal $\mu$-calculus
+\cite{Koz83}. Instead, for its easiness of
+expression of value-passing calculi properties, we use here the {\em
+  Model Checking Language} MCL \cite{MateescuFM2008}
+
+
+
+\begin{definition}[FH-ACTL ] The logic formula of ACTL (adding  syntax
+  for quantifying over open \pNet s : $\forall t\in {\cal{P}}, H_i \xrightarrow{a} H_i^\prime $)
+\end{definition}
+
+ \begin{definition}[FH-satisfiability] Suppose that $F$ is an open
+   \pNet\ expression, and $\phi$ is a temporal logic formula, we say
+   $F$ satisfies the $\phi$, denoted as   $F\vDash_{FH} \phi$,  if
+ \end{definition}
+
+ In a quite standard way, we define the model checking problem as
+ satisfiability of an FH-ACTL formula in a state of a FH-automaton.
+The specificity is that the model (FH-automaton) transitions include
+hypotheses about which holes are involved and predicates about their
+behaviours.
+
+ \begin{definition}[The Open MC problem]
+ \end{definition}
+
+ \section{refinement}
+ \begin{definition}[FH-refinement] FH-refinement relation $\ll$ is a
+   binary relation in between open \pNet \ expressions iff for any
+   open \pNet \ expressions $E$ and $F$, $E\ll F$, we have the
+   follows:
+ \begin{itemize}
+ \item $\P(E)=\P(F)$;
+ \item  For any  $E\xrightarrow{S, Pred, a} E'$ based on one open transition $(S, Pred, E')$ for $F$,   there exist a set indexed by $\{j\in J\}$ of transitions  $\{ F\xrightarrow{S_j, Pred_j, a\tau^\star} F_j^\prime| a=a' up\ to\ \alpha-conversation\}$  such that $\forall j\in J, S\subset S_j,  E'\ll F_j'$ and $Pred=\cup_j Pred_j$.
+ \end{itemize}
+ \end{definition}
+ \begin{definition}[Weak FH-refinement] FH-refinement relation $\ll$ is a binary relation in between open \pNet \ expressions iff for any open \pNet \ expressions $E$ and $F$, $E\ll F$, we have the follows:
+ \begin{itemize}
+ \item $\P(F)=\P(E)$;
+ \item  For any  $E\xrightarrow{S, Pred, a} E'$ based on one open transition $(S, Pred, E')$ for $E$,   there exist a set indexed by $\{j\in J\}$ of transitions  $\{ F\xRightarrow{(\uplus_i S_i)_j, (\cap_i Pred_i)_j, \tau^\star a'\tau^\star} F_j^\prime| F\xrightarrow{S_i, Pred_i, a'/\tau} F_i, a=a' up \ to \ \alpha-conversation\}$  such that $\forall j\in J, S=(\uplus_i S_i)_j, E'\ll F_j^\prime$  and $Pred \subseteq \cup_j(\cap_i Pred_i)_j$.
+ \end{itemize}
+ \end{definition}
+
+ \begin{theorem} Suppose that two \pNet s expressions $E$ and $F$ where $E$ is strong FH-bisimilar to $F$. For any temporal logic formula $\phi$,  if $E\vDash_{FH}\phi$, then we have $F\vDash_{FH} \phi$.
+ \end{theorem}
+
+  \section{pNets Model for Hierarchical Broadcast groups  (HB-pNets): definition}\label{sec:b-pnets-def}
+
+In this section, we give the formal model for the broadcast type of
+hierarchical groups using our open parameterised networks (pNets).
+
+Hierarchical Broadcast (HB) is a way of implementing broadcasting
+algorithms within a large set of processes, with better performances
+and scalability. There have been many proposals for hierarchical
+broadcast algorithms (cite...), most of them focussing on specific
+architectures or features (in particular fault tolerance), and on
+performance analysis. Very few have given a formal description of the
+algorithm, allowing to reason about their safety properties.
+
+We give here the description of one simple HB algorithm, extracted
+from\cite{Taguchi03}, but without fault
+tolerance in a first step. For the formal description, we define a
+pNet template, that can be used as a building node in a hierarchical
+assembly of processes, organised in a tree of sub-groups; communication makes use
+of local broadcast within each sub-group, and uses gateways for
+transmission of messages, up and down, between the subgroups. The
+gateways are described as generic pLTSs, playing the role of
+``controllers'' in the pNet node.
+
+\TODO{start with a simple informal description ?}
+
+More precisely, we model a generic structure supporting
+  hierarchical groups of processes, including gateways. Then
+  we model 3 differents message
+  routing algorithms, plus 2 variants, all working on this same
+  network topology, namely:
+\begin{itemize}
+\item Full broadcast: the message goes up to the root of the
+  tree, then is broadcasted down to all processes in all groups.
+\item Hierarchical broadcast 1: similar to unicast, but within each
+  subgroup the communication uses local broadcast. Only the processes
+  in the same group than the target process will received the
+  message.
+This is the algorithm from the original paper \cite{Taguchi03}, in its
+simplified version without fault tolerance mechanisms.
+\item Hierarchical broadcast 2: same principle, but without horizontal broadcast between sibling processes and gateways: the message has to go up to the enclosing subgroup/gateway, before detecting it can go down to its target.
+\item Unicast: the gateways forward the message using the shortest
+  route in the tree. The message will reach only the specified target.
+\item Unicast 2: same principle, but with detection of sibling situations, and direct sending of messages to sibling gateways/processes, thus shortening the path in a way similar to the Hierarchical Broadcast 1.
+\end{itemize}
+
+We will use these 3 algorithms, and their variants, to illustrate the
+type of properties we can prove using open pNets and FH-bisimulations.
+Note that we cannot hope to get any strong bisimulation equivalences
+between them, the intermediate messages introduced by the protocoles
+are different. To get interesting properties, we must hide
+intermediate messages, and look for weak bisimulation properties.
+
+Here are some examples:
+
+\ERIC{Simple scenario: When hiding everything but send and receive
+  messages from processes, the resulting systems with Unicast and
+  Hierarchical broadcast are weak equivalent
+  ?}
+
+\ERIC{Hierarchical Broadcast Variants: when hiding all horizontal messages
+  the two variants are Weak Equivalent ? (same for Unicast variants) }
+
+\ERIC{What kind of relation with Full broadcast ? This is more tricky,
+on one hand we have to abstract away from the target id in the
+arguments of messages; then full broadcast is indeed broadcasting
+everywhere, so the best we can hope is some refinement relation,
+because Hierachical Broadcast has naturally less behaviours.}
+
+
+
+Given a process configuration, organised hierarchicaly in subgroups,
+it is easy to build a pNet tree reflecting the hierarchy, with the
+gateways implementing the 3 algorithms. In the next
+section, we will prove that this model of the implementation is indeed
+equivalent (modulo weak bisimulation) to a flat broadcast.
+
+
+
+
+\medskip
+
+
+The whole broadcast mechanism of hierarchical groups consists in normal
+processes, gateways and subgroups linked by gateways. Normal processes
+can send and receive messages to/from the other processes (including
+gateways) in the same group, or send up-messages to its enclosing group.
+
+\TODO{Restructure these explanations}
+A gateway has external behaviours : it sends down-messages to its associated
+subgroup, and receives up-messages from its subgroup.
+Gateways behaviour is defined by a simple pLTS with two or three states depending on the algorithm: in the
+initial state the gateway can receive a
+$?m(\widetilde{tgt})$ message (from its neighbors,
+from the enclosing group, or from its own sub-group). Then depending
+on the target address
+$\widetilde{tgt}$, it will forward the message upward as
+$!um(\widetilde{tgt})$, to its corresponding sub-group
+as $!dm(\widetilde{tgt})$, or broadcasted to all its
+neighbors in the same sub-group  as
+$!bm(\widetilde{tgt})$.
+
+\centerline{  \includegraphics[width=\linewidth]{XFIG/SchemaHB+FB}}
+\begin{figure}[h]
+%
+  \caption{Behaviour of a Gateway Broadcast controller }\label{fig:hb-gatewaybroadcast}
+\end{figure}
+
+We will describe the behaviour of the gateways in the next section,
+for the different algorithms and variants.
+
+\paragraph{Sort of the processes.}
+\label{section:processSort}
+The process parameters (the holes of the pNet structure) can emit
+messages with a target address as an argument (we abstract away from
+any other message content), or receive a message, also with the target
+address. But because of the Broadcast mechanism, there are two ways a
+process can send messages, either horizontally, broadcasted to all its
+siblings, denoted $!bm(t)$, or upward to the next hierarchy level,
+denoted $!um(t)$. In the appendix, we
+will propose a way to implement this mechanism using a small pNet as a
+filter. But from now on, this would complexify the examples, so we
+simply assume that the processes have a sort $\{?m(t), !bm(t),
+!um(t)\}$. A process is always ready to accept an incoming message,
+even if the target argument does not match with its own address. The
+filter in the appendix will be in charge of discarding misfit messages.
+
+
+%\begin{figure}[h]
+% \centerline{  \includegraphics[width=0.7\linewidth]{XFIG/TreeSchema.JPG}}
+%  \caption{Structure of hierarchical groups}\label{fig:tree-schema}
+% \end{figure}
+
+% \TODO{ To use ?m instead of ?bm} => done.
+
+%% \centerline{  \includegraphics[width=0.6\linewidth]{ATG/Gateway}}
+%%   \caption{Bahaviour of a Gateway controller }\label{fig:hb-gateway}
+%%  \end{figure}
+
+%% \paragraph{Variant}
+%% Another try, with a different message name for sub-group broadcast, so
+%% we do not need to pass the src id along... Not sure it makes a simpler
+%% model.
+
+%% \begin{figure}[h]
+
+%% \centerline{  \includegraphics[width=0.8\linewidth]{ATG/Gateway2}}
+%%   \caption{Bahaviour of a Gateway HB controller }\label{fig:hb-gateway2}
+%%  \end{figure}
+%% % \TODO{Eric: to draw the figs of  the broadcast and unicast of
+%% % gateway.} done
+%% \TODO{Min: to give the formal definition of address and predicates}
+
+%% \begin{figure}[h]
+%% \centerline{
+%%   \includegraphics[width=0.5\linewidth]{ATG/GatewayUnicast}
+%%   \hspace{10mm}
+%%   \includegraphics[width=0.4\linewidth]{ATG/GatewayBroadcast}}
+%%   \caption{Bahaviour of Unicast and Broadcast gateways}\label{fig:hb-gatewayunicast}
+%%  \end{figure}
+
+% \centerline{  \includegraphics[width=0.7\linewidth]{XFIG/TreeSchema.JPG}}
+
+
+
+According to the three algorithms mentioned above, we have three kinds of pNet models for Unicast, Full broadcast and Hierarchical broadcast.
+
+\begin{definition}[B-pNets]\label{B-pNets}
+A  broadcasting model is a pNet structure : \\
+\centerline{
+$B-\pNet\triangleq \mylangle gw_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}},  pc_{\widetilde{p}}^{\widetilde{p}\in \widetilde{I_P}}, sg_{\widetilde{g}}^{\widetilde{g}\in \widetilde{I_G}}, \symb{SV}\myrangle $}
+where
+\begin{itemize}
+\item[$\bullet$] $\widetilde{I_G}$ is the index set over which
+  gateways are indexed.  $gw_{\widetilde{g}}^{\widetilde{g}\in
+    \widetilde{I_G}}$ is the family of gateways. $\widetilde{I_G}$ is
+  also the set over which subgroups are indexed,
+  i.e. $gw_{\widetilde{g}}$ links $sg_{\widetilde{g}}$.
+   \begin{itemize}
+   \item Unicast: $\Sort (gw_{\widetilde{g}})=\{?m_{\widetilde{g}}(\widetilde{tgt}), !um_{\widetilde{g}}(\widetilde{tgt}),!dm_{\widetilde{g}}(\widetilde{tgt}), ERROR_{g}\}$
+   \item Flat Broadcast: $\Sort (gw_{\widetilde{g}})=\{?m_{\widetilde{g}}(\widetilde{tgt}), !um_{\widetilde{g}}(\widetilde{tgt}),!dm_{\widetilde{g}}(\widetilde{tgt}), ?um_{\widetilde{g}}(\widetilde{tgt})\}$
+   \item Hierarchical Broadcast: $\Sort (gw_{\widetilde{g}})=\{?m_{\widetilde{g}}(\widetilde{tgt}), ?um_{\widetilde{g}}(\widetilde{tgt}), !um_{\widetilde{g}}(\widetilde{tgt}),!dm_{\widetilde{g}}(\widetilde{tgt}), !bm_{\widetilde{g}}(\widetilde{tgt}),DISCARD,
+       ERROR_{g}\}$
+  \end{itemize}
+\item[$\bullet$] $\widetilde{I_P}$ is the index set over which normal
+  processes are indexed.
+  \item [$\bullet$] $\widetilde{I_{G+P}} \triangleq
+    \widetilde{I_G}\uplus\widetilde{I_P}$ is the index set of all
+    subnets in a group, i.e. processes and subgroups.
+$\widetilde{I_G}$ and $\widetilde{I_P}$ must be \emph{disjoint},
+i.e. $\widetilde{I_G}\cap \widetilde{I_P}=\emptyset$. The sort of
+$pc_{\widetilde{p}}$ is
+\begin{itemize}
+\item Unicast: $\Sort(pc_{\widetilde{p}})=\{!m_{\widetilde{p}}(\widetilde{tgt}),
+?m_{\widetilde{p}}(\widetilde{tgt})\}$
+\item Flat Broadcast: $\Sort(pc_{\widetilde{p}})=\{!m_{\widetilde{p}},
+?m_{\widetilde{p}}\}$
+\item Hierarchical Broadcast: $\Sort(pc_{\widetilde{p}})=\{!um_{\widetilde{p}}(\widetilde{tgt}),
+?m_{\widetilde{p}}(\widetilde{tgt}),
+!bm_{\widetilde{p}}(\widetilde{tgt})\}$
+\end{itemize}
+
+\item[$\bullet$] The subgroup $sg_{\widetilde{g}}$ can be taken the hole of open pNets which can be inserted the sub-pNets(subgroups) and has the sort: $\Sort (sg_{\widetilde{g}})=\{?m_{\widetilde{g}}(\widetilde{t}), !m_{\widetilde{g}}(\widetilde{t})\}$;
+
+\item[$\bullet$]$\symb{SV}$ is a set of synchronisation vectors. For
+  the $HB-\pNet$ node,  we have six kinds of ``normal'' synchronisation
+  vectors in the model, plus 2 ``error'' vectors, listed in
+  Fig. \ref{fig:HBvectors}.
+
+\end{itemize}
+\end{definition}
+
+\centerline{  \includegraphics[width=0.85\linewidth]{ATG/GatewayHB}}
+
+\centerline{
+   \includegraphics[width=0.5\linewidth]{ATG/GatewayUnicast}
+   \hspace{10mm}
+   \includegraphics[width=0.4\linewidth]{ATG/GatewayBroadcast}}
+
+
+
+
+%% \vskip 0.5cm
+%% \begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%% \hline\hline
+%% \multicolumn{3}{|l|}{Full broadcasting}\\
+%% \hline
+%% $(UC)_{\widetilde{k}}$ & $
+%%      \symb{sv}_{u(\widetilde{i}.k)}\triangleq
+%%      <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{\widetilde{I_P}}\otimes
+%%      !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+%%          k\}}}>\longrightarrow \tau(
+%%      m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+%% \hline
+%% $(DM )_{\widetilde{k}}$& $\symb{sv}_{?\widetilde{i}}\triangleq
+%%      <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{\widetilde{I_{G+P}}
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%      ?m_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
+%%      \hline
+%% $(UM)_{\widetilde{k}}$&
+%% $\symb{sv}_{!\widetilde{i}}\triangleq
+%%     <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%     -^{\widetilde{I_P}\uplus
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%%     -^{\widetilde{I_G}}>\longrightarrow
+%%     !m_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
+
+
+%% \hline
+%% $(DG )$&
+%% $\symb{sv}_{?\widetilde{i}}\triangleq
+%%      <?m_{\widetilde{i}.k}^{\forall k\in
+%%        I_K}(\widetilde{t})\otimes
+%%      -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%      ?m_{\widetilde{i}}(\widetilde{t})$ & $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
+%% \widetilde{I_P}\}$\\
+
+%% \hline\hline
+%% \end{tabular}
+%% \vskip 0.5cm
+
+%% \begin{tabular}{|p{2.2cm}|p{9cm}|l|}
+%% \hline\hline
+%% \multicolumn{3}{|l|}{Unicast broadcasting}\\
+%% \hline
+%% $(UC)_{\widetilde{k}}$ & $
+%%      \symb{sv}_{u(\widetilde{i}.k)}\triangleq
+%%      <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{\widetilde{I_P}}\otimes
+%%      !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+%%          k\}}}>\longrightarrow \tau(
+%%      m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
+%% \hline
+%% $(DM )_{\widetilde{k}}$& $\symb{sv}_{?\widetilde{i}}\triangleq
+%%      <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      -^{\widetilde{I_P}\uplus
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%      ?m_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
+%%      \hline
+%%      $(UM)_{\widetilde{k}}$&
+%% $\symb{sv}_{!\widetilde{i}}\triangleq
+%%     <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%     -^{\widetilde{I_P}\uplus
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%%     -^{\widetilde{I_G}}>\longrightarrow
+%%     !m_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
+%% \hline
+%% $(DK)_{\widetilde{k}}$&
+%% $\symb{sv}_{!\widetilde{i}}\triangleq
+%%     <!m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%     ?m_{\widetilde{i}.g}(\widetilde{t})\otimes -^{\widetilde{I_P}\uplus
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k,\widetilde{i}\cdot g\}}\otimes
+%%     -^{\widetilde{I_G}}>\longrightarrow
+%%     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
+
+%% \hline\hline
+%% \end{tabular}
+%\end{definition}
+
+%
+%  \begin{itemize}
+%  \item[$(BG)_{\widetilde{k}}$]
+%    $\symb{sv}_{b(\widetilde{i}.k)}\triangleq
+%    <?m_{\widetilde{i}.j}^{\forall j\in I_K}(\widetilde{t})
+%    \otimes !bm_{\widetilde{i}.k}(\widetilde{t})
+%    \otimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$,
+%where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
+%\widetilde{I_P}\}$, and $\widetilde{k}=\widetilde{i}.k$
+%
+%  \item [$(UM)_{\widetilde{k}}$] $
+%    \symb{sv}_{!\widetilde{i}}\triangleq
+%    <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%    -^{\widetilde{I_P}\uplus
+%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%    -^{\widetilde{I_G}}>\longrightarrow
+%    !m_{\widetilde{i}.k}(\widetilde{t})$,
+%where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$;
+%
+%   \item [$(DC)_{\widetilde{k}}$] $
+%     \symb{sv}_{d(\widetilde{i}.k)}\triangleq
+%     <!dm_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}}\otimes
+%     ?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}}
+%     >\longrightarrow
+%     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
+%where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$;
+%
+%   \item [$(UC)_{\widetilde{k}}$] $
+%     \symb{sv}_{u(\widetilde{i}.k)}\triangleq
+%     <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}}\otimes
+%     !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
+%         k\}}}>\longrightarrow \tau(
+%     m_{\widetilde{i}.k}(\widetilde{t}))$,
+%where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$;
+%
+%   \item [$(DG )$] $\symb{sv}_{?\widetilde{i}}\triangleq
+%     <?m_{\widetilde{i}.k}^{\forall k\in
+%       I_K}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%     ?m_{\widetilde{i}}(\widetilde{t})$,
+%where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
+%\widetilde{I_P}\}$.
+%
+% \item [$(DM )_{\widetilde{k}}$] $\symb{sv}_{?\widetilde{i}}\triangleq
+%     <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}\uplus
+%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%     ?m_{\widetilde{i}}(\widetilde{t})$,
+%where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$;
+%
+%\item [$(DIS)_{\widetilde{k}}$] $\symb{sv}_{dc}\triangleq
+%     <DISCARD_{\widetilde{i}.k}^{\forall k\in
+%       I_K}(\widetilde{t})\otimes
+%     -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
+%where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
+%\widetilde{I_P}\}$.
+%\end{itemize}
+%\end{itemize}
+
+
+\medskip
+
+   \begin{example}
+We sketch here one example showing how to send one message from one
+process in one group to the other process in the other group by using
+broadcast mechanism of Hierarchical groups in {\sl HB-pNets}. Here we
+use 12, 122,... instead of the denotation above 1.2 , 1.2.2,... in the
+definition for short.
+   \end{example}
+
+\begin{figure}[h]
+  \includegraphics[width=1.0\linewidth]{ATG/Inst5}
+  \caption{A Hierarchical Broadcast pNet Structure }\label{fig:hb-structure}
+ \end{figure}
+
+
+In Fig.~\ref{fig:hb-structure}, suppose that one root group $G$ has
+  two gateways $g_1$ and $g_2$ which link two subgroups $G_1$ and
+  $G_2$, and a normal process $P_3$. Subgroup $G_1$ has one gateway $g_{12}$ which links the
+  subsubgroup $G_{12}$ one normal process $P_{12}$.
+  $G_2$ and $G_{11}$ have two normal processes respectively.
+
+
+
+The procedure of sending one message from process $P_{21}$ to process
+$P_{122}$ can be described as follows:
+
+\TODO{To be written, unless it is already in a previous section ?}
+
+\section{Computing the open operational semantics}
+
+In this section we show how to unfold the operational semantic rules
+on our hierarchical broadcast example, compute open transitions, and
+start building the open automaton.
+
+The sketch we give here considers one particular pNet node, with 2
+subgroups, and a specific number of processes in each root- and sub-
+groups. Also we make some hypotheses on the sorts of the processes.
+Clearly the full proof will have to deal with generalisations of this
+particular case.
+
+
+
+
+% \newcommand{\NetS}[1]{\symb{\guillemotleft} #1 \symb{\guillemotright}}
+
+%% A transition in the proof tree is either :
+%% \begin{itemize}
+%% \item a transition in a pLTS, with eventually a state change.
+%% \item an action in the sort of a Hole.
+%% \item the ``global action'' resulting from a synchronisation vector in the pNet.
+%% \end{itemize}
+
+%% \begin{figure}[h]
+%% $\NetS{0_{g1}, 0_{g2}, \sm{P3}, \NetS{0_{g11}, \sm{P12}, \sm{P13},
+%%       \sm{SG11}}, \NetS{\sm{P21}, \sm{P22}}}$
+%% \hfill
+%% $<<0_{g1}, 0_{g2}, 0_{g11}>>$
+
+%% \caption{initial state of our example, and state of the corresponding Expr}
+%% \end{figure}
+
+
+For each possible synch vector of the root node, we build a proof
+tree. From each such proof tree we derive a {\em open transition},
+representing a symbolic transition in the open automaton
+of the pNet.
+%% Now we compute the corresponding open-transition, getting rid of the
+%% intermediate deduction steps, keeping only premisses for the pLTS
+%% and holes involved, and the predicate.
+
+%% \begin{mathpar}
+%%   \inferrule
+%%       {0_{gw2} \xrightarrow{a_{gw2}} 2_{gw2} \\
+%%            \xrightarrow{b_{P21}}
+%%            \\ Pred_{Root}
+%%       }
+%%            {\ostate{000} \xrightarrow{v} \ostate{020}}
+%%       ~~ [UG\_2(UM\_21)]
+%% \end{mathpar}
+
+
+
+
+\medskip
+Following the residual algorithm from section \ref{sec:xxx}, we can
+build the full open-automaton of our pNet. We give here in Figure
+\ref{fig:xxx} only a small view of its first two states.
+
+\paragraph{Proving equivalences}
+
+
+We present a (partial) set of transitions of our two processes in the
+following tables. For each state of the expression, we have a set of
+lines, each defining one open transition starting from this state.
+For each specific+ation rule, we show the vectors used to prove it, the
+formal hypothesis and the predicte, and the resulting expression
+state.
+
+
+The resulting LTS for our example is shown in Fig. \ref{fig:HB-lts}.
+
+
+\begin{figure}[h]
+\includegraphics[width=9cm]{ATG/FullLTS}
+
+\caption{(symbolic) behaviour of the example, Hierarchical version}
+\label{fig:HB-lts}
+\end{figure}
+
+For the flattened version, the computation of the symbolic graph is similar, but of course simpler. The result is shown in Fig. \ref{fig:Flat-lts}.
+
+
+\begin{figure}[h]
+\includegraphics[width=9cm]{ATG/FlatLTS}
+
+\caption{(symbolic) behaviour of the example, Flat version}
+\label{fig:Flat-lts}
+\end{figure}
+
+%%% REVISION: what we did:
+%%% added the notation (x|-> J) page 3 (used to define composition)
+%%% defined pnet composiiton (filling a hole)
+%%% defined pnests bisimilarity (trivial)
+%%% added constraint on synchronisation vector: no fresh variable in target action
+%%% changed Pred def: iff instead of implies
+
