@@ -1384,15 +1384,22 @@ $\mathcal{T}_2$ and of  $\mathcal{T}_3$; members of $\mathcal{R}2$ are of the fo
 $(s^2,s^3|\Pred\,')$.
 
 Let $\mathcal{R}''$ be the relation: 
-\[\mathcal{R}'' = \{(s^1,s^3|\Pred\,'')|\,\Pred\,''=\bigvee_{ \begin{array}{l}
+\[\mathcal{R}'' = \Big\{(s^1,s^3|\Pred\,''\phi)\Big|\begin{array}{l}
+\displaystyle\Pred\,''=\bigvee_{ \begin{array}{l}
 (s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
 \end{array}
-}\,\Pred\land\Pred\,'\}\]
+}\,\Pred\land\Pred\,'\\
+\land~ \phi \text{ renames variables of $\mathcal{T}_2$ into fresh variables}
+\end{array}\Big\}\]
 
 The relation is built as follows: for each pair of state $s^1$, $s^3$, for each state 
 $s^2$ such that $\mathcal{R}$ relates $s^1$ and $s^2$, and $\mathcal{R}'$ relates $s^2$ 
 and $s^3$, we take the conjunction of the two predicates. The predicates for different 
 values of $s^2$ are collected by a disjunction. 
+Free variables are renamed to avoid further clashes with variables of $\mathcal{T}_2$; in 
+practice, because having name clashes between different terms of the disjunction is not 
+an issue, there is no need to have a different $\phi$ for each predicate, and we will use 
+a global renaming $\phi$ in the following.
 
  We will show
 that $\mathcal{R}''$ is an FH-bisimulation. Consider 
@@ -1404,7 +1411,7 @@ $(s^1,s^2_p|\Pred_p)\in\mathcal{R}$,  and $(s^2_p,s^3|\Pred\,'_p)\in\mathcal{R}$
 the 
 following by definition of bisimulation.
 For any open transition $OT$ in $\mathcal{T}_1$ originating from $s^1$:
-Additionally we have $\Pred\,'' = \bigvee_{p\in P} \Pred_p\land\Pred_p\,'$.
+Additionally we have $\Pred\,'' = (\bigvee_{p\in P} \Pred_p\land\Pred_p\,')\phi$.
 \begin{mathpar}
 
 \inferrule*[myfraction=\reddottedrule]
@@ -1477,11 +1484,13 @@ $(s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in \mathcal{R}$
  P'}$ 
  is 
  the set of states relating ${s^{1}}'$ and $s^{3}_{pxy}$.
-Consequently, for all $p$, $x$, $y$, $\Pred_{target_{px}}\land 
-\Pred_{target_{pxy}}\implies 
+Consequently, for all $p$, $x$, $y$, $(\Pred_{target_{px}}\land 
+\Pred_{target_{pxy}})\phi\implies 
 \Pred\,'_{target_{pxy}}$ (this is one element of the  disjunction defining the 
 predicate 
-relating ${s^{1}}'$ and $s^{3}_{pxy}$ in the definition of $\mathcal{R}''$).
+relating ${s^{1}}'$ and $s^{3}_{pxy}$ in the definition of $\mathcal{R}''$, note the use 
+of the global substitution $\phi$ ensuring that $\Pred\,'_{target_{pxy}}$ does not use 
+the variables of $\mathcal{T}_2$).
 
 Second, we need \\
 \begin{small}
@@ -1525,18 +1534,39 @@ $
 
 \end{small}
 
-Additionally, the Post renamings do not modify the predicates that only use non-renamed 
-variables, and because of the domain of the renamings:\\
-$\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
-\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+Additionally, the Post substitutions do not modify the predicates that only use 
+non-substituted 
+variables, and because of the domain of the substitutions:\\
+$(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
+\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}})\phi\\
+%
 = 
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land 
-\Pred_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
-\implies\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
-= \Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}} $
+(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land
+\Pred_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}) 
+\phi\\
+%
+\implies\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}\phi}}
+\subst{\Post_{OT_{pxy}}}\\
+%
+= 
+\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\subst{\Post_{OT_{px}}\phi}\\
+ $
+Finally, gathering the previous results:
 
-This allows us to conclude: using $\Pred\,'' = \bigvee_{p\in P} \Pred_p\land\Pred_p\,'$ 
-and the assertions above we obtained the needed property.
+$\Pred\,'' \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \bigvee_{p\in P}(\Pred_p \land 
+\Pred_{OT}\land\Pred\,'_p)\phi\\
+\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
+\left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+\land v\!=\!v_{pxy} \land
+\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\subst{\Post_{OT_{px}}\phi}\right)
+$
+
+This is the expected property except for the $\subst{\Post_{OT_{px}}\phi}$ however, now, 
+this substitution only modifies internal variables of $\Pred\,'_{target_{pxy}}$ that are 
+part of no other term of the assertion (in particular neither $\Pred\,''$ nor 
+$\Pred_{OT}$), it can thus safely be removed to obtain the needed property.
+
 
 \smallskip
 Concerning the other direction of bisimulation, it is sufficient to notice that the role 
