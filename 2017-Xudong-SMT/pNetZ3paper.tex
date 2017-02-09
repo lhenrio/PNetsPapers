@@ -1,0 +1,167 @@
+\documentclass{lncs/llncs}
+
+\usepackage[T1]{fontenc}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+%\geometry{a4paper}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+
+%\usepackage{amsfonts}
+%\usepackage{fancyhdr}
+%\usepackage{cite}
+%\usepackage{ifthen}
+%\usepackage{amssymb}
+%\usepackage{fancyhdr}
+%\usepackage{pifont}
+\usepackage{stmaryrd}
+\usepackage{mathtools,mathpartir}
+\usepackage{proof}
+%\usepackage{setspace}
+%\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,amscd,mathrsfs}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\usepackage{epsfig,color,subfigure,enumitem}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
+\newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
+\newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
+\makeatletter
+\newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
+\newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
+\makeatother
+
+\usepackage{macrospNets}
+
+\def\AlgT{\mathcal{T}}
+\def\AlgE{\mathcal{E}}
+\def\AlgA{\mathcal{A}}
+\def\AlgAS{\mathcal{A}_S}
+\def\AlgB{\mathcal{B}}
+\def\AlgI{\mathcal{I}}
+
+\newcommand{\Pred}{\symb{Pred}}
+\newcommand{\Post}{\symb{Post}}
+%\usepackage[math]{cellspace}
+%\setlength\cellspacetoplimit{ 37pt}
+%\setlength\cellspacebottomlimit{18pt}
+
+\pagestyle{plain}
+
+% addition to the mathpartir package for red dotted rules,
+% that we use for open-transitions
+
+\makeatletter
+\def \dotover {\textcolor{red}{\leavevmode\cleaders\hb@xt@ .22em{\hss $\cdot$\hss}\hfill\kern\z@}}
+\def \reddottedrule #1#2{\hbox {\advance \hsize by -0.5em
+%\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$} \phantom{\copy0} %
+ {\ooalign{\vphantom{$\genfrac{}{}{0pt}{0}{#1}{#2}$}\cr\dotover\cr$\genfrac{}{}{0pt}{0}{#1}{#2}$\cr}}}}
+
+ \def \dottedrule #1#2 {
+  {\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$}%
+    \vphantom{\copy0}%
+    \ooalign{%
+      \hidewidth
+      $\vcenter{\moveright\nulldelimiterspace
+        \hbox to\wd0{%
+         \xleaders\hbox{\kern.5pt\vrule height 0.4pt width 1.5pt\kern.5pt}\hfill
+          \kern-1.5pt
+        }%
+      }$
+      \hidewidth\cr
+    \box0\cr}}
+}
+
+\let \defaultfraction \mpr@@fraction
+\makeatother
+
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{prop}[theorem]{Proposition}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{algorithm}[theorem]{Algorithm}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{example}[theorem]{Example}
+%\newtheorem{problem}[theorem]{Problem}
+%\newtheorem{proof}[theorem]{Proof}
+
+% Macros for the SOS rules and proof trees:
+%\newcommand\openrule[2]{\redinfer{#1}{#2}}
+\newcommand\openrule[2]{\inferrule*[myfraction=\reddottedrule,center]{#1}{#2}}
+%\newcommand\openrule[2]{\inferrule*{#1}{#2}}
+%\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
+\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+\newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
+
+
+\begin{document}
+
+\begin{algorithm}[Operational Semantics Generation Algorithm of Open pNets]
+Open transitions satisfying two rules:
+The rule for pLTSs (Tr1) and the rule deal with pNet nodes (Tr2).
+Tr2 uses Tr1 and Tr2 recursively if there are subnets of the pNet.
+So the structure of the open transitions and subnets' open transitions is like a deduction tree constructively "prove" the open transition.
+To generate the list of possible open transitions for the pNet, we build all the possible deduction trees from the given start global state according to these two rules.
+
+\begin{description}
+\item[{Tr1 :}]
+\end{description}
+
+1) Get the start state of the pLTS.
+
+2) For all the transitions start with the start state.
+
+       2a) Get the target state of the transition. Generate the target global state according to the target state.
+       
+       2b) Get the guard of the transition, add it into the predicate of the open transition.
+       
+       2c) Store the generated open transition in the open transition list.
+
+\begin{description}
+\item[{Tr2 :}]
+\end{description}
+
+It is more complicated, the synchronization vector need to be cloned, the variable actions need a fresh variable, and it need deal with the parameters come from the subnet.
+
+1) Initialize three counters for the subnet, hole behavior, result action and SV.
+
+2) Judge the type of all the subnets of the pNet.
+	\begin{itemize}
+
+        \item If it is a pLTS, use the Tr1 recursively, store the open transitions list of the pLTS in the list of keeping subnets' open transitions.
+       
+        \item If it is a hole, generate a new hole behavior for the open transition. 
+           2a) Count the number. The hole behavior counter increases one.
+           
+           2b) Build a fresh hole behavior.
+           
+           2c) Generate the hole behavior. Store it in the hole behaviors list of the open transition.
+           
+        \item If it is a pNet, use the Tr2 recursively, store the open transitions list of the subnet in the list of keeping subnets' open transitions.
+       
+	\end{itemize}
+
+ 3) Generate a new result action for the open transition.
+ 
+       3a) Count the number. The result action counter increases one.
+       
+       3b) Build a fresh result action.
+       
+ 4) For all SVs of the pNet.
+ 
+       4a) Match result action and the combination of the subnets' open transitions and hole behaviors with the SV to generate the predicates of the open transition. Then a possible open transition of the pNet is generated. Every time the SV is chosen it need be cloned and the cloned one is used for matching.  Similarly, the variable elements of the combination are also need fresh variables.
+           
+       4b) Store the open transition of the pNet in the open transition list.
+       
+\end{algorithm}
+
+In addition, the format of fresh variable (renaming) is already defined as
+$$\emph{prefix : tree\ index:counter}$$
+\begin{itemize}
+   \item[$\bullet$] $prefix$ is the name of variable action composed with an internal name. So far the internal name can be  sva (SV action), ra (result action), hb (hole behavior).
+   \item[$\bullet$] $tree index$ is the index of the node in the tree-like structure of the pNet.
+   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
+\end{itemize}
+
+\end{document}
