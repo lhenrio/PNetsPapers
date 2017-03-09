@@ -28,7 +28,7 @@
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
 \newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
 \newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
-\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{airforceblue}{rgb}{0.26, 0.44, 0.56}
 \newcommand{\QIN}[1]{\textcolor{airforceblue}{#1}}
 \newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
 \makeatletter
@@ -175,7 +175,42 @@ value-passing processes or open process expressions.
 
 \paragraph{Structure.}
 
-\section{Running Example(s)}
+\section{Running Examples}
+\TODO{Graph of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
+
+\TODO{Description of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
+
+\QIN{There are several former papers already have illustrated many examples in closed pNets show that pNets can properly simulate the original construct. In this section, we encode the operators from other algebras into the pNets present the feature of the open pNet. They will be the running examples in the whole paper. }
+
+\subsection{Operators from Classical Process Algebra}
+\QIN{First example we choose is a formula $a.P||b.Q$, composing the prefix operator and parallel operator of CCS. 
+In Fig. 1, we show the encoding of this CCS formula. The pNet has a tree-like structure. }
+
+\QIN{The root node of the tree PN1 is the top level of the pNet structure. It acts as the parallel operator. There are two subnodes, also called subnets, noted PN2 and PN3. Their behaviors are synchronized in their parent PN1 according to a set of synchronization vectors, synchronizing input and output action from these two subnets to give out a silent action $\tau$ or just making the action become visible on this level when one of subnets is not working. }
+
+\QIN{Its subnets act as the prefix operator, so these pNets have a same structure. There is a pLTS and a hole in each pNet node. The pLTS encoding the controller of the pNet. Collaborating with the synchronization vectors, the controller manages the specific behavior of the pNet. Such as in the pLTS C1, the only action start from the initial state is $a$ and there is a synchronization vector transmits it to the outside, it makes the first action always be $a$. A guard is added as a constraint into its notation in that we want this vector to only apply to the first action of C1. And another synchronization vector keeps the following actions come from the process $P$. The action of the process $P$ is uncertain here, so the hole is used as a process parameter of the pNet to present the behavior of the process $P$. that is what shows the open property.}
+
+\subsection{Open pNet with Assignments in Leaves}
+
+
+
+\begin{figure}[t]
+
+\begin{minipage}{6cm}
+  \includegraphics[width=\linewidth]{XFIG/CCS1}
+  \caption{The pNet encodings for CCS formula}  \label{schema:ccs-pnets}
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{6cm}
+  \includegraphics[width=\linewidth]{XFIG/Enable1}
+  \\[1.3ex]
+  \includegraphics[width=\linewidth]{XFIG/Enable2}
+  \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
+\end{minipage}
+
+\end{figure}
+
+
 
 \section{Parameterised Networks (pNets): definition}
 \label{section:pnets}
@@ -758,6 +793,31 @@ This will be implemented within the open-automaton generation algorithm,
 e.g. using name generation using a global counter as a suffix.
 
 
+\subsection{Presentation of algebra}
+\QIN{Before the encoding, the presentation of the pNet should be given first. We can divide the presentation into two parts:}
+\begin{itemize}
+	\item Sorts: Constants sets of the algebra, types of the data and actions.
+	\item Operators: Operators comes from other algebras,  constructors for the parameterized actions.
+\end{itemize}
+
+\paragraph{Sorts}
+\QIN{Ownership of the variables and constants in a pNet acting as actions or data is probably various. Sorts are represented by their name. The sort of actions is built by the constant actions. For example, let $CCSAct$ be the only set of actions of the CCS running example. Obviously, $CCSAct$ contains constant actions $l$, $r$ in the pLTSs. Sorts here act as sets of actions for pNet, pLTS or holes. Intuitively, Sorts of data and actions are completely independent. Sorts of the data like a type of them could be integer, boolean or a customized type. Sorts for integer and boolean are implicitly declared.}
+
+\paragraph{Operators}
+\QIN{Usually we need introduce the expressions from other algebra when encoding the algebra into pNets. So that is needed to know about the input and output of the operators used in the expressions from those algebra. The input and output should belong to the sorts on the pNet. When there are $k$ sorts in this pNet, the structure of a $n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} > \rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.}
+
+\paragraph{Extension of other algebras}
+\QIN{Variable, constant are treated as a kind of expression together with the expression using operator. Operators can be categorized into unary operator, binary operator and N-ary operator, that make it possible to present operator from other algebras. In Fig .6, we show the Expression class we improved to enable user to extend other algebras in the pNet. There are classes implementing three kinds of expression extend the original  Expression class. From these three classes, more classes are extended using the operators coming from other algebra such as CCS and LOTOS}
+
+
+
+\begin{figure}[t]
+  \includegraphics[width=\linewidth]{XFIG/Expression}
+  \caption{The architecture of Expression class}  \label{schema:expression-pnets}
+\end{figure}
+
+
+
 \subsection{Computing and using open automata}
 In this section we present an algorithm to construct the open
 automaton representing the behaviour of an open pNet, and we prove that
@@ -846,8 +906,12 @@ So we want rename them to make them unique, while we also hope them readable. Th
 As pNets has a tree-like structure, we give every node of the pNets a tree index. And give them some counters to count the current times the SV, Hole or subnet is used, and the number of possible OT generated. \\\\
 | format of fresh variable |\\\\
 5.1.2 predicate generation\\\\
-Combining, present all the possible working status of subnets. \\
-Mixing, match the elements of the combination to match the elements of the SV one by one to generate terms of a predicate.\\\\
+Combining, present all the possible working status of subnets. 
+[pseudocode]
+\\
+Mixing, match the elements of the combination to match the elements of the SV one by one to generate terms of a predicate.
+[pseudocode]
+\\\\
 5.1.3 assignment\\\\
 Management of state variables.\\
 Translating assignments into predicate terms.\\\\
