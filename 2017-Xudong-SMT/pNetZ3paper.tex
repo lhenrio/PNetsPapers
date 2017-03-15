@@ -102,32 +102,6 @@
 
 \begin{document}
 
-% Tr1 :
-% 1. Get the start state of the pLTS through the *TrackIndexImpl( )*.
-% 2. For all the transitions start with the start state.
-%       1. Get the target state of the transition. Generate the target global state according to the target state.
-%       2. Get the guard of the transition, add it into the predicate of the open transition. If there is no guard, add *true*.
-%       3. Store the generated open transition in the open transition list.
-% Tr2 :
-% It is more complicated, the SV (synchronization vector) need to be cloned, the variable actions need a fresh variable (renaming), and it need deal with the parameters come from the subnet.
-% 1. Initialize three counters for the subnet, hole behavior, result action and SV.
-% 2. Judge the type of all the subnets of the pNet.
-%       - If it is a pLTS, use the Tr1 recursively, store the open transitions list of the pLTS in the list of keeping subnets' open transitions.
-%       - If it is a hole, generate a new hole behavior for the open transition. 
-%           1. Count the number. The hole behaviour counter increase one.
-%           2. Build a fresh hole behavior through the method *fresh( )*.
-%           3. Generate the hole behavior with the type *ActionExpression*. Store it in the hole behaviors list of the open transition.
-%       - If it is a pNet, use the Tr2 recursively, store the open transitions list of the subnet in the list of keeping subnets' open transitions.
-% 3. Generate a new result action for the open transition.
-%       1. Count the number. The result action counter increase one.
-%       2. Build a fresh result action through the method *fresh( )*.
-%       3. Generate the result action with the type *ActionExpression*.
-% 4. For all SVs of the pNet.
-%       1. Invoke the *mixing( )* method. Match result action and the combination of the subnets' open transitions and hole behaviors with the SV to generate the predicates of the open transition. Then a possible open transition of the pNet is generated.
-%           - Every time the SV is chosen it need be cloned by the method *clone( )* and the cloned one is used for matching. 
-%           - Similarly, the variable elements of the combination are also need fresh variables.
-%       2. Store the open transition of the pNet in the opentransition list.
-
 %Combining is to generate all the possible matchings of the subnets' OTs (open transitions). The result list of the matched tuples called *combination*.
 % 1. Initialize the result list of OT tuples.
 % 2. Get one list of OTs. It's same as get OTs of one subnet.
@@ -138,14 +112,14 @@
 %          1. Add the chosen OT into the tuple.
 %          2. Add the tuple into the result list, then do the recursion.
 % 6. Return the result list.
-We first conduct combining. We make all the possible cases of the subnets' working status. The result action of a pLTS or a pNet is the external action of the node shows the working status of it. The hole whose behavior is uncertain doesn't have an exact external presentation of action. We only give a variable to each hole and treat it as hole behavior to suppose working status of the hole. Here should have a constraint that this variable belongs to the sort of hole. In every case, the hole behaviors are unchanged, so we only make all the combination of subnets' open transitions.
+We first conduct combining. We enumerate all the possible cases of the subnets' working status. The result action of a pLTS or a pNet is the external action of the node shows the working status of it. The hole whose behavior is uncertain doesn't have an exact external presentation of action. We only give a variable to each hole and treat it as hole behavior to suppose working status of the hole. Here should have a constraint that this variable belongs to the sort of hole. In every case, the hole behaviors are unchanged, so we only make the combinations of subnets' open transitions.
 
-Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. 
+Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the rest part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
 \begin{algorithm}
 \caption{Combining}
 \begin{algorithmic}[1]
 
-\Require List $TR$ of result open transition lists from the subnets. 
+\Require List $TR$ of result open transition sets from the subnets. 
 \Ensure The list of all the possible combinations of open transitions $L_C$.
 \State Initial an empty combination list $L_C$;
 \State Extract a list of open transitions $L_{ot}$ from $TR$;
@@ -173,6 +147,9 @@ Algorithm 1 shows the combining algorithm for enumerating all the possible combi
 %      4. Match the result action with the result action of SV. Add the result expression into the predicate.
 %      5. Add the predicate into the OT. Store the OT in the result list.  
 % 5. Return the result list of all the possible OTs.
+We now come to the matching using combinations from the previous step, together with hole behaviors and the result action, to match with the synchronization vectors. 
+
+Every time we choose a synchronization vector for matching, we clone it and use the cloned one. We construct the predicates using the constraint declared before 
 \begin{algorithm}
 \caption{Matching}
 \begin{algorithmic}[1]
@@ -180,7 +157,7 @@ Algorithm 1 shows the combining algorithm for enumerating all the possible combi
 \Require 
 The combination of subnets' open transitions $L_C$;
 The behaviors of the holes $B$;
-The set of synchronization vector $SV$.
+The set of synchronization vectors $SV$.
 \Ensure 
 The list of all the possible open transitions generated $L_{ot}$.
 \State Initial an empty result list $L_{ot}$;
