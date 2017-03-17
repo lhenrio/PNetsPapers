@@ -182,11 +182,21 @@ value-passing processes or open process expressions.
 \paragraph{Structure.}
 
 \section{Running Examples}
+Several publications \cite{PDP2015,FORTE2016} already have introduced
+many examples of pNets, encoding
+operators of various classical process algebras, or more complex
+synchronisation structures in distributed or parallel languages.
+In this section, we use two process expressions, respectively from CCS
+and from Lotos, to illustrate different features of pNets. They will
+serve as running examples in the whole paper.  
+
 \TODO{Graph of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
 
 \TODO{Description of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
 
-\QIN{There are several former papers already have illustrated many examples in closed pNets show that pNets can properly simulate the original construct. In this section, we encode the operators from other algebras into the pNets present the feature of the open pNet. They will be the running examples in the whole paper. }
+\TODO{Xudong: correction of the 2 figures (CCS and LOTOS). Then Eric will write / rewrite the explanation text}
+
+
 
 \subsection{Operators from Classical Process Algebra}
 \QIN{First example we choose is a formula $a.P||b.Q$, composing the prefix operator and parallel operator of CCS. 
@@ -800,6 +810,8 @@ e.g. using name generation using a global counter as a suffix.
 
 
 \subsection{Presentation of algebra}
+\TODO{Eric: write an introductory paragraph}
+
 \QIN{Before the encoding, the presentation of the pNet should be given first. We can divide the presentation into two parts:}
 \begin{itemize}
 	\item Sorts: Constants sets of the algebra, types of the data and actions.
@@ -855,12 +867,6 @@ the pNet.
 \ERIC{The predicate is submitted to Z3 for checking satisfiability. If it is NOT stisfiable, the resulting OT is discarded. This will minimize the number of
 resulting transitions, and potentialy prune the search-space.}
 
-2d)
-\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
-- the input variables of pLTS transitions\\
-- the actions of holes\\
-- the result action at toplevel.}
-
 For each open-transition,  add the transition in the outgoing transitions of
 the current state, and add the
 resulting state in the unexplored set if it is not already in the
@@ -902,7 +908,21 @@ $\mathcal{T}$ with finitely many states and transitions.
 
 \section{Implementation}
 
-\TODO{Xudong: Detailed description of the implementation}
+\TODO{Xudong: Missing a general summary before going into details. You
+  can get inspiration from the following (reasonnable level of
+  abstraction):}
+\ERIC{
+=> Context = use the existing software architecture from VCE (ref to \cite{FASE} paper)\\
+=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
+=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
+=> Variable names are generated for all ``fresh'' and ``clone''
+operations, using structured variable names ensuring uniqueness of
+fresh names, but also reasonable readability of these names for
+debugging purposes.\\
+=> Assignements\\
+=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
+}
+
 
 \subsection{Fresh variable}
 \QIN{
@@ -1037,17 +1057,6 @@ Interaction with Z3: pNets module ---input--> Z3 module [JAVA API]\\\\
 \paragraph{checking satisfiability}
 After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\
 
-\ERIC{
-=> Context VCE, ref to FASE paper\\
-=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
-=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
-=> Variable names are generated for all ``fresh'' and ``clone''
-operations, using structured variable names ensuring uniqueness of
-fresh names, but also reasonable readability of these names for
-debugging purposes.\\
-=> Assignements\\
-=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
-=> Simplification is not yet implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
 
 
 \TODO{
@@ -1060,6 +1069,26 @@ Open Automata of the CCS example.
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
+
+\TODO{Conclusion: what you have accomplished, clearly state your
+  contributions, and what is delivered at the end of your internship
+  work}
+
+\TODO{Discussion: next steps: 1) what is left as open questions on the
+  algorithm itself, what you have learned (is Z3 useful and efficient,
+  is it the right tool ?). 2) next important goal is bisimulation
+  checking, what is neded for that (formalize the algo, define and
+  implement simplification)}
+
+  
+=> Simplification is not yet implemented. It is not strictly required
+for the Open Automaton construction, but it will be critical later for
+predicate comparison in the bisimulation algorithm.
+
+\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
+- the input variables of pLTS transitions\\
+- the actions of holes\\
+- the result action at toplevel.}
 
 \begin{figure}[t]
   \includegraphics[width=\linewidth]{XFIG/CCSresult}
