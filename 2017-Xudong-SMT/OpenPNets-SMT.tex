@@ -84,7 +84,7 @@
 \newtheorem{prop}[theorem]{Proposition}
 %\newtheorem{corollary}[theorem]{Corollary}
 %\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{alg}[theorem]{Algorithm}
 %\newtheorem{remark}[theorem]{Remark}
 %\newtheorem{definition}[theorem]{Definition}
 %\newtheorem{example}[theorem]{Example}
@@ -98,6 +98,12 @@
 %\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
 \newcommand\ostate[1]{\triangleleft{#1}\triangleright}
 \newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
+\usepackage{algorithm} 
+%\usepackage{algorithmicx} 
+\usepackage{algpseudocode}  
+\renewcommand{\algorithmicrequire}{\textbf{Input:}} 
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\algnewcommand{\IfThenElse}[3]{\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}% \IfThenElse{<if>}{<then>}{<else>}
 
 
 
@@ -825,7 +831,7 @@ under reasonable conditions this automaton is finite.
 
 \TODO{Refine the algorithm description}
 
-\begin{algorithm}[Behavioural semantics of open pNets: Sketch]
+\begin{alg}[Behavioural semantics of open pNets: Sketch]
 This is a standard residual algorithm over a set of open-automaton
 states, but where transitions are open transitions
 constructively ``proven'' by deduction trees.
@@ -862,7 +868,7 @@ explored set.
 
 %3) this ends with the "while" from step 2, when we have no more
 %unexplored set.
-\end{algorithm}
+\end{alg}
 
 
 
@@ -897,30 +903,140 @@ $\mathcal{T}$ with finitely many states and transitions.
 \section{Implementation}
 
 \TODO{Xudong: Detailed description of the implementation}
+
+\subsection{Fresh variable}
 \QIN{
-\\
-5.1 Generation of the Open Transition\\\\
-5.1.1 fresh variable\\\\
-The variable in each SV are considered local, so does the variable of an open transition such as its hole behavior and its result action.
-So we want rename them to make them unique, while we also hope them readable. The fresh variable has a confirmed format.
-As pNets has a tree-like structure, we give every node of the pNets a tree index. And give them some counters to count the current times the SV, Hole or subnet is used, and the number of possible OT generated. \\\\
-| format of fresh variable |\\\\
-5.1.2 predicate generation\\\\
-Combining, present all the possible working status of subnets. 
-[pseudocode]
-\\
-Mixing, match the elements of the combination to match the elements of the SV one by one to generate terms of a predicate.
-[pseudocode]
-\\\\
-5.1.3 assignment\\\\
+The variables in each synchronization vector are considered local, so does the variables of an open transition such as its hole behaviors and its result action. So we want rename the variables to make them unique on every occurrence of a vector. Similarly, the name given to the hole behaviors for each hole or the result action for each open transition must be distinct. At the same time, we also hope them still readable. Here we define the fresh variables, the variables renamed with a regular format by the function fresh().
+}
+
+\QIN{
+The fresh function is to generate a new name adding a suffix after the original name. The suffix contains three part combined by a colon. 
+}
+
+\begin{definition}[Fresh variable]\label{fresh-variable}
+The format of \emph{fresh variable} (renaming) is defined as:
+$$\emph{prefix : tree\ index\ :\ counter}$$
+\begin{itemize}
+   \item[$\bullet$] $prefix$ is a default internal name for the variable. So far the internal name can be  sva (SV action), ra (result action), hb (hole behavior).
+   \item[$\bullet$] $tree\ index$ is the index of the node in the tree-like structure of the pNet.
+   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
+\end{itemize}
+\end{definition}
+
+\QIN{
+$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
+}
+
+\subsection{Predicate generation}
+\QIN{
+The predicate of the open transition is a conjunction of two parts every time applying Tr2. One part composes the predicate from the subnets and the guard from transitions in sub-pLTS or synchronization vectors. The other part is the conjunction of equations generating during  synchronizing subnets' behaviors and synchronization vectors. Note that it is simple to collect required terms in the first part while in the second part it need to find out all the possible conjunction forms. We present here a algorithm divided in two step. Combining enumerates all the possible combinations of the working status. Matching synchronizes the subnets according to synchronization vectors to generate possible predicates.
+}
+%Combining is to generate all the possible matchings of the subnets' OTs (open transitions). The result list of the matched tuples called *combination*.
+% 1. Initialize the result list of OT tuples.
+% 2. Get one list of OTs. It's same as get OTs of one subnet.
+% 3. Add *null* into the list, it means this subnet does not work this time.
+% 4. Combine the rest subnets' OTs. Get the combination of the rest OTs.
+% 5. If there are OTs of the chosen list not be chosen, choose one OT.
+%      1. If there are tuples of the combination not be chosen, choose one tuple.
+%          1. Add the chosen OT into the tuple.
+%          2. Add the tuple into the result list, then do the recursion.
+% 6. Return the result list.
+\paragraph{Combining}
+\QIN{
+We first conduct combining. To each subnet, we enumerate all the possible cases of its working status. The result action of a pLTS or a pNet is the external action of the node shows the working status of it. The hole whose behavior is uncertain doesn't have an exact external presentation of action. We only give a variable to each hole and treat it as hole behavior to suppose working status of the hole. Here should have a constraint that this variable belongs to the sort of hole. In every case, the hole behaviors are unchanged, so we only make the combinations of subnets' open transitions.
+}
+
+\QIN{
+Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the rest part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
+}
+
+\begin{algorithm}
+\caption{Combining}
+\begin{algorithmic}[1]
+
+\Require List $TR$ of result open transition sets from the subnets. 
+\Ensure The list of all the possible combinations of open transitions $L_C$.
+\State Initial an empty combination list $L_C$;
+\State Extract a list of open transitions $L_{ot}$ from $TR$;
+\State Insert $null$ into $L_{ot}$;
+\State Get the combinations $L'_C$ of the $TR$;
+\For{each $ot \in L_{ot}$}
+	\For{each $C' \in L'_C$}
+		\State Add $ot$ into $C'$ to get a new tuple $C$;
+		\State Add $C$ into $L_C$;
+	\EndFor
+\EndFor 
+\State \Return $L_C$;
+
+\end{algorithmic}  
+\end{algorithm}
+
+% Mixing is to match the combination of the subnets' open transitions, hole behaviors and result action with the SV (synchronization vector) to generate the possible predicates of the OT (open transition). At the same time, other parameters of the OT (global state, subnets' transitions, result action...) are also generated. Then the possible OTs of the pNet can be achieved. 
+% 1. Initialize the combination through the method *combineOpenTransitions( )*.
+% 2. Initialize the result list.
+% 3. Get the number of subnets and holes. They are used to decide how many element of the SV should be matched with them.
+% 4. For all tuples of the combination.
+%      1. Invoke the *clone( )* method to generate the fresh SV.
+%      2. Match the elements of the tuple with the elements of the SV. If there is a *null* matched with a *not null* action, filter this matching. Add the result expression and the predicate of the subnets into the predicate. Generate the target global state correspondingly.
+%      3. Match the hole behaviors with the elements of the SV. The hole behavior could be *null*. Add the result expression into the predicate.
+%      4. Match the result action with the result action of SV. Add the result expression into the predicate.
+%      5. Add the predicate into the OT. Store the OT in the result list.  
+% 5. Return the result list of all the possible OTs.
+\paragraph{Matching}
+\QIN{
+We now come to the matching using combinations from the previous step, together with hole behaviors and the result action, to match with the synchronization vectors. 
+}
+
+\QIN{
+Algorithm 2 shows the algorithm matches combination $L_C$, hole behaviors $B$ with synchronization vectors $SV$. Every time we choose a synchronization vector $sv$ from $SV$ for matching, we clone it and use the cloned one $sv'$. We use the definition declared before to construct all the possible predicates but the algorithm has not checked the correctness of these predicates. It needs a further refinement.
+}
+
+\QIN{
+In order to filter a part of mismatches, at any time an action $e_1$ matching with an element $e_2$ from synchronization vector, the pair $(e_1, e_2)$ must be checked: if both $e_1$ and $e_2$ are $null$ or $not\ null$, then it continues to generate a new term of predicate. Otherwise, it is intuitive that the working status coming from the subnet $e_1$ is different from what asked by the synchronization vector $e_2$, then this case is filtered. 
+}
+\begin{algorithm}
+\caption{Matching}
+\begin{algorithmic}[1]
+
+\Require 
+The combination of subnets' open transitions $L_C$;
+The behaviors of the holes $B$;
+The set of synchronization vectors $SV$.
+\Ensure 
+The list of all the possible open transitions generated $L_{ot}$.
+\State Initial an empty result list $L_{ot}$;
+\For{each $C \in L_C$}
+	\For{each $sv \in SV$}
+		\State Clone the $sv$, the result is denoted as $sv'$;
+		\State Generate the fresh result action v;
+		\State Combine $C, B, v$ as a new tuple $<C, B, v>$;
+		\For{each $e_1 \in <C, B, v> \&\& e_2 \in sv'$}
+			\If{$(e_1\ is\ null\ \&\&\ e_2\ is\ not\ null)\ ||\ (e_1\ is\ not\ null\ \&\&\ e_2\ is\ null)$} 
+			\State Skip;
+			\Else 
+			\State Generate the term of predicate $t$;
+			\State Add $t$ into the $Pred$;
+			\EndIf
+		\EndFor
+		\State Generate the result open transition $ot$ with $Pred$;
+		\State Add the $ot$ into $L_{ot}$;
+	\EndFor
+\EndFor 
+\State \Return $L_{ot}$;
+
+\end{algorithmic} 
+\end{algorithm}
+
+\subsection{assignment}
 Management of state variables.\\
 Translating assignments into predicate terms.\\\\
-5.2 Pruning the unsatisfiable results\\\\
+
+\subsection{Pruning the unsatisfiable results}
 Interaction with Z3: pNets module ---input--> Z3 module [JAVA API]\\\\
-5.2.1 presentation\\\\
-5.2.2 checking satisfiability\\\\
+\paragraph{translation of presentation}
+\paragraph{checking satisfiability}
 After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\
-}
+
 \ERIC{
 => Context VCE, ref to FASE paper\\
 => Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
@@ -945,6 +1061,10 @@ Open Automata of the CCS example.
 \section{Conclusion and Discussion}
 \label{section:conclusion}
 
+\begin{figure}[t]
+  \includegraphics[width=\linewidth]{XFIG/CCSresult}
+  \caption{The open automaton of the CCS formula a.P||b.Q}  \label{schema:ccs-result}
+\end{figure}
 
   
 
