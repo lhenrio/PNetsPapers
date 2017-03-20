@@ -190,41 +190,99 @@ In this section, we use two process expressions, respectively from CCS
 and from Lotos, to illustrate different features of pNets. They will
 serve as running examples in the whole paper.  
 
-\TODO{Graph of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
-
-\TODO{Description of two examples: CCS a.P||b.Q [DONE] and LOTOS (P>>Q)>>R}
-
-\TODO{Xudong: correction of the 2 figures (CCS and LOTOS). Then Eric will write / rewrite the explanation text}
-
-
 
 \subsection{Operators from Classical Process Algebra}
-\QIN{First example we choose is a formula $a.P||b.Q$, composing the prefix operator and parallel operator of CCS. 
-In Fig. 1, we show the encoding of this CCS formula. The pNet has a tree-like structure. }
 
-\QIN{The root node of the tree PN1 is the top level of the pNet structure. It acts as the parallel operator. There are two subnodes, also called subnets, noted PN2 and PN3. Their behaviors are synchronized in their parent PN1 according to a set of synchronization vectors, synchronizing input and output action from these two subnets to give out a silent action $\tau$ or just making the action become visible on this level when one of subnets is not working. }
+\begin{figure}[h]
+  \centerline{\includegraphics[width=9cm]{XFIG/CCS1}}
+  \caption{The pNet encodings for CCS formula}  \label{schema:ccs-pnets}
+\end{figure}
 
-\QIN{Its subnets act as the prefix operator, so these pNets have a same structure. There is a pLTS and a hole in each pNet node. The pLTS encoding the controller of the pNet. Collaborating with the synchronization vectors, the controller manages the specific behavior of the pNet. Such as in the pLTS C1, the only action start from the initial state is $a$ and there is a synchronization vector transmits it to the outside, it makes the first action always be $a$. A guard is added as a constraint into its notation in that we want this vector to only apply to the first action of C1. And another synchronization vector keeps the following actions come from the process $P$. The action of the process $P$ is uncertain here, so the hole is used as a process parameter of the pNet to present the behavior of the process $P$. that is what shows the open property.}
+First example we choose is a formula $a.P||b.Q$, composing prefix and
+parallel operators of value-passing CCS, and containing two process
+variables (holes) P and Q. In Fig. 1, we show the encoding of this CCS
+formula. The pNet has a tree-like structure.  
+
+The root node of the tree PN1 is the top level of the pNet
+  structure. It acts as the parallel operator. There are two subnets,
+  noted PN2 and PN3, each representing one of the prefix
+  sub-expression. Their behaviors are synchronized in their parent PN1
+  according to a set of synchronization vectors, synchronizing input
+  and output action from these two subnets to give out a silent action
+  $\tau$ or just making the action become visible on the top level when
+  one of the subnets is working alone. The vector syntax is typically
+  ``<act, \_ > -> act'', in which ``\_'' means that the corresponding
+  subnet is not involved in this synchronisation.
+  \TODO{The vectors for communication are wrong, we cannot use ?ch(v)
+    and !ch(v), see the PDP'15 and Forte'16 papers. }
+  Remark that these 4
+  synchronisation vectors correspond faithfully to the usual SOS
+  rules of CCS operational semantics.
+
+  Each of the subnets act as one of the prefix operator.
+In each of them there is a parameterised labelled transition system
+(pLTS) and a hole. The pLTS is a controller managing the
+changes of state of the pNet; consider C1, from its initial state the
+only possible transition performs the action variable $a$; once in
+state 1, the controler can perform (infinitely often) action $l$ that
+is a constant action local to C1 (that must be different from any
+other actino of the whole system). In the node PN2, there are 2
+synchronisation vectors, the first one transmits to the upper level the
+action $a$ (and thanks to C1, will only be activated one time); the
+second one transmit any action of the hole P, but only when C1 can
+perform $l$.
+
+It should be easy to see that this pNet system encodes properly the
+behavioural semantics of the corresponding CCS expression. Remarkk
+that it is built in a systematic structural way, one pNet node
+encoding each CCS operator. And it is parameterised both at the level
+of actions variables (occuring within the controllers and the synchronisation
+vectors), and at the level of process parameters 
+(holes). 
 
 \subsection{Open pNet with Assignments in Leaves}
+\begin{figure}[h]
 
-
-
-\begin{figure}[t]
-
-\begin{minipage}{7cm}
-  \includegraphics[width=\linewidth]{XFIG/CCS1}
-  \caption{The pNet encodings for CCS formula}  \label{schema:ccs-pnets}
-\end{minipage}
-\hspace{2mm}
-\begin{minipage}{5cm}
-  \includegraphics[width=\linewidth]{XFIG/Enable1.eps}
-  \\[1.3ex]
-  \includegraphics[width=\linewidth]{XFIG/Enable2.eps}
-  \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
-\end{minipage}
+  \includegraphics[width=6cm]{XFIG/Enable1.eps}
+%  \hspace{0.5cm}
+  \includegraphics[width=6cm]{XFIG/Enable2.eps}
+  \caption{Two pNet encodings for the Lotos Enable operator P>>Q }  \label{schema:enable-pnets}
 
 \end{figure}
+
+In the second running example, we want to illustrate the use of local
+variables in the controller pLTSs. This example is based on the Enable
+operator of the LOTOS language. For the readers not familiar with
+Lotos, the pNet encodingss here should be sufficient to understand the
+Enable operator semantics.
+
+In fact we give two encodings of this operator: the first one is
+``state oriented'', in the sense that the controler has two states,
+indicating where the control point is in the P>>Q process expression,
+either in P or in Q. The transition between these occurs when process
+P performs a $\delta(x)$ action, transfering the control to Q, and
+sending a value $x$ at the same time. Process Q must be ready to
+``accept'' this value through an $acc(x)$ action. The controler C1,
+and the 3 synchronisation vectors of the Enable1 pNet should be easy
+to understand. Note 
+that the first vector, transmitting an action $a1$ of P, can only
+occur if $a1$ is not a $\delta$.
+
+The second encoding is ``data oriented'', meaning that the state of
+the node controller is encoded in the value of the pLTS state
+variable(s). Here we have a single state variable $s_0$, initialised
+as $0$. Its value is ``0'' when the control is on P, and ``1'' when the
+control is on Q. The transitions in the pLTS have the more general
+syntax: ``<action-expr> [guard] \{sequence of assignments\}''. Guards
+and assignments can only use the values of variables of their source
+state and values from input variables in the action expression; and a
+transition can only assign variables of its target state. 
+The second vector of the node ``Enable2'' also shows a
+$\underline{\delta(y_2)}$ result action, where the underlined action
+stands for an internal (already synchronised) action, that cannot be
+further synchronised at upper levels. This is a straighforward
+generalisation of the notion of internal actions, that will be
+convenient for observing internal events during model-checking. 
 
 
 
