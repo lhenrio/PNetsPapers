@@ -210,12 +210,13 @@ The root node of the tree PN1 is the top level of the pNet
   according to a set of synchronization vectors, synchronizing input
   and output action from these two subnets to give out a silent action
   $\tau$ or just making the action become visible on the top level when
-  one of the subnets is working alone. The vector syntax is typically
+  one of the subnets is working alone. The vector concrete syntax is typically
   ``<act, \_ > -> act'', in which ``\_'' means that the corresponding
   subnet is not involved in this synchronisation.
-  \TODO{The vectors for communication are wrong, we cannot use ?ch(v)
-    and !ch(v), the action algebra has changed since PDP'2015, now you
-    must remove the ``?'' and ``!'' from the vectors. }
+  There is also a difference with the usual CCS notation of
+  input/output actions: in the first vector, $ich$ and $ch$ are
+  corresponding input and output channels (see next section for a more
+  complete formalisation). 
   Remark that these 4
   synchronisation vectors correspond faithfully to the usual SOS
   rules of CCS operational semantics.
@@ -440,9 +441,8 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
 		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
 \item[$\bullet$]
-\QIN{
-The $x_j$ here is called the $state\ variable$ of state $s'$. $State\ variables$ can only be modified by the assignment in the transition targets to its owner state. The global state variable of a pLTS is the variable $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$.
-}
+The $x_j$ here are $state\ variables$ of state $s'$. $State\ variables$ can only be modified by the assignment in the transitions targetting its owner state. A global state variable of a pLTS is a variable $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$.
+
 
 \end{itemize}
 \end{definition}
@@ -537,21 +537,21 @@ A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
 is said to be \emph{open}.
 
 
-\begin{figure}[t]
-\begin{minipage}{6.1cm}
+%% \begin{figure}[t]
+%% \begin{minipage}{6.1cm}
 
-  \includegraphics[width=\linewidth]{XFIG/Enable1}
-  \\[1.3ex]
- \includegraphics[width=\linewidth]{XFIG/Enable2}
-  \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
-\end{minipage}
-  \hspace{2mm}
-\begin{minipage}{6cm}
-  \includegraphics[width=\linewidth]{XFIG/P-QR}
-  \caption{Composed pNet for ``P>>(Q>>R)''}  \label{schema:enable-composed}
-\end{minipage}
+%%   \includegraphics[width=\linewidth]{XFIG/Enable1}
+%%   \\[1.3ex]
+%%  \includegraphics[width=\linewidth]{XFIG/Enable2}
+%%   \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
+%% \end{minipage}
+%%   \hspace{2mm}
+%% \begin{minipage}{6cm}
+%%   \includegraphics[width=\linewidth]{XFIG/P-QR}
+%%   \caption{Composed pNet for ``P>>(Q>>R)''}  \label{schema:enable-composed}
+%% \end{minipage}
 
-\end{figure}
+%% \end{figure}
 
 
 
@@ -593,6 +593,7 @@ set of state modifications.
 
 \begin{example}\emph{An open-transition.}
   \label{OT:enable-composed}
+  \TODO{ERIC: change for an OT of CCS example}
   The \texttt{EnableCompL} pNet of Fig. \ref{schema:enable-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
 
  \smallskip
@@ -794,7 +795,9 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
 \begin{example} \emph{Using the operational rules to compute
     open-transitions}
   In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
-  open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:enable-composed}).
+  open transition $OT_2$ of \texttt{EnableCompL} (see example page
+  \pageref{OT:enable-composed}).
+  \TODO{Eric: change for a deduction tree of CCS expression}
   The rule uses TR1 for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
   
 \begin{figure}[tb]
@@ -890,9 +893,10 @@ An algebra presentation contains:
 \begin{itemize}
 	\item Sorts: Constants sets of the algebra, types of the data
           and actions. 
-	\item Operators: Operators comes from other algebras \TODO{why
-          others ? there can be action constructors also}
-          constructors for the parameterized actions.
+	\item Operators: Operators used to construct action
+          expressions (including their data parameters); they are
+          constructors of data and action sorts, but also predicates
+          over these objects.
         \item Constants: The satifiability solver need to know which
           actions in the pLTS behaviours are constants (like the $l$,
           $r$ local actions of the controlers in the CCS example). So
@@ -918,11 +922,12 @@ algebra. The input and output should belong to the sorts on the
 pNet. When there are $k$ sorts in this pNet, the structure of a
 $n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
 \rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
-\TODO{ I do not understand this}
+\TODO{ I do not understand this. As discussed today, I will wait till
+  you include an example of algebra presentation before rewriting the comment.}
 
 
-\paragraph{Implementation of the expressions meta-model}
-The VerCors platform uses ECORE and EMF to define the structure of
+\paragraph{Implementation of the expression meta-model}
+The VerCors platform uses Ecore and EMF to define the structure of
 both pNets and actions algebras. There exists a predefined set of
 action and data expressions classes, including boolean, integer and
 action expressions, with predefined variables, literal (constants),
@@ -963,7 +968,7 @@ of the automaton, and an empty set of explored states.
 2a) pick one state from the unexplored set and add it to the explored
 set. From this state
 build all possible deduction trees by application of the structural
-rules Tr1 and Tr2, using all \ERIC{applicable} combinations
+rules Tr1 and Tr2, using all applicable combinations
 of synchronisation vectors.
 
 2b) For each of the obtained deduction trees, extract the resulting
@@ -971,8 +976,11 @@ open-transition, with its predicate and \Post\ assignments by exploring the stru
 the pNet.
 
 2c)
-\ERIC{The predicate is submitted to Z3 for checking satisfiability. If it is NOT stisfiable, the resulting OT is discarded. This will minimize the number of
-resulting transitions, and potentialy prune the search-space.}
+The predicate is submitted to Z3 for checking satisfiability. If it is
+NOT satisfiable, the resulting OT is discarded. This will minimize the
+number of 
+resulting transitions. Then a reachability check could potentialy
+prune the state space.
 
 For each open-transition,  add the transition in the outgoing transitions of
 the current state, and add the
@@ -1001,6 +1009,7 @@ has a finite number of state variables, then Algorithm 1 terminates
 and produces an open automaton 
 $\mathcal{T}$ with finitely many states and transitions.
 
+The proof can be found in \cite{FORTE16}.
 
 % Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
 %     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
@@ -1014,53 +1023,56 @@ $\mathcal{T}$ with finitely many states and transitions.
 \end{theorem}
 
 \section{Implementation}
-\QIN{
-VerCors platform uses pNet as the intermediate language for some
-language or graphical formalism to be translated into both input for a
-checker and for generating code automatically to ease the
-specification from non-expert users\cite{HKM-FASE16}, compiling it
-from those language or graphical formalism in the pNet API. We compute
-the open automaton of an open pNet also in that pNet API directly
+The VerCors platform uses (closed) pNets as the intermediate language
+for some high-level language or graphical formalism to be translated
+into both input for a 
+model-checker and for generating executable code automatically \cite{HKM-FASE16}.
+% to ease the
+% specification from non-expert users, compiling it
+%from those language or graphical formalism in the pNet API.
+
+In our prototype we start directly with open pNets expressed
+programmaticaly, using the pNet API (graphical editors may be added
+later). From these, we compute
+the open automaton of an open pNet by directly
 implementing the sketch showed before. However, we made some
-modification, merging the step 2a-2b and applying Tr2 with the
-premisses from subnets to generate open transitions, application of
-Tr1 is still conducted in a simple way. At same time, we apply the
-fresh function to rename all the variable to make them unique and
-readable. Besides that, we also have a management of assignments
-throughout the whole computation. Satisfiability check is done only at
-top level of the deduction tree construction. An alternative would be
+modifications due to implementation choices:
+\begin{itemize}
+  \item Steps 2a-2b are merged, applying Tr2 from the
+premisses OTs from subnets to generate open transitions without
+explicitely constructing the deduction tree.
+  \item We defined a general naming schema for implementing the fresh 
+and clone functions to rename all the variable to make them unique, but also
+readable enough for debugging purpose.
+  \item Besides that, we also have designed a management of state variables and
+    assignments throughout the whole computation.
+  \item Satisfiability check is done only at
+top level of the open-transition construction. An alternative would be
 to submit the satisfiability check to the SMT solver at each level of
-the tree construction, potentially reducing the overall number of
+the hierarchical OT construction, potentially reducing the overall number of
 combinations. But the submission to the SMT engine is costly, and more
 complexity analysis is required before deciding if this would be
 worthwhile. 
-}
-
-\TODO{Xudong: Missing a general summary before going into details. You
-  can get inspiration from the following (reasonable level of
-  abstraction):}
-  
-\ERIC{
-=> Context = use the existing software architecture from VCE (ref to \cite{HKM-FASE16} paper)\\
-=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
-=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitly constructing the deduction tree. \\
-=> Variable names are generated for all ``fresh'' and ``clone''
-operations, using structured variable names ensuring uniqueness of
-fresh names, but also reasonable readability of these names for
-debugging purposes.\\
-=> Assignments\\
-=> Satisfiability check is done only at top level of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentially reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
-}
+\end{itemize}
 
 
-\subsection{Fresh variable}
-\QIN{
-The variables in each synchronization vector are considered local, so does the variables of an open transition such as its hole behaviors and its result action. So we want rename the variables to make them unique on every occurrence of a vector. Similarly, the name given to the hole behaviors for each hole or the result action for each open transition must be distinct. At the same time, we also hope them still readable. Here we define the fresh variables, the variables renamed with a regular format by the function fresh().
-}
+\subsection{Fresh variables}
 
-\QIN{
-The fresh function is to generate a new name adding a suffix after the original name. The suffix contains three part combined by a colon. 
-}
+The variables in each synchronization vector are considered local, so
+does the variables of an open transition such as its hole behaviors
+and its result action. So we want rename the variables to make them
+unique on every occurrence of a vector. Similarly, the name given to
+the hole behaviors for each hole or the result action for each open
+transition must be distinct. At the same time, we also hope them still
+readable. Here we have defined a structure for the name of the fresh
+variables, the variables renamed with a regular format by the function
+fresh(). 
+
+
+More precisely, the fresh function generates a new name adding a
+suffix after the original name. The suffix contains three parts
+combined by a colon.  
+
 
 \begin{definition}[Fresh variable]\label{fresh-variable}
 The format of \emph{fresh variable} (renaming) is defined as:
@@ -1071,6 +1083,8 @@ $$\emph{prefix : tree\ index\ :\ counter}$$
    \item[$\bullet$] $counter$ is the current value of the corresponding counter.
 \end{itemize}
 \end{definition}
+
+\TODO{Add the process and the vector ids ?}
 
 \QIN{
 $Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
