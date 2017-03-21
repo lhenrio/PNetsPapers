@@ -168,7 +168,7 @@ value-passing processes or open process expressions.
   Summary of previous works on pNets and open pNets => 1/2 page.\\
   Longterm goals:\\
   - open pNets to represent operators and program skeletons (ref to
-  \cite{PDP2015})\\
+  \cite{HMZ:PDP15})\\
   - compute semantics in term of open transitions\\
   - compute equivalence (bisimulation of open automata)\\
   - model-check properties of open systems
@@ -182,7 +182,7 @@ value-passing processes or open process expressions.
 \paragraph{Structure.}
 
 \section{Running Examples}
-Several publications \cite{PDP2015,FORTE2016} already have introduced
+Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 many examples of pNets, encoding
 operators of various classical process algebras, or more complex
 synchronisation structures in distributed or parallel languages.
@@ -214,7 +214,8 @@ The root node of the tree PN1 is the top level of the pNet
   ``<act, \_ > -> act'', in which ``\_'' means that the corresponding
   subnet is not involved in this synchronisation.
   \TODO{The vectors for communication are wrong, we cannot use ?ch(v)
-    and !ch(v), see the PDP'15 and Forte'16 papers. }
+    and !ch(v), the action algebra has changed since PDP'2015, now you
+    must remove the ``?'' and ``!'' from the vectors. }
   Remark that these 4
   synchronisation vectors correspond faithfully to the usual SOS
   rules of CCS operational semantics.
@@ -868,31 +869,76 @@ e.g. using name generation using a global counter as a suffix.
 
 
 \subsection{Presentation of algebra}
-\TODO{Eric: write an introductory paragraph}
+One of the important goal of the Open pNet framework is to provide us
+with a model able to express the semantics of many different algebras
+or languages. In particular, as we have seen in section
+\ref{section:pnets}, the \emph{term algebra} used to express the
+action expressions and the data in their parameters is left open in
+the pNet formalisation.
 
-\QIN{Before the encoding, the presentation of the pNet should be given first. We can divide the presentation into two parts:}
+So, for a given language, we now need to specify its data and action
+domains, giving them an abstract syntax (sorts, constructors, operators,
+and predicates). We call this a \emph{Presentation}.
+We also define a concrete syntax, that will be used for
+pretty-printing, but also for translating the presentation, and the
+predicates, into Z3 syntax. 
+
+An algebra presentation contains:
 \begin{itemize}
-	\item Sorts: Constants sets of the algebra, types of the data and actions.
-	\item Operators: Operators comes from other algebras,  constructors for the parameterized actions.
+	\item Sorts: Constants sets of the algebra, types of the data
+          and actions. 
+	\item Operators: Operators comes from other algebras \TODO{why
+          others ? there can be action constructors also}
+          constructors for the parameterized actions.
+        \item Constants: The satifiability solver need to know which
+          actions in the pLTS behaviours are constants (like the $l$,
+          $r$ local actions of the controlers in the CCS example). So
+          for a given pNet system, the Action sort will include all
+          these constants.
 \end{itemize}
 
 \paragraph{Sorts}
-\QIN{Ownership of the variables and constants in a pNet acting as actions or data is probably various. Sorts are represented by their name. The sort of actions is built by the constant actions. For example, let $CCSAct$ be the only set of actions of the CCS running example. Obviously, $CCSAct$ contains constant actions $l$, $r$ in the pLTSs. Sorts here act as sets of actions for pNet, pLTS or holes. Intuitively, Sorts of data and actions are completely independent. Sorts of the data like a type of them could be integer, boolean or a customized type. Sorts for integer and boolean are implicitly declared.}
+Ownership of the variables and constants in a pNet acting as actions
+or data is probably various. Sorts are represented by their name. The
+sort of actions is built by the constant actions. Sorts here act as
+sets of actions for pNet, pLTS or 
+holes. There \emph{must} be one sort for actions, and eventually
+several others for the types of data parameters. Sorts for integer
+and boolean are implicitly declared. 
 
 \paragraph{Operators}
-\QIN{Usually we need introduce the expressions from other algebra when encoding the algebra into pNets. So that is needed to know about the input and output of the operators used in the expressions from those algebra. The input and output should belong to the sorts on the pNet. When there are $k$ sorts in this pNet, the structure of a $n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} > \rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.}
+We need introduce operators for building expressions, of both action
+and data sorts, when encoding the 
+algebra into pNets. So that is needed to know about the input and
+output of the operators used in the expressions from those
+algebra. The input and output should belong to the sorts on the
+pNet. When there are $k$ sorts in this pNet, the structure of a
+$n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
+\rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
+\TODO{ I do not understand this}
 
-\paragraph{Extension of other algebras}
-\QIN{Variable, constant are treated as a kind of expression together with the expression using operator. Operators can be categorized into unary operator, binary operator and N-ary operator, that make it possible to present operator from other algebras. In Fig .6, we show the Expression class we improved to enable user to extend other algebras in the pNet. There are classes implementing three kinds of expression extend the original  Expression class. From these three classes, more classes are extended using the operators coming from other algebra such as CCS and LOTOS}
 
+\paragraph{Implementation of the expressions meta-model}
+The VerCors platform uses ECORE and EMF to define the structure of
+both pNets and actions algebras. There exists a predefined set of
+action and data expressions classes, including boolean, integer and
+action expressions, with predefined variables, literal (constants),
+and operators. Operators can be categorized into unary, binary and
+N-ary operators.
+The original version of VerCors did not allow to extend these classes,
+we have modified its architecture so that a user can extend them,
+defining more elements for his specific algebra.
 
+In Fig~\ref{schema:expression-pnets}, we show the Expression class we
+improved, including extensions for CCS and LOTOS.
 
 \begin{figure}[t]
   \includegraphics[width=\linewidth]{XFIG/Expression}
   \caption{The architecture of Expression class}  \label{schema:expression-pnets}
 \end{figure}
 
-
+\TODO{give an example of user-defined sorts/operators, and tell that
+  you will give it's translation into Z3 in section 5.4}
 
 \subsection{Computing and using open automata}
 In this section we present an algorithm to construct the open
@@ -966,7 +1012,25 @@ $\mathcal{T}$ with finitely many states and transitions.
 
 \section{Implementation}
 \QIN{
-VerCors platform uses pNet as the intermediate language for some language or graphical formalism to be translated into both input for a checker and for generating code automatically to ease the specification from non-expert users\cite{FASE}, compiling it from those language or graphical formalism in the pNet API. We compute the open automaton of an open pNet also in that pNet API directly implementing the sketch showed before. However, we made some modification, merging the step 2a-2b and applying Tr2 with the premisses from subnets to generate open transitions, application of Tr1 is still conducted in a simple way. At same time, we apply the fresh function to rename all the variable to make them unique and readable. Besides that, we also have a management of assignments throughout the whole computation. Satisfiability check is done only at top level of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentially reducing the overall number of combinations. But the submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.
+VerCors platform uses pNet as the intermediate language for some
+language or graphical formalism to be translated into both input for a
+checker and for generating code automatically to ease the
+specification from non-expert users\cite{HKM-FASE16}, compiling it
+from those language or graphical formalism in the pNet API. We compute
+the open automaton of an open pNet also in that pNet API directly
+implementing the sketch showed before. However, we made some
+modification, merging the step 2a-2b and applying Tr2 with the
+premisses from subnets to generate open transitions, application of
+Tr1 is still conducted in a simple way. At same time, we apply the
+fresh function to rename all the variable to make them unique and
+readable. Besides that, we also have a management of assignments
+throughout the whole computation. Satisfiability check is done only at
+top level of the deduction tree construction. An alternative would be
+to submit the satisfiability check to the SMT solver at each level of
+the tree construction, potentially reducing the overall number of
+combinations. But the submission to the SMT engine is costly, and more
+complexity analysis is required before deciding if this would be
+worthwhile. 
 }
 
 \TODO{Xudong: Missing a general summary before going into details. You
@@ -974,7 +1038,7 @@ VerCors platform uses pNet as the intermediate language for some language or gra
   abstraction):}
   
 \ERIC{
-=> Context = use the existing software architecture from VCE (ref to \cite{FASE} paper)\\
+=> Context = use the existing software architecture from VCE (ref to \cite{HKM-FASE16} paper)\\
 => Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
 => Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitly constructing the deduction tree. \\
 => Variable names are generated for all ``fresh'' and ``clone''
