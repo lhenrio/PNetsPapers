@@ -439,7 +439,11 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		$\vars(e_b)\!\subseteq\! \vars(s')$, and
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
 		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
-		
+\item[$\bullet$]
+\QIN{
+The $x_j$ here is called the $state\ variable$ of state $s'$. $State\ variables$ can only be modified by the assignment in the transition targets to its owner state. The global state variable of a pLTS is the variable $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$.
+}
+
 \end{itemize}
 \end{definition}
 
@@ -684,108 +688,107 @@ The semantics   regularly instantiates \emph{fresh} variables, and uses a
 \emph{clone} operator that clones a term replacing each variable with a
 fresh one.
 
+The semantic of the open pNets is already defined as an open automaton in \cite{FORTE16} using open transitions to present the transitions of its global states.
 \begin{definition}[Operational semantics of open pNets]
-	\label{def:operationalSemantics}
-	The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
-	\mathcal{T}>$ where:
-	\begin{itemize}
-		\item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
-		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
-		\item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
-		\item $\mathcal{T}$ is the smallest set of open transitions
-		satisfying the rules below:
-	\end{itemize}
-	
-	
-	The rule for a pLTS $p$  checks that the guard 
-	is verified and transforms assignments into post-conditions:
-	
-	\begin{description}
-		\item[{\bf Tr1:}]
-		$\inferrule
-		{ s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-					J}\rangle} s'\in \to  }
-		{ p = \mylangle  S,s_0, \to \myrangle
-			\models
-			\inferrule*[myfraction=\reddottedrule]
-			{\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
-			e_b,\left\{x_j\gets e_j\right\}^{j\in J}}
-			{\ostate{s} \xrightarrow{\alpha} \ostate{s'}}
-		}
-		$
-	\end{description}
-%	Note that this note is greatly simplified by the fact that variables are local to 
-%	thread; introducing global state variables or accepting loops to the same 
-%	state would 
-%	require to reason 
-%	on the scope of 
-%	each variables, and to introduce additional variables to handle the several occurence 
-%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
-%	transitions 
-%	ensure that the same variable never appears both on the left and on the right of the 
-%	equations of a predicate.
-	
-	The second rule deals with pNet nodes: for each possible
-	synchronisation vector applicable to the rule subject, the premisses
-	include one {\em open transition} for each sub-pNet involved, one possible
-	{\em action} for each Hole involved, and the predicate relating these
-	with the resulting action of the vector.
-	A key to understand this rule is that the open transitions are
-	expressed in terms of the leaves and holes of the pNet structure,
-	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
-	Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
-	are disjoint subsets of $L$. Thus the states in the open transitions,
-	at each level, are tuples including states of all the
-	leaves of the pNet, not only those involved in the chosen
-	synchronisation vector.
-	
-	\begin{description}
-		\item[{\bf Tr2:}]
-	\end{description}
-	
-	\noindent
+  \label{def:operationalSemantics}
+  The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
+  \mathcal{T}>$ where:
+  \begin{itemize}
+    \item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
+    %  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+    \item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+    \item $\mathcal{T}$ is the smallest set of open transitions
+    satisfying the rules below:
+  \end{itemize}
+  
+  The rule for a pLTS $p$  checks that the guard 
+  is verified and transforms assignments into post-conditions:
+  
+  \begin{description}
+    \item[{\bf Tr1:}]
     $\inferrule
-    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
-    \alpha'_k \\
-    	Leaves(p) \!=\! \pLTS_l^{l\in L} \\    	
-    	\forall m\in I_k.
-    	\pNet_m \models
-    	\inferrule*[myfraction=\reddottedrule]
-    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
-    	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
-    		\ostate{s_{i}^{\prime\ i \in L_m}}}
-    	%\land
-    	%Leaves(\pNet_m) = \overline{pLTS}^{L_k})
-    	\\
-    	I' = \biguplus_{m\in I_k}\!\! I_m'
-    	\\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k 	\\
-    	\Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
-    	\Pred(SV,a_i^{i\in I_k},b_j^{j\in J_k},v)\\
-    	\forall j\!\!\in\!\! J_k. {\tt 
-    		fresh}(b_j) \\ {\tt fresh}(v) \\ 
-    	\forall i\in
-    	L\backslash I'.\,s'_i=s_i 
+    { s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+          J}\rangle} s'\in \to  \\
+      {\tt fresh}(v) \\
+      Pred = ~e_b \land (\alpha = v)
     }
-    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
-    	\models
-    	{\inferrule*[myfraction=\reddottedrule]
-    		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
-    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
-    		\Post_m}
-    		{\ostate{s_i^{i\in L}} \xrightarrow {v}
-    			\ostate{s_i^{\prime i\in L}}}
-    	}
+    { p = \mylangle  S,s_0, \to \myrangle
+      \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
+      Pred,\left\{x_j\gets e_j\right\}^{j\in J}}
+      {\ostate{s} \xrightarrow{v} \ostate{s'}}
     }
     $
-	
+  \end{description}
+% Note that this note is greatly simplified by the fact that variables are local to 
+% thread; introducing global state variables or accepting loops to the same 
+% state would 
+% require to reason 
+% on the scope of 
+% each variables, and to introduce additional variables to handle the several occurence 
+% of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
+% transitions 
+% ensure that the same variable never appears both on the left and on the right of the 
+% equations of a predicate.
+  
+  The second rule deals with pNet nodes: for each possible
+  synchronisation vector applicable to the rule subject, the premisses
+  include one {\em open transition} for each sub-pNet involved, one possible
+  {\em action} for each Hole involved, and the predicate relating these
+  with the resulting action of the vector.
+  A key to understand this rule is that the open transitions are
+  expressed in terms of the leaves and holes of the pNet structure,
+  i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+  Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+  are disjoint subsets of $L$. Thus the states in the open transitions,
+  at each level, are tuples including states of all the
+  leaves of the pNet, not only those involved in the chosen
+  synchronisation vector.
+  
+  \begin{description}
+    \item[{\bf Tr2:}]
+  \end{description}
+  
+  \noindent
+    $\inferrule
+    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
+    \alpha'_k, G_k \\
+      Leaves(p) \!=\! \pLTS_l^{l\in L} \\     
+      \forall m\in I_k.
+      \pNet_m \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+      \{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+      {\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
+        \ostate{s_{i}^{\prime\ i \in L_m}}}
+      %\land
+      %Leaves(\pNet_m) = \overline{pLTS}^{L_k})
+      \\
+      I' = \biguplus_{m\in I_k}\!\! I_m'
+      \\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k  \\
+      \Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
+      \Pred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
+      \forall j\!\!\in\!\! J_k. {\tt 
+        fresh}(b_j) \\ {\tt fresh}(v) \\ 
+      \forall i\in
+      L\backslash I'.\,s'_i=s_i 
+    }
+    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
+      \models
+      {\inferrule*[myfraction=\reddottedrule]
+        {\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
+        \{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+        \Post_m}
+        {\ostate{s_i^{i\in L}} \xrightarrow {v}
+          \ostate{s_i^{\prime i\in L}}}
+      }
+    }
+    $
 
-
-
-	
-	\medskip
-	
+  \medskip  
 \end{definition}
+
 %
 
 \begin{example} \emph{Using the operational rules to compute
@@ -1173,13 +1176,30 @@ The list of all the possible open transitions generated $L_{ot}$.
 \end{algorithmic} 
 \end{algorithm}
 
-\subsection{assignment}
-Management of state variables.\\
-Translating assignments into predicate terms.\\\\
+\subsection{Management of assignments}
+\QIN{
+The pLTS contains some variables in its states, or just as global states of the pLTS, with several assignments. The algorithm composing assignments from subnets is different from the generation of predicates. When applying Tr1, we just keep the assignments in the Post of the open transition. And when it comes to Tr2, Post is the union of the assignments propagate from the subnets. The assignments provide value of the variables in predicates. There is usually not only one assignments for a variable and the assignment will lose when the algorithm computes other open transitions using other transitions in pLTS. The values of the variables are necessary for checking satisfiability of the open transitions together with predicates, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, the algorithm manages the variables together with its all possible assignments.
+}
+
+\QIN{
+We use a list of triad $<v,\ S, \ AssignRH>$ for each pLTS to record the information of the state variables of the pLTS where $v$ is the state variable in pLTS, $S$ is its owner state and $AssignRH$ is a list of expressions over other variables in the right hand side of assignments of $v$. The $S$ can be $null$ in the record triad, but it means the variable is global in the pLTS belonging to all the states instead of meaning it belongs to nothing. So it should be noted that the changing of the value of the global state variable every time a transition is conducted. $AssignRH$ is the collection of all the possible expressions coming from the the right hand side of assignments. It keeps the information of the assignments for each state variable. We update the list of record triad every time Tr1 is applied, adding the right side of the assignments into corresponding expression lists. So the list keeps the all the assignments in the pLTS. Then we can track all the possible value of the variables when computing open transitions. 
+The initial value of the state variable is also seemed as an assignment for that variable. We must give a initial value to the global state variable or there will be some problem in the start state. However, we sometimes don't give initial values to the state variables (except the global variables) as their initial values are decided by their first assignments, default values for them is hard to decide manually.
+}
 
 \subsection{Pruning the unsatisfiable results}
 Interaction with Z3: pNets module ---input--> Z3 module [JAVA API]\\\\
+\begin{figure}[t]
+  \includegraphics[width=\linewidth]{XFIG/Interaction}
+  \caption{The architecture of the interaction between pNet API and Z3}  \label{schema:interaction}
+\end{figure}
+
 \paragraph{translation of presentation}
+
+\paragraph{Translating assignments into predicate terms}
+\QIN{
+The assignments are also taken into account when checking the satisfiability of the open transitions as they present the value of the variables. In order to do that, we employs a translation from assignments into term of predicates. The assignments required to be translated are only those belong to the variables contain the in the start states of the open transitions. The assignments are represented as equations between the variables and the expressions on the right side of assignment. For the assignments of the same variable, we do not figure out which state is the precursor of current state, we keep all these possible equations instead, and generate the disjunction of these equations. The state could always move to the target state if there exists one of the values of its variable satisfies the guard. It won't matter the variable of the next state except that the right side expression contain its variables. This is a problem left to be solved in our future work. After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
+}
+
 \paragraph{checking satisfiability}
 After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\
 
