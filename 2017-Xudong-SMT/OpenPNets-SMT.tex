@@ -1201,11 +1201,34 @@ The initial value of the state variable is also seemed as an assignment for that
 }
 
 \subsection{Pruning the unsatisfiable results}
-Interaction with Z3: pNets module ---input--> Z3 module [JAVA API]\\\\
+\QIN{
+We have used a brute-force method to generate all the possible open transitions in the open automaton. It obviously contains some of unsatisfiability in the open transitions. In Fig~\ref{schema:unsat-ot}, we show an unsatisfiable open transition from the result of the CCS running example. It presents the case that the top level transmits out the action from the PN2, formula $a.P$, as this time only PN2 is working and C1 is performing action $a$ when hole $P$ is also working. In this case, the second synchronization vector of PN2, transmitting the behavior from hole $P$ to the higher level, is used while it is obviously violate the guard of the vector. So we can easily find the contradiction between the generated predicate term $ra:152:1=l \!\land\! a=:ra:152:1$ and the guard composed into the predicate $a \neq l$. To get a correct open automaton of the pNet, such unsatisfiable open transitions need to be eliminated. We choose a SMT solver Z3 as the checker for the open transitions considering the predicates may contain the expression using uninterpreted functions declared by users.
+}
+\begin{figure}[t]
+$\begin{array}{@{}r@{}l@{}}
+%{s0---a-->s1},   {---:hb:15:2-->},   (:ra:15:2 = act:sva:1:3)/\(:ra:152:1 = l)/\(a = :ra:152:1)/\(l!= a)/\(:hb:15:2 = y:sva:15:2)/\(:ra:15:2 = y:sva:15:2)/\(y:sva:15:2 != l)/\(:ra:1:3 = act:sva:1:3)
+    ot  = &\openrule{\{0 \xrightarrow{a} 1\}, ~~\{\xrightarrow{:hb:15:2}\}, ~~:ra:15:2=act:sva:1:3 \\
+    \!\land\!:ra:152:1=l \!\land\! a=:ra:152:1 \!\land\! a \neq l \!\land\! :hb:15:2 = y:sva:15:2 \\
+    \!\land\! :ra:15:2 = y:sva:15:2  \!\land\! y:sva:15:2 \neq l \!\land\! :ra:1:3 = act:sva:1:3}
+    {\ostate{00} \xrightarrow{:ra:1:3} \ostate{10}}\\
+  \end{array}$
+\caption{One of the unsatisfiable open transitions in CCS running example)}  \label{schema:unsat-ot}
+\end{figure}
+
+%\begin{figure}[t]
+%  \includegraphics[width=\linewidth]{XFIG/SMTLIB1}
+%  \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
+%\end{figure}
+
 \begin{figure}[t]
   \includegraphics[width=\linewidth]{XFIG/Interaction}
   \caption{The architecture of the interaction between pNet API and Z3}  \label{schema:interaction}
 \end{figure}
+
+\paragraph{Interaction with Z3}
+\QIN{
+\TODO{1. example input of Z3 in SMT-LIB 2. software architecture.}
+}
 
 \paragraph{translation of presentation}
 
@@ -1250,12 +1273,47 @@ predicate comparison in the bisimulation algorithm.
 - the actions of holes\\
 - the result action at toplevel.}
 
-\begin{figure}[t]
-  \includegraphics[width=\linewidth]{XFIG/CCSresult}
-  \caption{The open automaton of the CCS formula a.P||b.Q}  \label{schema:ccs-result}
-\end{figure}
-
+\begin{figure}[h]
+  \centerline{\includegraphics[width=7cm]{XFIG/CCSresult}}
   
+$\begin{array}{@{}r@{}l@{}}
+    ot_1  = &\openrule{\{0 \xrightarrow{a} 1, 0 \xrightarrow{b} 1\}, ~~a=ich(v_{11}) \!\land\! b=ch(v_{11}) \!\land\! a\neq l \!\land\! b\neq r\!\land\! v_1=\tau}
+    {\ostate{00} \xrightarrow{v_1} \ostate{11}}\\
+  \end{array}$
+  
+  \begin{minipage}{6cm}
+$\begin{array}{@{}r@{}l@{}}
+    ot_3  = &\openrule{\{0 \xrightarrow{a} 1\}, ~~a\neq l \!\land\! v_3=a}
+    {\ostate{00} \xrightarrow{v_3} \ostate{10}}\\
+    ot_5  = &\openrule{\{0 \xrightarrow{b} 1\}, ~~b\neq r \!\land\! v_5=b}
+    {\ostate{10} \xrightarrow{v_5} \ostate{11}}\\
+  \end{array}$
+  \end{minipage}
+   \hspace{2mm}
+  \begin{minipage}{6cm}
+$\begin{array}{@{}r@{}l@{}}
+    ot_7  = &\openrule{\{1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{17}}\}, ~~v_7=hb_{17}}
+    {\ostate{10} \xrightarrow{v_7} \ostate{10}}\\
+  \end{array}$
+  \end{minipage}
+    
+$\begin{array}{@{}r@{}l@{}}
+    ot_9  = &\openrule{\{0 \xrightarrow{b} 1, 1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{19}}\}, ~~b=ich(v_{19}) \!\land\! b\neq r \!\land\! hb_{19}= ch(v_9)\!\land\! v_9=\tau}
+    {\ostate{10} \xrightarrow{v_9} \ostate{11}}\\
+  \end{array}$
+
+$\begin{array}{@{}r@{}l@{}}
+    ot_{13}  = &\openrule{\{1 \xrightarrow{l} 1, 1 \xrightarrow{r} 1\}, ~~\{\xrightarrow{hb_{113}}, \xrightarrow{hb_{213}}\}, ~~hb_{113}= ich(v_{13}) \!\land\! hb_{213}= ch(v_{13}) \!\land\! v_{13}=\tau}
+    {\ostate{11} \xrightarrow{v_{13}} \ostate{11}}\\
+  \end{array}$
+
+$\begin{array}{@{}r@{}l@{}}
+    ot_{15}  = &\openrule{\{1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{115}}\}, ~~v_{15}=hb_{115}}
+    {\ostate{11} \xrightarrow{v_{15}} \ostate{11}}\\
+  \end{array}$
+
+\caption{The open automaton of the CCS formula a.P||b.Q (a part of open transitions is shown)}  \label{schema:ccs-result}
+\end{figure}
 
 \bibliographystyle{lncs/splncs}
 
