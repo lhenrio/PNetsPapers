@@ -1215,10 +1215,10 @@ $\begin{array}{@{}r@{}l@{}}
 \caption{One of the unsatisfiable open transitions in CCS running example)}  \label{schema:unsat-ot}
 \end{figure}
 
-%\begin{figure}[t]
-%  \includegraphics[width=\linewidth]{XFIG/SMTLIB1}
-%  \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
-%\end{figure}
+\begin{figure}[t]
+  \centerline{\includegraphics[width=10cm]{XFIG/SMTLIB1}}
+  \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
+\end{figure}
 
 \begin{figure}[t]
   \includegraphics[width=\linewidth]{XFIG/Interaction}
@@ -1226,52 +1226,33 @@ $\begin{array}{@{}r@{}l@{}}
 \end{figure}
 
 \paragraph{Interaction with Z3}
+\TODO{1. example input of Z3 in SMT-LIB.[DONE] 2. software architecture.[DONE]}
 \QIN{
-\TODO{1. example input of Z3 in SMT-LIB 2. software architecture.}
+We implement the dynamic interaction between the pNet API and Z3 solver through its JAVA API. But here we present the code in Z3 by SMT-LIB language instead of JAVA codes to make it easier to read. In Fig~\ref{schema:smt-lib}, we show the manual input of the unsatisfiable result before. Some $datatypes$ are declared to input the sorts of the CCS example, here we only declare one $datatypes$ named $Action$ to involve all the constant actions. The $Int$ and $Bool$ are already existed in Z3. Then we input the predicate of that open transition in two parts. The variables contained in the predicate are declared first, then the terms of predicate are inputed as $assertions$ one by one. In the output, "(not and)" shows Z3 have found out the contradiction in the predicate and the result "unsat" is just what we expected.  
+}
+
+\QIN{
+We present the architecture of the interaction with Z3 in Fig~\ref{schema:interaction}. Both two parts need to be translated before submitting to the Z3. The $presentation$ of the pNet is declared at the beginning of the algorithm as the $sorts$ and the $operators$ will be used throughout the whole algorithm. It is translated into $datatypes$ and $functions$ then submitted to the Z3 at the same time. The predicate will be translated into $assertions$ before submitted to Z3 after the algorithm computing out all the possible open transitions, they act as intermediate results there. Together with the $datatypes$ and $functions$, the $assertions$ are used to check the satisfiability of the predicate in Z3.
 }
 
 \paragraph{translation of presentation}
+\QIN{
+The $datatypes$ are declared according to the $sorts$ the users declared in the $presentation$. Although in Fig~\ref{schema:smt-lib} we have not declared $functions$, they will be required if there are new $operators$ declared in the $presentation$. If the return type of the functions is one of the $datatypes$, we add this $function$ when declare the $datatypes$, it present the reality that every action expression also belongs to a sort of pNet. 
+}
+
+\paragraph{checking satisfiability}
+After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\
 
 \paragraph{Translating assignments into predicate terms}
 \QIN{
 The assignments are also taken into account when checking the satisfiability of the open transitions as they present the value of the variables. In order to do that, we employs a translation from assignments into term of predicates. The assignments required to be translated are only those belong to the variables contain the in the start states of the open transitions. The assignments are represented as equations between the variables and the expressions on the right side of assignment. For the assignments of the same variable, we do not figure out which state is the precursor of current state, we keep all these possible equations instead, and generate the disjunction of these equations. The state could always move to the target state if there exists one of the values of its variable satisfies the guard. It won't matter the variable of the next state except that the right side expression contain its variables. This is a problem left to be solved in our future work. After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
 }
 
-\paragraph{checking satisfiability}
-After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\
-
-
-
+\subsection{Result of the running example}
 \TODO{
 Xudong: full result of the tool execution on the running example\\\\
 Open Automata of the CCS example.
 }
-
-
-
-
-\section{Conclusion and Discussion}
-\label{section:conclusion}
-
-\TODO{Conclusion: what you have accomplished, clearly state your
-  contributions, and what is delivered at the end of your internship
-  work}
-
-\TODO{Discussion: next steps: 1) what is left as open questions on the
-  algorithm itself, what you have learned (is Z3 useful and efficient,
-  is it the right tool ?). 2) next important goal is bisimulation
-  checking, what is neded for that (formalize the algo, define and
-  implement simplification)}
-
-  
-=> Simplification is not yet implemented. It is not strictly required
-for the Open Automaton construction, but it will be critical later for
-predicate comparison in the bisimulation algorithm.
-
-\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
-- the input variables of pLTS transitions\\
-- the actions of holes\\
-- the result action at toplevel.}
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=7cm]{XFIG/CCSresult}}
@@ -1314,6 +1295,32 @@ $\begin{array}{@{}r@{}l@{}}
 
 \caption{The open automaton of the CCS formula a.P||b.Q (a part of open transitions is shown)}  \label{schema:ccs-result}
 \end{figure}
+
+
+
+
+\section{Conclusion and Discussion}
+\label{section:conclusion}
+
+\TODO{Conclusion: what you have accomplished, clearly state your
+  contributions, and what is delivered at the end of your internship
+  work}
+
+\TODO{Discussion: next steps: 1) what is left as open questions on the
+  algorithm itself, what you have learned (is Z3 useful and efficient,
+  is it the right tool ?). 2) next important goal is bisimulation
+  checking, what is neded for that (formalize the algo, define and
+  implement simplification)}
+
+  
+=> Simplification is not yet implemented. It is not strictly required
+for the Open Automaton construction, but it will be critical later for
+predicate comparison in the bisimulation algorithm.
+
+\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
+- the input variables of pLTS transitions\\
+- the actions of holes\\
+- the result action at toplevel.}
 
 \bibliographystyle{lncs/splncs}
 
