@@ -369,9 +369,8 @@ $t\in\AlgT$, and $iv(t)$ returns its input variables.
 pNets can encode naturally the notion of input actions in value-passing CCS
 \cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
 for more general mechanisms, like gate negociation in Lotos, or broadcast
-communications. Using our notations, value-passing actions \emph{\`a la} CCS would be
-encoded as $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs (in which $v_i$ are 
-action terms containing no input variables). 
+communications.
+\ERIC{Formaly, value-passing actions \emph{\`a la} CCS, denoted as ``?ch(x)'' and ``!ch(exp)'' in our CCS running example, stand respectively for $CCSact(i(ch),?x)$ and $CCSact(ch,exp)$, where $ch$ is a variable denoting a channel name, $?x$ is an input variable denoting the data argument received as input on $ch$, and $exp$ some data expression (containing no input variables). }
 %For Lotos-style
 %distributed synchronisation, we use synchronisation vectors that encode matching data
 %offers on a common gate; or 
@@ -592,22 +591,36 @@ set of state modifications.
 \end{definition}
 
 \begin{example}\emph{An open-transition.}
-  \label{OT:enable-composed}
-  \TODO{ERIC: change for an OT of CCS example}
-  The \texttt{EnableCompL} pNet of Fig. \ref{schema:enable-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
+  \label{OT:ccs-composed}
+%  \TODO{ERIC: change for an OT of CCS example}
+\ERIC{  The \texttt{CCS} pNet of Fig. \ref{schema:ccs-pnets} has 2 controllers and 2 holes. We show its full open Automaton in section \ref{section:full-result}, it has 16 open transitions. We detail 3 of them here:}
 
  \smallskip
- $  OT_2  = \openrule{
-                       0 \xrightarrow{\delta}_{C_3} 1 ~~
-                            0 \xrightarrow{l}_{C_4} 0  ~~                 
-                            \xrightarrow{\delta(x4)}_P ~~
-                            \xrightarrow{accept(x4)}_Q 
+ $  OT_1  = \openrule{
+                       0 \xrightarrow{a}_{C_1} 1 ~~
+                       0 \xrightarrow{b}_{C_2} 1  ~~
+                       \{\}               ~~
+                 [ a\neq l \land b\neq r \land a=?ch(v) \land b=!ch(v) ]              
                       }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {A1_0 \xrightarrow{\underline{\delta(x4)}} A1_1}
+     {\ostate{00} \xrightarrow{\underline{\tau}} \ostate{10}}$
+     
+ $ OT_3  = \openrule{
+                       0 \xrightarrow{a}_{C_1} 1 ~~
+                       \{\}               ~~
+                 [ a\neq l  ]              
+                      }
+     {\ostate{10} \xrightarrow{a} \ostate{11}} $
+     
+$  OT_{11}  = \openrule{
+                          1 \xrightarrow{l}_{C_1} 1 ~~
+                       0 \xrightarrow{b}_{C_2} 1 ~~
+                       \{ \xrightarrow{b_P}_{P} \}               ~~
+                 [ a\neq l \land b\neq r \land b_P=?ch(v) \land b=!ch(v) ]              
+                      }
+     {\ostate{10} \xrightarrow{\tau} \ostate{11}}
   $
 \end{example}
-
+\TODO{Eric: short comments}
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
@@ -794,12 +807,13 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
 
 \begin{example} \emph{Using the operational rules to compute
     open-transitions}
-  In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
-  open transition $OT_2$ of \texttt{EnableCompL} (see example page
-  \pageref{OT:enable-composed}).
-  \TODO{Eric: change for a deduction tree of CCS expression}
-  The rule uses TR1 for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
-  
+  In Fig. \ref{usingrules:OT11} we show the deduction tree used to construct and prove the 
+  open transition $OT_{11}$ of \texttt{CCS} (see example page
+  \pageref{OT:ccs-composed}).
+%  \TODO{Eric: change for a deduction tree of CCS expression}
+\ERIC{  The rule uses TR1 for the $l$ transition of $C_1$ and for the $b$ transition of $C_2$, uses an action $b_P$ of hole $P$, then combines the result using the second vector of the PN2 sub-pNet, and the third vector of the top node. This yield a final $\tau$ transition. The deduction tree in the figure shows how the predicate are generated in this process.
+}
+
 \begin{figure}[tb]
 \begin{mathpar}
   \small
@@ -1249,6 +1263,7 @@ The assignments are also taken into account when checking the satisfiability of 
 }
 
 \subsection{Result of the running example}
+\label{section:full-result}
 \TODO{
 Xudong: full result of the tool execution on the running example\\\\
 Open Automata of the CCS example.
