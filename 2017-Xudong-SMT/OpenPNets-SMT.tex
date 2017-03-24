@@ -811,7 +811,12 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
   open transition $OT_{11}$ of \texttt{CCS} (see example page
   \pageref{OT:ccs-composed}).
 %  \TODO{Eric: change for a deduction tree of CCS expression}
-\ERIC{  The rule uses TR1 for the $l$ transition of $C_1$ and for the $b$ transition of $C_2$, uses an action $b_P$ of hole $P$, then combines the result using the second vector of the PN2 sub-pNet, and the third vector of the top node. This yield a final $\tau$ transition. The deduction tree in the figure shows how the predicate are generated in this process.
+\ERIC{  The proof tree uses TR1 for the $l$ transition of $C_1$ and for the
+  $b$ transition of $C_2$, then uses an action $b_P$ of hole $P$, then
+  combines the results using the second vector of the PN2 sub-pNet, and
+  the third vector of the top node. This yields a final $\tau$
+  transition. The deduction tree in the figure shows how the
+  predicates are generated in this process. 
 }
 
 \begin{figure}[tb]
@@ -819,52 +824,55 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
   \small
   \inferrule
     {\inferrule
-        {0 \xrightarrow {\delta}_{C_3} 1}
-        {C_3
+      {
+          \inferrule
+              {1 \xrightarrow {l}_{C_1} 1}
+              {C_1
+                \models
+                \openrule
+                      {1 \xrightarrow{l}_{C_1} 1}
+                      {\ostate{1}\xrightarrow{1}\ostate{1}}
+              }
+        }
+        {\textrm{a:P}
           \models
             \openrule{
-              0 \xrightarrow {\delta}_{C_3} 1,\,
-              \{\xrightarrow{\delta(x_1)}_P\},\,
-              v_1=\delta(x_1)}
-                      {\ostate{0}\xrightarrow{v_1}\ostate{1}}
+              1 \xrightarrow {l}_{C_1} 1,\,
+              \{\xrightarrow{b_P}_P\},\, b_P\neq l}
+                      {\ostate{1}\xrightarrow{b_P}\ostate{1}}
         }\\
 %      \sm{fresh}v         \\
       \inferrule%*[right={L_1}]
         {
-%          \sm{fresh}{a_Q} \\
           \inferrule
-              {0 \xrightarrow{l}_{C_4} 0}
-              % {\ostate{0}\xrightarrow{l}\ostate{0}}
+              {0 \xrightarrow{b}_{C_2} 1}
               {C_4
                 \models
-                \openrule{
-                      0 \xrightarrow l_{C_4} 0,\,
-                      \sm{Pred}_{C_4}}
-                      {\ostate{0}\xrightarrow{l}\ostate{0}}
+                \openrule
+                      {0 \xrightarrow{b}_{C_2} 0,\, b\neq r}
+                      {\ostate{0}\xrightarrow{b}\ostate{1}}
               }
         }
         {
-          \textrm{Q>>R}\models
+          \textrm{b:Q}\models
               \openrule
-                  { 0 \xrightarrow {l}_{C_4} 0,\,
-                    \{\xrightarrow{acc(x_2)}_Q\},\,
-                    \ v_2=acc(x_2)
-                  }
-                  {\ostate{0}\xrightarrow{v_2}\ostate{0}}
+                  { 0 \xrightarrow {b}_{C_2} 1,\, \ b\neq r}
+                  {\ostate{0}\xrightarrow{b}\ostate{1}}
         }   
     }
     {
-     \textrm{P>>(Q>>R)}
+     \textrm{PN1}
      \models
-     \openrule
-         { 0 \xrightarrow{\delta}_{C_3} 1, \\ 0 \xrightarrow{l}_{C_4} 0,\\
-           \{\xrightarrow{\delta(x)}_P,\,\xrightarrow{acc(x)}_Q\}, \\
-            a_3=v_1 \wedge v=a_3 \wedge x_1=x_2
-           }
-         {\ostate{00} \xrightarrow{v} \ostate{10}}
+        \openrule{
+                       1 \xrightarrow{l}_{C_1} 1 ~~
+                       0 \xrightarrow{b}_{C_2} 1 ~~
+                       \{ \xrightarrow{b_P}_{P} \}               ~~
+                 [ a\neq l \land b\neq r \land b_P=?ch(v) \land b=!ch(v) ]              
+                      }
+     {\ostate{10} \xrightarrow{\tau} \ostate{11}}
       }\vspace{-4ex}
 \end{mathpar}
-  \caption{Proof of transition $OT_2$ (with interaction of processes $P$ and $Q$) for ``P>>(Q>>R)''}
+  \caption{Proof of  $OT_{11}$ (with interaction of processes $P$ and action $b$) for ``a.P||b.Q''}
   \label{usingrules:OT2}
 \end{figure}
 
