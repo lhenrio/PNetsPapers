@@ -1257,7 +1257,7 @@ We implement the dynamic interaction between the pNet API and Z3 solver through 
 We present the architecture of the interaction with Z3 in Fig~\ref{schema:interaction}. Both two parts need to be translated before submitting to the Z3. The $presentation$ of the pNet is declared at the beginning of the algorithm as the $sorts$ and the $operators$ will be used throughout the whole algorithm. It is translated into $datatypes$ and $functions$ then submitted to the Z3 at the same time. The predicate will be translated into $assertions$ before submitted to Z3 after the algorithm computing out all the possible open transitions, they act as intermediate results there. Together with the $datatypes$ and $functions$, the $assertions$ are used to check the satisfiability of the predicate in Z3.
 }
 
-\paragraph{translation of presentation}
+\paragraph{Translation of presentation}
 \QIN{
 The $datatypes$ are declared according to the $sorts$ the users declared in the $presentation$. If the return type of the $functions$ is one of the $datatypes$, we add this $function$ when declare the $datatypes$, it present the reality that every action expression also belongs to a sort of pNet. Although in Fig~\ref{schema:smt-lib} we have not declared $functions$, they should be exactly declared if there are new $operators$ declared in the $presentation$. The input type of the $function$ can be $Int$, $Bool$ or the $datatypes$ declared all determined by the construct of the  $operators$ in the presentation. For example, we define a new operator to present the equation between two actions in CCS example $\text{EQUAL}$ in the format likes:
 }
@@ -1265,15 +1265,28 @@ The $datatypes$ are declared according to the $sorts$ the users declared in the 
 \QIN{
 It will be translated into the Z3 statement: 
 }
-\[(declare\text{-}fun\ \text{EQUAL}\ (Action\ Action)\ Bool) .\]
-
-\paragraph{checking satisfiability}
-\TODO{After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.\\}
+\[\text{(declare-fun\ EQUAL\ (Action\ Action)\ Bool) .}\]
 
 \paragraph{Translating assignments into predicate terms}
 \QIN{
 The assignments are also taken into account when checking the satisfiability of the open transitions as they present the value of the variables. In order to do that, we employs a translation from assignments into term of predicates. The assignments required to be translated are only those belong to the variables contain the in the start states of the open transitions. The assignments are represented as equations between the variables and the expressions on the right side of assignment. For the assignments of the same variable, we do not figure out which state is the precursor of current state, we keep all these possible equations instead, and generate the disjunction of these equations. The state could always move to the target state if there exists one of the values of its variable satisfies the guard. It won't matter the variable of the next state except that the right side expression contain its variables. This is a problem left to be solved in our future work. After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
 }
+
+\paragraph{checking satisfiability}
+\TODO{After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.[DONE]\\}
+\QIN{
+We check the satisfiability of open transitions on the top level of the pNet, treating these open transitions as the intermediate result of the algorithm. After we get the intermediate results of open transitions, we check them one by one. Here we declare the variables in the predicate first to make Z3 know all the parameters used for checking this time. The variable including the argument in the operators must has its sort as every pNet defines two default sorts $Int$, $Bool$ default and at least one sort for the actions. The variables can declared using the $datatypes$ declared in the format as:
+}
+\[\text{(declare-const\ a\ Action) .}\]
+
+\QIN{
+The predicate submitted to the Z3 contain the assignments as them become a part of predicate after our translation. Each term of the predicate is an assertion in Z3, as an example, in the former unsatisfiable result, the contradiction is occured in terms: 
+}
+\[(:ra:152:1 = l) \land (a = :ra:152:1) \land (l \neq a) .\]
+\QIN{
+from which we generate following three assertion:
+}
+\[\text{(assert\ (=\ |:ra:152:1|\ l))}\ \ \ \text{(assert\ (=\ a\ |:ra:152:1|))}\ \ \ \text{(assert\ (not\ (=\ a\ l)))}\]
 
 \subsection{Result of the running example}
 \label{section:full-result}
@@ -1281,49 +1294,55 @@ The assignments are also taken into account when checking the satisfiability of 
 Xudong: full result of the tool execution on the running example\\\\
 Open Automata of the CCS example.
 }
+\QIN{
+We get the final result after pruning all the unsatisfiable open transitions, 2/3 of the intermediate results; the resulting open automaton is shown in Fig.~\ref{schema:ccs-result}, we give out the open automaton manually through drawing the final result open transitions generated by algorithm. A part of results we computed by hand in advance are also list below. The $ot_1$ represents the value-passing between $a.P$ and $b.Q$ and they are synchronized then give out an silent action $\tau$, process $P$ and $Q$ should not work in this case. The $ot_3$ and $ot_5$ represent another possible path to execute $a.P||b.Q$, action $a$ and $b$ are finished in sequence instead of synchronizing, they are just transmitted out as the external action. The behavior of the processes, presented as holes $P$ and $Q$ in this pNet, is uncertain, we only know the sort $Action$ for them. So the action from $P$ might be synchronized with the action $b$ that is what $ot_9$ presents or be directly transmitted to the external as the $ot_7$ shows. And we can see more cases of the interaction between these two process in the open transitions start at the state $11$, synchronizing two actions like $ot_{13}$ or directly transmitting like $ot_{15}$.
+}
+
+\QIN{
+To sum up, from the pNet encoding CCS formula inputed by the user we generate the open transitions and prune the unsatisfiability automatically. The final result open transitions represent all the possible movements of the CCS example. They can exactly construct the open automaton for the given example.
+}
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=7cm]{XFIG/CCSresult}}
   
 $\begin{array}{@{}r@{}l@{}}
-    ot_1  = &\openrule{\{0 \xrightarrow{a} 1, 0 \xrightarrow{b} 1\}, ~~a=ich(v_{11}) \!\land\! b=ch(v_{11}) \!\land\! a\neq l \!\land\! b\neq r\!\land\! v_1=\tau}
+    ot_1  = &\openrule{\{0 \xrightarrow{a}_{C_1} 1, 0 \xrightarrow{b}_{C_2} 1\}, ~~a=!ch_{11}(v_{11}) \!\land\! b=?ch_{11}(v_{11}) \!\land\! a\neq l \!\land\! b\neq r\!\land\! v_1=\tau}
     {\ostate{00} \xrightarrow{v_1} \ostate{11}}\\
   \end{array}$
   
   \begin{minipage}{6cm}
 $\begin{array}{@{}r@{}l@{}}
-    ot_3  = &\openrule{\{0 \xrightarrow{a} 1\}, ~~a\neq l \!\land\! v_3=a}
+    ot_3  = &\openrule{\{0 \xrightarrow{a}_{C_1} 1\}, ~~a\neq l \!\land\! v_3=a}
     {\ostate{00} \xrightarrow{v_3} \ostate{10}}\\
-    ot_5  = &\openrule{\{0 \xrightarrow{b} 1\}, ~~b\neq r \!\land\! v_5=b}
+    ot_5  = &\openrule{\{0 \xrightarrow{b}_{C_2} 1\}, ~~b\neq r \!\land\! v_5=b}
     {\ostate{10} \xrightarrow{v_5} \ostate{11}}\\
   \end{array}$
   \end{minipage}
    \hspace{2mm}
   \begin{minipage}{6cm}
 $\begin{array}{@{}r@{}l@{}}
-    ot_7  = &\openrule{\{1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{17}}\}, ~~v_7=hb_{17}}
+    ot_7  = &\openrule{\{1 \xrightarrow{l}_{C_1} 1\}, ~~\{\xrightarrow{hb_{17}}\}, ~~v_7=hb_{17}}
     {\ostate{10} \xrightarrow{v_7} \ostate{10}}\\
   \end{array}$
   \end{minipage}
     
 $\begin{array}{@{}r@{}l@{}}
-    ot_9  = &\openrule{\{0 \xrightarrow{b} 1, 1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{19}}\}, ~~b=ich(v_{19}) \!\land\! b\neq r \!\land\! hb_{19}= ch(v_9)\!\land\! v_9=\tau}
+    ot_9  = &\openrule{\{0 \xrightarrow{b}_{C_2} 1\}, ~~\{\xrightarrow{hb_{19}}\}, ~~b=!ch_{19}(v_{19}) \!\land\! b\neq r \!\land\! hb_{19}=?ch_{19}(v_{19})\!\land\! v_9=\tau}
     {\ostate{10} \xrightarrow{v_9} \ostate{11}}\\
   \end{array}$
 
 $\begin{array}{@{}r@{}l@{}}
-    ot_{13}  = &\openrule{\{1 \xrightarrow{l} 1, 1 \xrightarrow{r} 1\}, ~~\{\xrightarrow{hb_{113}}, \xrightarrow{hb_{213}}\}, ~~hb_{113}= ich(v_{13}) \!\land\! hb_{213}= ch(v_{13}) \!\land\! v_{13}=\tau}
+    ot_{13}  = &\openrule{\{1 \xrightarrow{l}_{C_1} 1, 1 \xrightarrow{r}_{C_2} 1\}, ~~\{\xrightarrow{hb_{113}}, \xrightarrow{hb_{213}}\}, ~~hb_{113}= !ch_{113}(v_{113}) \!\land\! hb_{213}=?ch_{113}(v_{113}) \!\land\! v_{13}=\tau}
     {\ostate{11} \xrightarrow{v_{13}} \ostate{11}}\\
   \end{array}$
 
 $\begin{array}{@{}r@{}l@{}}
-    ot_{15}  = &\openrule{\{1 \xrightarrow{l} 1\}, ~~\{\xrightarrow{hb_{115}}\}, ~~v_{15}=hb_{115}}
+    ot_{15}  = &\openrule{\{1 \xrightarrow{l}_{C_1} 1\}, ~~\{\xrightarrow{hb_{115}}\}, ~~v_{15}=hb_{115}}
     {\ostate{11} \xrightarrow{v_{15}} \ostate{11}}\\
   \end{array}$
 
 \caption{The open automaton of the CCS formula a.P||b.Q (a part of open transitions is shown)}  \label{schema:ccs-result}
 \end{figure}
-
 
 
 
@@ -1333,13 +1352,22 @@ $\begin{array}{@{}r@{}l@{}}
 \TODO{Conclusion: what you have accomplished, clearly state your
   contributions, and what is delivered at the end of your internship
   work}
+\QIN{
+In this paper we presented the algorithm of generating the open automaton for the open pNet involving the implementation part of the algorithm. Our implementation includes two main parts. First, we compute all the possible open transitions. The actions in pLTS and hole behaviors are composed in the algorithm while the generation of predicate need to match the combinations of the subnets with the synchronization vectors. Then we ensure the correctness of the intermediate result. The method use a SMT solver Z3 for checking the satisfiability of the open transitions using the predicate of them. In order to do that, we have done some translation on the presentation, the predicate and the assignments of the variables which are also considered as a part of predicates before submitting them to the Z3. We implemented our algorithm in the VerCors platform and use some running examples, the formula from other process algebras, to test the algorithm. The result of the running examples are shown as the open automaton with all the parameters generated by the algorithm automatically. The open automaton successfully presents all the possible movement of the formula. 
+}
 
 \TODO{Discussion: next steps: 1) what is left as open questions on the
   algorithm itself, what you have learned (is Z3 useful and efficient,
   is it the right tool ?). 2) next important goal is bisimulation
   checking, what is neded for that (formalize the algo, define and
   implement simplification)}
+\QIN{
+This paper raises the question of the efficiency and performance of the SMT solvers. It is not ensured that Z3 is the best one, in fact, there is some problem during the implementation the checking method using Z3. For example, if the $functions$ and the $datatypes$ independent to each other, checking the $assertions$ is a simple work. However, $functions$ on recursive $datatypes$ make it more complex, some special rules might be defined by user for the induction.
+}
 
+\QIN{
+The next work after the generation of the open automaton of the pNet is planned to check the bisimulation of the pNets. In previous paper, we have already found the FH-bisimulaiton\cite{meiji-sccs} as a prototype. We will decide the definition of the bisimulation of the pNets and the algorithm to prove a relation between two pNets is a bisimulation. Before that work, we need to refine the result open transitions, eliminating the redundancy in the predicate of the result. The ideal result is what we showed in the bottom part of Fig.~\ref{schema:ccs-result} while there is many intermediate variables we used, such as fresh local variables of synchronization vectors, and fresh result variables of intermediate open transitions, in the algorithm for the propagation of the actions or values. So far, to eliminate the intermediate variables in the predicate, we define the range of the significant variables that we won't eliminated: the local variables of pLTS transitions, the hole behaviors and the result action at the top level. 
+}
   
 => Simplification is not yet implemented. It is not strictly required
 for the Open Automaton construction, but it will be critical later for
