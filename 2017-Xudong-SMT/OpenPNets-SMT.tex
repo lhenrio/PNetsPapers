@@ -804,21 +804,6 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
 \end{definition}
 
 %
-
-\begin{example} \emph{Using the operational rules to compute
-    open-transitions}
-  In Fig. \ref{usingrules:OT11} we show the deduction tree used to construct and prove the 
-  open transition $OT_{11}$ of \texttt{CCS} (see example page
-  \pageref{OT:ccs-composed}).
-%  \TODO{Eric: change for a deduction tree of CCS expression}
-\ERIC{  The proof tree uses TR1 for the $l$ transition of $C_1$ and for the
-  $b$ transition of $C_2$, then uses an action $b_P$ of hole $P$, then
-  combines the results using the second vector of the PN2 sub-pNet, and
-  the third vector of the top node. This yields a final $\tau$
-  transition. The deduction tree in the figure shows how the
-  predicates are generated in this process. 
-}
-
 \begin{figure}[tb]
 \begin{mathpar}
   \small
@@ -873,17 +858,30 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
       }\vspace{-4ex}
 \end{mathpar}
   \caption{Proof of  $OT_{11}$ (with interaction of processes $P$ and action $b$) for ``a.P||b.Q''}
-  \label{usingrules:OT2}
+  \label{usingrules:OT11}
 \end{figure}
+
+\begin{example} \emph{Using the operational rules to compute
+    open-transitions}
+  In Fig. \ref{usingrules:OT11} we show the deduction tree used to construct and prove the 
+  open transition $OT_{11}$ of \texttt{CCS} (see example page
+  \pageref{OT:ccs-composed}).
+%  \TODO{Eric: change for a deduction tree of CCS expression}
+The proof tree uses TR1 twice, for the $l$ transition of $C_1$ and for the
+  $b$ transition of $C_2$, then uses an action $b_P$ of hole $P$, and
+  combines the results using the second vector of the PN2 sub-pNet, and
+  the third vector of the top node. This yields a final $\tau$
+  transition. The deduction tree in the figure shows how the
+  predicates are generated in this process. 
 
 \end{example}
 
     
 
-Note that while the scenario above is expressed as a single
-instantiation of the possible behaviours, the constructions below are
-kept symbolic, and each open-transition deduced expresses a whole family of
-behaviours, for any possible values of the variables.
+%% Note that while the scenario above is expressed as a single
+%% instantiation of the possible behaviours, the constructions below are
+%% kept symbolic, and each open-transition deduced expresses a whole family of
+%% behaviours, for any possible values of the variables.
 
 \paragraph{Variable management.}
 The variables in each synchronisation vector are considered local:
@@ -975,8 +973,6 @@ In this section we present an algorithm to construct the open
 automaton representing the behaviour of an open pNet, and we prove that
 under reasonable conditions this automaton is finite.
 
-\TODO{Refine the algorithm description}
-
 \begin{alg}[Behavioural semantics of open pNets: Sketch]
 This is a standard residual algorithm over a set of open-automaton
 states, but where transitions are open transitions
@@ -1009,8 +1005,6 @@ the current state, and add the
 resulting state in the unexplored set if it is not already in the
 explored set.
 
-%3) this ends with the "while" from step 2, when we have no more
-%unexplored set.
 \end{alg}
 
 
@@ -1077,6 +1071,18 @@ complexity analysis is required before deciding if this would be
 worthwhile. 
 \end{itemize}
 
+In the following sections, we detail:
+\begin{itemize}
+\item The structure of fresh variable names.
+\item The details of the implementation for step 2a-2b, refined into:
+  \subitem combining all possibilities of subnets activity/inactivity,
+  \subitem matching each combination with synchronisation vectors.
+\item Management of local variables of pLTSs.
+\item Pruning of unsatisfiable open transitions using the Z3 SMT solver.
+\end{itemize}
+
+  
+  
 
 \subsection{Fresh variables}
 
@@ -1106,16 +1112,25 @@ $$\emph{prefix : tree\ index\ :\ counter}$$
 \end{itemize}
 \end{definition}
 
-\TODO{Add the process and the vector ids ?}
+\TODO{Option: Add the process and the vector ids ?}
 
-\QIN{
 $Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
-}
 
-\subsection{Predicate generation}
-\QIN{
-The predicate of the open transition is a conjunction of two parts every time applying Tr2. One part composes the predicate from the subnets and the guard from transitions in sub-pLTS or synchronization vectors. The other part is the conjunction of equations generating during  synchronizing subnets' behaviors and synchronization vectors. Note that it is simple to collect required terms in the first part while in the second part it need to find out all the possible conjunction forms. We present here a algorithm divided in two step. Combining enumerates all the possible combinations of the working status. Matching synchronizes the subnets according to synchronization vectors to generate possible predicates.
-}
+
+\subsection{Combining and Matching using TR2}
+
+The predicate of the open transition is a conjunction of two parts
+every time applying Tr2. One part composes the predicate from the
+subnets and the guard from transitions in sub-pLTS or synchronization
+vectors. The other part is the conjunction of equations generated
+during matching the subnets' behaviors with the synchronization
+vectors. Note that it is simple to collect required terms in the first
+part while in the second part we need to find out all the possible
+conjunction forms. We present here a algorithm divided in two
+step. Combining enumerates all the possible combinations of the
+working status. Matching synchronizes the subnets according to
+synchronization vectors to generate possible predicates.  
+ 
 %Combining is to generate all the possible matchings of the subnets' OTs (open transitions). The result list of the matched tuples called *combination*.
 % 1. Initialize the result list of OT tuples.
 % 2. Get one list of OTs. It's same as get OTs of one subnet.
@@ -1127,23 +1142,32 @@ The predicate of the open transition is a conjunction of two parts every time ap
 %          2. Add the tuple into the result list, then do the recursion.
 % 6. Return the result list.
 \paragraph{Combining}
-\QIN{
-We first conduct combining. To each subnet, we enumerate all the possible cases of its working status. The result action of a pLTS or a pNet is the external action of the node shows the working status of it. The hole whose behavior is uncertain doesn't have an exact external presentation of action. We only give a variable to each hole and treat it as hole behavior to suppose working status of the hole. Here should have a constraint that this variable belongs to the sort of hole. In every case, the hole behaviors are unchanged, so we only make the combinations of subnets' open transitions.
-}
 
-\QIN{
-Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the rest part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
-}
+We first conduct combining. For each subnet, we enumerate all the
+possible cases of its working status. The result action of a pLTS or a
+pNet is the external action of the node shows the working status of
+it.
+
+For holes, their behavior is unspecified, it doesn't have an exact
+external presentation of action. We only give an action variable to each hole
+and treat it as hole behavior to suppose working status of the
+hole.
+% Here should have a constraint that this variable belongs to the sort of hole.
+In every case, the hole behaviors are unchanged, so we
+only make the combinations of subnets' open transitions. 
+
+Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the remaining part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
+
 
 \begin{algorithm}
 \caption{Combining}
 \begin{algorithmic}[1]
 
-\Require List $TR$ of result open transition sets from the subnets. 
+\Require The list $TR$ of the open transition sets of the subnets. 
 \Ensure The list of all the possible combinations of open transitions $L_C$.
-\State Initial an empty combination list $L_C$;
+\State Initialise an empty combination list $L_C$;
 \State Extract a list of open transitions $L_{ot}$ from $TR$;
-\State Insert $null$ into $L_{ot}$;
+\State Add $null$ to $L_{ot}$;
 \State Get the combinations $L'_C$ of the $TR$;
 \For{each $ot \in L_{ot}$}
 	\For{each $C' \in L'_C$}
@@ -1168,17 +1192,27 @@ Algorithm 1 shows the combining algorithm for enumerating all the possible combi
 %      5. Add the predicate into the OT. Store the OT in the result list.  
 % 5. Return the result list of all the possible OTs.
 \paragraph{Matching}
-\QIN{
+
 We now come to the matching using combinations from the previous step, together with hole behaviors and the result action, to match with the synchronization vectors. 
-}
 
-\QIN{
-Algorithm 2 shows the algorithm matches combination $L_C$, hole behaviors $B$ with synchronization vectors $SV$. Every time we choose a synchronization vector $sv$ from $SV$ for matching, we clone it and use the cloned one $sv'$. We use the definition declared before to construct all the possible predicates but the algorithm has not checked the correctness of these predicates. It needs a further refinement.
-}
+Algorithm 2 shows the algorithm matches combination $L_C$, hole
+behaviors $B$ with synchronization vectors $SV$. Remember variables
+inside a synchronisation vector are consider local to the vector; so every time we choose a synchronization vector $sv$ from $SV$ for matching, we clone it and use the cloned one $sv'$. We use the definition declared before to construct all the possible predicates but the algorithm has not checked the correctness of these predicates. 
 
-\QIN{
-In order to filter a part of mismatches, at any time an action $e_1$ matching with an element $e_2$ from synchronization vector, the pair $(e_1, e_2)$ must be checked: if both $e_1$ and $e_2$ are $null$ or $not\ null$, then it continues to generate a new term of predicate. Otherwise, it is intuitive that the working status coming from the subnet $e_1$ is different from what asked by the synchronization vector $e_2$, then this case is filtered. 
-}
+There is one mismatch case we can easily detect here, that is its
+working status:
+At any time an action $e_1$ matching with an element $e_2$ from
+synchronization vector, the pair $(e_1, e_2)$ must be checked: if both
+$e_1$ and $e_2$ are $null$ or $not\ null$, then it continues to
+generate a new term of predicate. Otherwise, it is intuitive that the
+working status coming from the subnet $e_1$ is different from what
+asked by the synchronization vector $e_2$, then this case is filtered
+out.
+
+Then we build the resulting open transition. Satisfiability of the
+predicate is not checked at this level, but only later, at the
+toplevel of the pNet.
+
 \begin{algorithm}
 \caption{Matching}
 \begin{algorithmic}[1]
@@ -1213,19 +1247,65 @@ The list of all the possible open transitions generated $L_{ot}$.
 \end{algorithm}
 
 \subsection{Management of assignments}
-\QIN{
-The pLTS contains some variables in its states, or just as global states of the pLTS, with several assignments. The algorithm composing assignments from subnets is different from the generation of predicates. When applying Tr1, we just keep the assignments in the Post of the open transition. And when it comes to Tr2, Post is the union of the assignments propagate from the subnets. The assignments provide value of the variables in predicates. There is usually not only one assignments for a variable and the assignment will lose when the algorithm computes other open transitions using other transitions in pLTS. The values of the variables are necessary for checking satisfiability of the open transitions together with predicates, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, the algorithm manages the variables together with its all possible assignments.
-}
+The pLTS contains some variables in each of its states (state
+variables), or just as global states of the pLTS (global variables).
+Both can be assigned in the pLTS transitions.
+The algorithm composing assignments from subnets is different from the
+generation of predicates. When applying Tr1, we just keep the
+assignments in the Post of the open transition. And when it comes to
+Tr2, Post is the union of the assignments propagate from the
+subnets. The assignments provide value of the variables in
+predicates.
+There is usually not only one assignment for a state variable as
+several incoming transitions of a state can perform different
+assignments on the same variable. The values of the
+variables are necessary for checking satisfiability of the open
+transitions together with predicates, miss of them may drop the
+unsatisfiable results. In order to avoid such mistakes, the algorithm
+manages the variables together with a list of all its possible assignments.
 
-\QIN{
-We use a list of triad $<v,\ S, \ AssignRH>$ for each pLTS to record the information of the state variables of the pLTS where $v$ is the state variable in pLTS, $S$ is its owner state and $AssignRH$ is a list of expressions over other variables in the right hand side of assignments of $v$. The $S$ can be $null$ in the record triad, but it means the variable is global in the pLTS belonging to all the states instead of meaning it belongs to nothing. So it should be noted that the changing of the value of the global state variable every time a transition is conducted. $AssignRH$ is the collection of all the possible expressions coming from the the right hand side of assignments. It keeps the information of the assignments for each state variable. We update the list of record triad every time Tr1 is applied, adding the right side of the assignments into corresponding expression lists. So the list keeps the all the assignments in the pLTS. Then we can track all the possible value of the variables when computing open transitions. 
-The initial value of the state variable is also seemed as an assignment for that variable. We must give a initial value to the global state variable or there will be some problem in the start state. However, we sometimes don't give initial values to the state variables (except the global variables) as their initial values are decided by their first assignments, default values for them is hard to decide manually.
-}
+
+We use a list of triples $<v,\ S, \ AssignRH>$ for each pLTS to record
+the information of both state and global variables of the pLTS where $v$ is the  variable in pLTS, $S$ is its owner state and $AssignRH$ is a list of expressions over other variables in the right hand side of assignments of $v$. The $S$ can be $null$ in the record triple, but it means the variable is global in the pLTS belonging to all the states instead of meaning it belongs to nothing. So it should be noted that the changing of the value of the global state variable every time a transition is conducted. $AssignRH$ is the collection of all the possible expressions coming from the the right hand side of assignments. It keeps the information of the assignments for each variable. We update the list of record triples every time Tr1 is applied, adding the right side of the assignments into corresponding expression lists. So the list keeps the all the assignments in the pLTS. Then we can track all the possible value of the variables when computing open transitions. 
+The initial value of the state variable is also seen as an assignment
+for that variable. We must give a initial value to the global state
+variable or there will be some problem in the start state. However, we
+sometimes don't give initial values to the state variables (except the
+global variables) as their initial values are decided by their first
+assignments. Checking whether each variable is initialized before
+being used is a separated problem, that should be done before starting
+our algorithm.
+
 
 \subsection{Pruning the unsatisfiable results}
-\QIN{
-We have used a brute-force method to generate all the possible open transitions in the open automaton. It obviously contains some of unsatisfiability in the open transitions. In Fig~\ref{schema:unsat-ot}, we show an unsatisfiable open transition from the result of the CCS running example. It presents the case that the top level transmits out the action from the PN2, formula $a.P$, as this time only PN2 is working and C1 is performing action $a$ when hole $P$ is also working. In this case, the second synchronization vector of PN2, transmitting the behavior from hole $P$ to the higher level, is used while it is obviously violate the guard of the vector. So we can easily find the contradiction between the generated predicate term $ra:152:1=l \!\land\! a=:ra:152:1$ and the guard composed into the predicate $a \neq l$. To get a correct open automaton of the pNet, such unsatisfiable open transitions need to be eliminated. We choose a SMT solver Z3 as the checker for the open transitions considering the predicates may contain the expression using uninterpreted functions declared by users.
-}
+
+We have used a brute-force method to generate all the possible open
+transitions in the open automaton. It obviously contains some of
+unsatisfiability in the open transitions. In
+Fig~\ref{schema:unsat-ot}, we display an unsatisfiable open transition
+from the result of the CCS running example. It shows the case that the
+top level transmits out the action from the PN2, formula $a.P$, as
+this time only PN2 is working and C1 is performing action $a$ when
+hole $P$ is also working. When matching this case against the second
+synchronization 
+vector of PN2, transmitting the behavior from hole $P$ to the higher
+level, is used while it is obviously violate the guard of the
+vector. So we can easily find the contradiction between the generated
+predicate term $ra:152:1=l \!\land\! a=:ra:152:1$ and the guard
+composed into the predicate $a \neq l$.
+
+To get a correct open
+automaton of the pNet, such unsatisfiable open transitions need to be
+eliminated. This is not easy to perform directly inside our
+algorithm, in particular because it requires some symbolic computation
+on the action expressions and the predicates, and that this reasonning
+may depend on the specific theory of the action algebra. 
+We choose a SMT solver Z3 as the checker for the open
+transitions considering the predicates may contain the expression
+using uninterpreted functions declared by users.
+The ``Modulo Theory'' part of SMT solvers is important here, so that
+the solver can use specific properties of the action algebra.
+
 \begin{figure}[t]
 $\begin{array}{@{}r@{}l@{}}
 %{s0---a-->s1},   {---:hb:15:2-->},   (:ra:15:2 = act:sva:1:3)/\(:ra:152:1 = l)/\(a = :ra:152:1)/\(l!= a)/\(:hb:15:2 = y:sva:15:2)/\(:ra:15:2 = y:sva:15:2)/\(y:sva:15:2 != l)/\(:ra:1:3 = act:sva:1:3)
@@ -1234,7 +1314,7 @@ $\begin{array}{@{}r@{}l@{}}
     \!\land\! :ra:15:2 = y:sva:15:2  \!\land\! y:sva:15:2 \neq l \!\land\! :ra:1:3 = act:sva:1:3}
     {\ostate{00} \xrightarrow{:ra:1:3} \ostate{10}}\\
   \end{array}$
-\caption{One of the unsatisfiable open transitions in CCS running example)}  \label{schema:unsat-ot}
+\caption{One of the unsatisfiable open transitions in CCS running example}  \label{schema:unsat-ot}
 \end{figure}
 
 \begin{figure}[t]
@@ -1248,51 +1328,95 @@ $\begin{array}{@{}r@{}l@{}}
 \end{figure}
 
 \paragraph{Interaction with Z3}
-\TODO{1. example input of Z3 in SMT-LIB.[DONE] 2. software architecture.[DONE]}
-\QIN{
-We implement the dynamic interaction between the pNet API and Z3 solver through its JAVA API. But here we present the code in Z3 by SMT-LIB language instead of JAVA codes to make it easier to read. In Fig~\ref{schema:smt-lib}, we show the manual input of the unsatisfiable result before. Some $datatypes$ are declared to input the sorts of the CCS example, here we only declare one $datatypes$ named $Action$ to involve all the constant actions. The $Int$ and $Bool$ are already existed in Z3. Then we input the predicate of that open transition in two parts. The variables contained in the predicate are declared first, then the terms of predicate are inputed as $assertions$ one by one. In the output, "(not and)" shows Z3 have found out the contradiction in the predicate and the result "unsat" is just what we expected.  
-}
+%\TODO{1. example input of Z3 in SMT-LIB.[DONE] 2. software architecture.[DONE]}
+There are several ways to interact with the Z3 solver. 
+It is possible to use Z3 interactively using the SMT-LIB
+(Python-based) language. From inside our algorithm code, 
+we implement the dynamic interaction between the pNet API and Z3
+solver through its JAVA API. But here we present the code in Z3 by
+SMT-LIB language instead of JAVA codes to make it easier to read. In
+Fig~\ref{schema:smt-lib}, we show the  input of the unsatisfiable
+result before.
+The input starts with the declaration of the CCS action algebra types
+and constructors.
+Some $datatypes$ are declared to input the sorts of the CCS example, here we only declare one $datatypes$ named $Action$ to involve all the constant actions. The $Int$ and $Bool$ are already existed in Z3. Then we input the predicate of that open transition in two parts. The variables contained in the predicate are declared first, then the terms of predicate are inputed as $assertions$ one by one. In the output, "(not and)" shows Z3 have found out the contradiction in the predicate and the result "unsat" is just what we expected.  
 
-\QIN{
-We present the architecture of the interaction with Z3 in Fig~\ref{schema:interaction}. Both two parts need to be translated before submitting to the Z3. The $presentation$ of the pNet is declared at the beginning of the algorithm as the $sorts$ and the $operators$ will be used throughout the whole algorithm. It is translated into $datatypes$ and $functions$ then submitted to the Z3 at the same time. The predicate will be translated into $assertions$ before submitted to Z3 after the algorithm computing out all the possible open transitions, they act as intermediate results there. Together with the $datatypes$ and $functions$, the $assertions$ are used to check the satisfiability of the predicate in Z3.
-}
 
-\paragraph{Translation of presentation}
-\QIN{
+
+We present the architecture of the interaction with Z3 in
+Fig~\ref{schema:interaction}.
+For each OT generated at the toplevel of a pNet, the predicate must be
+submitted for satisfiability check to Z3. For that we need to
+translate into Z3 (Java-API) syntax, both the elements of the action
+algebra, and the predicates itself, including the encoding of the
+variable assignments (the Post part).
+
+The $presentation$ of the action algebra
+is declared at the beginning of the algorithm as the $sorts$ and the
+$operators$ will be used throughout the whole algorithm. It is
+translated into $datatypes$ and $functions$ then submitted to the Z3
+at the same time. Each candidate predicate will then be translated into $assertions$ before submitted to Z3 after the algorithm computing out all the possible open transitions, they act as intermediate results there. Together with the $datatypes$ and $functions$, the $assertions$ are used to check the satisfiability of the predicate in Z3.
+
+
+\paragraph{Translation of Action algebra presentation}
+
 The $datatypes$ are declared according to the $sorts$ the users declared in the $presentation$. If the return type of the $functions$ is one of the $datatypes$, we add this $function$ when declare the $datatypes$, it present the reality that every action expression also belongs to a sort of pNet. Although in Fig~\ref{schema:smt-lib} we have not declared $functions$, they should be exactly declared if there are new $operators$ declared in the $presentation$. The input type of the $function$ can be $Int$, $Bool$ or the $datatypes$ declared all determined by the construct of the  $operators$ in the presentation. For example, we define a new operator to present the equation between two actions in CCS example $\text{EQUAL}$ in the format likes:
-}
+
 \[< Action , Action > \rightarrow Bool .\]
-\QIN{
+
 It will be translated into the Z3 statement: 
-}
+
 \[\text{(declare-fun\ EQUAL\ (Action\ Action)\ Bool) .}\]
 
 \paragraph{Translating assignments into predicate terms}
-\QIN{
-The assignments are also taken into account when checking the satisfiability of the open transitions as they present the value of the variables. In order to do that, we employs a translation from assignments into term of predicates. The assignments required to be translated are only those belong to the variables contain the in the start states of the open transitions. The assignments are represented as equations between the variables and the expressions on the right side of assignment. For the assignments of the same variable, we do not figure out which state is the precursor of current state, we keep all these possible equations instead, and generate the disjunction of these equations. The state could always move to the target state if there exists one of the values of its variable satisfies the guard. It won't matter the variable of the next state except that the right side expression contain its variables. This is a problem left to be solved in our future work. After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
-}
+
+The assignments are also taken into account when checking the
+satisfiability of the open transitions as they represent the value of
+the variables involved in an OT. In order to do that, we employs a
+translation from assignments into term of predicates. The assignments
+required to be translated are only those belong to the variables
+contain in the start states of the open transitions. The assignments
+are represented as equations between the variables and the expressions
+on the right side of assignment. For the assignments of the same
+variable, we do not figure out which state is the precursor of current
+state, we keep all these possible equations instead, and generate the
+disjunction of these equations. The state could always move to the
+target state if there exists one of the values of its variable
+satisfies the guard.
+\TODO{It won't matter the variable of the next state
+except that the right hand side expression contain its variables. This
+is a problem left to be solved in our future work. WHICH PROBLEM ?}
+After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
+
 
 \paragraph{checking satisfiability}
-\TODO{After we get the result OTs, for each result OT, declare the variables and assertions in the Java API. Conduct checking method and get the result.[DONE]\\}
-\QIN{
-We check the satisfiability of open transitions on the top level of the pNet, treating these open transitions as the intermediate result of the algorithm. After we get the intermediate results of open transitions, we check them one by one. Here we declare the variables in the predicate first to make Z3 know all the parameters used for checking this time. The variable including the argument in the operators must has its sort as every pNet defines two default sorts $Int$, $Bool$ default and at least one sort for the actions. The variables can declared using the $datatypes$ declared in the format as:
-}
+
+% We check the satisfiability of open transitions on the top level of
+% the pNet, treating these open transitions as the intermediate result
+% of the algorithm. After we get the intermediate results of open
+% transitions, we check them one by one.
+Here we declare the variables in the predicate first to make Z3 know all the parameters used for checking this time. The variable including the argument in the operators must has its sort as every pNet defines two default sorts $Int$, $Bool$ default and at least one sort for the actions. The variables can declared using the $datatypes$ declared in the format as:
+
 \[\text{(declare-const\ a\ Action) .}\]
 
-\QIN{
-The predicate submitted to the Z3 contain the assignments as them become a part of predicate after our translation. Each term of the predicate is an assertion in Z3, as an example, in the former unsatisfiable result, the contradiction is occured in terms: 
-}
+The predicate submitted to the Z3 contain the assignments as them
+become a part of predicate after our translation. Each term of the
+predicate is an assertion in Z3, as an example, in the former
+unsatisfiable result in Fig~\ref{schema:unsat-ot}, the contradiction is occured in terms: 
+
 \[(:ra:152:1 = l) \land (a = :ra:152:1) \land (l \neq a) .\]
-\QIN{
+
 from which we generate following three assertion:
-}
+
 \[\text{(assert\ (=\ |:ra:152:1|\ l))}\ \ \ \text{(assert\ (=\ a\ |:ra:152:1|))}\ \ \ \text{(assert\ (not\ (=\ a\ l)))}\]
 
 \subsection{Result of the running example}
 \label{section:full-result}
-\TODO{
-Xudong: full result of the tool execution on the running example\\\\
-Open Automata of the CCS example.
+% \TODO{
+% Xudong: full result of the tool execution on the running example\\\\
+% Open Automata of the CCS example.
+\TODO{The open automaton is not the final one. The vectors are wrong,
+  and you should add at least the OT name... 
 }
 \QIN{
 We get the final result after pruning all the unsatisfiable open transitions, 2/3 of the intermediate results; the resulting open automaton is shown in Fig.~\ref{schema:ccs-result}, we give out the open automaton manually through drawing the final result open transitions generated by algorithm. A part of results we computed by hand in advance are also list below. The $ot_1$ represents the value-passing between $a.P$ and $b.Q$ and they are synchronized then give out an silent action $\tau$, process $P$ and $Q$ should not work in this case. The $ot_3$ and $ot_5$ represent another possible path to execute $a.P||b.Q$, action $a$ and $b$ are finished in sequence instead of synchronizing, they are just transmitted out as the external action. The behavior of the processes, presented as holes $P$ and $Q$ in this pNet, is uncertain, we only know the sort $Action$ for them. So the action from $P$ might be synchronized with the action $b$ that is what $ot_9$ presents or be directly transmitted to the external as the $ot_7$ shows. And we can see more cases of the interaction between these two process in the open transitions start at the state $11$, synchronizing two actions like $ot_{13}$ or directly transmitting like $ot_{15}$.
