@@ -144,7 +144,6 @@ funded by the Associated Team FM4CPS
 
 
 \section{Introduction}
-
 In the nineties, several 
 works extended the basic behavioral models based on labelled
 transition systems to address value-passing or parameterized systems, using
@@ -161,78 +160,31 @@ practical verification approach and no verification platform are
 using this kind of approaches to provide proof methods for
 value-passing processes or open process expressions. 
 
-Parameterized Networks of Synchronized Automata (pNets) were proposed
-to give a behavioral specification formalism for distributed
-systems, synchronous, asynchronous, or heterogeneous. It is used in
-VerCors, a platform for designing and 
-verifying distributed systems, as the intermediate language for various
-high-level languages. The high-level languages in VerCors formalize
-each component of the 
-distributed system and gives out the composition of these
-components.
-pNets provides the core low-level semantic formalism for VerCors, and
-is made of a hierarchical composition of (value-passing) automatas,
-called parameterized labelled transition systems (pLTS), where each
-hierarchical level defines the possible synchronisation of the lower levels.
-Traditionaly, pNet have been used to formalize full
-defined systems or softwares. But we want also to define and reason
-about incompletely defined systems, like program skeletons, operators,
-or open expressions of process calculi.
-The open pNet is proposed to solve the
-problem of the undefined components contained in the systems using
-"holes" as the process parameter dealing with these components. The
-hole acts as the placeholder for the uncertain component with a set of
-possible behaviors the component might conduct, presenting the "open"
-property.  
+\paragraph{Context}
+\TODO{
+  Summary of previous works on pNets and open pNets => 1/2 page.\\
+  Longterm goals:\\
+  - open pNets to represent operators and program skeletons (ref to
+  \cite{HMZ:PDP15})\\
+  - compute semantics in term of open transitions\\
+  - compute equivalence (bisimulation of open automata)\\
+  - model-check properties of open systems
+  }
+  
+\QIN{
+pNets (Parameterized Networks of Synchronized Automata) was proposed to give a behavioral specification formalism for distributed systems. It is used in the VerCors, a platform for designing and verifying distributed systems, as the intermediate language for the high-level language. This language formalizes each component of the distributed system and gives out the composition of these components. At the beginning, pNet can be used to formalize full defined systems or softwares. The open pNet is proposed to solve the problem of the uncertain components contained in the systems using "holes" as the process parameter dealing with these components. The hole acts as the placeholder for the uncertain component with a set of possible behaviors the component might conduct, presenting the "open" property. 
+}
 
-The pNet model was developed in a series of
-works~\cite{HMZ:PDP15,henrio:Forte2016} and some examples have been
-introduced showing its ability in encoding the operators from some
-other algebras or  program skeletons. It is just the first step of
-our long-term goals. The operational semantic of the open pNet has
-already been defined, but we only had a sketch about how to compute it and
-had no implementation. This operational semantic is defined as an
-Open Automaton in which Open Transitions contain logical predicates
-expressing the relations between the behavior of the holes, and the
-global behavior of the system.
-
-Computing the open transitions from the composition of pNet is the
-main part of the open 
-automaton computing and needs to satisfy the constraints expressed as
-the rules of the operationnal semantics. So in
-the computing algorithm, computing open transitions is necessary and
-should have some method to keep them satisfying the constraints.
-Computing open automata by hand is complicated and error prone. And
-the algorithm published in \cite{henrio:Forte2016} was not precise
-enough for an implementation. Our first goal was then to refine the
-algorithm, and implement it in a tool.
-In the long goal, we want to be able to check the equivalence between
-pNets. The equivalence between pNets is "FH-bisimulation" taking the
-predicate of the open transitions into account each time matching such
-open transitions. In our long-term goals, the final target is to check
-the property of open systems.
-
-Our contribution in the article is:
-\begin{itemize}
-\item We have refined the open automaton generation algorithm, to make
-  it implementable, and we implemented a full working prototype, within the
-  VerCors platform. In the process, we had to improve slightly the
-  semantics rules, and to add features in the algorithm to deal with
-  management of variables and assignements.
-  \item parameterisation over the action algebra operators in the
-    VerCors ECORE and library
-  \item interaction with the Z3 SMT solver
-    \item validation on several use-cases
-\end{itemize}
-
-\TODO{I have not described the items above after th efirst one, left
-  it to you...} 
-
-
-
+\QIN{
+The pNet has developed in a series of works~\cite{HMZ:PDP15,henrio:Forte2016} and some examples has been introduced showing its ability in encoding the operators from some other algebras or the program skeletons. It is just the first step of our long-term goals. The operational semantic of the open pNet has already defined, but we only have a sketch about how to compute it and have no implementation. The operational semantic here is defined as an open automaton. The open transitions in the open automaton presenting the composition feature of the pNet is the main part of the open automaton computing and needs to satisfy several constraints. So in the computing algorithm, computing open transitions is necessary and should have some method to keep them satisfying the constraints. Then implementation of the algorithm should be finished. After getting the open automaton of the pNet, we can check the equivalence between pNets. The equivalence between pNets is "FH-bisimulation" taking the predicate of the open transitions into account each time matching such open transitions. And several automatic theorem provers solver will also take part in the bisimulation checking algorithm. In our long-term goals, the final target is to check the property of open systems.
+}
+  
+\paragraph{Contribution}
+\QIN{
+This paper presents our open automaton computing algorithm and its implementation in pNet API. Comparing the result of the algorithm with the manual result on the running example shows that the algorithm works properly in computing the open automaton for the pNet. The algorithm contains the method computing the open transitions composing the transitions from the subnets according to several defined rules the open transitions need to satisfy. These results are not the final results in fact, they still contain some unsatisfiable results we need to eliminate. To eliminate those unsatisfiability, we interact with an automatic theorem provers to use them for satisfiability checking. The translation of the pNet, mainly its presentation and its open transition predicates, is required for the implementation of the interaction.
+}
 
 \paragraph{Related works}
-
 \TODO{say that apart from the old work by J. Rathke, we know no other
   research addressing our goals, and especially no attempts to develop
   an algorithmic treatment of such symbolic systems by interacting
@@ -240,6 +192,14 @@ Our contribution in the article is:
 
 \TODO{Then you can list the ATP/ITP you have mentioned Coq, Isabelle,
   B-tools, or others like CVC4, as possible alternative to Z3}
+
+\QIN{
+There is not much researches try developing the symbolic bisimulation for the value-passing process algebra, as our long-term goals, especially no algorithm treatment of the symbolic systems developed by interacting with automatic theorem provers. The closest work is an old work from J. Rathke~\ref{HennessyRathke:TCS98}, who developed the symbolic bisimulaiton (both weak and strong bisimulation) on a calculus of broadcasting system (CBS). The CBS is similar with classic process calculi such as CCS, CSP, communicating by broadcasting values, one-to-many communication instead of one-to-one communication and transmitting values without blocks. That makes the definition of the symbolic semantic and bisimulation equivalence different from the classic works. 
+}
+
+\QIN{
+There are many automatic theorem provers developed in previous works we can consider to use for the result pruning and bisimulation checking in our algorithm, such as Z3~\ref{}, Coq~\ref{}, Isabelle~\ref{} or Rodin~\ref{} as possible alternative. Z3 is developed by Microsoft Research based on the satisfiability modulo theories (SMT), mainly applied in extended static checking, test case generation, and predicate abstraction. Tools like Coq, Isabelle and Rodin have already integrated SMT solvers as modules for proving the theorem or formula inputed by users.
+}
 
 \paragraph{Structure.}
 In \ref{section:examples} we present two simple examples that will be
@@ -370,7 +330,7 @@ convenient for observing internal events during model-checking.
 \section{parameterized Networks (pNets): definition}
 \label{section:pnets}
 
-% \ERIC{Keep minimum defs here too be independent from FORTE}
+\ERIC{Keep minimum defs here too be independent from FORTE}
 
 This section introduces pNets and the notations we will use in
 this paper. Then it gives the formal definition of pNet structures,
@@ -449,7 +409,7 @@ pNets can encode naturally the notion of input actions in value-passing CCS
 \cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
 for more general mechanisms, like gate negotiation in Lotos, or broadcast
 communications.
-Formally, value-passing actions \emph{\`a la} CCS, denoted as ``?ch(x)'' and ``!ch(exp)'' in our CCS running example, stand respectively for $CCSact(i(ch),?x)$ and $CCSact(ch,exp)$, where $ch$ is a variable denoting a channel name, $?x$ is an input variable denoting the data argument received as input on $ch$, and $exp$ some data expression (containing no input variables). In our example we will use the usual CCS syntax.
+\ERIC{Formally, value-passing actions \emph{\`a la} CCS, denoted as ``?ch(x)'' and ``!ch(exp)'' in our CCS running example, stand respectively for $CCSact(i(ch),?x)$ and $CCSact(ch,exp)$, where $ch$ is a variable denoting a channel name, $?x$ is an input variable denoting the data argument received as input on $ch$, and $exp$ some data expression (containing no input variables). In our example we will use the usual CCS syntax. }
 %For Lotos-style
 %distributed synchronization, we use synchronization vectors that encode matching data
 %offers on a common gate; or 
@@ -672,7 +632,7 @@ set of state modifications.
 \begin{example}\emph{An open-transition.}
   \label{OT:ccs-composed}
 %  \TODO{ERIC: change for an OT of CCS example}
-The \texttt{CCS} pNet of Fig. \ref{schema:ccs-pnets} has 2 controllers and 2 holes. We show its full open Automaton in section \ref{section:full-result}, it has 16 open transitions. We detail 3 of them here:
+\ERIC{  The \texttt{CCS} pNet of Fig. \ref{schema:ccs-pnets} has 2 controllers and 2 holes. We show its full open Automaton in section \ref{section:full-result}, it has 16 open transitions. We detail 3 of them here:}
 
  \smallskip
  $  OT_1  = \openrule{
@@ -681,43 +641,25 @@ The \texttt{CCS} pNet of Fig. \ref{schema:ccs-pnets} has 2 controllers and 2 hol
                        \{\}               ~~
                  [ a\neq l \land b\neq r \land a=?ch(v) \land b=!ch(v) ]              
                       }
-     {\ostate{00} \xrightarrow{\underline{\tau}} \ostate{11}}$
+     {\ostate{00} \xrightarrow{\underline{\tau}} \ostate{10}}$
      
  $ OT_3  = \openrule{
                        0 \xrightarrow{a}_{C_1} 1 ~~
                        \{\}               ~~
                  [ a\neq l  ]              
                       }
-     {\ostate{10} \xrightarrow{a} \ostate{10}} $
+     {\ostate{10} \xrightarrow{a} \ostate{11}} $
      
 $  OT_{11}  = \openrule{
                           1 \xrightarrow{l}_{C_1} 1 ~~
                        0 \xrightarrow{b}_{C_2} 1 ~~
-                       \{ \xrightarrow{hb_P}_{P} \}               ~~
-                 [ a\neq l \land b\neq r \land hb_P=?ch(v) \land b=!ch(v) ]              
+                       \{ \xrightarrow{b_P}_{P} \}               ~~
+                 [ a\neq l \land b\neq r \land b_P=?ch(v) \land b=!ch(v) ]              
                       }
      {\ostate{10} \xrightarrow{\tau} \ostate{11}}
   $
 \end{example}
-
-The first open transitions listed, $OT_1$ and $OT_3$, only involve
-possible actions from the prefix operators, respectively communication
-between the two prefixes, if actions $a$ and $b$ are matching emit and
-receive actions on the same channel; or simple propagation of action
-$a$ from the left prefix, with no special constraint other than being
-different from the local $l$ action of pLTS $C_1$.
-
-Remark the structured states in the conclusion of these rules: both
-start in state $\ostate{00}$, where both $C_1$ and $C_2$ are in their
-initial states. They end in different structured states, because in
-$OT_1$ both pLTS chage states, meaning that the control has gone
-respectively to processes $P$ and $Q$, consuming actions $A$ and $B$,
-while in $OT_3$ only $C_1$ has moved.
-
-The last open transition $OT_{11}$ starts in state $\ostate{10}$, with
-control at $P$ on the left, and action $b$ on the right. So these two
-can communicate, e.g. here if $b$ is an emission, and the action of hole
-$P$ is the matching reception.
+\TODO{Eric: short comments}
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
@@ -1504,7 +1446,7 @@ unsatisfiable result in Fig~\ref{schema:unsat-ot}, the contradiction is occured 
 
 \[(:ra:152:1 = l) \land (a = :ra:152:1) \land (l \neq a) .\]
 
-from which we generate the following three assertions:
+from which we generate following three assertion:
 
 \[\text{(assert\ (=\ |:ra:152:1|\ l))}\ \ \ \text{(assert\ (=\ a\ |:ra:152:1|))}\ \ \ \text{(assert\ (not\ (=\ a\ l)))}\]
 
@@ -1513,38 +1455,17 @@ from which we generate the following three assertions:
 % \TODO{
 % Xudong: full result of the tool execution on the running example\\\\
 % Open Automata of the CCS example.
+\TODO{The open automaton is not the final one. The vectors are wrong,
+  and you should add at least the OT name... 
+}
+\QIN{
+We get the final result after pruning all the unsatisfiable open transitions, 2/3 of the intermediate results; the resulting open automaton is shown in Fig.~\ref{schema:ccs-result}, we give out the open automaton manually through drawing the final result open transitions generated by algorithm. A part of results we computed by hand in advance are also list below. The $ot_1$ represents the value-passing between $a.P$ and $b.Q$ and they are synchronized then give out an silent action $\tau$, process $P$ and $Q$ should not work in this case. The $ot_3$ and $ot_5$ represent another possible path to execute $a.P||b.Q$, action $a$ and $b$ are finished in sequence instead of synchronizing, they are just transmitted out as the external action. The behavior of the processes, presented as holes $P$ and $Q$ in this pNet, is uncertain, we only know the sort $Action$ for them. So the action from $P$ might be synchronized with the action $b$ that is what $ot_9$ presents or be directly transmitted to the external as the $ot_7$ shows. And we can see more cases of the interaction between these two process in the open transitions start at the state $11$, synchronizing two actions like $ot_{13}$ or directly transmitting like $ot_{15}$.
+}
 
-We get the final result after pruning all the unsatisfiable open
-transitions, that is 2/3 of the intermediate results; the resulting open
-automaton is shown in Fig.~\ref{schema:ccs-result}, we have drawn
-manually the open automaton obtained as the final result generated by
-algorithm.
-The $ot_1$ represents the
-value-passing between $a.P$ and $b.Q$ and they are synchronized then
-give out an silent action $\tau$, process $P$ and $Q$ should not work
-in this case. The $ot_3$ and $ot_5$ represent another possible path to
-execute $a.P||b.Q$, action $a$ and $b$ are finished in sequence
-instead of synchronizing, they are just transmitted out as the
-external action. The behavior of the processes, presented as holes $P$
-and $Q$ in this pNet, is uncertain, we only know the sort $Action$ for
-them. So the action from $P$ might be synchronized with the action $b$
-that is what $ot_9$ presents or be directly transmitted to the
-external as the $ot_7$ shows. And we can see more cases of the
-interaction between these two processes in the open transitions starting at
-the state $11$, synchronizing two actions like $ot_{13}$ or directly
-transmitting like $ot_{15}$. 
+\QIN{
+To sum up, from the pNet encoding CCS formula inputed by the user we generate the open transitions and prune the unsatisfiability automatically. The final result open transitions represent all the possible movements of the CCS example. They can exactly construct the open automaton for the given example.
+}
 
-To sum up, from the pNet encoding CCS formula inputed by the user we
-generate the open transitions and prune the unsatisfiability
-automatically. The final result open transitions represent all the
-possible movements of the CCS example. They can exactly construct the
-open automaton for the given example.
-
-
-\TODO{Beware, there are incoherences between the automaton and the
-  rules, e.g. OT3 goes to state 01, or 01 ?}
-
-  
 \begin{figure}[h]
   \centerline{\includegraphics[width=7cm]{XFIG/CCSresult}}
   
@@ -1609,7 +1530,7 @@ This paper raises the question of the efficiency and performance of the SMT solv
 }
 
 \QIN{
-The next work after the generation of the open automaton of the pNet is planned to check the bisimulation of the pNets. In previous paper, we have already found the FH-bisimulaiton\cite{deSimone85} as a prototype. We will decide the definition of the bisimulation of the pNets and the algorithm to prove a relation between two pNets is a bisimulation. Before that work, we need to refine the result open transitions, eliminating the redundancy in the predicate of the result. The ideal result is what we showed in the bottom part of Fig.~\ref{schema:ccs-result} while there is many intermediate variables we used, such as fresh local variables of synchronization vectors, and fresh result variables of intermediate open transitions, in the algorithm for the propagation of the actions or values. So far, to eliminate the intermediate variables in the predicate, we define the range of the significant variables that we won't eliminated: the local variables of pLTS transitions, the hole behaviors and the result action at the top level. 
+The next work after the generation of the open automaton of the pNet is planned to check the bisimulation of the pNets. In previous paper, we have already found the FH-bisimulaiton\cite{meiji-sccs} as a prototype. We will decide the definition of the bisimulation of the pNets and the algorithm to prove a relation between two pNets is a bisimulation. Before that work, we need to refine the result open transitions, eliminating the redundancy in the predicate of the result. The ideal result is what we showed in the bottom part of Fig.~\ref{schema:ccs-result} while there is many intermediate variables we used, such as fresh local variables of synchronization vectors, and fresh result variables of intermediate open transitions, in the algorithm for the propagation of the actions or values. So far, to eliminate the intermediate variables in the predicate, we define the range of the significant variables that we won't eliminated: the local variables of pLTS transitions, the hole behaviors and the result action at the top level. 
 }
   
 => Simplification is not yet implemented. It is not strictly required
