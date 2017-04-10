@@ -321,7 +321,7 @@ serve as running examples in the whole paper.
 
 First example we choose is a formula $a.P||b.Q$, composing prefix and
 parallel operators of value-passing CCS, and containing two process
-variables (holes) P and Q. In Fig. 1, we show the encoding of this CCS
+variables (holes) P and Q. In Fig.~\ref{schema:ccs-pnets}, we show the encoding of this CCS
 formula. The pNet has a tree-like structure.  
 
 The root node of the tree PN1 is the top level of the pNet
@@ -1056,9 +1056,9 @@ An algebra presentation contains:
           expressions (including their data parameters); they are
           constructors of data and action sorts, but also predicates
           over these objects.
-        \item Constants: The satifiability solver need to know which
-          actions in the pLTS behaviours are constants (like the $l$,
-          $r$ local actions of the controlers in the CCS example). So
+        \item Constants: The satisfiability solver need to know which
+          actions in the pLTS behaviors are constants (like the $l$,
+          $r$ local actions of the controllers in the CCS example). So
           for a given pNet system, the Action sort will include all
           these constants.
 \end{itemize}
@@ -1072,16 +1072,26 @@ holes. There \emph{must} be one sort for actions, and eventually
 several others for the types of data parameters. Sorts for integer
 and boolean are implicitly declared. 
 
+\QIN{
+In the CCS example, we have a sort for actions called $Action$:
+}
+
+\[ Action = \{ l, r\} \]
+
 \paragraph{Operators}
 We need introduce operators for building expressions, of both action
 and data sorts, when encoding the 
 algebra into pNets. So that is needed to know about the input and
 output of the operators used in the expressions from those
-algebra. The input and output should belong to the sorts on the
-pNet. When there are $k$ subnets in this pNet, the structure of a
+algebra. The input and output should belong to the sorts of the
+pNet. When there are $k$ sorts in this pNet, the structure of a
 $n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
 \rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
 
+\QIN{For instance, in our CCS running example, there is the action expression $!ch(v)$ using an operator $!$ presenting the ``$EMIT$'' action in CCS. We only use a sort called $Action$ to involve all the constant actions or action expressions in pNets and other parameters such as channel $ch$ or variable $v$ are all integers. So here we treat $EMIT$ as a binary operator with the format like:
+}
+
+ \[ < Int, Int > \rightarrow Action . \]
 
 \paragraph{Implementation of the expression meta-model}
 The VerCors platform uses Ecore and EMF to define the structure of
@@ -1096,6 +1106,9 @@ defining more elements for his specific algebra.
 
 In Fig~\ref{schema:expression-pnets}, we show the Expression class we
 improved, including extensions for CCS and LOTOS.
+
+\QIN{The translation of the presentation in the Z3 SMT solver will be given later.
+}
 
 \begin{figure}[t]
   \includegraphics[width=\linewidth]{XFIG/Expression}
@@ -1498,7 +1511,13 @@ at the same time. Each candidate predicate will then be translated into $asserti
 
 \paragraph{Translation of Action algebra presentation}
 
-The $datatypes$ are declared according to the $sorts$ the users declared in the $presentation$. If the return type of the $functions$ is one of the $datatypes$, we add this $function$ when declare the $datatypes$, it present the reality that every action expression also belongs to a sort of pNet. Although in Fig~\ref{schema:smt-lib} we have not declared $functions$, they should be exactly declared if there are new $operators$ declared in the $presentation$. The input type of the $function$ can be $Int$, $Bool$ or the $datatypes$ declared all determined by the construct of the  $operators$ in the presentation. For example, we define a new operator to present the equation between two actions in CCS example $\text{EQUAL}$ in the format likes:
+The $datatypes$ are declared according to the $sorts$ the users declared in the $presentation$. If the return type of the $functions$ is one of the $datatypes$, we add this $function$ when declare the $datatypes$, it present the reality that every action expression also belongs to a sort of pNet. 
+
+\QIN{
+So when we declare the operator EMIT we illustrated in section 4.1, it will be just declared together with the constants.
+}
+
+ Although in Fig~\ref{schema:smt-lib} we have not declared $functions$, they should be exactly declared if there are new $operators$ declared in the $presentation$. The input type of the $function$ can be $Int$, $Bool$ or the $datatypes$ declared all determined by the construct of the  $operators$ in the presentation. For example, we define a new operator to present the equation between two actions in CCS example $\text{EQUAL}$ in the format likes:
 
 \[< Action , Action > \rightarrow Bool .\]
 
