@@ -576,7 +576,7 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 
 \TODO{we do not use the Sort in the implementation of synch vector
   matching. May be we could remove it from here, but it will not gain
-  much...[DONE]}
+  much...[DONE] --- Well, not really, because you have not chnaged the places where SORT is used, e.g. in definitions 2 and 3 one minimal solution is to add a sentence with a ref to Forte'16 --- but also you have removed the defs of Holes and Leaves, that we really use a lot !}
 
 %\begin{definition}[Sorts, Holes, Leaves of pNets]
 %  \begin{itemize}
@@ -671,12 +671,11 @@ set of state modifications.
 	variables of the open transition.
 \end{definition}
 
-\QIN{[ change the example OT here ]}
+%\QIN{[ change the example OT here ]}
 \begin{example}\emph{An open-transition.}
   \label{OT:lotos-composed}
-\TODO{: change for an OT of new Lotos example, may be only one or two
-  of them ?[DONE]}
-The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 1 controller and 1 hole. We show its full open Automaton in section \ref{section:full-result}, it has 5 open transitions. We detail 1 of them here:
+
+The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2 controllers and 2 holes. We will show its full open Automaton in section \ref{section:full-result}, it has 5 open transitions. We detail one of them here:
 
  \smallskip
  $ ot_2  = \openrule{
@@ -707,13 +706,10 @@ The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 1 controller and 1 h
 %can communicate, e.g. here if $b$ is an emission, and the action of hole
 %$P$ is the matching reception.
 
-\QIN{
-The open transition $ot_2$ involve the possible actions from the process $P$ and prefix operator $(acc(x);Q$. The hole behavior $hb_{12}$ must be the exit action $\delta(x)$, if $(acc(x);Q$ can capture the same value $x$.
-}
+The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
 
-\QIN{
-Remark the structured states in the conclusion of these rules: both of them start in state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial states. They end in different structured states, because in $ot_2$ both pLTS conduct transitions, showing that the control has gone from processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and $acc(x)$.
-}
+Remark the structured states in the conclusion of these rules: both of them start in state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial states. They end in different structured states, because in $ot_2$ both pLTS conduct transitions, showing that the control has gone from processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and $acc(x)$. Controller $C_1$ has only one state, but its state variable $s_0$ has changed to 1.
+
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
@@ -1486,17 +1482,25 @@ The list we used contains several triples <$v$, $S$, $AssignRH$> to record the i
 %predicate term $ra:152:1=l \!\land\! a=:ra:152:1$ and the guard
 %composed into the predicate $a \neq l$.
 
-\QIN{
-We have used a brute-force method to generate all the possible open transitions in the open automaton. It obviously contains some of unsatisfiability in the open transitions. In Fig~\ref{schema:unsat-ot}, we display an unsatisfiable open transition from the result of the LOTOS running example. It shows the case that the controller C1 want to move the control from $P$ to $(acc(x);Q)$, conducting a $\delta$ transition. However, the first synchronization vector is chosen, we can easily find the contradiction in the generated predicate term ``$:ra:11:1=l \!\land\! \delta=:ra:11:1$''.
-}
+We use a brute-force method to generate all the possible open
+transitions in the open automaton, using all possible combinations of
+synchronisation vectors. Naturally this builds open transtions where
+the predicates express uncompatible constraints. Even if having an
+unsatisfiable transition in the open automaton would not be incorrect,
+we want to check them for satisfiability, and reduce the number of
+transitions and states in the automaton.
+In Fig.~\ref{schema:unsat-ot}, we display an example of an
+unsatisfiable open transition 
+from the result of our example. It shows the case where
+the controller C1 wants to move the control from $P$ to $(acc(x);Q)$,
+conducting a $\delta$ transition. However, the first synchronization
+vector is chosen, we can easily find the contradiction in the
+generated predicate term ``$:ra:11:1=l \!\land\! \delta=:ra:11:1$''. 
 
-To get a correct open
-automaton of the pNet, such unsatisfiable open transitions need to be
-eliminated. This is not easy to perform directly inside our
-algorithm, in particular because it requires some symbolic computation
-on the action expressions and the predicates, and that this reasoning
+Checking satisfiability requires some symbolic computation
+on the action expressions and the predicates, and this reasoning
 may depend on the specific theory of the action algebra. 
-We choose a SMT solver Z3 as the checker for the open
+We choose to use the SMT solver Z3 as the checker for the open
 transitions considering the predicates may contain the expression
 using uninterpreted functions declared by users.
 The ``Modulo Theory'' part of SMT solvers is important here, so that
@@ -1516,14 +1520,14 @@ the solver can use specific properties of the action algebra.
 %{s0---delta-->s0},   {---:hb_P:12:1-->},   (:ra:11:1=l)/\(delta=:ra:11:1)/\(var_s0=0)/\(:hb_P:12:1=a1:sva_SV0:1:1)/\(:ra:1:1=a1:sva_SV0:1:1)/\(a1:sva_SV0:1:1!=delta(x)),   {var_s0 := 1}
 $\begin{array}{@{}r@{}l@{}}
     ot  = &\openrule{\{0 \xrightarrow{\delta} 0\}, ~~\{\xrightarrow{:hb:12:1}\}, ~~:ra:11:1=l \!\land\! \delta=:ra:11:1 \!\land\! s0=0 \\
-     \!\land\! :hb:12:1=a1:sva:1:1 \!\land\! :ra:1:1=a1:sva:1:1 \!\land\! a1:sva:1:1 \neq \delta(x), ~~\{s0 \leftarrow 1\}}
+     \!\land\! \texttt{:hb:12:1}=\texttt{a1:sva:1:1} \!\land\! :ra:1:1=a1:sva:1:1 \!\land\! a1:sva:1:1 \neq \delta(x), ~~\{s0 \leftarrow 1\}}
     {\ostate{00} \xrightarrow{:ra:1:1} \ostate{00}}\\
   \end{array}$
 \caption{One of the unsatisfiable open transitions in LOTOS running example}  \label{schema:unsat-ot}
 \end{figure}
 
 \begin{figure}[t]
-  \centerline{\includegraphics[width=10cm]{XFIG/SMTLIB2}}
+  \centerline{\includegraphics[width=11cm]{XFIG/SMTLIB2}}
   \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
 \end{figure}
 
@@ -1537,20 +1541,23 @@ $\begin{array}{@{}r@{}l@{}}
 %There are several ways to interact with the Z3 solver. 
 %It is possible to use Z3 interactively using the SMT-LIB
 %(Python-based) language. 
-From inside our algorithm code, 
-we implement the dynamic interaction between the pNet API and Z3
-solver through its JAVA API. But here we present the code in Z3 by
-SMT-LIB language instead of JAVA codes to make it easier to read. In
-Fig~\ref{schema:smt-lib}, we show the  input of the unsatisfiable
-result before.
-The input starts with the declaration of the LOTOS action algebra types
-and constructors.
+From inside our algorithm code, we submit satisfiability requests to
+Z3 using its JAVA API. In this article, to make the reading easier, we
+show the Z3 code fragments using its SMT-LIB input language. As an
+example in
+Fig~\ref{schema:smt-lib}, we show the input for checking the (unsatisfiable)
+transition of Fig.~\ref{schema:unsat-ot}.
+
+
+The input to Z3 contains the declaration of the LOTOS action algebra types
+and constructors, then the declaration of variables, and finaly the
+predicate to be checked, encoded as a set of assertions.
 
 \QIN{
 Generally, some $datatypes$ are declared to input the sorts, while here we only declare one $datatypes$ named $Action$ to involve all the constant actions. The $Int$ and $Bool$ are already existed in Z3. Then we input the predicate of that open transition in two parts. The variables contained in the predicate are declared first, then the terms of predicate are inputed as $assertions$ one by one. The result "unsat" in the output is just what we expected.  
 }
 
-\TODO{edit the figure to make it smaller in height [DONE]}
+%\TODO{edit the figure to make it smaller in height [DONE]}
 
 %We present the architecture of the interaction with Z3 in
 %Fig~\ref{schema:interaction}.
@@ -1566,7 +1573,10 @@ Generally, some $datatypes$ are declared to input the sorts, while here we only 
 %translated into $datatypes$ and $functions$ then submitted to the Z3
 %at the same time. Each candidate predicate will then be translated into $assertions$ before submitted to Z3 after the algorithm computing out all the possible open transitions, they act as intermediate results there. Together with the $datatypes$ and $functions$, the $assertions$ are used to check the satisfiability of the predicate in Z3.
 \QIN{
-We present the architecture of the interaction with Z3 in Fig~\ref{schema:interaction}. For each OT generated at the top level of a pNet, the predicate must be submitted for satisfiability check to Z3. For that we need to translate the $presentation$, the predicates and the variable assignments (the Post part) into Z3 (Java-API) syntax. The $presentation$ and the predicates are translated separately.
+We present the architecture of the interaction with Z3 in
+Fig~\ref{schema:interaction}. For each OT generated at the top level
+of a pNet, the predicate must be submitted for satisfiability check to
+Z3. For that we need to translate the algebra $presentation$, the predicates and the variable assignments (the Post part) into Z3 (Java-API) syntax. The $presentation$ and the predicates are translated separately.
 }
 
 \paragraph{Translation of Action algebra presentation}
