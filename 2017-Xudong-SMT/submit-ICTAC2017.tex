@@ -289,10 +289,11 @@ Rodin~\cite{deharbe2013,deharbe2014,abrial2007} have already integrated SMT solv
 theorem or formula inputed by users. 
 
 \paragraph{Structure.}
-In \ref{section:examples} we present a simple example that will  illustrate all parts of the paper. Then in the
-background section
+In section
 \ref{section:pnets} we give a description and a formal definition of
-the pNet model, as found in previous publications.
+the pNet model, as found in previous publications. Then in
+\ref{section:examples} we present a simple example that will
+illustrate the rest of the paper.
 Section \ref{section:op-semantics} recalls the operational semantics
 of pNet, including its structural rules, and a sketch of the algorithm
 to compute such semantics, but also explains the enhancement we have
@@ -302,86 +303,6 @@ implementation within the Vercors platform, and shows the full result of
 the semantic computation on the running example.
 Finally we conclude and discuss perspectives in section
 \ref{section:conclusion}. 
-
-
-\section{Running Examples}
-\label{section:examples}
-
-Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
-many examples of pNets, encoding
-operators of various classical process algebras, or more complex
-synchronization structures in distributed or parallel languages.
-In this paper, we use a running example inspired from Lotos, to illustrate
-the main features of pNets and the way we deal with them in the symbolic
-semantics, and in the satifiability checking. 
-
-
-\begin{figure}[h]
-  \centerline{\includegraphics[width=8cm]{XFIG/LOTOSFormula.eps}}
-  \caption{pNet encodings for the LOTOS expression}  \label{schema:lotos-pnet}
-\end{figure}
-
-We choose the expression \texttt{P>>(accept(v);Q)}, that includes the
-Enable and Prefix 
-operators of the LOTOS language. For the readers not familiar with
-Lotos, the pNet encodings here should be sufficient to understand the
-Enable operator semantics.
-In Fig.~\ref{schema:lotos-pnet}, we show the encoding of the formula using our encoding.
-
-\ERIC{
-  This pNet is composed of: a toplevel node PN1 encoding the Enable
-  operator, with its ``controller'' C1; a ``hole'' representing the
-  process variable P; another node PN2 representing the Prefix
-  operator, with its controller C2, and its hole Q. Controllers are
-  labelled transition systems (pLTS) with state variables and value-passing
-  transitions, defining the dynamics of the operator semantics.}
-
-In order to show all features of the pNet model, we choose to use two
-styles of encodings used in the controllers.
-The most common style used in process calculi is ``state oriented'',
-we use it here for C2: it has two states to
-indicate the position of the control point in the right side of the
-Prefix expression $(acc(v);Q)$. The second one is
-``data oriented'': controler C1 has a single state, with a state
-variable s0 encoding the change of control point from left to right sub-net.
-The transitions in the pLTS have the more general syntax:
-``<action-expr> [guard] {sequence of assignments}''. Guards and
-assignments can only use the values of variables of their source state
-and values from input variables in the action expression; and a
-transition can only assign variables of its target state.  
-
-Now look more specifically on the top pNet node PN1. In addition to
-its controller it has 2 sub-pNets, the hole P and the sub-pNet PN2.
-Three synchronization vectors are given for synchronizing the behavior
-of the subnets to make the pNet act as the Enable operator. The first
-vector, transmitting an action $a_1$ of P, can only occur if $a_1$ is not
-a $\delta$, the vector concrete syntax is typically ``$< l, a_1 , \_ >
--> a_1$'', in which ``$\_$'' means that the corresponding subnet is
-not involved in this synchronization, and the ``l'' action is related
-to the corresponding transition of the controller C1.
-The second vector composes the
-action from the subnets and gives out a synchronized action
-$\underline{\delta(x)}$, where the underlined action stands for an
-internal (already synchronized) action, that cannot be further
-synchronized at upper levels. Synchronized action is a straightforward
-generalization of the notion of internal actions, that will be
-convenient for observing internal events during model-checking. The
-second vector constraints that the transition occurs only when process
-$P$ performs a $\delta(x)$ action, transferring the control to $Q$,
-and sending a value $x$ at the same time. This value must be
-``accepted''  through an $acc(x)$ action before $Q$ taking the
-control. The last one acts as the first one, but transmitting the
-action $a_2$ of Q.  
-Similarily the node PN2 has two synchronization vectors to encode
-the behavior of the Prefix operator. 
-
-It should be easy to see that this pNet system encodes properly the
-behavioral semantics of the corresponding Lotos expression. Remark
-that it is built in a systematic structural way, one pNet node
-encoding each Lotos operator. It is parameterized both at the level of
-actions variables (occurring within the controllers and the
-synchronization vectors), and at the level of process parameters
-(holes). 
 
 
 
@@ -664,6 +585,86 @@ set of actions of a hole or a pNet), $Leaves$ and $Holes$ (all pLTSs
 %% \end{figure}
 
 
+\section{Running Example}
+\label{section:examples}
+
+Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
+many examples of pNets, encoding
+operators of various classical process algebras, or more complex
+synchronization structures in distributed or parallel languages.
+In this paper, we use a running example inspired from Lotos, to illustrate
+the main features of pNets and the way we deal with them in the symbolic
+semantics, and in the satifiability checking. 
+
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=8cm]{XFIG/LOTOSFormula.eps}}
+  \caption{pNet encodings for the LOTOS expression}  \label{schema:lotos-pnet}
+\end{figure}
+
+We choose the expression \texttt{P>>(acc(v);Q)}, that includes the
+Enable and Prefix 
+operators of the LOTOS language. For the readers not familiar with
+Lotos, the pNet encodings here should be sufficient to understand the
+Enable operator semantics.
+In Fig.~\ref{schema:lotos-pnet}, we show the encoding of the formula using pNets.
+
+  This pNet is composed of: a toplevel node PN1 encoding the Enable
+  operator, with its controller (pLTS) C1; a hole representing the
+  process variable P; another node PN2 representing the Prefix
+  operator, with its controller C2, and its hole Q. 
+
+In order to show all features of the pNet model, we choose to use two
+styles of encodings in the controllers.
+The most common style used in process calculi is ``state oriented'',
+we use it here for C2: it has two states to
+indicate the position of the control point in the
+Prefix expression $(acc(v);Q)$. The second one is
+``data oriented'': controller C1 has a single state, with a state
+variable $s_0$ encoding the change of control point from the left to
+the right sub-net.
+%% The transitions in the pLTS have the more general syntax:
+%% ``<action-expr> [guard] {sequence of assignments}''. Guards and
+%% assignments can only use the values of variables of their source state
+%% and values from input variables in the action expression; and a
+%% transition can only assign variables of its target state.  
+
+Now look more specifically on the top pNet node PN1. In addition to
+its controller it has 2 sub-pNets: the hole P and the sub-pNet PN2.
+Three synchronization vectors are defining the possible
+synchronisations between the actions of the subnets.
+ The first
+vector, transmitting an action $a_1$ of P, can only occur if $a_1$ is not
+a $\delta$, the vector concrete syntax is typically ``$< l, a_1 , \_ >
+-> a_1$'', in which ``$\_$'' means that the corresponding subnet is
+not involved in this synchronization, and the ``l'' action is related
+to the corresponding transition of the controller C1: this action is
+available only when the state variable $s_0$ is equal to 0.
+The second vector composes the
+actions from the subnets and gives out a synchronized action
+$\underline{\delta(x)}$, where the underlined action stands for an
+internal (already synchronized) action, that cannot be further
+synchronized at upper levels. Synchronized action is a straightforward
+generalization of the notion of internal actions, that will be
+convenient for observing internal events during model-checking. Here
+the transition occurs only when process
+$P$ performs a $\delta(x)$ action, transferring the control to $Q$,
+and sending a value $x$ at the same time. This value must be
+``accepted''  through an $acc(x)$ action before $Q$ takes the
+control. The last vector acts as the first one, but transmitting the
+action $a_2$ of Q.  
+Similarily the node PN2 has two synchronization vectors to encode
+the behavior of the Prefix operator. 
+
+It should be easy to see that this pNet system encodes properly the
+behavioral semantics of the corresponding Lotos expression. Remark
+that it is built in a systematic structural way, one pNet node
+encoding each Lotos operator. It is parameterized both at the level of
+actions variables (occurring within the controllers and the
+synchronization vectors), and at the level of process parameters
+(holes). 
+
+
 
 
 
@@ -701,54 +702,6 @@ set of state modifications.
 	variables of the open transition.
 \end{definition}
 
-%\QIN{[ change the example OT here ]}
-\begin{example}\emph{An open-transition.}
-  \label{OT:lotos-composed}
-
-The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
-controllers and 2 holes. We will show its full open Automaton in
-section \ref{section:full-result}. We detail one of its transition here:
-
- \smallskip
- $ ot_2  = \openrule{
-                       \{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~
-                       \{\xrightarrow{hb_{12}}_P\}, ~~ 
-                        [s_0=0 \!\land\! hb_{12}=\delta(x)], ~~ 
-                       \{s_0 \xleftarrow{} 1\}     
-                      }
-     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
-\end{example}
-
-%The first open transitions listed, $OT_1$ and $OT_3$, only involve
-%possible actions from the prefix operators, respectively communication
-%between the two prefixes, if actions $a$ and $b$ are matching emit and
-%receive actions on the same channel; or simple propagation of action
-%$a$ from the left prefix, with no special constraint other than being
-%different from the local $l$ action of pLTS $C_1$.
-%
-%Remark the structured states in the conclusion of these rules: both
-%start in state $\ostate{00}$, where both $C_1$ and $C_2$ are in their
-%initial states. They end in different structured states, because in
-%$OT_1$ both pLTS chage states, meaning that the control has gone
-%respectively to processes $P$ and $Q$, consuming actions $A$ and $B$,
-%while in $OT_3$ only $C_1$ has moved.
-%
-%The last open transition $OT_{11}$ starts in state $\ostate{10}$, with
-%control at $P$ on the left, and action $b$ on the right. So these two
-%can communicate, e.g. here if $b$ is an emission, and the action of hole
-%$P$ is the matching reception.
-
-The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
-
-Remark the structured states in the conclusion of this rule, encoding
-the combination of state-spaces of the leaves: both of them start in
-state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial
-states. They end in different structured states, because in $ot_2$
-both pLTS conduct transitions, showing that the control has gone from
-processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and
-$acc(x)$. Controller $C_1$ has only one state, but its state variable
-$s_0$ has changed to 1. 
-
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
@@ -780,7 +733,7 @@ When building an Open Automaton as the semantics of a pNet, its
 \emph{states}, and the shape of the predicates in its
 \emph{transitions} have a specific structure:
 
-\begin{definition}[States of open pNets]\label{def-states}
+\paragraph{States of open pNets:}\label{def-states}
   A state of an open pNet is a tuple (not necessarily finite) of the
   states of its leaves (in which we denote tuples
   in structured states as $\triangleleft\ldots\triangleright$ for better readability).
@@ -793,7 +746,7 @@ A pLTS being its own single leave:
 
 The initial state is defined as:
 $InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
-\end{definition}
+
 
 %% \begin{example} \emph{State of a pNet}
 %%   The states of pNet \texttt{EnableCompL} are:
@@ -821,10 +774,42 @@ by brute-force unification of the sub-pNets
 actions with the corresponding vector actions, possibly followed by a simplification
 step.
 
+%\QIN{[ change the example OT here ]}
+\begin{example}\emph{An open-transition.}
+  \label{OT:lotos-composed}
+
+The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
+controllers and 2 holes. We will show its full open Automaton in
+section \ref{section:full-result}. We give one of its transition here:
+
+ \smallskip
+ $ ot_2  = \openrule{
+                       \{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~
+                       \{\xrightarrow{hb_{12}}_P\}, ~~ 
+                        [s_0=0 \!\land\! hb_{12}=\delta(x)], ~~ 
+                       \{s_0 \xleftarrow{} 1\}     
+                      }
+     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
+\end{example}
+
+The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
+
+Theh transition in the conclusion of this rule starts in
+state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial
+states. It ends in a different structured state, because in $ot_2$
+both pLTS conduct transitions, showing that the control has gone from
+processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and
+$acc(x)$. Controller $C_1$ has only one state, but its state variable
+$s_0$ has changed to 1.
+
+
 \paragraph{Structural Semantic Rules:}
-Now we build the semantics of an open pNet as an open automaton where LTSs are the pLTSs at
-the leaves of the pNet structure, and the states are given by 
-Definition~\ref{def-states}. The open transitions first
+Now we build the semantics of an open pNet as an open automaton where
+LTSs are the pLTSs at 
+the leaves of the pNet structure, and the states are structured as in
+the previous section. 
+%given by Definition~\ref{def-states}.
+The open transitions first
  project the global state into states of the leaves, then apply
 pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
 %structure does not appear in the open-automaton, only the
@@ -992,19 +977,9 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
 %  \label{usingrules:OT11}
 %\end{figure}
 
-\begin{example} \emph{Using the operational rules to compute
-    open-transitions}
-  In Fig. \ref{usingrules:ot2} we show the deduction tree used to construct and prove the 
-  open transition $ot_{2}$ of \texttt{LOTOS}.
-%(see example page \pageref{OT:ccs-composed}).
-%  \TODO{Eric: change for a deduction tree of CCS expression}
-%  The proof tree uses TR1 twice, for the $l$ transition of $C_1$ and for the
-%  $b$ transition of $C_2$, then uses an action $b_P$ of hole $P$, and
-%  combines the results using the second vector of the PN2 sub-pNet, and
-%  the third vector of the top node. This yields a final $\tau$
-%  transition. The deduction tree in the figure shows how the
-%  predicates are generated in this process. 
-
+\begin{example} \emph{Using the operational rules to compute  open-transitions: }
+  in Fig. \ref{usingrules:ot2} we show the deduction tree used to construct and prove the 
+  open transition $ot_2$.
 \end{example}
 
 \begin{figure}[h]
@@ -1056,30 +1031,28 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
      {\ostate{00} \xrightarrow{\tau} \ostate{01}}
       }\vspace{-4ex}
 \end{mathpar}
-  \caption{Proof of  $ot_{2}$ (with interaction of processes $P$ and action $acc(x)$) for ``P>>(acc(x);Q)''}
+  \caption{Proof of  $ot_{2}$ (interaction of process $P$ and action $acc(x)$) for ``P>>(acc(x);Q)''}
   \label{usingrules:ot2}
 \end{figure}
 
 
+The proof tree uses TR1 twice, for the $\delta$ transition of $C_1$
+and for the $acc(x)$ transition of $C_2$, then uses an action
+$hb_{12}$ of hole $P$, and combines the results using the first vector
+of the PN2 sub-pNet, and the second vector of the top node according
+to TR2. This yields a final $\underline{\delta(x)}$ transition. The
+deduction tree in the figure shows how the predicates are generated in
+this process.  
 
-\QIN{
-The proof tree uses TR1 twice, for the $\delta$ transition of $C_1$ and for the $acc(x)$ transition of $C_2$, then uses an action $b_{12}$ of hole $P$, and combines the results using the first vector of the PN2 sub-pNet, and the second vector of the top node according to TR2. This yields a final $\underline{\delta(x)}$ transition. The deduction tree in the figure shows how the predicates are generated in this process. 
-}
-
-%% Note that while the scenario above is expressed as a single
-%% instantiation of the possible behaviours, the constructions below are
-%% kept symbolic, and each open-transition deduced expresses a whole family of
-%% behaviours, for any possible values of the variables.
-
-\paragraph{Variable management.}
+\paragraph{Fresh variables management.}
 The variables in each synchronization vector are considered local:
 for a given pNet expression, we must have fresh local variables for
 each occurrence of a vector (= each time we instantiate rule
 Tr2). Similarly the state variables of each copy of a
 given pLTS in the system, must be distinct, and those created for each
 application of Tr2 have to be fresh and all distinct. 
-This will be implemented within the open-automaton generation algorithm,
-e.g. using name generation using a global counter as a suffix.
+% This will be implemented within the open-automaton generation algorithm,
+% e.g. using name generation using a global counter as a suffix.
 
 
 \subsection{Presentation of algebra}
@@ -1095,12 +1068,15 @@ domains, giving them an abstract syntax (sorts, constructors, operators,
 and predicates). We call this a \emph{Presentation}.
 We also define a concrete syntax, that will be used for
 pretty-printing, but also for translating the presentation, and the
-predicates, into Z3 syntax. 
+predicates, into Z3 syntax (we shall detail this translation in
+section \ref{section:pruning}).
 
 An algebra presentation contains:
 \begin{itemize}
 	\item Sorts: Constants sets of the algebra or types of the data
-          and actions. 
+          and actions. In every presentation, sorts for integer and
+          boolean are implicitly declared.  
+
 	\item Operators: Operators used to construct action
           expressions (including their data parameters); they are
           constructors of data and action sorts, but also predicates
@@ -1113,16 +1089,16 @@ An algebra presentation contains:
 \end{itemize}
 
 \paragraph{Sorts}
-\QIN{
-Sorts are represented by a given name, showing the ownership of the variables and constants. The
-sort of actions is built by the constant actions. There \emph{must} be one sort for actions, and eventually
-several others for the types of data parameters. In the LOTOS example, we have the $Action$ sort:
-}
+are represented by a given name, showing the ownership of the
+variables and constants. The sort of actions is built by the constant
+actions. There \emph{must} be one sort for actions, and eventually 
+several others for the types of data parameters. In the LOTOS example,
+we have the $Action$ sort: 
+
 \[\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .\]
 
-In every presentation, sorts for integer and boolean are implicitly declared. 
 
-\paragraph{Operators}
+\paragraph{Operators:}
 %We need introduce operators for building expressions, of both action
 %and data sorts, when encoding the 
 %algebra into pNets. So that is needed to know about the input and
@@ -1131,17 +1107,14 @@ In every presentation, sorts for integer and boolean are implicitly declared.
 %pNet. When there are $k$ sorts in this pNet, the structure of a
 %$n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
 %\rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
-\QIN{
-We need introduce operators for building expressions, either action expressions or predicate terms, when encoding the algebra into pNets. The operators here are treated as functions, with the sorts of the pNet acting as the types of their input and output.
-}
-
-\QIN{For instance, in our LOTOS running example, we use a function ``$VOID$'' action to construct the action expression $\delta(x)$ and $acc(x)$. We can define the operator as a binary operator with the format like:
-}
+We  introduce operators for building expressions, either action
+expressions or predicate terms, when encoding the algebra into
+pNets. The operators here are treated as functions, with the sorts of
+the pNet acting as the types of their input and output. 
+For instance, in our LOTOS running example, we use a function ``$VOID$'' action to construct the action expression $\delta(x)$ and $acc(x)$. We can define the operator as a binary operator with the format like:
 
  \[\OTvar{VOID:}\OTvar{< Action, Int >} \rightarrow \OTvar{Action .} \]
 
-\QIN{The translation of the presentation in the Z3 SMT solver will be given later.
-}
 
 %\paragraph{Implementation of the expression meta-model}
 % \TODO{maybe we could remove this paragraph (and the figure)}
@@ -1168,8 +1141,8 @@ We need introduce operators for building expressions, either action expressions 
 
 \subsection{Computing and using open automata}
 In this section we present an algorithm to construct the open
-automaton representing the behavior of an open pNet, and we prove that
-under reasonable conditions this automaton is finite.
+automaton representing the behavior of an open pNet, and show
+under which conditions this automaton is finite.
 
 \begin{alg}[behavioral semantics of open pNets: Sketch]
 This is a standard residual algorithm over a set of open-automaton
@@ -1187,12 +1160,11 @@ build all possible deduction trees by application of the structural
 rules Tr1 and Tr2, using all applicable combinations
 of synchronization vectors.
 
-2b) For each of the obtained deduction trees, extract the resulting
+2b) For each deduction trees, extract the resulting
 open-transition.
-The predicate is submitted to Z3 for checking satisfiability. If it is
-NOT satisfiable, the resulting OT is discarded. This will minimize the
-number of 
-resulting transitions. 
+Its predicate is checked (using Z3) for  satisfiability. If it is
+unsatisfiable, the resulting OT is discarded. This will minimize the
+number of resulting transitions. 
 
 2c) For each open-transition,  add the transition in the outgoing transitions of
 the current state, and add the
@@ -1295,16 +1267,11 @@ modifications due to implementation choices.
 %transition must be distinct. At the same time, we also hope them still
 %readable. Here we rename the variables with a regular format using the fresh function. 
 
-\QIN{
-The variables in each synchronization vector are considered local, so
-does the variables of an open transition, such as its hole behaviors
-and its result action. We want all the variables unique on every occurrence of them. 
-%Similarly, the name given to the hole behaviors for each hole or the result action for each open transition must be distinct. 
-At the same time, we also hope them still
+Application of the semantic rules require generating a lot of fresh
+names, for different kind of variables. We could use a global name
+generator to garantee unicity, but 
+at the same time, we also hope them still
 readable. Here we rename the variables with a regular format using the fresh function.
-}
-\TODO{Could try to reduce the text, but give a couple examples ?[DONE]}
-
 More precisely, the fresh function generates a new name adding a
 suffix after the original name. The suffix contains three parts
 combined by a colon.  
@@ -1314,7 +1281,8 @@ combined by a colon.
 The format of \emph{fresh variable} (renaming) is defined as:
 $$\emph{prefix : tree\ index\ :\ counter}$$
 \begin{itemize}
-   \item[$\bullet$] $prefix$ is a default internal name for the variable. So far the internal name can be  sva (SV action), ra (result action), hb (hole behavior).
+   \item[$\bullet$] $prefix$ identifies the kind of the
+     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
    \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
    \item[$\bullet$] $counter$ is the current value of the corresponding counter.
 \end{itemize}
@@ -1324,9 +1292,8 @@ $$\emph{prefix : tree\ index\ :\ counter}$$
 
 %$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
 
-\QIN{
 For example, in the running example, the first possible behavior of the hole, it doesn't have a name, only have the prefix ``hb''. The hole is the second subnets of the root node so its ``tree index'' is ``12''. The fresh variable name is ``$:hb:12:1$''.
-}
+
 
 \TODO{I have not yet been in details through the next section, but we
   need to shorten them...}
@@ -1506,7 +1473,7 @@ The list we used contains several triples <$v$, $S$, $AssignRH$> to record the i
 }
 
 \subsection{Pruning the unsatisfiable results}
-
+\label{section:pruning}
 %We have used a brute-force method to generate all the possible open
 %transitions in the open automaton. It obviously contains some of
 %unsatisfiability in the open transitions. In
