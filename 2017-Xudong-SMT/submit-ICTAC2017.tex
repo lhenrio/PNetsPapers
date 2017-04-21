@@ -29,7 +29,7 @@
 \newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
 \newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
 \newcommand{\OTvar}{\texttt}
-\newcommand{\OTland}{\ \land\ }
+\newcommand{\OTland}{\;\land\ }
 \definecolor{airforceblue}{rgb}{0.26, 0.44, 0.56}
 \newcommand{\QIN}[1]{\textcolor{airforceblue}{#1}}
 \newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
@@ -112,7 +112,8 @@
 \title{Using SMT engine to generate Symbolic Automata\thanks{This work was partially 
 funded by the Associated Team FM4CPS
   between INRIA and ECNU, Shanghai}}
-\author{ Xudong Qin\inst{3}  \ \ \  Eric Madelaine\inst{1,2}} 
+\author{ Xudong Qin\inst{2,3}  \ \ \  Eric Madelaine\inst{1,2}
+  \ \ \  Min Zhang\inst{3}} 
 \institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
 	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
 \and Shanghai Key Laboratory of Trustworthy Computing, ECNU, China}
@@ -130,17 +131,29 @@ funded by the Associated Team FM4CPS
 
 
 \begin{abstract}
-  \TODO{not good for a conference, (to be rewriten by Eric)}
-  We implement the symbolic semantics of open pNets using their
-  so-called ``Open Automaton'' behavioral semantics. This involve
-  building predicates expressing the synchronization conditions
-  allowing some combination of events in the pNet system. These
-  predicates are typically built using first order logic, plus some
-  predicates specific of particular action algebras. To reduce the
-  complexity of the generated open automata, we use the Z3 SMT engine
-  to check satisfiability of the predicates, and prune the state
-  space.. 
+  %% \TODO{not good for a conference, (to be rewriten by Eric)}
+  %% We implement the symbolic semantics of open pNets using their
+  %% so-called ``Open Automaton'' behavioral semantics. This involve
+  %% building predicates expressing the synchronization conditions
+  %% allowing some combination of events in the pNet system. These
+  %% predicates are typically built using first order logic, plus some
+  %% predicates specific of particular action algebras. To reduce the
+  %% complexity of the generated open automata, we use the Z3 SMT engine
+  %% to check satisfiability of the predicates, and prune the state
+  %% space.. 
 
+  Open pNets are used to model the behavior of open
+  synchronous or asynchronous systems expressed in various calculi
+  or languages. They are endowed with a symbolic operational semantics
+  in terms of so-called ``Open Automata''. We implement an algorithm
+  computing this semantics, and building predicates expressing the
+  synchronization conditions allowing some combination of events in
+  the pNet system. Checking such predicates requires symbolic
+  reasoning over first order logics, and specific functions of each
+  action algebra. To reduce the complexity of the generated open
+  automata, we use the Z3 SMT engine to check satisfiability of the
+  predicates, and minimize the number of significant symbolic
+  transitions.
   
 
 \end{abstract}
@@ -174,10 +187,10 @@ each component of the
 distributed system and gives out the composition of these
 components.
 pNets provides the core low-level semantic formalism for VerCors, and
-is made of a hierarchical composition of (value-passing) automatas,
+is made of a hierarchical composition of (value-passing) automata,
 called parameterized labelled transition systems (pLTS), where each
 hierarchical level defines the possible synchronization of the lower levels.
-Traditionally, pNet have been used to formalize full
+Traditionally, pNets have been used to formalize fully
 defined systems or softwares. But we want also to define and reason
 about incompletely defined systems, like program skeletons, operators,
 or open expressions of process calculi.
@@ -187,12 +200,10 @@ problem of the undefined components contained in the systems using
 hole acts as the placeholder for the uncertain component with a set of
 possible behaviors the component might conduct, presenting the "open"
 property.  
-
 The pNet model was developed in a series of
-works~\cite{HMZ:PDP15,henrio:Forte2016} and some examples have been
-introduced showing its ability in encoding the operators from some
-other algebras or  program skeletons. It is just the first step of
-our long-term goals. The operational semantic of the open pNet has
+papers~\cite{HMZ:PDP15,henrio:Forte2016} and some examples have been
+introduced showing its ability to encode the operators from some
+other algebras or  program skeletons. The operational semantic of the open pNet has
 already been defined, but we only had a sketch about how to compute it and
 had no implementation. This operational semantic is defined as an
 Open Automaton in which Open Transitions contain logical predicates
@@ -200,11 +211,8 @@ expressing the relations between the behavior of the holes, and the
 global behavior of the system.
 
 Computing the open transitions from the composition of pNet is the
-main part of the open 
-automaton computing and needs to satisfy the constraints expressed as
-the rules of the operational semantics. So in
-the computing algorithm, computing open transitions is necessary and
-should have some method to keep them satisfying the constraints.
+main part of the algorithm and needs to satisfy the constraints expressed as
+the rules of the operational semantics.
 Computing open automata by hand is complicated and error prone. And
 the algorithm published in \cite{henrio:Forte2016} was not precise
 enough for an implementation. Our first goal was then to refine the
@@ -229,19 +237,19 @@ automatic theorem prover for satisfiability checking.
 \paragraph{Contribution}
 In the article we show how:
 \begin{itemize}
-\item \ERIC{We have refined the open automaton generation algorithm, to make
+\item We have refined the open automaton generation algorithm, to make
   it implementable, and we implemented a full working prototype, within the
   VerCors platform. In the process, we had to improve significantly the
   semantics rules, and add features in the algorithm to deal the full
-  model, including management of variables and assignments.}
+  model, including management of variables and assignments.
 %  \item We extended the meta-model of action expressions, and the
 %    associated API, in the VerCors platform, to be able to manage
 %    parameterisation over the action algebra operators.
   \item We have implemented the interaction between our algorithm and the Z3
     SMT solver, for checking satisfiability of the logical predicates
     generated by the algorithm.
-    \item \ERIC{We validated the whole approach on a small use-case covering all
-      important features of the model.}
+    \item We validated the whole approach on a small use-case covering all
+      important features of the model.
 \end{itemize}
 
 
@@ -258,7 +266,6 @@ In the article we show how:
 %% \TODO{Then you can list the ATP/ITP you have mentioned Coq, Isabelle,
 %%   B-tools, or others like CVC4, as possible alternative to Z3}
 
-\TODO{Should be improved}
 
 There is not much researches trying to develop symbolic bisimulation approaches
 for the value-passing process algebra and languages, as our long-term goals,
@@ -274,14 +281,17 @@ the symbolic semantic and bisimulation equivalence different from the
 classic works.
 
 
-\QIN{
 For other applications, e.g. for the analyses of 
-programming languages, there exist dedicated platforms making use of external automatic theorem
+programming languages, there exist dedicated platforms making use of
+external automatic theorem 
 provers (ATP), or even some automatic tactics from interactive theorem
 provers (ITP), to perform symbolic reasoning, and for example to
 discharge some subgoals in the proofs.
-Tools like Rodin~\cite{deharbe2013,deharbe2014,abrial2007} have already integrated several provers, like Z3, as modules for proving the proof obligations generated from the model inputed by user.
-The prover we used, also is Z3, is developed by Microsoft Research based on the satisfiability modulo
+Tools like Rodin~\cite{deharbe2013,deharbe2014,abrial2007} have
+already integrated several provers, like Z3, as modules for proving
+the proof obligations generated from the model inputed by user. 
+The prover we used, also is Z3, is developed by Microsoft Research
+based on the satisfiability modulo 
 theories (SMT), mainly applied in extended static checking, test case
 generation, and predicate abstraction.
 In a similar way, there are several ATPs/ITPs we could consider to use for
@@ -290,7 +300,7 @@ alternative to Z3, such as CVC4~\cite{barrett:CAV2011},
 Coq~\cite{armand:CPP2011},
 %Coq~\cite{armand:CPP2011,besson:CPP2011},
 Isabelle~\cite{blanchette:FroCoS2011} or others. 
-}
+
 
 \paragraph{Structure.}
 In section
@@ -596,13 +606,13 @@ Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 many examples of pNets, encoding
 operators of various classical process algebras, or more complex
 synchronization structures in distributed or parallel languages.
-In this paper, we use a running example inspired from Lotos, to illustrate
+In this paper, we use an example inspired from Lotos, to illustrate
 the main features of pNets and the way we deal with them in the symbolic
 semantics, and in the satisfiability checking. 
 
 
 \begin{figure}[h]
-  \centerline{\includegraphics[width=8cm]{XFIG/LOTOSFormula.eps}}
+  \centerline{\includegraphics[width=10cm]{XFIG/LOTOSFormula.eps}}
   \caption{pNet encodings for the LOTOS expression}  \label{schema:lotos-pnet}
 \end{figure}
 
@@ -1535,9 +1545,9 @@ unsatisfiable open transition
 from the result of our example. It shows the case where
 the controller C1 wants to move the control from $P$ to $(acc(x);Q)$,
 conducting a $\delta$ transition. However, a synchronization
-vector is chosen that does not match with this behavior, and we can
+vector is chosen that does not match with this action, and we can
 easily find the contradiction in the 
-generated predicate term ``$\OTvar{:ra:11:1}=l \!\land\! \delta=\OTvar{:ra:11:1}$''. 
+generated predicate term ``$\OTvar{:ra:11:1}=l \!\OTland\! \delta=\OTvar{:ra:11:1}$''. 
 
 Checking satisfiability requires some symbolic computation
 on the action expressions and the predicates, and this 
@@ -1569,7 +1579,8 @@ $\begin{array}{@{}r@{}l@{}}
 \end{figure}
 
 \begin{figure}[t]
-  \centerline{\includegraphics[width=11cm]{XFIG/SMTLIB2}}
+  %  \centerline{\includegraphics[width=12cm]{XFIG/SMTLIB2}}
+    \centerline{\includegraphics[width=\linewidth]{XFIG/SMTLIB2}}
   \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
 \end{figure}
 
@@ -1713,12 +1724,19 @@ get only 5 results left; the resulting open automaton is shown in
 Fig. ~\ref{schema:lotos-result}, we have drawn manually the open
 automaton obtained as the final result generated by algorithm.  
 
-\QIN{The $ot_1$ shows that only the actions of the process $P$ could be transmitted out before the value $x$ being captured which is represented by the $ot_2$. The other 3 open transitions shows the behaviors of the process $Q$ while the $ot_3$ and $ot_4$ won't be performed as the controller has already set the value $s_0$ to 1 in the previous action.
-}
+The $ot_1$ transition means that the actions of the process $P$ could
+be transmitted out, until $P$ performs a $\delta(x)$ and the value of
+$x$ is transmitted, through transition
+$ot_2$. The other 3 open transitions shows the behaviors of the
+process $Q$ while the $ot_3$ and $ot_4$ won't be performed as the
+controller has already set the value $s_0$ to 1 in the previous
+action. 
 
-\QIN{
-To sum up, from the pNet encoding LOTOS formula inputed by the user we generate the open transitions and prune the unsatisfiability automatically. The final result open transitions represent all the possible movements of the LOTOS example. They can exactly construct the open automaton for the given example.
-}
+To sum up, from the pNet encoding LOTOS expression, inputed by the user, we
+generate the open transitions and prune the unsatisfiability
+automatically. The final result open transitions represent all the
+possible movements of the LOTOS example. They can exactly construct
+the open automaton for the given example. 
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=5cm]{XFIG/LOTOSresult}}
