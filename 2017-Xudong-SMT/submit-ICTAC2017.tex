@@ -634,10 +634,17 @@ Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 many examples of pNets, encoding
 operators of various classical process algebras, or more complex
 synchronization structures in distributed or parallel languages.
-In this paper, we use an example inspired from Lotos, to illustrate
+
+In this paper, we use an example inspired from LOTOS, to illustrate
 the main features of pNets and the way we deal with them in the symbolic
 semantics, and in the satisfiability checking. 
+\QIN{
+Meanwhile, 
+the formula using operators from CCS can also be encoded into a pNet and 
+conducted with the same things.
+}
 
+\subsection{LOTOS Formula Example}
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=10cm]{XFIG/LOTOSFormula.eps}}
@@ -651,10 +658,10 @@ Lotos, the pNet encodings here should be sufficient to understand the
 Enable operator semantics.
 In Fig.~\ref{schema:lotos-pnet}, we show the encoding of the formula using pNets.
 
-  This pNet is composed of: a toplevel node PN1 encoding the Enable
-  operator, with its controller (pLTS) C1; a hole representing the
-  process variable P; another node PN2 representing the Prefix
-  operator, with its controller C2, and its hole Q. 
+This pNet is composed of: a toplevel node PN1 encoding the Enable
+operator, with its controller (pLTS) C1; a hole representing the
+process variable P; another node PN2 representing the Prefix
+operator, with its controller C2, and its hole Q. 
 
 In order to show all features of the pNet model, we choose to use two
 styles of encodings in the controllers.
@@ -698,10 +705,31 @@ action $a_2$ of Q.
 Similarly the node PN2 has two synchronization vectors to encode
 the behavior of the Prefix operator. 
 
+\subsection{CCS Parallel Example}
+
+\begin{figure}[h]
+  \centerline{\includegraphics[width=10cm]{XFIG/CCS1.eps}}
+  \caption{pNet encodings for the CCS expression}  \label{schema:ccs-pnet}
+\end{figure}
+
+\QIN{
+This CCS expression composing two operators, parallel and prefix. 
+It is easy to recognize that the pNets $PN2$ and $PN3$ are similar to 
+the sub-pNet in the LOTOS example in their structure and synchronization vectors. 
+That is because they are the operators conduct a similar behavior from different algebras.
+}
+
+\QIN{
+To present the parallel property, we have defined a set of synchronization vectors composing 
+two subnets. We use the notation from the CCS to present the emit and receive action. 
+The input variables $v_1$, $v_2$ are the data transmitting between two components, 
+showing its value-passing behavior.
+}
+
 It should be easy to see that this pNet system encodes properly the
-behavioral semantics of the corresponding Lotos expression. We remark
+behavioral semantics of the corresponding algebra expression. We remark
 that it is built in a systematic structural way, one pNet node
-encoding each Lotos operator. It is parameterized both at the level of
+encoding each operator. It is parameterized both at the level of
 actions variables (occurring within the controllers and the
 synchronization vectors), and at the level of process parameters
 (holes). 
@@ -1102,43 +1130,43 @@ application of Tr2 have to be fresh and all distinct.
 
 \TODO{To be move  by Xudong}
 
-\subsection{Presentation of algebra}
-One of the important goal of the Open pNet framework is to provide us
-with a model able to express the semantics of many different algebras
-or languages. In particular, as we have seen in section
-\ref{section:pnets}, the \emph{term algebra} used to express the
-action expressions and the data in their parameters is left open in
-the pNet formalization.
-
-So, for a given language, we now need to specify its data and action
-domains, giving them an abstract syntax (sorts, constructors, operators,
-and predicates). We call this a \emph{Presentation}.
-We also define a concrete syntax, that will be used for
-pretty-printing, but also for translating the presentation, and the
-predicates, into Z3 syntax (we shall detail this translation in
-section \ref{section:pruning}).
-
-An algebra presentation contains:
-\begin{itemize}
-	\item Sorts: Constants sets of the algebra or types of the data
-          and actions. In every presentation, sorts for integer and
-          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
-several others for the types of data parameters. In the LOTOS example,
-we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
-
-	\item Operators: Operators used to construct action
-          expressions (including their data parameters); they are
-          constructors of data and action sorts, but also predicates
-          over these objects. For instance, in our LOTOS example, we
-          could have two constructor functions ``$DELTA$'' and ``$ACC$''
-          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
-          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
-        \item Constants: The satisfiability solver need to know which
-          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
-          $r$ of the controllers in running example). 
-          For a given pNet system, a sort $Action$ will include all
-          these constants.
-\end{itemize}
+%\subsection{Presentation of algebra}
+%One of the important goal of the Open pNet framework is to provide us
+%with a model able to express the semantics of many different algebras
+%or languages. In particular, as we have seen in section
+%\ref{section:pnets}, the \emph{term algebra} used to express the
+%action expressions and the data in their parameters is left open in
+%the pNet formalization.
+%
+%So, for a given language, we now need to specify its data and action
+%domains, giving them an abstract syntax (sorts, constructors, operators,
+%and predicates). We call this a \emph{Presentation}.
+%We also define a concrete syntax, that will be used for
+%pretty-printing, but also for translating the presentation, and the
+%predicates, into Z3 syntax (we shall detail this translation in
+%section \ref{section:pruning}).
+%
+%An algebra presentation contains:
+%\begin{itemize}
+%	\item Sorts: Constants sets of the algebra or types of the data
+%          and actions. In every presentation, sorts for integer and
+%          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
+%several others for the types of data parameters. In the LOTOS example,
+%we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
+%
+%	\item Operators: Operators used to construct action
+%          expressions (including their data parameters); they are
+%          constructors of data and action sorts, but also predicates
+%          over these objects. For instance, in our LOTOS example, we
+%          could have two constructor functions ``$DELTA$'' and ``$ACC$''
+%          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
+%          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
+%        \item Constants: The satisfiability solver need to know which
+%          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
+%          $r$ of the controllers in running example). 
+%          For a given pNet system, a sort $Action$ will include all
+%          these constants.
+%\end{itemize}
 
 
 %We need introduce operators for building expressions, of both action
@@ -1182,42 +1210,42 @@ we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
 %  you will give it's translation into Z3 in section 5.4}
 
 \TODO{To be move / replace by Xudong}
-\subsection{Computing and using open automata}
-In this section we present an algorithm to construct the open
-automaton representing the behavior of an open pNet, and show
-under which conditions this automaton is finite.
-
-\begin{alg}[behavioral semantics of open pNets: Sketch]
-This is a standard residual algorithm over a set of open-automaton
-states, but where transitions are open transitions
-constructively ``proven'' by deduction trees.
-
-1) Start with a set of unexplored states containing the initial state
-of the automaton, and an empty set of explored states.
-
-2) While there are unexplored states:
-
-2a) pick one state from the unexplored set and add it to the explored
-set. From this state
-build all possible deduction trees by application of the structural
-rules Tr1 and Tr2, using all applicable combinations
-of synchronization vectors.
-
-2b) For each deduction trees, extract the resulting
-open-transition.
-Its predicate is checked (using Z3) for  satisfiability. If it is
-unsatisfiable, the resulting OT is discarded. This will minimize the
-number of resulting transitions. 
-
-2c) For each open-transition,  add the transition in the outgoing transitions of
-the current state, and add the
-resulting state in the unexplored set if it is not already in the
-explored set.
-
-3) Finally a reachability check could potentially
-prune the state space.
-
-\end{alg}
+%\subsection{Computing and using open automata}
+%In this section we present an algorithm to construct the open
+%automaton representing the behavior of an open pNet, and show
+%under which conditions this automaton is finite.
+%
+%\begin{alg}[behavioral semantics of open pNets: Sketch]
+%This is a standard residual algorithm over a set of open-automaton
+%states, but where transitions are open transitions
+%constructively ``proven'' by deduction trees.
+%
+%1) Start with a set of unexplored states containing the initial state
+%of the automaton, and an empty set of explored states.
+%
+%2) While there are unexplored states:
+%
+%2a) pick one state from the unexplored set and add it to the explored
+%set. From this state
+%build all possible deduction trees by application of the structural
+%rules Tr1 and Tr2, using all applicable combinations
+%of synchronization vectors.
+%
+%2b) For each deduction trees, extract the resulting
+%open-transition.
+%Its predicate is checked (using Z3) for  satisfiability. If it is
+%unsatisfiable, the resulting OT is discarded. This will minimize the
+%number of resulting transitions. 
+%
+%2c) For each open-transition,  add the transition in the outgoing transitions of
+%the current state, and add the
+%resulting state in the unexplored set if it is not already in the
+%explored set.
+%
+%3) Finally a reachability check could potentially
+%prune the state space.
+%
+%\end{alg}
 
 \TODO{ERIC: after we move / replace Algoriithm 1, this will not make sense any longer. I will replace it with a more informal paragraph, in section 5}
 
@@ -1345,6 +1373,29 @@ hole is the second subnets of the root node so its ``tree index'' is
 
 \subsection{Combining and Matching using TR2}
 \TODO{Xudong: move here a (new version) of the alogorithm loplevel sketch}
+\QIN{
+In previous work, we already have a sketch for computing the open automaton.
+}
+
+\QIN{
+1) Start with the initial state of the automaton. 
+}
+
+\QIN{
+2) Apply Tr1 and Tr2 to deduct all the possible open transitions. Use SMT solver to prune the 
+unsatisfiable transitions. Recursively conduct this step with the target state of the transitions 
+until all the global states are explored.
+}
+
+\QIN{
+3) Finally a reachability check could potentially prune the state space.
+}
+
+\QIN{
+The detail about the application of the Tr1 and Tr2 have not considered in the sketch, but it is an  
+important part in the implementation of open transition generation. Each time we apply Tr1, there is not too much predicate terms, so do the other parameters, needed 
+to be generated. When it comes to applying Tr2, the computation becomes complicated because it doing some composition of the subnets.
+}
 
 Our implementation does not build explicitly the proof trees for each
 open transition, but instead : [Combining] enumerate all possible combinations of
@@ -1623,6 +1674,50 @@ $\begin{array}{@{}r@{}l@{}}
 %%   \caption{The architecture of the interaction between pNet API and Z3}  \label{schema:interaction}
 %% \end{figure}
 
+\paragraph{Presentation of algebra}
+\QIN{
+Open pNet framework provides us
+with a model able to express the semantics of many different algebras
+or languages. In particular, as we have seen in section
+\ref{section:pnets}, the \emph{term algebra} used to express the
+action expressions and the data in their parameters is left open in
+the pNet formalization.
+}
+
+\QIN{
+So, for a given language, we now need to specify its data and action
+domains, giving them an abstract syntax (sorts, constructors, operators,
+and predicates). We call this a \emph{Presentation}.
+We also define a concrete syntax, that will be used for
+pretty-printing, but also for translating the presentation, and the
+predicates, into Z3 syntax.
+}
+
+\QIN{
+An algebra presentation contains:
+}
+
+\begin{itemize}
+	\item Sorts: Constants sets of the algebra or types of the data
+          and actions. In every presentation, sorts for integer and
+          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
+several others for the types of data parameters. In the LOTOS example,
+we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
+
+	\item Operators: Operators used to construct action
+          expressions (including their data parameters); they are
+          constructors of data and action sorts, but also predicates
+          over these objects. For instance, in our LOTOS example, we
+          could have two constructor functions ``$DELTA$'' and ``$ACC$''
+          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
+          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
+        \item Constants: The satisfiability solver need to know which
+          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
+          $r$ of the controllers in running example). 
+          For a given pNet system, a sort $Action$ will include all
+          these constants.
+\end{itemize}
+
 \paragraph{Interaction with Z3}
 %\TODO{1. example input of Z3 in SMT-LIB.[DONE] 2. software architecture.[DONE]}
 %There are several ways to interact with the Z3 solver. 
@@ -1805,8 +1900,20 @@ also can present all the possible behavior of that CCS formula with 16 open
 transitions in Fig. ~\ref{schema:ccs-result}, here we omitted the details of open transitions. 
 In this example, there are 32 more transitions detected unsatisfiable by Z3.
 }
+
+\QIN{
+Here we only show one of the result transitions. It presents the value-passing between $a.P$ and $b.Q$ and they are synchronized then
+give out an silent action $\tau$, process $P$ and $Q$ should not work in this case.
+}
+
 \begin{figure}[h]
   \centerline{\includegraphics[width=5cm]{XFIG/CCSresult}}
+  
+  $\begin{array}{@{}r@{}l@{}}
+    ot_1  = &\openrule{\{0 \xrightarrow{a}_{C_1} 1, 0 \xrightarrow{b}_{C_2} 1\}, ~~a=!ch_{11}(v_{11}) \!\land\! b=?ch_{11}(v_{11}) \!\land\! a\neq l \!\land\! b\neq r\!\land\! v_1=\tau}
+    {\ostate{00} \xrightarrow{v_1} \ostate{11}}\\
+  \end{array}$
+  
 \caption{The open automaton of the CCS parallel formula}  \label{schema:ccs-result}
 \end{figure}
 
