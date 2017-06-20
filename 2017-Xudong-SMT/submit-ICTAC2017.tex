@@ -48,6 +48,7 @@
 \def\AlgI{\mathcal{I}}
 
 \newcommand{\Pred}{\symb{Pred}}
+\newcommand{\MkPred}{\symb{MkPred}}
 \newcommand{\Post}{\symb{Post}}
 %\usepackage[math]{cellspace}
 %\setlength\cellspacetoplimit{ 37pt}
@@ -676,8 +677,7 @@ Enable and Prefix
 operators of the LOTOS language. For the readers not familiar with
 Lotos, the pNet encodings here should be sufficient to understand the
 Enable operator semantics.
-In Fig.~\ref{schema:lotos-pnet}, we show the encoding of the formula using pNets.
-
+In Fig.~\ref{schema:lotos-pnet}, we show the encoding of the formula using pNets. 
 This pNet is composed of: a toplevel node PN1 encoding the Enable
 operator, with its controller (pLTS) C1; a hole representing the
 process variable P; another node PN2 representing the Prefix
@@ -698,32 +698,38 @@ the right subnet.
 %% and values from input variables in the action expression; and a
 %% transition can only assign variables of its target state.  
 
-Now look more specifically on the top pNet node PN1. In addition to
+Now consider the top pNet node PN1. In addition to
 its controller it has 2 sub-pNets: the hole P and the sub-pNet PN2.
-Three synchronization vectors are defining the possible
-synchronizations between the actions of the subnets.
- The first
-vector, transmitting an action $a_1$ of P, can only occur if $a_1$ is not
-a $\delta$, the vector concrete syntax is typically ``$< l, a_1 , \_ >
--> a_1$'', in which ``$\_$'' means that the corresponding subnet is
+Three synchronization vectors define the possible
+synchronizations between the actions of its subnets.
+The first vector ``$< l, a_1 , \_ > -> a_1$'', transmitting an action
+$a_1$ of P, can only occur if $a_1$ is not  
+a $\delta$, here ``$\_$'' means that the corresponding subnet is
 not involved in this synchronization, and the ``l'' action is related
 to the corresponding transition of the controller C1: this action is
 available only when the state variable $s_0$ is equal to 0.
-The second vector composes the
-actions from the subnets and gives out a synchronized action
-$\underline{\delta(x)}$, where the underlined action stands for an
-internal (already synchronized) action, that cannot be further
-synchronized at upper levels. Synchronized action is a straightforward
+The second synchronisation vector composes an
+action $\delta(x)$ from $P$ with an $acc(x)$ from $Q$, transmitting a
+value $x$ before $Q$ takes the control; 
+The vector result $\underline{\delta(x)}$ is an
+internal action, called ``synchronized'' that cannot be further
+synchronized at upper levels. Synchronized actions is a straightforward
 generalization of the notion of internal actions, that will be
-convenient for observing internal events during model-checking. Here
-the transition occurs only when process
-$P$ performs a $\delta(x)$ action, transferring the control to $Q$,
-and sending a value $x$ at the same time. This value must be
-``accepted''  through an $acc(x)$ action before $Q$ takes the
-control. The last vector acts as the first one, but transmitting the
-action $a_2$ of Q.  
+convenient for observing internal events during model-checking.
+The last vector acts is to the first one.  
 Similarly the node PN2 has two synchronization vectors to encode
-the behavior of the Prefix operator. 
+the behavior of the Prefix operator.
+
+It should be easy to see that this pNet system encodes properly the
+behavioral semantics of the corresponding algebra expression. We remark
+that it is built in a systematic structural way, one pNet node
+encoding each operator.
+%% It is parameterized both at the level of
+%% actions variables (occurring within the controllers and the
+%% synchronization vectors), and at the level of process parameters
+%% (holes). 
+
+\TODO{I'm thinking about moving this second example to section 5...}
 
 \subsection{CCS Parallel Example}
 
@@ -746,13 +752,6 @@ The variables $v_1$, $v_2$ are the data transmitting between two components,
 showing its value-passing behavior.
 }
 
-It should be easy to see that this pNet system encodes properly the
-behavioral semantics of the corresponding algebra expression. We remark
-that it is built in a systematic structural way, one pNet node
-encoding each operator. It is parameterized both at the level of
-actions variables (occurring within the controllers and the
-synchronization vectors), and at the level of process parameters
-(holes). 
 
 
 
@@ -761,13 +760,11 @@ synchronization vectors), and at the level of process parameters
 \section{Operational Semantics for Open pNets}
 \label{section:op-semantics}
 
-\QIN{[How about reduce the example of OT? But we still need keep the proof tree example.]}
-
-
 The semantics of open pNets will be defined  as an open automaton. An open
-automaton is an automaton where each transition composes transitions of several LTSs with
-action of some holes, the transition occurs if some predicates hold, and can involve a 
-set of state modifications.
+automaton is an automaton where each transition composes transitions
+of several LTSs with the
+actions of some holes; the transition occurs if some predicates hold,
+and can involve a set of state modifications.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
@@ -785,12 +782,12 @@ set of state modifications.
 	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
         is a transition of the hole $j$, for any action $b_j$ in the
         sort $Sort_j$. \Pred\ is a predicate
-	over the different variables of the
-	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
-	hold \emph{after the open transition}, they are represented as a substitution of the 
-	form $\{x_k\gets e_k\}^{k\in K}$ 
-	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are expressions over the other 
-	variables of the open transition.
+	over the variables of the terms, labels, and states $s_i$,
+        $b_j$, $s$, $v$. \Post\ is a set of equations that  
+	hold \emph{after the open transition}, represented as a
+        substitution $\{x_k\gets e_k\}^{k\in K}$  
+	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are
+        expressions over the other variables of the open transition.
 \end{definition}
 
 
@@ -820,7 +817,7 @@ set of state modifications.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-\TODO{Relate to the algorithm, or even move to section 5}
+% \TODO{Relate to the algorithm, or even move to section 5}
 When building an Open Automaton as the semantics of a pNet, its
 \emph{states}, and the shape of the predicates in its
 \emph{transitions} have a specific structure:
@@ -848,10 +845,10 @@ $InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 \paragraph{Predicates:}
 Let
 $\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
-be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We define a
-predicate $\Pred$ relating
+be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We build a
+predicate $\MkPred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\Pred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+\[\MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
 \begin{array}{l}
 \exists {(a'_i)}^{i\in I},
 {(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
@@ -861,18 +858,17 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 In any other case (if the action families do not match or if there is no valuation of
 variables such that the above formula can be ensured) the predicate is undefined.
 
-This definition is not constructive but it is easy to build the predicate constructively
-by brute-force unification of the sub-pNets
+This definition is not constructive but it is easy to build the
+predicate constructively by brute-force unification of the sub-pNets
 actions with the corresponding vector actions, possibly followed by a simplification
-step.
+step. 
 
-%\QIN{[ change the example OT here ]}
 \begin{example}\emph{An open-transition.}
   \label{OT:lotos-composed}
 
 The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
 controllers and 2 holes. We will show its full open Automaton in
-section \ref{section:full-result}. We give one of its transition here:
+section \ref{section:full-result}. We give one of its transitions here:
 
  \smallskip
  $ ot_2  = \openrule{
@@ -910,7 +906,10 @@ The semantics   regularly instantiates \emph{fresh} variables, and uses a
 \emph{clone} operator that clones a term replacing each variable with a
 fresh one.
 
-The semantic of the open pNets is already defined as an open automaton in \cite{henrio:Forte2016} using open transitions to present the transitions of its global states.
+% The semantic of the open pNets is already defined as an open automaton
+% in \cite{henrio:Forte2016} using open transitions to present the
+% transitions of its global states.
+
 \begin{definition}[Operational semantics of open pNets]
   \label{def:operationalSemantics}
   The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
@@ -954,7 +953,7 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
 % ensure that the same variable never appears both on the left and on the right of the 
 % equations of a predicate.
   
-  The second rule deals with pNet nodes: for each possible
+  The second rule ({\bf Tr2}) deals with pNet nodes: for each possible
   synchronization vector applicable to the rule subject, the premisses
   include one {\em open transition} for each sub-pNet involved, one possible
   {\em action} for each Hole involved, and the predicate relating these
@@ -963,10 +962,10 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
   expressed in terms of the leaves and holes of the pNet structure,
   i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
   Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
-  are disjoint subsets of $L$. Thus the states in the open transitions,
-  at each level, are tuples including states of all the
-  leaves of the pNet, not only those involved in the chosen
-  synchronization vector.
+  are disjoint subsets of $L$. % Thus the states in the open transitions,
+%   at each level, are tuples including states of all the
+%   leaves of the pNet, not only those involved in the chosen
+%  synchronization vector.
   
   \begin{description}
     \item[{\bf Tr2:}]
@@ -990,7 +989,7 @@ The semantic of the open pNets is already defined as an open automaton in \cite{
       I' = \biguplus_{m\in I_k}\!\! I_m'
       \\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k  \\
       \Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
-      \Pred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
+      \MkPred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
       \forall j\!\!\in\!\! J_k. {\tt 
         fresh}(b_j) \\ {\tt fresh}(v) \\ 
       \forall i\in
@@ -1148,7 +1147,7 @@ application of Tr2 have to be fresh and all distinct.
 % This will be implemented within the open-automaton generation algorithm,
 % e.g. using name generation using a global counter as a suffix.
 
-\TODO{To be move  by Xudong}
+% \TODO{To be move  by Xudong}
 
 %\subsection{Presentation of algebra}
 %One of the important goal of the Open pNet framework is to provide us
@@ -1229,7 +1228,8 @@ application of Tr2 have to be fresh and all distinct.
 %\TODO{give an example of user-defined sorts/operators, and tell that
 %  you will give it's translation into Z3 in section 5.4}
 
-\TODO{To be move / replace by Xudong}
+% \TODO{To be move / replace by Xudong}
+
 %\subsection{Computing and using open automata}
 %In this section we present an algorithm to construct the open
 %automaton representing the behavior of an open pNet, and show
@@ -1269,23 +1269,23 @@ application of Tr2 have to be fresh and all distinct.
 
 \TODO{ERIC: after we move / replace Algoriithm 1, this will not make sense any longer. I will replace it with a more informal paragraph, in section 5}
 
-To have some practical interest, it is important to know when this
-algorithm terminates. The following theorem shows that an open-pNet
-with finite synchronization sets, finitely many leaves and
-holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton. The proof can be found
-in \cite{henrio:Forte2016}. 
+%% To have some practical interest, it is important to know when this
+%% algorithm terminates. The following theorem shows that an open-pNet
+%% with finite synchronization sets, finitely many leaves and
+%% holes, and each pLTS at leaves having a finite number of states and
+%% (symbolic) transitions, has a finite automaton. The proof can be found
+%% in \cite{henrio:Forte2016}. 
  
 
-\begin{theorem}[Finiteness of open-automata.]\\
-Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-  J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
-  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-  are finite, and if
-$\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-has a finite number of state variables, then Algorithm 1 terminates
-and produces an open automaton 
-$\mathcal{T}$ with finitely many states and transitions.
+%% \begin{theorem}[Finiteness of open-automata.]\\
+%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%%   J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
+%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+%%   are finite, and if
+%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+%% has a finite number of state variables, then Algorithm 1 terminates
+%% and produces an open automaton 
+%% $\mathcal{T}$ with finitely many states and transitions.
 
 
 % Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
@@ -1297,7 +1297,7 @@ $\mathcal{T}$ with finitely many states and transitions.
 
 % $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
 %   \to finite{(\mathcal{T})}$$
-\end{theorem}
+% \end{theorem}
 
 \section{Implementation}
 \label{section:implementation}
