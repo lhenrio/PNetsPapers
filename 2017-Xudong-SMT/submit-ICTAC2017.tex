@@ -1329,6 +1329,41 @@ until all the global states are explored.
 }
 
 However, more details are needed when doing the implementation. 
+Algorithm 1 shows there are much more things added, such as how we apply 
+the Tr1 or Tr2.
+
+\begin{algorithm}
+\caption{Open Automaton Generation}
+\begin{algorithmic}[1]
+
+\State Initialize a set for unexplored global states $U$, a set for explored global states $E$;
+\State Initialize the initial global state $G$ of the open automaton, add it into $U$;
+\State Initialize a list $L$ for storing open transitions;
+\While{!isEmpty(U)}
+	\State Extract a global state $S$ from the $U$;
+	\State For the pNet node, recursively applying Tr1 or Tr2 on its subnets;
+	\If{Subnet is pLTS, apply the Tr1} 
+		\State Generate open transition $OT$ according to the transitions in pLTS;
+	\EndIf
+	\If{Subnet is pNet, apply the Tr2} 
+		\For{each $sv \in SV$}
+			\State Invoke $Combining()$ to generate the combination of sub-transitions;
+			\State Invoke $Matching()$ to match the combination with the $sv$;
+			\State Generate open transition $OT$ using the predicate from the former steps;
+		\EndFor
+	\EndIf
+	\State Store $OT$ into $L$;
+	\State Get the target global state $T$ from $OT$;
+	\If{$(U.contains(T))\ ||\ (E.contains(T))$} 
+		\State Add $T$ into the $U$;
+	\EndIf
+\EndWhile
+\State Prune the open transitions in $L$ using SMT solver;
+\State \Return $L$;
+
+\end{algorithmic}  
+\end{algorithm}
+
 In our prototype we start directly with open pNets expressed
 programmatically, using the pNet API (graphical editors may be added
 later). 
@@ -1427,7 +1462,7 @@ vectors.
 %Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the remaining part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
 
 \paragraph{Combining:}
-Algorithm 1 shows the combining algorithm for enumerating all possible
+Algorithm 2 shows the combining algorithm for enumerating all possible
 working status combinations from subnets. Dealing with a list $TR$
 containing  sets of open transitions from different subnets,
 the algorithm choses one of sets $L_{ot}$ and does combining on the
@@ -1484,7 +1519,7 @@ managed by adding a $null$ into the $L_{ot}$.
 %asked by the synchronization vector $e_2$, then this case is filtered
 %out.
 
-\paragraph{Matching:} Algorithm 2 shows the algorithm matches
+\paragraph{Matching:} Algorithm 3 shows the algorithm matches
 combination $L_C$, hole behaviors $B$ with synchronization vectors
 $SV$ according to the definition of the predicate declared before. We
 clone the $sv$ using the fresh function to generate a new $sv'$ with
