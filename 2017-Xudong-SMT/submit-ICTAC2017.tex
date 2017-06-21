@@ -106,6 +106,7 @@
 \usepackage{algpseudocode}  
 \renewcommand{\algorithmicrequire}{\textbf{Input:}} 
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
+\algnewcommand{\IfThen}[2]{\State \algorithmicif\ #1\ \algorithmicthen\ #2}% \IfThenElse{<if>}{<then>}
 \algnewcommand{\IfThenElse}[3]{\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}% \IfThenElse{<if>}{<then>}{<else>}
 
 
@@ -551,11 +552,11 @@ exposes a single resulting global action.
 % Actions involved at the pNet level (in the synchronization vectors) do
 % not need to distinguish between input and output
 % variables.
-Action terms for pNets are defined as follows:
-\[\begin{array}[l]{rcl@{\quad}l}
-  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
-\end{array}
-\]
+%Action terms for pNets are defined as follows:
+%\[\begin{array}[l]{rcl@{\quad}l}
+%  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
+%\end{array}
+%\]
 
 
 
@@ -864,32 +865,32 @@ predicate constructively by brute-force unification of the sub-pNets
 actions with the corresponding vector actions, possibly followed by a simplification
 step. 
 
-\begin{example}\emph{An open-transition.}
-  \label{OT:lotos-composed}
-
-The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
-controllers and 2 holes. We will show its full open Automaton in
-section \ref{section:full-result}. We give one of its transitions here:
-
- \smallskip
- $ ot_2  = \openrule{
-                       \{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~
-                       \{\xrightarrow{hb_{12}}_P\}, ~~ 
-                        [s_0=0 \!\land\! hb_{12}=\delta(x)], ~~ 
-                       \{s_0 \xleftarrow{} 1\}     
-                      }
-     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
-\end{example}
-
-The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
-
-The transition in the conclusion of this rule starts in
-state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial
-states. It ends in a different structured state, because in $ot_2$
-both pLTS conduct transitions, showing that the control has gone from
-processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and
-$acc(x)$. Controller $C_1$ has only one state, but its state variable
-$s_0$ has changed to 1.
+%\begin{example}\emph{An open-transition.}
+%  \label{OT:lotos-composed}
+%
+%The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
+%controllers and 2 holes. We will show its full open Automaton in
+%section \ref{section:full-result}. We give one of its transitions here:
+%
+% \smallskip
+% $ ot_2  = \openrule{
+%                       \{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~
+%                       \{\xrightarrow{hb_{12}}_P\}, ~~ 
+%                        [s_0=0 \!\land\! hb_{12}=\delta(x)], ~~ 
+%                       \{s_0 \xleftarrow{} 1\}     
+%                      }
+%     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
+%\end{example}
+%
+%The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
+%
+%The transition in the conclusion of this rule starts in
+%state $\ostate{00}$, where both $C_1$ and $C_2$ are in their initial
+%states. It ends in a different structured state, because in $ot_2$
+%both pLTS conduct transitions, showing that the control has gone from
+%processes $P$ to $(acc(x);Q$, consuming actions $\delta(x)$ and
+%$acc(x)$. Controller $C_1$ has only one state, but its state variable
+%$s_0$ has changed to 1.
 
 
 \paragraph{Structural Semantic Rules:}
@@ -1310,59 +1311,46 @@ model-checker and for generating executable code automatically \cite{HKM-FASE16}
 % specification from non-expert users, compiling it
 %from those language or graphical formalism in the pNet API.
 
-\QIN{
-For the open pNets, in previous work, we already have a sketch for computing the open automaton.
-}
-
-\QIN{
-1) Start with the initial state of the automaton. 
-}
-
-\QIN{
-2) Apply Tr1 and Tr2 to deduct all the possible open transitions. Use SMT solver to prune the 
-unsatisfiable transitions. Recursively conduct this step with the target state of the transitions 
-until all the global states are explored.
-}
-
-\QIN{
-3) Finally a reachability check could potentially prune the state space.
-}
-
-However, more details are needed when doing the implementation. 
-Algorithm 1 shows there are much more things added, such as how we apply 
-the Tr1 or Tr2.
-
 \begin{algorithm}
 \caption{Open Automaton Generation}
 \begin{algorithmic}[1]
 
 \State Initialize a set for unexplored global states $U$, a set for explored global states $E$;
-\State Initialize the initial global state $G$ of the open automaton, add it into $U$;
-\State Initialize a list $L$ for storing open transitions;
 \While{!isEmpty(U)}
 	\State Extract a global state $S$ from the $U$;
-	\State For the pNet node, recursively applying Tr1 or Tr2 on its subnets;
+	\State Start at the root pNet node
+	\State Recursively applying Tr1 or Tr2 on it and its subnets;
 	\If{Subnet is pLTS, apply the Tr1} 
-		\State Generate open transition $OT$ according to the transitions in pLTS;
+		\For{each transition $TR$ start from the state $s$ in $S$}
+			\State Generate open transition $OT$ according to $TR$;
+			\State Store $OT$ into the result list $L$;
+		\EndFor
 	\EndIf
 	\If{Subnet is pNet, apply the Tr2} 
 		\For{each $sv \in SV$}
 			\State Invoke $Combining()$ to generate the combination of sub-transitions;
 			\State Invoke $Matching()$ to match the combination with the $sv$;
-			\State Generate open transition $OT$ using the predicate from the former steps;
+			\State Store the result set of open transitions into $L$;
 		\EndFor
 	\EndIf
-	\State Store $OT$ into $L$;
-	\State Get the target global state $T$ from $OT$;
-	\If{$(U.contains(T))\ ||\ (E.contains(T))$} 
-		\State Add $T$ into the $U$;
-	\EndIf
+	\For{each target global state $T$ from $OT \in L$}
+		\IfThen{$(!U.contains(T))\ \&\&\ (!E.contains(T))$}{Add $T$ into the $U$;}
+	\EndFor
 \EndWhile
 \State Prune the open transitions in $L$ using SMT solver;
 \State \Return $L$;
 
 \end{algorithmic}  
 \end{algorithm}
+
+\QIN{
+For the open pNets, in previous work, we already have a sketch for computing the open automaton.
+The computation repeats applying Tr1 and Tr2 to deduct all the possible open transitions and pruning the 
+unsatisfiable transitions by SMT solver until all the global states are explored. 
+In the end, a reachability check is supposed to potentially prune the state space. 
+Algorithm 1 is what we used in the implementation, there are much more details added based on 
+the sketch, such as how we apply the Tr1 or Tr2.
+}
 
 In our prototype we start directly with open pNets expressed
 programmatically, using the pNet API (graphical editors may be added
