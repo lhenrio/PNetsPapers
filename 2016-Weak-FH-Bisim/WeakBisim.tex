@@ -873,21 +873,25 @@ explored set.
 
 
 
-To have some practical interest, it is important to know when this
-algorithm terminates. The following theorem shows that an open-pNet
+Given an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton:
+(symbolic) transitions, has a finite automaton (see \ref{Forte}).
 
-\begin{theorem}[Finiteness of open-automata.]\\
-Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-  J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
-  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-  are finite, and if
-$\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-has a finite number of state variables, then Algorithm 1 terminates
-and produces an open automaton 
-$\mathcal{T}$ with finitely many states and transitions.
+  \TODO{Eric: what is ``elimination of intermediate variables ?'' it
+    transforms the predicates, so I think it is not any kind of
+    ``equivalence'' transformation, rather some sort of
+    abstraction... Define... Does it change the satisfiability ?}
+
+%% \begin{theorem}[Finiteness of open-automata.]\\
+%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%%   J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
+%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+%%   are finite, and if
+%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+%% has a finite number of state variables, then Algorithm 1 terminates
+%% and produces an open automaton 
+%% $\mathcal{T}$ with finitely many states and transitions.
 
 
 % Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
@@ -899,19 +903,7 @@ $\mathcal{T}$ with finitely many states and transitions.
 
 % $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
 %   \to finite{(\mathcal{T})}$$
-\end{theorem}
-
-\section{Tooling}
-
-\TODO{Eric: high level description of the implementation}
-
-\ERIC{
-=> Context VCE, ref to FASE paper\\
-=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
-=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
-=> Variable names are generated for all ``fresh'' and ``clone'' operations, using structured variable names ensuring uniqueness of fresh names, but also reasonable readability of these names for debugging purposes.\\
-=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
-=> Simplification is not yet implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
+% \end{theorem}
 
 
 \TODO{Eric: full result of the tool execution on the running example}
@@ -1130,17 +1122,19 @@ composability and FH-bisimilarity.
 
 Weak symbolic bisimulation was introduced to relate transition systems
 that have indistinguishable behaviour, with respect to some definition
-of \emph{invisible actions} that are considered internal to some
+of \emph{internal actions} that are considered local to some
 subsystem, and consequently cannot be observed, nor used for
 synchronisation with their context.
 As the notions of invisible action varies in different contexts,
 e.g. $tau$ in CCS, and $i$ in Lotos, we will rely here on some set of
-\emph{invisible actions} depending on a specific action algebra.
+\emph{internal actions} depending on a specific action
+algebra. Naturely, an internal action cannot be synchronised with
+actions of other systems in its environment. 
 
-\TODO{we should understand if it make sense to distinguish invisible
-  from synchronised actions: in the Forte paper we wrote ``using  as 
-\emph{invisible actions} a subset of the
-\emph{synchronised actions} defined in Section~\ref{section:pnets}''}.
+%% \TODO{we should understand if it make sense to distinguish invisible
+%%   from synchronised actions: in the Forte paper we wrote ``using  as 
+%% \emph{invisible actions} a subset of the
+%% \emph{synchronised actions} defined in Section~\ref{section:pnets}''}.
 
 %% Proving bisimulation properties on our hierarchical broadcast example
 %% would take too much space for this paper. Moreover, interesting
@@ -1175,7 +1169,7 @@ on sequences of invisible actions:
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
 
 \noindent
-Let $A_1$ and $A_2$ be open automata, and $mathcal{R}$ a relation over
+Let $A_1$ and $A_2$ be open automata, and $\mathcal{R}$ a relation over
 $S_1$ and $S_2$, as in Definition \ref{def-FH-bisim}.
 
 Then 
@@ -1295,6 +1289,17 @@ predicates, typically SMT solvers. Those tools will include
 an algorithm that partitions the states and generates the right
 conditions (automatically or with user input) for checking
 whether two open pNets are bisimilar.
+
+\TODO{Eric: high level description of the implementation}
+
+\ERIC{
+=> Context VCE, ref to FASE paper\\
+=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
+=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
+=> Variable names are generated for all ``fresh'' and ``clone'' operations, using structured variable names ensuring uniqueness of fresh names, but also reasonable readability of these names for debugging purposes.\\
+=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
+=> Simplification is mostly implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
+
 
 Independently, it is clear that most interesting properties of
 such complex systems will not be provable by strong bisimulation.
@@ -1470,7 +1475,7 @@ Let us build a relation
        It is trivial to check reflexivity and symmetry. Here we focus on the
 transitivity. 
 To prove transitivity of strong FH-bisimulation on pNets it is sufficient to prove 
-transitivity of the strong FH-bisimulation on states. Consider 3 open automata 
+transitivity of the strong FH-bisimulation on states of their Open Automata. Consider 3 open automata 
 $\mathcal{T}_1$, $\mathcal{T}_2$, $\mathcal{T}_3$ and states $s^1$, $s^2$, $s^3$ in those 
 automata\footnote{We omit the constraints stating that each $s^i_x$ is in the states of 
 $\mathcal{T}_i$ for the sake of readability}.
