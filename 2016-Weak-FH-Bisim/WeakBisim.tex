@@ -173,6 +173,47 @@ value-passing processes or open process expressions.
 \paragraph{Structure.}
 
 
+\section{Notations}
+
+\subsubsection{Syntax and Notations}
+\TODO{copy pasted -- rearrange + move?}
+
+In the following definitions, we extensively use indexed structures
+(maps) over some countable indexed sets. The indices will usually be
+integers, bounded or not. Such an indexed family is denoted as
+follows: $a_i^{i\in I}$ is a family of elements $a_i$ indexed over the
+set $I$. Such a family
+is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+To specify the set over which the structure is indexed, 
+indexed structures are always denoted with an exponent of the form $i\in I$
+(arithmetic only appears in the indexes if necessary).
+Consequently, $a_i^{i\in I}$ defines first $I$ the set over which the
+family is indexed, and then $a_i$ the elements of the family.
+
+For example $a^{i\in\{3\}}$ is
+the mapping with a single entry $a$ at index $3$; exceptionally, such mappings with
+only a few entries will also be denoted $(3\mapsto a)$.
+When this is not ambiguous, we shall use abusive vocabulary and
+notations for sets, and typically write ``indexed set over I'' when  
+formally we should speak of multisets, and ``$x\in
+A_i^{i\in I}$'' to mean $\exists i\in I.\, x=A_i$.
+An empty family is denoted $[]$. % (it can be defined as $a_i^{i\in\emptyset}$).
+To simplify equations, an indexed set can be denoted $\set{M}$
+instead of $M_l^{l\in L}$ when $L$ is irrelevant.
+
+Let $\uplus$ be the disjoint union operator on indexed sets. 
+The elements
+of the union are then accessed by using an index of one of the two
+joined families.
+We suppose here that disjoint unions are always well defined; this
+requires to choose disjoint  
+indices in the definition of the component system (e.g. name of
+methods of different interfaces).
+
+$\subst{y\gets x}$ is the substitution operation that replaces in a term all occurrences 
+of the term $y$ by the term $x$ (note that the absence of binders makes this operation 
+trivial).
+
 \section{Parameterised Networks (pNets): definition}
 \label{section:pnets}
 
@@ -360,8 +401,8 @@ where
 \item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which sub-pNets are indexed.
 
-\item[$\bullet$] $J\in\I_\P$ is the set over which holes are indexed.
-$I$ and $J$ are \emph{disjoint}: $I\cap J=\emptyset$,  $I\cup J\neq\emptyset$
+\item[$\bullet$] $J\!\in\!\I_\P$ is a set of indexes, called \emph{holes}.
+$I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 \item[$\bullet$] $S_j \subseteq \AlgAS$ is a set of action terms, denoting the $\Sort$ of
 hole $j$.
 
@@ -473,7 +514,7 @@ set of state modifications.
 	over the different variables of the
 	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
 	hold \emph{after the open transition}, they are represented as a substitution of the 
-	form $\{x_k\gets e_k\}^{k\in K}$ 
+	form $\subst{x_k\gets e_k}^{k\in K}$ 
 	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are expressions over the other 
 	variables of the open transition.
 \end{definition}
@@ -524,13 +565,15 @@ set of state modifications.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-
+We define states of open pNets as tuples of states, where we denote tuples
+in structured states as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
+states from other tuples.
 \begin{definition}[States of open pNets]\label{def-states}
   A state of an open pNet is a tuple (not necessarily finite) of the
-  states of its leaves (in which we denote tuples
-  in structured states as $\triangleleft\ldots\triangleright$ for better readability).
+  states of its leaves.
 
-  For any pNet p, let $\overline{Leaves} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
+  For any pNet p, let $\Leaves(p) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
+  the set of pLTS at its leaves,
   then $States(p) = \{\triangleleft s_i^{i\in L}
   \triangleright| \forall i\in L. s_i \in S_i\}$.
 A pLTS being its own single leave:
@@ -561,6 +604,9 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
 \end{array}\]
 
+
+\TODO{say that This predicate entails a verification of satisfiability}
+
 \RAB{ce pred est-il diff de celui de la def 4?}
 
 In any other case (if the action families do not match or if there is no valuation of
@@ -588,9 +634,10 @@ fresh one.
 	The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
 	\mathcal{T}>$ where:
 	\begin{itemize}
-		\item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$. \RAB{Holes(p)= J en ref a page 4}
+		\item $J$ is the set of holes: $Holes(p)= J$. \RAB{Holes(p)= J en ref a 
+		page 4}
 		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
-		\item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+		\item ${\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
 		\item $\mathcal{T}$ is the smallest set of open transitions
 		satisfying the rules below:
 	\end{itemize}
@@ -601,7 +648,7 @@ fresh one.
 
 \RAB{notation S, T or underline\{S\}, underline\{T\}? pas clair...}
 	
-	The rule for a pLTS $p$  checks that the guard 
+	The rule for a pLTS  checks that the guard 
 	is verified and transforms assignments into post-conditions:
 	
 	\begin{description}
@@ -609,7 +656,7 @@ fresh one.
 		$\inferrule
 		{ s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 					J}\rangle} s'\in \to  }
-		{ p = \mylangle  S,s_0, \to \myrangle
+		{ \mylangle  S,s_0, \to \myrangle
 			\models
 			\inferrule*[myfraction=\reddottedrule]
 			{\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
@@ -637,7 +684,7 @@ fresh one.
 	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
 	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
-	Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+	Leaves, $L_m$ the index set of the leaves of one subnet indexed $m$, so all $L_m$
 	are disjoint subsets of $L$. Thus the states in the open transitions,
 	at each level, are tuples including states of all the
 	leaves of the pNet, not only those involved in the chosen
@@ -658,7 +705,7 @@ fresh one.
     	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
     	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
     	{\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
-    		\ostate{s_{i}^{\prime\ i \in L_m}}}
+    		\ostate{(s_i^\prime)^{i\in L_m}}}
     	%\land
     	%Leaves(\pNet_m) = \overline{pLTS}^{L_k})
     	\\
@@ -671,14 +718,14 @@ fresh one.
     	\forall i\in
     	L\backslash I'.\,s'_i=s_i 
     }
-    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
+    {\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
     	\models
     	{\inferrule*[myfraction=\reddottedrule]
     		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
     		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
     		\Post_m}
     		{\ostate{s_i^{i\in L}} \xrightarrow {v}
-    			\ostate{s_i^{\prime i\in L}}}
+    			\ostate{(s_i^\prime)^{i\in L}}}
     	}
     }
     $
@@ -826,21 +873,25 @@ explored set.
 
 
 
-To have some practical interest, it is important to know when this
-algorithm terminates. The following theorem shows that an open-pNet
+Given an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton:
+(symbolic) transitions, has a finite automaton (see \ref{Forte}).
 
-\begin{theorem}[Finiteness of open-automata.]\\
-Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-  J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
-  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-  are finite, and if
-$\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-has a finite number of state variables, then Algorithm 1 terminates
-and produces an open automaton 
-$\mathcal{T}$ with finitely many states and transitions.
+  \TODO{Eric: what is ``elimination of intermediate variables ?'' it
+    transforms the predicates, so I think it is not any kind of
+    ``equivalence'' transformation, rather some sort of
+    abstraction... Define... Does it change the satisfiability ?}
+
+%% \begin{theorem}[Finiteness of open-automata.]\\
+%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%%   J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
+%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+%%   are finite, and if
+%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+%% has a finite number of state variables, then Algorithm 1 terminates
+%% and produces an open automaton 
+%% $\mathcal{T}$ with finitely many states and transitions.
 
 
 % Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
@@ -852,19 +903,7 @@ $\mathcal{T}$ with finitely many states and transitions.
 
 % $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
 %   \to finite{(\mathcal{T})}$$
-\end{theorem}
-
-\section{Tooling}
-
-\TODO{Eric: high level description of the implementation}
-
-\ERIC{
-=> Context VCE, ref to FASE paper\\
-=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
-=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
-=> Variable names are generated for all ``fresh'' and ``clone'' operations, using structured variable names ensuring uniqueness of fresh names, but also reasonable readability of these names for debugging purposes.\\
-=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
-=> Simplification is not yet implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
+% \end{theorem}
 
 
 \TODO{Eric: full result of the tool execution on the running example}
@@ -1083,17 +1122,19 @@ composability and FH-bisimilarity.
 
 Weak symbolic bisimulation was introduced to relate transition systems
 that have indistinguishable behaviour, with respect to some definition
-of \emph{invisible actions} that are considered internal to some
+of \emph{internal actions} that are considered local to some
 subsystem, and consequently cannot be observed, nor used for
 synchronisation with their context.
 As the notions of invisible action varies in different contexts,
 e.g. $tau$ in CCS, and $i$ in Lotos, we will rely here on some set of
-\emph{invisible actions} depending on a specific action algebra.
+\emph{internal actions} depending on a specific action
+algebra. Naturely, an internal action cannot be synchronised with
+actions of other systems in its environment. 
 
-\TODO{we should understand if it make sense to distinguish invisible
-  from synchronised actions: in the Forte paper we wrote ``using  as 
-\emph{invisible actions} a subset of the
-\emph{synchronised actions} defined in Section~\ref{section:pnets}''}.
+%% \TODO{we should understand if it make sense to distinguish invisible
+%%   from synchronised actions: in the Forte paper we wrote ``using  as 
+%% \emph{invisible actions} a subset of the
+%% \emph{synchronised actions} defined in Section~\ref{section:pnets}''}.
 
 %% Proving bisimulation properties on our hierarchical broadcast example
 %% would take too much space for this paper. Moreover, interesting
@@ -1128,7 +1169,7 @@ on sequences of invisible actions:
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
 
 \noindent
-Let $A_1$ and $A_2$ be open automata, and $mathcal{R}$ a relation over
+Let $A_1$ and $A_2$ be open automata, and $\mathcal{R}$ a relation over
 $S_1$ and $S_2$, as in Definition \ref{def-FH-bisim}.
 
 Then 
@@ -1248,6 +1289,17 @@ predicates, typically SMT solvers. Those tools will include
 an algorithm that partitions the states and generates the right
 conditions (automatically or with user input) for checking
 whether two open pNets are bisimilar.
+
+\TODO{Eric: high level description of the implementation}
+
+\ERIC{
+=> Context VCE, ref to FASE paper\\
+=> Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
+=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
+=> Variable names are generated for all ``fresh'' and ``clone'' operations, using structured variable names ensuring uniqueness of fresh names, but also reasonable readability of these names for debugging purposes.\\
+=> Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
+=> Simplification is mostly implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
+
 
 Independently, it is clear that most interesting properties of
 such complex systems will not be provable by strong bisimulation.
@@ -1423,7 +1475,7 @@ Let us build a relation
        It is trivial to check reflexivity and symmetry. Here we focus on the
 transitivity. 
 To prove transitivity of strong FH-bisimulation on pNets it is sufficient to prove 
-transitivity of the strong FH-bisimulation on states. Consider 3 open automata 
+transitivity of the strong FH-bisimulation on states of their Open Automata. Consider 3 open automata 
 $\mathcal{T}_1$, $\mathcal{T}_2$, $\mathcal{T}_3$ and states $s^1$, $s^2$, $s^3$ in those 
 automata\footnote{We omit the constraints stating that each $s^i_x$ is in the states of 
 $\mathcal{T}_i$ for the sake of readability}.
@@ -1435,30 +1487,53 @@ $\mathcal{T}_2$ and of  $\mathcal{T}_3$; members of $\mathcal{R}2$ are of the fo
 $(s^2,s^3|\Pred\,')$.
 We use $\fv$ a function returning the free variables of a term/automaton.
 
-Let $\mathcal{R}''$ be the relation: 
-\[\mathcal{R}'' = \Big\{(s^1,s^3|\Pred\,''\phi)\Big|
-\displaystyle\Pred\,''=\bigvee_{ \begin{array}{l}
-(s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
-\end{array}
-}\!\!\!\!\!\exists \phi.\begin{array}[t]{l} (\Pred\land\Pred\,')\phi\\
-\land \fv((\Pred\land\Pred)\phi)\subseteq \fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3)
-\\
-\land \dom(\phi)\subseteq \fv(\mathcal{T}_2)
-\end{array}\Big\}\]
+Let $\mathcal{R}''$ be the relation (We denote $\Phi$ a set of renamings): 
 
-\TODO{is it satisfactory as a notion of transitive composition? It would be easy to 
-extend it a bit to allow having several substitutions for the same s2, eg one that works 
-for different values of variables in T1 and T3. It would make the notations more complex 
-but it would be OK. I do not think I can do more than that}
+%\begin{mathpar}
+%\inferrule{}
+%{}
+%\end{mathpar}
+
+\[\mathcal{R}'' = \Big\{(s^1,s^3|\Pred\,'')\Big|
+\displaystyle
+ \begin{array}[t]{l}\exists (s^2_p)^{p\in P}.\,\exists (\Phi_p)^{p\in P}.\,\\
+\quad 
+	\big(\begin{array}{l}
+	\forall p\in P.\, (s^1,s^2_p|\Pred)\in\mathcal{R}\land 
+	(s^2_p,s^3|\Pred\,')\in\mathcal{R}'\land \\
+	 \forall\ \phi\in\Phi_p.\,
+	  \fv((\Pred\land\Pred')\phi)\subseteq \fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3) \land
+	  \dom(\phi)\subseteq \fv(\mathcal{T}_2)
+	\end{array}
+	\big)\\
+\quad
+\land ~\Pred'' =\displaystyle\bigvee_{\begin{array}{l}
+	p\in P\\\phi\in \Phi_p
+	\end{array}} (\Pred\land\Pred\,')\phi
+	
+\end{array}\Big\}
+\]
+%(s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
+%}\!\!\!\!\!\exists \phi.\begin{array}[t]{l} \\
+%\land 
+%\\
+%\land 
+%\\
+\TODO{s2p is the family of states that relate s1 and s2 big phi is the set of renamings 
+for each s2 in the family}
 
 The relation is built as follows: for each pair of state $s^1$, $s^3$, for each state 
 $s^2$ such that $\mathcal{R}$ relates $s^1$ and $s^2$, and $\mathcal{R}'$ relates $s^2$ 
 and $s^3$, we take the conjunction of the two predicates. The predicates for different 
 values of $s^2$ are collected by a disjunction. 
-Finally, a substitution should ensure that the 
+Finally, a set of substitutions should ensure that the 
 free variables of the predicates are only the ones of $\mathcal{T}_1$ and 
-$\mathcal{T}_1$. This substitution somehow matches the two predicates by eliminating the 
-free variables.
+$\mathcal{T}_1$. These substitutions somehow express the different ways to match the two 
+predicates by eliminating the 
+free variables. We simplify the proof to the case where a single substitution is 
+necessary for each state $s^2$; the extension to a set of substitution is relatively 
+simple but complicates the notations. $\phi_p$ is this set of substitutions in the proof 
+below.
 
  We will show
 that $\mathcal{R}''$ is an FH-bisimulation. Consider 
@@ -1466,7 +1541,7 @@ $(s^1,s^3|\Pred\,'')\in\mathcal{R}''$. Then there is a set of states of
 $\mathcal{T}_2$ relating $s^1$ and $s^3$, let $(s^2_p)^{p\in P}$ be this family.  
 For any $p\in P$ by definition of $\mathcal{R}''$,
 $(s^1,s^2_p|\Pred_p)\in\mathcal{R}$,  and $(s^2_p,s^3|\Pred\,'_p)\in\mathcal{R}$. 
-Additionally we have $\Pred\,'' = (\bigvee_{p\in P} \Pred_p\land\Pred_p\,'\phi_p)$.
+Additionally we have $\Pred\,'' = \bigvee_{p\in P} (\Pred_p\land\Pred_p)\,'\phi_p$.
 We have 
 the 
 following by definition of bisimulation.
