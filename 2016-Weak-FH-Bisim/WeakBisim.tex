@@ -723,7 +723,7 @@ fresh one.
     	\models
     	{\inferrule*[myfraction=\reddottedrule]
     		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
-    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred_{\symb{sv}}, \uplus_{m\in I_k} 
     		\Post_m}
     		{\ostate{s_i^{i\in L}} \xrightarrow {v}
     			\ostate{(s_i^\prime)^{i\in L}}}
@@ -1471,249 +1471,485 @@ Let us build a relation
        	$\mathcal{R}$ is 
        	reflexive, symmetric and transitive.
        	}
-       \begin{proof}
-
-       It is trivial to check reflexivity and symmetry. Here we focus on the
-transitivity. 
-To prove transitivity of strong FH-bisimulation on pNets it is sufficient to prove 
-transitivity of the strong FH-bisimulation on states of their Open Automata. Consider 3 open automata 
-$\mathcal{T}_1$, $\mathcal{T}_2$, $\mathcal{T}_3$ and states $s^1$, $s^2$, $s^3$ in those 
-automata\footnote{We omit the constraints stating that each $s^i_x$ is in the states of 
-$\mathcal{T}_i$ for the sake of readability}.
-Suppose we have $\mathcal{R}$ an FH-bisimulation relation between states of 
-$\mathcal{T}_1$ and of  $\mathcal{T}_2$; members of $\mathcal{R}$ are of the form 
-$(s^1,s^2|\Pred)$.
-Suppose we also  have $\mathcal{R}'$ an FH-bisimulation relation between states of 
-$\mathcal{T}_2$ and of  $\mathcal{T}_3$; members of $\mathcal{R}2$ are of the form 
-$(s^2,s^3|\Pred\,')$.
-We use $\fv$ a function returning the free variables of a term/automaton.
-
-Let $\mathcal{R}''$ be the relation (We denote $\Phi$ a set of renamings): 
-
+%%% A PROOF WITH CONSTRUCTIVE AERGUMENTS BUT THAT DOES NOT WORK
+       
+%       \begin{proof}
+%
+%       It is trivial to check reflexivity and symmetry. Here we focus on the
+%transitivity. 
+%To prove transitivity of strong FH-bisimulation on pNets it is sufficient to prove 
+%transitivity of the strong FH-bisimulation on states of their Open Automata. Consider 3 
+%open automata 
+%$\mathcal{T}_1$, $\mathcal{T}_2$, $\mathcal{T}_3$ and states $s^1$, $s^2$, $s^3$ in 
+%those 
+%automata\footnote{We omit the constraints stating that each $s^i_x$ is in the states of 
+%$\mathcal{T}_i$ for the sake of readability}.
+%Suppose we have $\mathcal{R}$ an FH-bisimulation relation between states of 
+%$\mathcal{T}_1$ and of  $\mathcal{T}_2$; members of $\mathcal{R}$ are of the form 
+%$(s^1,s^2|\Pred)$.
+%Suppose we also  have $\mathcal{R}'$ an FH-bisimulation relation between states of 
+%$\mathcal{T}_2$ and of  $\mathcal{T}_3$; members of $\mathcal{R}2$ are of the form 
+%$(s^2,s^3|\Pred\,')$.
+%We use $\fv$ a function returning the free variables of a term/automaton.
+%
+%Let $\mathcal{R}''$ be the relation (We denote $\Phi$ a set of renamings): 
+%
+%%\begin{mathpar}
+%%\inferrule{}
+%%{}
+%%\end{mathpar}
+%
+%\[\mathcal{R}'' = \Big\{(s^1,s^3|\Pred\,'')\Big|
+%\displaystyle
+% \begin{array}[t]{l}\exists (s^2_p)^{p\in P}.\,\exists (\Phi_p)^{p\in P}.\,\\
+%\quad 
+%	\big(\begin{array}{l}
+%	\forall p\in P.\, (s^1,s^2_p|\Pred)\in\mathcal{R}\land 
+%	(s^2_p,s^3|\Pred\,')\in\mathcal{R}'\land \\
+%	 \forall\ \phi\in\Phi_p.\,
+%	  \fv((\Pred\land\Pred')\phi)\subseteq \fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3) \land
+%	  \dom(\phi)\subseteq \fv(\mathcal{T}_2)
+%	\end{array}
+%	\big)\\
+%\quad
+%\land ~\Pred'' =\displaystyle\bigvee_{\begin{array}{l}
+%	p\in P\\\phi\in \Phi_p
+%	\end{array}} (\Pred\land\Pred\,')\phi
+%	
+%\end{array}\Big\}
+%\]
+%%(s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
+%%}\!\!\!\!\!\exists \phi.\begin{array}[t]{l} \\
+%%\land 
+%%\\
+%%\land 
+%%\\
+%\TODO{s2p is the family of states that relate s1 and s2 big phi is the set of renamings 
+%for each s2 in the family}
+%
+%The relation is built as follows: for each pair of state $s^1$, $s^3$, for each state 
+%$s^2$ such that $\mathcal{R}$ relates $s^1$ and $s^2$, and $\mathcal{R}'$ relates $s^2$ 
+%and $s^3$, we take the conjunction of the two predicates. The predicates for different 
+%values of $s^2$ are collected by a disjunction. 
+%Finally, a set of substitutions should ensure that the 
+%free variables of the predicates are only the ones of $\mathcal{T}_1$ and 
+%$\mathcal{T}_1$. These substitutions somehow express the different ways to match the two 
+%predicates by eliminating the 
+%free variables. We simplify the proof to the case where a single substitution is 
+%necessary for each state $s^2$; the extension to a set of substitution is relatively 
+%simple but complicates the notations. $\phi_p$ is this set of substitutions in the proof 
+%below.
+%
+% We will show
+%that $\mathcal{R}''$ is an FH-bisimulation. Consider 
+%$(s^1,s^3|\Pred\,'')\in\mathcal{R}''$. Then there is a set of states of 
+%$\mathcal{T}_2$ relating $s^1$ and $s^3$, let $(s^2_p)^{p\in P}$ be this family.  
+%For any $p\in P$ by definition of $\mathcal{R}''$,
+%$(s^1,s^2_p|\Pred_p)\in\mathcal{R}$,  and $(s^2_p,s^3|\Pred\,'_p)\in\mathcal{R}$. 
+%Additionally we have $\Pred\,'' = \bigvee_{p\in P} (\Pred_p\land\Pred_p)\,'\phi_p$.
+%We have 
+%the 
+%following by definition of bisimulation.
+%For any open transition $OT$ in $\mathcal{T}_1$ originating from $s^1$:
+%
 %\begin{mathpar}
-%\inferrule{}
-%{}
+%
+%\inferrule*[myfraction=\reddottedrule]
+%{\{s^1_i\xrightarrow{a_i}_i {s^{1}}'_i\}^{i\in I_1}, % , s^1_i,s^{1'}_i\in
+%	%States(I_1)
+%	\{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+%{s^1 \xrightarrow {v} {s^{1}}'}
+%
 %\end{mathpar}
+%
+%there exist open transitions $OT_{p x}^{x\in X} \subseteq \mathcal{T}_2$:
+%
+%\begin{mathpar}
+%
+%%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+%\inferrule*[myfraction=\reddottedrule]
+%{\{s^{2}_{pi}\xrightarrow{a_{p i x}}_i s^{2}_{p i x}\}^{i\in I_{2 p x}},
+%	\{\xrightarrow{b_{j p x}}_j\}^{j\in J_{2px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
+%{s^2_p \xrightarrow {v_{px}} s^{2}_{px}}
+%%         \right)
+%\end{mathpar}
+%
+%such that  $\forall x, J_1=J_{2px}, (s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in 
+%\mathcal{R}$;
+%and  \\
+%
+%$\Pred_p \land \Pred_{OT}\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+%\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
+%\land v\!=\!v_{px} \land
+%\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)$
+%
+%for any open transition $OT_{px}$, since
+%$(s^2_p,s^3|\Pred\,^\prime_p)\in\mathcal{R}'$ there exist open transitions
+%$OT_{pxy}^{x\in X, y\in Y} \subseteq \mathcal{T}_3$: 
+%
+%\begin{mathpar}
+%
+%%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+%\inferrule*[myfraction=\reddottedrule]
+%{\{s^{3}_i\xrightarrow{a_{i p x y}}_i s^{3}_{i p x y}\}^{i\in I_{3 p x y}},
+%	\{\xrightarrow{b_{j p x y}}_j\}^{j\in J_{3pxy}}, \Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
+%{s^3 \xrightarrow {v_{pxy}} s^{3}_{pxy}}
+%%         \right)
+%
+%\end{mathpar}
+%such that  $\forall y, J_{2px}=J_{3pxy}, 
+%(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$; and  \\
+%$\Pred\,'_p \land \Pred_{OT_{px}}\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{y\in Y}
+%\left( \forall j. b_{jpx}=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+%\land v_{px}\!=\!v_{pxy} \land
+%\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\right)$.
+%
+%This is verified for each $p\in P$. Overall,  we have a family of open transitions 
+%$OT_{pxy}^{p\in 
+%P, x\in X, 
+%y\in Y} \subseteq \mathcal{T}_3$ that should simulate \emph{OT}.
+%
+%First, $\forall y, \forall x, \forall p, J_1=J_{2px}=J_{3pxy}, 
+%({s^{1}}',s^{3}_{pxy}|\Pred\,'_{target_{pxy}})\in \mathcal{R}''$. 
+%Indeed for any 
+%$p$, 
+%$x$, and 
+%$y$, $s^2_{px}$
+%relate ${s^{1}}'$ and $s^{3}_{pxy}$, indeed
+%$(s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in \mathcal{R}$
+% and $(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$. 
+% More precisely, $s^{2}_{px} \in ({s^{2}_p}')^{p\in P'}$ where $({s^{2}_p}')^{p\in 
+% P'}$ 
+% is 
+% the set of states relating ${s^{1}}'$ and $s^{3}_{pxy}$.
+%Consequently, for all $p$, $x$, $y$,\\
+% $\left(\exists \phi'.\,(\Pred_{target_{px}}\land 
+%\Pred_{target_{pxy}})\phi'\land \fv((\Pred\land\Pred)\phi')\subseteq 
+%\fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3)\right)\implies 
+%\Pred\,'_{target_{pxy}}$ \\
+%This is one element of the  disjunction defining the 
+%predicate 
+%relating ${s^{1}}'$ and $s^{3}_{pxy}$ in the definition of $\mathcal{R}''$.
+%
+%Second, we need \\
+%\begin{small}
+%$\Pred\,'' \land \Pred_{OT}\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
+%\left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+%\land v\!=\!v_{pxy} \land
+%\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
+%\end{small}
+%
+%We have, for all $p$
+%\begin{small}
+%$\Pred_p \land \Pred_{OT}\land\Pred'_p\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+%\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
+%\land v\!=\!v_{px} \land
+%\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\land\Pred'_p\\
+%%
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+%\left( \forall j. b_j=b_{jpx}  \Rightarrow (\Pred_{OT_{px}}\land\Pred'_p)
+%\land v\!=\!v_{px} \land
+%\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\\
+%%
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+%\big( \forall j. b_j=b_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
+%\big( \forall j'. b_{j'px}=b_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
+%\land v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+%\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\big))
+%\land v\!=\!v_{px} \land
+%\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\\
+%%
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
+%\big( \forall j, j'. b_j=b_{jpx} \land b_{j'px}=b_{j'pxy}
+%\Rightarrow \big( 
+%\Pred_{OT_{pxy}}
+%\land v\!=v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+%\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}
+% \land
+%\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\big)
+%$
+%
+%\end{small}
+%
+%Additionally, the Post substitutions only have an effect on the  predicates that  use 
+%some of the 
+%substituted 
+%variables, and because of the domain of the substitutions we have:\\
+%$(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
+%\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}})\phi\\
+%%
+%= 
+%(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land
+%\Pred_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}) 
+%\phi\\
+%%
+%= 
+%((\Pred_{target_{px}}\land
+%\Pred_{target_{pxy}})\subst{\Post_{OT_{px}}}\phi) 
+%\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\\
+%%
+%\implies\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}
+%\subst{\Post_{OT_{pxy}}}\\
+% $
+%Finally, gathering the previous results, and using the fact that only variables of 
+%$\mathcal{T}_2$ are changed by $\phi$ substitutions:
+%
+%$\Pred\,'' \land \Pred_{OT}\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{p\in P}(\Pred_p \land 
+%\Pred_{OT}\land\Pred\,'_p)\phi\\
+%\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
+%\left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+%\land v\!=\!v_{pxy} \land
+%\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)
+%$
+%
+%This is the expected property.
+%
+%
+%\smallskip
+%Concerning the other direction of bisimulation, it is sufficient to notice that the role 
+%of $s^1$ and $s^3$ in the definition of $\mathcal{R}''$ is symmetrical, and thus the 
+%proof is similar.
+%
+%       \end{proof}
+%       
+%       \bigskip
+%       
+%       
+              \begin{proof}
+       	
+       	It is trivial to check reflexivity and symmetry. Here we focus on the
+       	transitivity. 
+       	To prove transitivity of strong FH-bisimulation on pNets it is sufficient to 
+       	prove 
+       	transitivity of the strong FH-bisimulation on states. Consider 3 open automata 
+       	$\mathcal{T}_1$, $\mathcal{T}_2$, $\mathcal{T}_3$ and states $s^1$, $s^2$, $s^3$ 
+       	in those 
+       	automata\footnote{We omit the constraints stating that each $s^i_x$ is in the 
+       	states of 
+       		$\mathcal{T}_i$ for the sake of readability}.
+       	Suppose we have $\mathcal{R}$ an FH-bisimulation relation between states of 
+       	$\mathcal{T}_1$ and of  $\mathcal{T}_2$; members of $\mathcal{R}$ are of the form 
+       	$(s^1,s^2|\Pred)$.
+       	Suppose we also  have $\mathcal{R}'$ an FH-bisimulation relation between states 
+       	of 
+       	$\mathcal{T}_2$ and of  $\mathcal{T}_3$; members of $\mathcal{R}2$ are of the 
+       	form 
+       	$(s^2,s^3|\Pred\,')$.
+       	
+       	Let $\mathcal{R}''$ be the relation: 
+       	\[\mathcal{R}'' = \{(s^1,s^3|\Pred\,'')|\,\Pred\,''=\bigvee_{ \begin{array}{l}
+       		(s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
+       		\end{array}
+       	}\,\Pred\land\Pred\,'\}\]
 
-\[\mathcal{R}'' = \Big\{(s^1,s^3|\Pred\,'')\Big|
-\displaystyle
- \begin{array}[t]{l}\exists (s^2_p)^{p\in P}.\,\exists (\Phi_p)^{p\in P}.\,\\
-\quad 
-	\big(\begin{array}{l}
-	\forall p\in P.\, (s^1,s^2_p|\Pred)\in\mathcal{R}\land 
-	(s^2_p,s^3|\Pred\,')\in\mathcal{R}'\land \\
-	 \forall\ \phi\in\Phi_p.\,
-	  \fv((\Pred\land\Pred')\phi)\subseteq \fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3) \land
-	  \dom(\phi)\subseteq \fv(\mathcal{T}_2)
-	\end{array}
-	\big)\\
-\quad
-\land ~\Pred'' =\displaystyle\bigvee_{\begin{array}{l}
-	p\in P\\\phi\in \Phi_p
-	\end{array}} (\Pred\land\Pred\,')\phi
-	
-\end{array}\Big\}
-\]
-%(s^1,s^2|\Pred)\in\mathcal{R}\\ (s^2,s^3|\Pred\,')\in\mathcal{R}' 	
-%}\!\!\!\!\!\exists \phi.\begin{array}[t]{l} \\
-%\land 
-%\\
-%\land 
-%\\
-\TODO{s2p is the family of states that relate s1 and s2 big phi is the set of renamings 
-for each s2 in the family}
+This relation is the adaptation of the transitivity to the conditional relationship that 
+defines a bisimulation. Indeed the global disjunction together with the conjuction of 
+predicates plays exactly the role of the intermediate element in a transitivity rule: 
+``there exists an intermediate state'' corresponds to the global disjunction, and the 
+conjunction of states expresses the intermediate predicate is used to ensure 
+satisfiability of the predicate relating the first state to the last one..
+       	
+       	The relation is built as follows: for each pair of state $s^1$, $s^3$, for each 
+       	state 
+       	$s^2$ such that $\mathcal{R}$ relates $s^1$ and $s^2$, and $\mathcal{R}'$ relates 
+       	$s^2$ 
+       	and $s^3$, we take the conjunction of the two predicates. The predicates for 
+       	different 
+       	values of $s^2$ are collected by a disjunction. 
+       	
+       	We will show
+       	that $\mathcal{R}''$ is an FH-bisimulation. Consider 
+       	$(s^1,s^3|\Pred\,'')\in\mathcal{R}''$. Then there is a set of states of 
+       	$\mathcal{T}_2$ relating $s^1$ and $s^3$, let $(s^2_p)^{p\in P}$ be this family.  
+       	
+       	For any $p\in P$ by definition of $\mathcal{R}''$,
+       	$(s^1,s^2_p|\Pred_p)\in\mathcal{R}$,  and $(s^2_p,s^3|\Pred\,'_p)\in\mathcal{R}$. 
+       	We have 
+       	the 
+       	following by definition of bisimulation.
+       	For any open transition $OT$ in $\mathcal{T}_1$ originating from $s^1$:
+       	Additionally we have $\Pred\,'' = \bigvee_{p\in P} \Pred_p\land\Pred_p\,'$.
+       	\begin{mathpar}
+       	
+       	\inferrule*[myfraction=\reddottedrule]
+       	{\{s^1_i\xrightarrow{a_i}_i {s^{1}}'_i\}^{i\in I_1}, % , s^1_i,s^{1'}_i\in
+       		%States(I_1)
+       		\{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+       	{s^1 \xrightarrow {v} {s^{1}}'}
+       	
+       	\end{mathpar}
+       	
+       	there exist open transitions $OT_{p x}^{x\in X} \subseteq \mathcal{T}_2$:
+       	
+       	\begin{mathpar}
+       	
+       	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+       	\inferrule*[myfraction=\reddottedrule]
+       	{\{s^{2}_{pi}\xrightarrow{a_{p i x}}_i s^{2}_{p i x}\}^{i\in I_{2 p x}},
+       		\{\xrightarrow{b_{j p x}}_j\}^{j\in J_{2px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
+       	{s^2_p \xrightarrow {v_{px}} s^{2}_{px}}
+       	%         \right)
+       	\end{mathpar}
+       	
+       	such that  $\forall x, J_1=J_{2px}, (s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in 
+       	\mathcal{R}$;
+       	and  \\
+       	
+       	$\Pred_p \land \Pred_{OT}\\
+       	\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+       	\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
+       	\land v\!=\!v_{px} \land
+       	\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)$
+       	
+       	for any open transition $OT_{px}$, since
+       	$(s^2_p,s^3|\Pred\,^\prime_p)\in\mathcal{R}'$ there exist open transitions
+       	$OT_{pxy}^{x\in X, y\in Y} \subseteq \mathcal{T}_3$: 
+       	
+       	\begin{mathpar}
+       	
+       	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+       	\inferrule*[myfraction=\reddottedrule]
+       	{\{s^{3}_i\xrightarrow{a_{i p x y}}_i s^{3}_{i p x y}\}^{i\in I_{3 p x y}},
+       		\{\xrightarrow{b_{j p x y}}_j\}^{j\in J_{3pxy}}, 
+       		\Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
+       	{s^3 \xrightarrow {v_{pxy}} s^{3}_{pxy}}
+       	%         \right)
+       	
+       	\end{mathpar}
+       	such that  $\forall y, J_{2px}=J_{3pxy}, 
+       	(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$; and  \\
+       	$\Pred\,'_p \land \Pred_{OT_x}\\
+       	\hspace{1cm} \implies\!\!\! \bigvee_{y\in Y}
+       	\left( \forall j. b_{jpx}=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+       	\land v_{px}\!=\!v_{pxy} \land
+       	\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\right)$.
+       	
+       	This is verified for each $p\in P$. Overall,  we have a family of open 
+       	transitions 
+       	$OT_{pxy}^{p\in 
+       		P, x\in X, 
+       		y\in Y} \subseteq \mathcal{T}_3$ that should simulate \emph{OT}.
 
-The relation is built as follows: for each pair of state $s^1$, $s^3$, for each state 
-$s^2$ such that $\mathcal{R}$ relates $s^1$ and $s^2$, and $\mathcal{R}'$ relates $s^2$ 
-and $s^3$, we take the conjunction of the two predicates. The predicates for different 
-values of $s^2$ are collected by a disjunction. 
-Finally, a set of substitutions should ensure that the 
-free variables of the predicates are only the ones of $\mathcal{T}_1$ and 
-$\mathcal{T}_1$. These substitutions somehow express the different ways to match the two 
-predicates by eliminating the 
-free variables. We simplify the proof to the case where a single substitution is 
-necessary for each state $s^2$; the extension to a set of substitution is relatively 
-simple but complicates the notations. $\phi_p$ is this set of substitutions in the proof 
-below.
-
- We will show
-that $\mathcal{R}''$ is an FH-bisimulation. Consider 
-$(s^1,s^3|\Pred\,'')\in\mathcal{R}''$. Then there is a set of states of 
-$\mathcal{T}_2$ relating $s^1$ and $s^3$, let $(s^2_p)^{p\in P}$ be this family.  
-For any $p\in P$ by definition of $\mathcal{R}''$,
-$(s^1,s^2_p|\Pred_p)\in\mathcal{R}$,  and $(s^2_p,s^3|\Pred\,'_p)\in\mathcal{R}$. 
-Additionally we have $\Pred\,'' = \bigvee_{p\in P} (\Pred_p\land\Pred_p)\,'\phi_p$.
-We have 
-the 
-following by definition of bisimulation.
-For any open transition $OT$ in $\mathcal{T}_1$ originating from $s^1$:
-
-\begin{mathpar}
-
-\inferrule*[myfraction=\reddottedrule]
-{\{s^1_i\xrightarrow{a_i}_i {s^{1}}'_i\}^{i\in I_1}, % , s^1_i,s^{1'}_i\in
-	%States(I_1)
-	\{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
-{s^1 \xrightarrow {v} {s^{1}}'}
-
-\end{mathpar}
-
-there exist open transitions $OT_{p x}^{x\in X} \subseteq \mathcal{T}_2$:
-
-\begin{mathpar}
-
-%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
-\inferrule*[myfraction=\reddottedrule]
-{\{s^{2}_{pi}\xrightarrow{a_{p i x}}_i s^{2}_{p i x}\}^{i\in I_{2 p x}},
-	\{\xrightarrow{b_{j p x}}_j\}^{j\in J_{2px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
-{s^2_p \xrightarrow {v_{px}} s^{2}_{px}}
-%         \right)
-\end{mathpar}
-
-such that  $\forall x, J_1=J_{2px}, (s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in 
-\mathcal{R}$;
-and  \\
-
-$\Pred_p \land \Pred_{OT}\\
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
-\land v\!=\!v_{px} \land
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)$
-
-for any open transition $OT_{px}$, since
-$(s^2_p,s^3|\Pred\,^\prime_p)\in\mathcal{R}'$ there exist open transitions
-$OT_{pxy}^{x\in X, y\in Y} \subseteq \mathcal{T}_3$: 
-
-\begin{mathpar}
-
-%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
-\inferrule*[myfraction=\reddottedrule]
-{\{s^{3}_i\xrightarrow{a_{i p x y}}_i s^{3}_{i p x y}\}^{i\in I_{3 p x y}},
-	\{\xrightarrow{b_{j p x y}}_j\}^{j\in J_{3pxy}}, \Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
-{s^3 \xrightarrow {v_{pxy}} s^{3}_{pxy}}
-%         \right)
-
-\end{mathpar}
-such that  $\forall y, J_{2px}=J_{3pxy}, 
-(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$; and  \\
-$\Pred\,'_p \land \Pred_{OT_{px}}\\
-\hspace{1cm} \implies\!\!\! \bigvee_{y\in Y}
-\left( \forall j. b_{jpx}=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
-\land v_{px}\!=\!v_{pxy} \land
-\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\right)$.
-
-This is verified for each $p\in P$. Overall,  we have a family of open transitions 
-$OT_{pxy}^{p\in 
-P, x\in X, 
-y\in Y} \subseteq \mathcal{T}_3$ that should simulate \emph{OT}.
-
-First, $\forall y, \forall x, \forall p, J_1=J_{2px}=J_{3pxy}, 
-({s^{1}}',s^{3}_{pxy}|\Pred\,'_{target_{pxy}})\in \mathcal{R}''$. 
-Indeed for any 
-$p$, 
-$x$, and 
-$y$, $s^2_{px}$
-relate ${s^{1}}'$ and $s^{3}_{pxy}$, indeed
-$(s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in \mathcal{R}$
- and $(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$. 
- More precisely, $s^{2}_{px} \in ({s^{2}_p}')^{p\in P'}$ where $({s^{2}_p}')^{p\in 
- P'}$ 
- is 
- the set of states relating ${s^{1}}'$ and $s^{3}_{pxy}$.
-Consequently, for all $p$, $x$, $y$,\\
- $\left(\exists \phi'.\,(\Pred_{target_{px}}\land 
-\Pred_{target_{pxy}})\phi'\land \fv((\Pred\land\Pred)\phi')\subseteq 
-\fv(\mathcal{T}_1)\cup\fv(\mathcal{T}_3)\right)\implies 
-\Pred\,'_{target_{pxy}}$ \\
-This is one element of the  disjunction defining the 
-predicate 
-relating ${s^{1}}'$ and $s^{3}_{pxy}$ in the definition of $\mathcal{R}''$.
-
-Second, we need \\
-\begin{small}
+		One can notice that, as bisimulation predicates are used to relate states that 
+		belong to two different open automata, the free variables of these predicates 
+		that do not belong to the two related automata can safely be renamed to avoid any 
+		name clash. In practice,
+       	we can suppose that, as $\Pred\,'_{target_{pxy}}$ is used to relate states of 
+       	$\mathcal{T}_1$, and $\mathcal{T}_3$, there exists a predicate obtained by 
+       	renaming variables, that is equivalent to $\Pred\,'_{target_{pxy}}$ and does not 
+       	contain the variables of 	$\mathcal{T}_2$. This predicate with ``fresh'' 
+       	variables is called   $\Pred\,'_{target_{pxy}}$ in the following.
+       	Similarly, we can suppose that $\Pred_{target_{px}}$ contains no 
+       	variable in $\mathcal{T}_3$, and $\Pred_{target_{pxy}}$ contains no 
+       	variable in $\mathcal{T}_1$.
+       	
+       	
+       	First, $\forall y, \forall x, \forall p, J_1=J_{2px}=J_{3pxy}, 
+       	({s^{1}}',s^{3}_{pxy}|\Pred\,'_{target_{pxy}})\in \mathcal{R}''$. 
+       	Indeed for any 
+       	$p$, 
+       	$x$, and 
+       	$y$, $s^2_{px}$
+       	relate ${s^{1}}'$ and $s^{3}_{pxy}$, indeed
+       	$(s^{1'},s^{2}_{px}|\Pred_{target_{px}})\in \mathcal{R}$
+       	and $(s^{2}_x,s^{3}_{pxy}|\Pred_{target_{pxy}})\in \mathcal{R}'$. 
+       	More precisely, $s^{2}_{px} \in ({s^{2}_p}')^{p\in P'}$ where $({s^{2}_p}')^{p\in 
+       		P'}$ 
+       	is 
+       	the set of states relating ${s^{1}}'$ and $s^{3}_{pxy}$.
+       	Consequently, for all $p$, $x$, $y$, $\Pred_{target_{px}}\land 
+       	\Pred_{target_{pxy}}\implies 
+       	\Pred\,'_{target_{pxy}}$ (this is one element of the  disjunction defining the 
+       	predicate 
+       	relating ${s^{1}}'$ and $s^{3}_{pxy}$ in the definition of $\mathcal{R}''$).
+       	
+       	Second, we need \\
+       	\begin{small}
+       		$\Pred\,'' \land \Pred_{OT}\\
+       		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
+       		\left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+       		\land v\!=\!v_{pxy} \land
+       		\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
+       	\end{small}
+       	
+       	We have, for all $p$
+       	\begin{small}
+       		$\Pred_p \land \Pred_{OT}\land\Pred'_p\\
+       		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+       		\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
+       		\land v\!=\!v_{px} \land
+       		\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\land\Pred'_p\\
+       		%
+       		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+       		\left( \forall j. b_j=b_{jpx}  \Rightarrow (\Pred_{OT_{px}}\land\Pred'_p)
+       		\land v\!=\!v_{px} \land
+       		\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\\
+       		%
+       		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+       		\big( \forall j. b_j=b_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
+       		\big( \forall j'. b_{j'px}=b_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
+       		\land v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+       		\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\big))
+       		\land v\!=\!v_{px} \land
+       		\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\\
+       		%
+       		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
+       		\big( \forall j, j'. b_j=b_{jpx} \land b_{j'px}=b_{j'pxy}
+       		\Rightarrow \big( 
+       		\Pred_{OT_{pxy}}
+       		\land v\!=v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+       		\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}
+       		\land
+       		\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\big)
+       		$
+       		
+       	\end{small}
+       	
+By construction, the Post substitutions only have an effect on the  
+variables of the open automaton they belong to, they also produce terms containing only 
+variables of the open automaton they belong to. Finally, because of the domain of the 
+substitutions  and of the predicates, we have:\\
+       	$\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
+       	\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+       	= 
+       	\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land
+       	\Pred_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+       	\implies\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+       	= \Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}} $
+       	
+       	This allows us to conclude, with $\Pred\,'' = \bigvee_{p\in P} 
+       	\Pred_p\land\Pred_p\,'$:
+         	\begin{small}     	
 $\Pred\,'' \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \bigvee_{p\in P} (
+\Pred_p\land\Pred_p\,' \land \Pred_{OT})\\
+\hspace{1cm} \implies\!\!\!\bigvee_{p\in P}
+ \bigvee_{x\in X} \bigvee_{y\in Y}
+\big( \forall j, j'. b_j=b_{jpx} \land b_{j'px}=b_{j'pxy}
+\Rightarrow \big( 
+\Pred_{OT_{pxy}}
+\land v\!=v_{px}\!=\!v_{pxy}\\~\hspace{3em}~ \land
+\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\big)\big)
+\\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
 \left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
 \land v\!=\!v_{pxy} \land
 \Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
-\end{small}
-
-We have, for all $p$
-\begin{small}
-$\Pred_p \land \Pred_{OT}\land\Pred'_p\\
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-\left( \forall j. b_j=b_{jpx}  \Rightarrow \Pred_{OT_{px}}
-\land v\!=\!v_{px} \land
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\land\Pred'_p\\
-%
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-\left( \forall j. b_j=b_{jpx}  \Rightarrow (\Pred_{OT_{px}}\land\Pred'_p)
-\land v\!=\!v_{px} \land
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\\
-%
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-\big( \forall j. b_j=b_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
-\big( \forall j'. b_{j'px}=b_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
-\land v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
-\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\big))
-\land v\!=\!v_{px} \land
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\\
-%
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
-\big( \forall j, j'. b_j=b_{jpx} \land b_{j'px}=b_{j'pxy}
-\Rightarrow \big( 
-\Pred_{OT_{pxy}}
-\land v\!=v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
-\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}
- \land
-\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\big)
-$
-
-\end{small}
-
-Additionally, the Post substitutions only have an effect on the  predicates that  use 
-some of the 
-substituted 
-variables, and because of the domain of the substitutions we have:\\
-$(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
-\Pred_{target_{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}})\phi\\
-%
-= 
-(\Pred_{target_{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land
-\Pred_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}) 
-\phi\\
-%
-= 
-((\Pred_{target_{px}}\land
-\Pred_{target_{pxy}})\subst{\Post_{OT_{px}}}\phi) 
-\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\\
-%
-\implies\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}
-\subst{\Post_{OT_{pxy}}}\\
- $
-Finally, gathering the previous results, and using the fact that only variables of 
-$\mathcal{T}_2$ are changed by $\phi$ substitutions:
-
-$\Pred\,'' \land \Pred_{OT}\\
-\hspace{1cm} \implies\!\!\! \bigvee_{p\in P}(\Pred_p \land 
-\Pred_{OT}\land\Pred\,'_p)\phi\\
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
-\left( \forall j. b_j=b_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
-\land v\!=\!v_{pxy} \land
-\Pred\,'_{target_{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)
-$
-
-This is the expected property.
-
-
-\smallskip
-Concerning the other direction of bisimulation, it is sufficient to notice that the role 
-of $s^1$ and $s^3$ in the definition of $\mathcal{R}''$ is symmetrical, and thus the 
-proof is similar.
-
+  \end{small}
+       	
+       	\smallskip
+       	Concerning the other direction of bisimulation, it is sufficient to notice that 
+       	the role 
+       	of $s^1$ and $s^3$ in the definition of $\mathcal{R}''$ is symmetrical, and thus 
+       	the 
+       	proof is similar.
+       	
        \end{proof}
-       
-       \bigskip
        
        The proof of the other theorems rely on two main lemmas,
 dealing respectively with the decomposition of a composed behaviour
