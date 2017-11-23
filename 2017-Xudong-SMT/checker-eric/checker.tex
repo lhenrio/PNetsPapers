@@ -1,0 +1,286 @@
+\documentclass[a4paper]{llncs}
+
+\usepackage[T1]{fontenc}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+%\geometry{a4paper}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+
+%\usepackage{amsfonts}
+%\usepackage{fancyhdr}
+%\usepackage{cite}
+%\usepackage{ifthen}
+%\usepackage{amssymb}
+%\usepackage{fancyhdr}
+%\usepackage{pifont}
+\usepackage{stmaryrd}
+\usepackage{mathtools,mathpartir}
+\usepackage{proof}
+%\usepackage{setspace}
+%\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,amscd,mathrsfs}
+% \usepackage{array,booktabs,arydshln,xcolor}
+\usepackage{array,booktabs,xcolor}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\usepackage{epsfig,color,subfigure,enumitem}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
+\newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
+\newcommand{\LUDO}[1]{\textcolor{green}{#1}}
+\definecolor{airforceblue}{rgb}{0.26, 0.44, 0.56}
+\newcommand{\QIN}[1]{\textcolor{airforceblue}{#1}}
+\newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
+\makeatletter
+\newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
+\newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
+\makeatother
+
+\usepackage{macrospNets}
+
+\def\AlgT{\mathcal{T}}
+\def\AlgE{\mathcal{E}}
+\def\AlgA{\mathcal{A}}
+\def\AlgAS{\mathcal{A}_S}
+\def\AlgB{\mathcal{B}}
+\def\AlgI{\mathcal{I}}
+\newcommand{\set}[1]{\overline{#1}}
+\newcommand{\Pred}{\symb{Pred}}
+\newcommand{\Post}{\symb{Post}}
+%\usepackage[math]{cellspace}
+%\setlength\cellspacetoplimit{ 37pt}
+%\setlength\cellspacebottomlimit{18pt}
+
+\pagestyle{plain}
+% addition to the mathpartir package for red dotted rules,
+% that we use for open-transitions
+\makeatletter
+\def \dotover {\textcolor{red}{\leavevmode\cleaders\hb@xt@ .22em{\hss $\cdot$\hss}\hfill\kern\z@}}
+\def \reddottedrule #1#2{\hbox {\advance \hsize by -0.5em
+%\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$} \phantom{\copy0} %
+ {\ooalign{\vphantom{$\genfrac{}{}{0pt}{0}{#1}{#2}$}\cr\dotover\cr$\genfrac{}{}{0pt}{0}{#1}{#2}$\cr}}}}
+
+ \def \dottedrule #1#2 {
+  {\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$}%
+    \vphantom{\copy0}%
+    \ooalign{%
+      \hidewidth
+      $\vcenter{\moveright\nulldelimiterspace
+        \hbox to\wd0{%
+         \xleaders\hbox{\kern.5pt\vrule height 0.4pt width 1.5pt\kern.5pt}\hfill
+          \kern-1.5pt
+        }%
+      }$
+      \hidewidth\cr
+    \box0\cr}}
+}
+
+\let \defaultfraction \mpr@@fraction
+\makeatother
+
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{cor}[theorem]{Corollary}
+%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{algorithm}[theorem]{Algorithm}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{example}[theorem]{Example}
+%\newtheorem{problem}[theorem]{Problem}
+%\newtheorem{proof}[theorem]{Proof}
+
+% Macros for the SOS rules and proof trees:
+%\newcommand\openrule[2]{\redinfer{#1}{#2}}
+\newcommand\openrule[2]{\inferrule*[myfraction=\reddottedrule,center]{#1}{#2}}
+%\newcommand\openrule[2]{\inferrule*{#1}{#2}}
+%\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
+\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+\newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
+\DeclareMathOperator{\card}{card}
+\DeclareMathOperator{\Flat}{Flat}
+\renewcommand{\P}{\mathcal P}
+
+\begin{document}
+
+This document presumes the definition of Term algebras and
+parameterized actions from the pNet
+theory definition, that we will not repeat here.
+
+\section{Translations from pNets to SMTLib}
+In order to submit satisfiability problems to Z3 (for the predicates
+in open transitions), we need to generate SMTlib programs, from the
+pNet Algebra presentation and predicates.
+More precisely, we need to translate to SMTlib:
+\begin{itemize}
+  \item for a given pNet: the presentation of the action algebra
+    (sorts, operators, constants), 
+    \item for each open transition: the declaration of variables, and
+      the predicate (including action expressions).
+\end{itemize}
+
+During this translation, in order to guarantee that the generated code
+will cause no runtime errors during parsing and execution, we need
+to ensure that all objects used in the SMTlib code are properly
+declared, and that they are correctly typed.
+
+
+\section{Type system}
+%% The SMT solver Z3 already has conservative type rules and checks type safety in Horn logic. When translating the pNets into SMT-LIB language, pNets should also make sure that
+%% the term matching other term in SMT-LIB language will be correct in
+%% type checking. In next two section, we give out the presentation of
+%% the pNets and the type rules of them to ensure the type safety.
+The type system in pNets is quite simple, the expressions are built
+from variables, constants, and operators of a many-sorted algebra, and
+we only need simple first-order polymorphic types.
+Additionaly, for convenience, we want to introduce some ``generic''
+operators in the algebra, with an overloading mechanism; as these do
+not exist in SMTlib, we will have a specific translation mechanism.
+
+Note that in principle, such an algebra correspond to a given
+high-level language (e.g. a process algebra), and that the algebra
+presentation will be defined once and for all in the framework of the
+pNet semantics of each specific language.
+
+\subsection{Algebra Presentations}
+
+We have a minimal, predefined algebra presentation for all pNets, including
+three basic sorts $Bool$, $Action$ and $Int$ and their
+operators. Table \ref{Table:predefinedSorts} defines these elements.
+
+\begin{table}\caption{\label{Table:predefinedSorts}\leftline{Algebra Presentation: predefined Sorts
+  and Operators}}
+	\begin{tabular}{p{4cm}p{8cm}}
+		\hline\specialrule{0em}{1pt}{1pt}
+		Sort & Operator
+                \\\specialrule{0em}{1pt}{1pt}
+		\hline\specialrule{0em}{3pt}{3pt}
+		Bool    			&
+                $\land,\ \lor,\ \texttt{true},\ \texttt{false}$
+                \\\specialrule{0em}{1pt}{1pt} 
+		Action 			& \textsl{no predefined operator}
+                \\\specialrule{0em}{1pt}{1pt}
+		Int 				& $\ - \texttt{(unary)},\ +,\ -
+                \texttt{(binary)},\ \times,\ \div,\ {0, 1, ...} \in \texttt{Nat}$
+                \\\specialrule{0em}{1pt}{1pt}
+                \textsl{for any sort} & $=,\ \ne$
+		\\\hline
+	\end{tabular}
+\end{table}
+
+For a given language, or for a given use-case, the designer can
+declare more sorts and operators, using our pNet API.
+As an example, the CCS action algebra include:
+
+
+
+\subsection{Type Rule}
+The environment is a set of variables with their own types like $x_1 : A_1, ... , x_n : A_n$. And use dom$(\Gamma)$ dedicate the collection of $x_1, ... , x_n$. Let $\mathcal{P}$ to be the presentation of the pNet.
+\begin{table}\caption{\leftline{Judgments for Open pNets}}
+	\begin{tabular}{p{5cm}p{7cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		$\Gamma \vdash \diamond$ 					& $\Gamma$ is a well-formed environment 					\\\specialrule{0em}{1pt}{1pt}
+		$\Gamma \vdash A$ 							& A is a well-formed type in $\Gamma$	 					\\\specialrule{0em}{1pt}{1pt}
+		$\Gamma \vdash M: A$ 						& M is a well-formed term of type A in $\Gamma$			\\\specialrule{0em}{1pt}{1pt}
+		\specialrule{0em}{3pt}{3pt}\hline
+	\end{tabular}
+\end{table}	
+
+\begin{table}\caption{\leftline{Type Rules for Open pNets}}
+	\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		(Env $\varnothing$) 								
+		& 										
+		&					\\\specialrule{0em}{1pt}{1pt}
+            $\dfrac{ }{\varnothing \vdash \diamond}$			
+            & %$\dfrac{\Gamma \vdash A ~~ x\ }{\varnothing \vdash \diamond}$
+            &					\\\specialrule{0em}{3pt}{3pt}
+		(Type Bool) 										
+		&(Type Action) 						
+		&(Type Int)			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{\mathcal{P} \vdash Bool~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Bool}$ 
+		& $\dfrac{\mathcal{P} \vdash Action~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Action}$ 
+		& $\dfrac{\mathcal{P} \vdash Int~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Int}$        \\\specialrule{0em}{3pt}{3pt}
+		(Var x) 										
+		& 						
+		&			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{\mathcal{P} \vdash A~~\Gamma \vdash x:A}{\mathcal{P},\Gamma \vdash x:A}$ 
+		&  
+		&       		\\\specialrule{0em}{5pt}{5pt}
+		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
+							
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\Gamma \vdash x_1:ty1 ~~\Gamma \vdash x_2:ty1}{\mathcal{P},\Gamma \vdash x_1 ~BinOp~ x_2:ty2}$ 
+		& 
+		&       		\\\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for booleans, - for integers)}	
+                
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash UnOp :: ty1 \rightarrow ty2 ~~\Gamma \vdash x:ty1}{\mathcal{P},\Gamma \vdash Unop~x:ty2}$   
+		&&       		\\\specialrule{0em}{5pt}{5pt}
+		(Polymorphic EQ and NEQ)							
+		&					
+		&
+                                         \\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{(Note: I removed the $~~\mathcal{P} \vdash \ne :: A, A \rightarrow Bool$)}
+							
+		&                        \\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 = x_2:Bool}$ 
+		& 
+		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 \ne x_2:Bool}$ 
+		
+		&       		\\\specialrule{0em}{5pt}{5pt}
+		(Overloaded FUN)							
+		&					
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow A ~~\mathcal{P} \vdash A_1~~...~~\mathcal{P} \vdash A_n ~~\Gamma \vdash x_1:A_1~~...~~\Gamma \vdash x_n:A_n}{\mathcal{P},\Gamma \vdash \texttt{FUN}(x_1,...,x_n):A}$ 
+		& 
+		&			\\
+		\specialrule{0em}{5pt}{5pt}\hline
+	\end{tabular}
+\end{table}	
+
+\subsection{Map to SMT-LIB language}
+The pNet semantics can be full translated into SMT-LIB language, though some difference on defining functions exist.
+\begin{table}\caption{\leftline{Mapping}}
+	\begin{tabular}{p{3cm}p{9cm}}
+		\hline\specialrule{0em}{5pt}{5pt}			
+		(Presentation)							
+		&								\\\specialrule{0em}{5pt}{5pt}		
+		&$Sort \lhook\joinrel\longrightarrow$	declare-datatypes				\\\specialrule{0em}{3pt}{3pt}
+		&$Operator \lhook\joinrel\longrightarrow$	declare-function		\\\specialrule{0em}{3pt}{3pt}
+		(Checking)							
+		&								\\\specialrule{0em}{5pt}{5pt}
+		&$dom(\Gamma) \lhook\joinrel\longrightarrow$	declare-const		\\\specialrule{0em}{3pt}{3pt}
+		&$Pred \lhook\joinrel\longrightarrow$	 assert		\\\specialrule{0em}{3pt}{3pt}
+		(Expressions)							
+		&								\\\specialrule{0em}{5pt}{5pt}
+		&$\texttt{FUN}(x_1,...,x_n)$		\\\specialrule{0em}{3pt}{3pt}
+		&$x_1- x_n$  $~~~~~~~\lhook\joinrel\longrightarrow$ declare-function	\\\specialrule{0em}{3pt}{3pt}
+		&$...$	\\\specialrule{0em}{3pt}{3pt}
+		\specialrule{0em}{5pt}{5pt}\hline
+	\end{tabular}
+\end{table}	
+
+\section{Submission to Z3}
+\subsection{Z3 Notations}
+Our semantic has already got enough informations for Z3 checking. Z3 has a number of notations for various usages. We only list the notations we needed in our algorithm as follows:
+\TODO{Finish the description.}
+\begin{enumerate}
+\item \texttt{declare-datatypes}
+\item \texttt{declare-function}
+\item \texttt{declare-const}
+\item \texttt{assert}
+\end{enumerate}
+
+\subsection{Submission of Algebra}
+Before the submission of the open transitions to Z3, the user-inputed algebra of the pNet should be known at first. It gives Z3 informations of the sorts of the expression and the operators, corresponding to the  
+\texttt{declare-datatypes} and \texttt{declare-function}. We declare the algebra in Z3 logic through Z3 API methods having the same effect as the notations. At the same time, we have several internal lists (actually hash maps) \texttt{exprs}, \texttt{funcDecls}, \texttt{sortDatatypes} to store the generated Z3 objects with their names for later proofs.
+
+\subsection{Submission of Open Transitions}
+Each time we submit each open transition to Z3 module, we translate its predicate into Z3 language format and send it for satisfiability checking. Every term of the predicate is declared as an \texttt{assert} in Z3. A constant action or a parameterized expression is easy to get from the internal list storing the objects while all the variables are not declared at the beginning. So we declare them before the submission of a predicate term with the API method conducting \texttt{declare-const}.
+
+\subsection{Other works}
+\paragraph{Quantifier}
+\paragraph{Filter the State without Precursor}
+
+\end{document}
