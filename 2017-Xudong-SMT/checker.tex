@@ -1,4 +1,4 @@
-\documentclass[a4paper]{llncs}
+\documentclass[a4paper]{lncs/llncs}
 
 \usepackage[T1]{fontenc}
 %\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
@@ -20,7 +20,8 @@
 %\usepackage{setspace}
 %\usepackage{indentfirst}
 \usepackage{amsmath,amssymb,amscd,mathrsfs}
-\usepackage{array,booktabs,arydshln,xcolor}
+% \usepackage{array,booktabs,arydshln,xcolor}
+\usepackage{array,booktabs,xcolor}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 \usepackage{epsfig,color,subfigure,enumitem}
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
@@ -43,7 +44,7 @@
 \def\AlgAS{\mathcal{A}_S}
 \def\AlgB{\mathcal{B}}
 \def\AlgI{\mathcal{I}}
-\newcommand{\set}[1]{\overline{#1}}
+%\newcommand{\set}[1]{\overline{#1}}
 \newcommand{\Pred}{\symb{Pred}}
 \newcommand{\Post}{\symb{Post}}
 %\usepackage[math]{cellspace}
@@ -95,27 +96,81 @@
 %\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
 \newcommand\ostate[1]{\triangleleft{#1}\triangleright}
 \newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
-\DeclareMathOperator{\card}{card}
-\DeclareMathOperator{\Flat}{Flat}
+%\DeclareMathOperator{\card}{card}
+%\DeclareMathOperator{\Flat}{Flat}
 \renewcommand{\P}{\mathcal P}
 
 \begin{document}
+
+This document presumes the definition of Term algebras and
+parameterized actions from the pNet
+theory definition, that we will not repeat here.
+
+\section{Translations from pNets to SMTLib}
+In order to submit satisfiability problems to Z3 (for the predicates
+in open transitions), we need to generate SMTlib programs, from the
+pNet Algebra presentation and predicates.
+More precisely, we need to translate to SMTlib:
+\begin{itemize}
+  \item for a given pNet: the presentation of the action algebra
+    (sorts, operators, constants), 
+    \item for each open transition: the declaration of variables, and
+      the predicate (including action expressions).
+\end{itemize}
+
+During this translation, in order to guarantee that the generated code
+will cause no runtime errors during parsing and execution, we need
+to ensure that all objects used in the SMTlib code are properly
+declared, and that they are correctly typed.
+
+
 \section{Type system}
-The SMT solver Z3 already has conservative type rules and checks type safety in Horn logic. When translating the pNets into SMT-LIB language, pNets should also make sure that
-the term matching other term in SMT-LIB language will be correct in type checking. In next two section, we give out the presentation of the pNets and the type rules of them to ensure the type safety. 
-\subsection{Algebra Presentation}
-We have a set of basic algebra presentation for the pNet, including three basic sorts $Bool$, $Action$ and $Int$ and their own operators(constants as operators with no argument).
-\begin{table}\caption{\leftline{Algebra Presentation}}
+%% The SMT solver Z3 already has conservative type rules and checks type safety in Horn logic. When translating the pNets into SMT-LIB language, pNets should also make sure that
+%% the term matching other term in SMT-LIB language will be correct in
+%% type checking. In next two section, we give out the presentation of
+%% the pNets and the type rules of them to ensure the type safety.
+The type system in pNets is quite simple, the expressions are built
+from variables, constants, and operators of a many-sorted algebra, and
+we only need simple first-order polymorphic types.
+Additionaly, for convenience, we want to introduce some ``generic''
+operators in the algebra, with an overloading mechanism; as these do
+not exist in SMTlib, we will have a specific translation mechanism.
+
+Note that in principle, such an algebra correspond to a given
+high-level language (e.g. a process algebra), and that the algebra
+presentation will be defined once and for all in the framework of the
+pNet semantics of each specific language.
+
+\subsection{Algebra Presentations}
+
+We have a minimal, predefined algebra presentation for all pNets, including
+three basic sorts $Bool$, $Action$ and $Int$ and their
+operators. Table \ref{Table:predefinedSorts} defines these elements.
+
+\begin{table}\caption{\label{Table:predefinedSorts}\leftline{Algebra Presentation: predefined Sorts
+  and Operators}}
 	\begin{tabular}{p{4cm}p{8cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Operator \\\specialrule{0em}{1pt}{1pt}
-		\hdashline\specialrule{0em}{3pt}{3pt}
-		Bool    			& $=,\ \ne,\ \land,\ \lor,\ \texttt{true},\ \texttt{false},\ \texttt{FUN}$ 								\\\specialrule{0em}{1pt}{1pt}
-		Action 			& $=,\ \ne,\ \texttt{FUN}$ 																	\\\specialrule{0em}{1pt}{1pt}
-		Int 				& $=,\ \ne,\ - \texttt{(unary)},\ +,\ - \texttt{(binary)},\ \times,\ \div,\ \texttt{Nat},\ \texttt{FUN}$ 			\\\specialrule{0em}{1pt}{1pt}
-		\hline
+		Sort & Operator
+                \\\specialrule{0em}{1pt}{1pt}
+		\hline\specialrule{0em}{3pt}{3pt}
+		Bool    			&
+                $\land,\ \lor,\ \texttt{true},\ \texttt{false}$
+                \\\specialrule{0em}{1pt}{1pt} 
+		Action 			& \textsl{no predefined operator}
+                \\\specialrule{0em}{1pt}{1pt}
+		Int 				& $\ - \texttt{(unary)},\ +,\ -
+                \texttt{(binary)},\ \times,\ \div,\ {0, 1, ...} \in \texttt{Nat}$
+                \\\specialrule{0em}{1pt}{1pt}
+                \textsl{for any sort} & $=,\ \ne$
+		\\\hline
 	\end{tabular}
-\end{table}	
+\end{table}
+
+For a given language, or for a given use-case, the designer can
+declare more sorts and operators, using our pNet API.
+As an example, the CCS action algebra include:
+
 
 
 \subsection{Type Rule}
@@ -151,61 +206,33 @@ The environment is a set of variables with their own types like $x_1 : A_1, ... 
 		$\dfrac{\mathcal{P} \vdash A~~\Gamma \vdash x:A}{\mathcal{P},\Gamma \vdash x:A}$ 
 		&  
 		&       		\\\specialrule{0em}{5pt}{5pt}
-		(Expr Unary)								
-		&					
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash A ~~\mathcal{P} \vdash op :: A \rightarrow A ~~\Gamma \vdash x:A}{\mathcal{P},\Gamma \vdash op~x:A}$ 
+		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
+							
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\Gamma \vdash x_1:ty1 ~~\Gamma \vdash x_2:ty1}{\mathcal{P},\Gamma \vdash x_1 ~BinOp~ x_2:ty2}$ 
 		& 
-		&       		\\\specialrule{0em}{5pt}{5pt}
-		(Expr Binary)							
+		&       		\\\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for booleans, - for integers)}	
+                
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash UnOp :: ty1 \rightarrow ty2 ~~\Gamma \vdash x:ty1}{\mathcal{P},\Gamma \vdash Unop~x:ty2}$   
+		&&       		\\\specialrule{0em}{5pt}{5pt}
+		(Polymorphic EQ and NEQ)							
 		&					
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash A ~~\mathcal{P} \vdash op :: A, A \rightarrow A ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1~op~ x_2:A}$ 
+		&
+                                         \\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{(Note: I removed the $~~\mathcal{P} \vdash \ne :: A, A \rightarrow Bool$)}
+							
+		&                        \\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 = x_2:Bool}$ 
 		& 
+		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 \ne x_2:Bool}$ 
+		
 		&       		\\\specialrule{0em}{5pt}{5pt}
-%		(Expr +)							
-%		&					
-%		& 			\\\specialrule{0em}{1pt}{1pt}
-%		$\dfrac{\mathcal{P} \vdash + :: Int, Int \rightarrow Int ~~\Gamma \vdash x_1:Int ~~\Gamma \vdash x_2:Int}{\mathcal{P},\Gamma \vdash x_1 + x_2:Int}$ 
-%		& 
-%		&       		\\\specialrule{0em}{5pt}{5pt}
-%		(Expr $\times$)							
-%		&					
-%		& 			\\\specialrule{0em}{1pt}{1pt}
-%		$\dfrac{\mathcal{P} \vdash \times :: Int, Int \rightarrow Int ~~\Gamma \vdash x_1:Int ~~\Gamma \vdash x_2:Int}{\mathcal{P},\Gamma \vdash x_1 \times x_2:Int}$ 
-%		& 
-%		&       		\\\specialrule{0em}{5pt}{5pt}
-%		(Expr $\div$)							
-%		&					
-%		& 			\\\specialrule{0em}{1pt}{1pt}
-%		$\dfrac{\mathcal{P} \vdash \div :: Int, Int \rightarrow Int ~~\Gamma \vdash x_1:Int ~~\Gamma \vdash x_2:Int}{\mathcal{P},\Gamma \vdash x_1 \div x_2:Int}$ 
-%		& 
-%		&       		\\\specialrule{0em}{5pt}{5pt}
-		(Polymorphism)							
+		(Overloaded FUN)							
 		&					
 		& 			\\\specialrule{0em}{3pt}{3pt}
-		(Poly =)							
-		&					
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash A ~~\mathcal{P} \vdash = :: A, A \rightarrow Bool ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 = x_2:Bool}$ 
-		& 
-		&       		\\\specialrule{0em}{5pt}{5pt}
-		(Poly $\ne$)							
-		&					
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash A ~~\mathcal{P} \vdash \ne :: A, A \rightarrow Bool ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 \ne x_2:Bool}$ 
-		& 
-		&       		\\\specialrule{0em}{5pt}{5pt}
-%		(Poly -)							
-%		&					
-%		& 			\\\specialrule{0em}{1pt}{1pt}
-%		$\dfrac{\mathcal{P} \vdash - :: Int \rightarrow Int ~~\Gamma \vdash x:Int}{\mathcal{P},\Gamma \vdash -x:Int}$  
-%		&$\dfrac{\mathcal{P} \vdash - :: Int, Int \rightarrow Int ~~\Gamma \vdash x_1:Int ~~\Gamma \vdash x_2:Int}{\mathcal{P},\Gamma \vdash x_1-x_2:Int}$ 
-%		&       		\\\specialrule{0em}{5pt}{5pt}
-		(Poly $\texttt{FUN}$)							
-		&					
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow A ~~\mathcal{P} \vdash A_1~~...~~\mathcal{P} \vdash A_n ~~\mathcal{P} \vdash A ~~\Gamma \vdash x_1:A_1~~...~~\Gamma \vdash x_n:A_n}{\mathcal{P},\Gamma \vdash \texttt{FUN}(x_1,...,x_n):A}$ 
+		$\dfrac{\mathcal{P} \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow A ~~\mathcal{P} \vdash A_1~~...~~\mathcal{P} \vdash A_n ~~\Gamma \vdash x_1:A_1~~...~~\Gamma \vdash x_n:A_n}{\mathcal{P},\Gamma \vdash \texttt{FUN}(x_1,...,x_n):A}$ 
 		& 
 		&			\\
 		\specialrule{0em}{5pt}{5pt}\hline
@@ -232,7 +259,19 @@ The pNet semantics can be full translated into SMT-LIB language, though some dif
 		&$...$	\\\specialrule{0em}{3pt}{3pt}
 		\specialrule{0em}{5pt}{5pt}\hline
 	\end{tabular}
-\end{table}	
+\end{table}
+
+\paragraph{Translation} from pNets informations into SMT-LIB language format is corresponded with the mapping rules.
+\subsubsection{Sort}
+There are several basic Sorts already defined in the presentation and users can declare more customized Sorts. In addition, Bool and Int type is also Z3 default datatypes. Sorts only provide their names to the datatype constructor in Z3, the more content will be added according to the Operators in the presentation.\\\\
+\centerline{$\texttt{(declare-datatypes\ ()\ (($SortName$\ ...\ )))}$}
+%(declare-datatypes () ((SortName ... )))
+\subsubsection{FUN function}
+The signature of the FUN operators are defined by users. But they still have a fixed format.\\\\
+\centerline{$\texttt{FUN} :: Type_1, ... ,Type_n \longrightarrow Type$}\\\\
+%(declare-fun FUN (TypeName_1, ... ,TypeName_n) TypeName)
+The types of all the arguments are given to the Z3, so does the return type, but written at another place.  We use a suffix after the "FUN" name to distinct different FUN operators.\\\\
+\centerline{$\texttt{(declare-fun\ FUN\_Type1...\_TypeN\_Type\ ($Type_1$\ ... \ $Type_n$)\ $Type$)}$}
 
 \section{Submission to Z3}
 \subsection{Z3 Notations}
