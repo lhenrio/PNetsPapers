@@ -397,6 +397,7 @@ denote classically $\overline{a}$ a family when the indexing set is
 not meaningful.  $\uplus$ is the disjoint union on
 indexed sets.
 
+\TODO{Eric: merge term algebra, algebra pres, and add a short example (BIP)}
 
 \paragraph*{Term algebra.}
 Our models rely on a notion of parameterized actions, that are
@@ -582,6 +583,8 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 \label{section:BIParchitectures}
 \TODO{Simon: can you do this in less than one page ? If you prefer,
   merge with ``Running example'' may be easier to describe the syntax}
+
+\TODO{Simon: or may be better, present BIP architectures and the use-case \_BEFORE\_ The pNets definition, and define the encoding here}
 
 \section{Running example}
 \label{section:FailureTimerMax}
@@ -996,50 +999,25 @@ deduction tree in the figure shows how the predicates are generated in
 this process.  
 
 
-\section{Implementation}
+\section{Generation of Open Automata}
 \label{section:implementation}
-The VerCors platform uses pNets as the intermediate language
-for some high-level language or graphical formalism to be translated
-into both input for a model-checker and for generating executable code
-automatically \cite{HKM-FASE16}.
-We have extended the pNet API in VerCors to deal with open pNets, and
-also to specify the structure of action algebras. 
+ 
+\TODO{Eric: add a header, reorganise the parts of the algorithm}
 
 In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
-%\begin{algorithm}
-%\caption{Open Automaton Generation}
-%\begin{algorithmic}[1]
-%
-%\State Initialize sets $U$, $E$ for unexplored/explored global states
-%$U$, $L$ for result OTs;
-%\While{!isEmpty(U)}
-%	\State Chose a global state $S$ in $U$; recursively applying Tr1 or Tr2 on the root node;
-%	\If{Subnet is a pLTS}
-%                \State Get the local state of the pLTS $s$ from $S$;
-%		\For{each transition $tr$ starting from $s$} Apply Tr1
-%			\State Build the corresponding
-%                        $OT$; store $OT$ in $L$; 
-%                 \EndFor
-%	\EndIf
-%	\If{Subnet is a pNet}
-%		\For{each $sv \in SV$} Apply Tr2
-%			\State Invoke $Combining()$ to generate the
-%                        combination of sub-transitions, $Matching()$
-%                        to match the combination with the $sv$; Store the result OTs in $L$; 
-%		\EndFor
-%	\EndIf
-%	\For{each target global state $T$ from $OT \in L$}
-%		\IfThen{$(!U.contains(T))\ \&\&\ (!E.contains(T))$}{Add $T$ into the $U$;}
-%	\EndFor
-%\EndWhile
-%\State Prune the open transitions in $L$ using the SMT solver;
-%\State \Return $L$;
-%
-%\end{algorithmic}  
-%\end{algorithm}
+\TODO{Eric: rewrite}
+We have already have the sketch of computing the open automata \cite{???}.
+While in our implementation we does not build explicitly a proof tree for every open transition.
+Instead, we repeat applying the Tr1 or Tr2 to generate the sub-transitions.
+Tr1 is applied on the leaf (pLTS) simply take the pLTS transitions through the given start state and add the predicate in pNet to generate the open transition.
+When applying Tr2 we use two methods, combining and matching, to generate the new predicate of the open transitions in a hierarchical manner
+as in this case the composition the subnets brings more constraints for synchronizing behaviors. 
+Beside the new generated predicate, the predicates from the subnets are also added as a conjunction with those new predicates.
+
+
 
 \begin{algorithm}
 \caption{Open Automaton Generation}
@@ -1078,17 +1056,8 @@ result on our  example.
 \end{algorithmic}  
 \end{algorithm}
 
-\subsection{The Generation of Open Automata}
 
-\QIN{
-We have already have the sketch of computing the open automata \cite{???}.
-While in our implementation we does not build explicitly a proof tree for every open transition.
-Instead, we repeat applying the Tr1 or Tr2 to generate the sub-transitions.
-Tr1 is applied on the leaf (pLTS) simply take the pLTS transitions through the given start state and add the predicate in pNet to generate the open transition.
-When applying Tr2 we use two methods, combining and matching, to generate the new predicate of the open transitions in a hierarchical manner
-as in this case the composition the subnets brings more constraints for synchronizing behaviors. 
-Beside the new generated predicate, the predicates from the subnets are also added as a conjunction with those new predicates.
-}
+
 
 %Algorithm 1 shows the main structure of the algorithm: 
 %the computation repeats applying Tr1 and Tr2 to build all possible
@@ -1096,84 +1065,8 @@ Beside the new generated predicate, the predicates from the subnets are also add
 %synchronisation vectors. The resulting open transitions are checked
 %for satisfiability by the SMT solver.
 
-%From these, we compute
-%the open automaton of an open pNet. We explain here our main
-%implementation choices.
-%:
-%\begin{itemize}
-%  \item Steps 2a-2b are merged, applying Tr2 from the
-%premisses OTs from subnets to generate OTs without
-%explicitely constructing the deduction tree.
-%  \item We define a general naming schema for implementing the fresh 
-%and clone functions with more structure than a simple global name
-%generator. It ensures unicity, but builds names
-%readable enough for debugging purpose.
-%  \item Besides that, we also have designed a management of state variables and
-%    assignments throughout the whole computation.
-%%%   \item Satisfiability check is done only at
-%%% top level of the open-transition construction. An alternative would be
-%%% to submit the satisfiability check to the SMT solver at each level of
-%%% the hierarchical OT construction, potentially reducing the overall number of
-%%% combinations. But the submission to the SMT engine is costly, and more
-%%% complexity analysis is required before deciding if this would be
-%%% worthwhile. 
-%\end{itemize}
-%
-%In the following sections, we detail:
-%\begin{itemize}
-%\item The structure of fresh variable names.
-%\item The details of the implementation for step 2a-2b, refined into:
-%  \subitem combining all possibilities of subnets activity/inactivity,
-%  \subitem matching each combination with synchronization vectors.
-%\item Management of local variables of pLTSs.
-%\item Pruning unsatisfiable OTs using the Z3 SMT solver.
-%\end{itemize}
 
-%\TODO{I have not yet been in details through the next section, but we
-%  need to shorten them...}
 
-% \TODO{Xudong: move here a (new version) of the alogorithm loplevel sketch}
-% \QIN{[Move to the head of Section 5.]}
-
-%% \QIN{
-%% The detail about the application of the Tr1 and Tr2 have not considered in the sketch, but it is an  
-%% important part in the implementation of open transition generation. 
-%% Each time we apply Tr1, there is not too much predicate terms, so do the other parameters, needed 
-%% to be generated. 
-%% When it comes to applying Tr2, the computation becomes complicated because it doing some composition of the subnets.
-%% }
-
-%\paragraph{Combining and Matching using TR2}
-%Our implementation does not build explicitly the proof trees for each
-%open transition, but instead : [Combining] enumerate all possible combinations of
-%pLTS transition (using TR1) and each synchronization vector choice
-%(TR2); [Matching] build the corresponding transition, and in particular
-%its predicate, in a hierarchical manner.
-%Each time we apply Tr2, we build a predicate as a conjunction of two
-%parts. The first part, which is the simpler one, composes the
-%predicate from the 
-%subnets and the guard from transitions in sub-pLTS or synchronization
-%vectors. The second part is the conjunction of equations generated
-%during matching the subnets' behaviors with the synchronization
-%vectors. 
-
-%Note that it is simple to collect required terms in the first
-%part while in the second part we need to find out all the possible
-%conjunction forms. We present here a algorithm divided in two
-%step. Combining enumerates all the possible combinations of the
-%working status. Matching synchronizes the subnets according to
-%synchronization vectors to generate possible predicates.  
- 
-%Combining is to generate all the possible matchings of the subnets' OTs (open transitions). The result list of the matched tuples called *combination*.
-% 1. Initialize the result list of OT tuples.
-% 2. Get one list of OTs. It's same as get OTs of one subnet.
-% 3. Add *null* into the list, it means this subnet does not work this time.
-% 4. Combine the rest subnets' OTs. Get the combination of the rest OTs.
-% 5. If there are OTs of the chosen list not be chosen, choose one OT.
-%      1. If there are tuples of the combination not be chosen, choose one tuple.
-%          1. Add the chosen OT into the tuple.
-%          2. Add the tuple into the result list, then do the recursion.
-% 6. Return the result list.
 
 %We first conduct combining. For each subnet, we enumerate all the
 %possible cases of its working status. The result action of a pLTS or a
@@ -1227,64 +1120,6 @@ Then the combination $\texttt{COMB}$, a set of n-tuples, can be computed as an o
 %managed by adding a $null$ into the $L_{ot}$.
 
 
-% Mixing is to match the combination of the subnets' open transitions, hole behaviors and result action with the SV (synchronization vector) to generate the possible predicates of the OT (open transition). At the same time, other parameters of the OT (global state, subnets' transitions, result action...) are also generated. Then the possible OTs of the pNet can be achieved. 
-% 1. Initialize the combination through the method *combineOpenTransitions( )*.
-% 2. Initialize the result list.
-% 3. Get the number of subnets and holes. They are used to decide how many element of the SV should be matched with them.
-% 4. For all tuples of the combination.
-%      1. Invoke the *clone( )* method to generate the fresh SV.
-%      2. Match the elements of the tuple with the elements of the SV. If there is a *null* matched with a *not null* action, filter this matching. Add the result expression and the predicate of the subnets into the predicate. Generate the target global state correspondingly.
-%      3. Match the hole behaviors with the elements of the SV. The hole behavior could be *null*. Add the result expression into the predicate.
-%      4. Match the result action with the result action of SV. Add the result expression into the predicate.
-%      5. Add the predicate into the OT. Store the OT in the result list.  
-% 5. Return the result list of all the possible OTs.
-
-
-%We now come to the matching using combinations from the previous step, together with hole behaviors and the result action, to match with the synchronization vectors. 
-%
-%Algorithm 2 shows the algorithm matches combination $L_C$, hole
-%behaviors $B$ with synchronization vectors $SV$. Remember variables
-%inside a synchronization vector are consider local to the vector; so every time we choose a synchronization vector $sv$ from $SV$ for matching, we clone it and use the cloned one $sv'$. We use the definition declared before to construct all the possible predicates but the algorithm has not checked the correctness of these predicates. 
-%
-%There is one mismatch case we can easily detect here, that is its
-%working status:
-%At any time an action $e_1$ matching with an element $e_2$ from
-%synchronization vector, the pair $(e_1, e_2)$ must be checked: if both
-%$e_1$ and $e_2$ are $null$ or $not\ null$, then it continues to
-%generate a new term of predicate. Otherwise, it is intuitive that the
-%working status coming from the subnet $e_1$ is different from what
-%asked by the synchronization vector $e_2$, then this case is filtered
-%out.
-
-%\begin{algorithm}
-%\caption{Matching}
-%\begin{algorithmic}[1]
-%%\Require 
-%%The combination of subnets' open transitions $L_C$;
-%%The behaviors of the holes $B$;
-%%The set of synchronization vectors $SV$.
-%%\Ensure 
-%%The list of all the possible open transitions generated $L_{ot}$.
-%\State Initial an empty result list $L_{ot}$;
-%\For{each $C \in L_C$}
-%	\For{each $sv \in SV$}
-%		\State Clone the $sv$, the result is $sv'$;
-%		\State Generate the fresh result action $ra$;
-%		\State Combine $C, B, ra$ as a new vector $v$;
-%		\For{each $(e_1 \in v )\&\& (e_2 \in sv')$}
-%			\If{$(e_1\ is\ null\ \&\&\ e_2\ is\ not\ null)\ ||\ (e_1\ is\ not\ null\ \&\&\ e_2\ is\ null)$} 
-%			\State Skip;
-%			\Else ~ Add $(e_1 = e_2)$ into the $Pred$;
-%			\EndIf
-%		\EndFor
-%		\State Generate the result open transition $ot$ with $Pred$;
-%		\State Add the $ot$ into $L_{ot}$;
-%	\EndFor
-%\EndFor 
-%\State \Return $L_{ot}$;
-%
-%\end{algorithmic} 
-%\end{algorithm}
 
 \paragraph{Matching:} 
 \QIN{$Given a synchronization vector ~ SV_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v' , G_k , k\in K$, and a tuple
@@ -1304,18 +1139,9 @@ v_i=a'_i\land \, b_j=b'_j \land v=v' \land G_k
 \end{array}$$
 which is exactly the new part of predicate for one possible result.
 }
-%Algorithm 3 shows the algorithm matches
-%combination $L_C$, hole behaviors $B$ with synchronization vectors
-%$SV$ according to the definition of the predicate declared before. We
-%clone the $sv$ using the fresh function to generate a new $sv'$ with
-%fresh variables.The mismatch on working status is easy to detect so we
-%filter them in the algorithm through checking the matching elements
-%$e_1$ and $e_2$. 
-%Then we build the resulting open transition. Satisfiability of the
-%predicate is not checked at this level, but only later, at the
-%toplevel of the pNet.
 
-\paragraph{Filtering:} 
+\paragraph{Filtering:}
+\TODO{Eric: 3 levels of filtering, explain our choice}
 
 \subsection{Management of state variable assignments}
 %The pLTS contains some variables in each of its states (state
@@ -1449,12 +1275,11 @@ the solver can use specific properties of each action algebra.
 
 \subsection{Translation to SMTlib}
 
+\TODO{Eric: Replace by (excerpts of) the formal version, from appendix, and reduce to less than one page}
+
 \paragraph{Presentation of algebra}
 
-\TODO{Improve this, inserting the main definition from the ``Checker'' document}
-%% Open pNet framework provides us
-%% with a model able to express the semantics of many different algebras
-%% or languages. In particular,
+
 As seen in section
 \ref{section:pnets}, the \emph{term algebra} used to express the
 action expressions and data parameters is left open in
@@ -1619,11 +1444,12 @@ gives the assertion:\\
 \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
 
 \subsection{Simplification of Predicates}
-
+\ERIC{: motivated, add refs, and an abstract presentation of stuff from pages 19-20}
+  
 \subsection{Result of the running example}
 \label{section:full-result}
 
-\TODO{Update: we have 11 satisfiable OTs here}
+\TODO{Xudong: Update: we have 11 satisfiable OTs here}
 Our tool builds 30 open
 transitions, out of which 27 are detected unsatisfiable by Z3, we
 get only 3 results left; the resulting open automaton is shown in
@@ -1976,8 +1802,6 @@ Action.addConstructor("Receive",
 Action.addConstructor("Tau");
 \end{lstlisting}
 
-\TODO{[DONE][Xudong]: Give an example of defining $Tau$ and $Emit$ using the (new
-  version of) the API}
 
 \paragraph{Expressions}
 Once an algebra presentation is defined, we can construct expressions
@@ -2041,7 +1865,8 @@ The purpose of this section is to define static semantic notions that
 will guarantee that the translation to the SMT language will be
 correct, i.e. will not yield errors at runtime. This includes
 well-formness (all sorts, operators, variables are defined, and
-expressions respect the arity of operators), and typing rules. 
+expressions respect the arity of operators), and typing rules.
+\TODO{Eric: refer in the appendix header}
 
 \begin{definition}
   Given a presentation $\EPres$ (possibly extended) and an environment $\EEnv$:
@@ -2165,16 +1990,16 @@ the context of an open-transition of this pNet.
 %\end{table}
 
 \smallskip
-\ERIC{My plan here is to provide the translation principles as some
-  high-level pseudo code, together with precise definition of the
-  translation functions of a presentation+environment, and of a
-  predicate (including expressions)}
+%% \ERIC{My plan here is to provide the translation principles as some
+%%   high-level pseudo code, together with precise definition of the
+%%   translation functions of a presentation+environment, and of a
+%%   predicate (including expressions)}
 
 In the following definitions, we use abstract functions corresponding to
 SMTlib/Z3 constructs. In practice they can be implemented either as
 SMTLib scripting programs, or as calls to the Z3 java API.
 
-\subsubsection{Presentation Translation}
+\subsubsection{Presentation Translation} \TODO{Duplicate ?}
 We define here the translation of the algebra presentation, extended
 with the constant operators collected from the pNet. It produces the
 declaration of sorts (excepted Bool and Int) with their constructors
@@ -2189,10 +2014,6 @@ Define the (strict) order "is-using" between sorts $S1 is-using S2$ iff $S2$
 occurs as the sort of one argument in the constructors of $S1$.
 \end{definition}
 
-\TODO{[Xudong: this is certainly obsolete?] At the same time, we have
-  several internal lists (actually hash 
-  maps) \texttt{exprs}, \texttt{funcDecls}, \texttt{sortDatatypes} to
-  store the generated Z3 objects with their names for later proofs.} 
 
 \begin{lstlisting}
 Let Pres = <Sorts, Constrs, Ops> an extended presentation
@@ -2318,6 +2139,8 @@ well-formed and well-typed
 \end{lstlisting}
 
 \noindent
+\TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for boolean expressions, + assignments}
+
 \begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
 		\hline\specialrule{0em}{3pt}{3pt}
 		\multicolumn{2}{l}{Variables}
@@ -2513,7 +2336,7 @@ gives the assertion:\\
 
 \subsection{Simplification of Predicates}
 \TODO{[Eric]: Motivate, and refs  -- reduce the section here to approx
-  half a page} 
+  half a page (from the next two pages...)} 
 
 \subsection{Elimination of intermediate variables}
 
@@ -2632,53 +2455,8 @@ Rule RL-1 applies on when the result action of subnets matching other arguments 
 Rule RL-2 shows that if the result of the SV is also in its arguments, we can straightly get an equation between the subnet action and  the result action. RL-3 is the situation that there is an expression instead of a variable contains an intermediate argument. The substitution will only occur on the argument.
 Actually, what happened is similar if there is a hole behavior instead of a subnet result action attending in the equation. So we get RL-4 and RL-5. However, every hole behavior should be kept through out the computing. That's why there no rule similar to the RL-1 for hole behaviors.
 }
-<<<<<<< HEAD
-
-\subsection{Result of the running example}
-\label{section:full-result}
-
-\TODO{Update: we have 11 satisfiable OTs here}
-Our tool builds 30 open
-transitions, out of which 27 are detected unsatisfiable by Z3, we
-get only 3 results left; the resulting open automaton is shown in
-Fig. ~\ref{schema:lotos-result}, together with its open transitions.
-
-The resulting open transitions represent all the
-possible movements of the LOTOS example.
-What can be observed is any actions of the process $P$ from the beginning, until $P$ performs a $\delta(x)$ and the value of
-$x$ is transmitted to the $acc(x);Q$ giving out a silent action. Such behavior is performed by the $ot_1$ then $ot_2$. 
-Then it keeps presenting the behavior of $Q$, as seen in $ot_3$. 
-%The $ot_1$ transition means that the actions of the process $P$ could
-%be transmitted out, until $P$ performs a $\delta(x)$ and the value of
-%$x$ is transmitted, through transition
-%$ot_2$. The other 3 open transitions shows the behaviors of the
-%process $Q$ while the $ot_3$ and $ot_4$ won't be performed as the
-%controller has already set the value $s_0$ to 1 in the previous
-%action. 
-
-\begin{figure}[t]
-   \centerline{\includegraphics[width=12cm]{XFIG/BIPresult-ArchFailureTimerMax}}
-   \caption{Open Automaton\TODO{syntax could be better...}}  \label{schema:resultOA}
- \end{figure}
 
 
-\begin{figure}[h]
-%  \centerline{\includegraphics[width=5cm]{XFIG/LOTOSresult}}
-  \TODO{Detaisl of some OTs of the FailureTimer}
-  
-$\begin{array}{@{}r@{}l@{}}
-    ot_1  = &\openrule{\{0 \xrightarrow{l}_{C_1} 0\}, ~~\{\xrightarrow{hb_{1}}_P\}, ~~[s_0=0 \!\land\! hb_{1} \neq \delta(x) \!\land\! v_1=hb_{1}]}
-    {\ostate{00} \xrightarrow{v_1} \ostate{00}}\\
-  \end{array}$
-
-$\begin{array}{@{}r@{}l@{}}
-    ot_2  = &\openrule{\{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~\{\xrightarrow{hb_{2}}_P\}, ~~[s_0=0 \!\land\! hb_{2}=\delta(x) \!\land\! v_2=\underline{\delta(x)}], ~~\{s_0 \xleftarrow{} 1\}}
-    {\ostate{00} \xrightarrow{v_2} \ostate{01}}\\
-  \end{array}$
-  
-
-\caption{The open automaton of the LOTOS formula}  \label{schema:lotos-result}
-\end{figure}
 
 %\subsubsection{Result of CCS example}
 %\QIN{
@@ -2707,89 +2485,6 @@ $\begin{array}{@{}r@{}l@{}}
 %% To sum up, from the pNets encoding the formulas of given algebra, which inputed by the user, we can exactly construct
 %% the open automaton for them. 
 %% }
-
-
-\section{Conclusion and Discussion}
-\label{section:conclusion}
-
-In this paper we presented the algorithm for generating an open
-automaton representing the semantics of an open pNet, and we described
-the implementation of the
-algorithm. Our implementation includes two main parts. First, we
-compute all the possible open transitions. The actions in pLTS and
-hole behaviors are composed in the algorithm while the generation of
-predicate need to match the combinations of the subnets with the
-synchronization vectors. Some of the open transitions obtained at this
-intermediate step, constructed in a structural manner from all
-possible combinations of possible logical predicates, may
-contain predicates which do not represent any possible concrete
-instantiations. 
-To get rid of these useless transitions, we use the SMT solver Z3 for checking the
-satisfiability of the predicate in each open transition. In
-order to do that, we encode into Z3 the action algebra presentation,
-the a representation of the predicates, before submitting them to the
-Z3 solver. We implemented our algorithm in the VerCors platform and use some
-running examples, encoding expressions from various process algebras, to test the
-algorithm. Our use-cases show that our encoding
-identifies successfully all unsatisfiable open transitions and that
-the resulting automaton reflects correctly the expected 
-movements of the encoded process expressions.   
-
-Among the questions arising during this work, an important one is the
-efficiency of Z3 for our needs. Z3 is famous for being very fast for
-solving very large sets of assertions, and this could be important for
-us. But we encountered  some problems during the implementation the
-checking method using Z3. For example, if the $functions$ and the
-$datatypes$ part of the algebra presentation we submit to the solver
-are independent with each other, then checking the $assertions$ is a
-simple work. However, $functions$ on recursive $datatypes$ make it
-more complex, some special rules might be defined by user for the
-induction. Also, we need more evidence that dealing with more complex
-action algebras, that would involve axiomatizing their data structures
-into Z3 theories, will indeed allow us to decide validity of
-predicates.
-We may also try other automatic theorem provers, depending on the structure of the proofs we need.
-
-\TODO{Change perspective: we are working on the formal extensino of
-  BIB architectures, and their semantics in terms of pNets. Then
-  bisimulation and model-checking principles adapted to open pNet
-  systems are under development}
-
-Naturally, our next goals after the generation of the open automata
-will be to model-check, and to check equivalence of  pNets. While
-model-checking open automata (with a suitable logic including
-predicates on data) seems easy to define, equivalence checking is more challenging.
-In previous paper, we
-have already found the FH-bisimulation, inspired by~\cite{deSimone85} as a
-suitable definition. But usual approaches of bisimulation by partition
-refinement does not work easily with symbolic transitions. In a first
-step we may want instead to define and implement an algorithm for
-checking that a given equivalence relation between open automata 
-states is indeed a FH-Bisimulation. Finding automatically a
-bisimulation relation or the most general bisimulation will be more
-challenging. It appears also that when comparing different pNets with
-different structure, strong bisimulation will be too strong a notion,
-and that we will have to define proper notions of weak equivalence or
-refinements. 
-
-Before that work, we need to reconsider the result open transitions
-from our algorithm. The ideal
-result that we showed in the bottom part of
-Fig.~\ref{schema:lotos-result} is not the one generated by the algorithm,
-because the original one contains many intermediate
-variables, such as fresh local variables of synchronization
-vectors, and fresh result variables of intermediate open transitions.
-Such intermediate variables come from the way predicates are
-generated, and depends on the particular structure of the pNet. But
-they are not significant in the resulting behavior, and should be
-eliminated before comparing such behavior with another pNet.
-To eliminate the intermediate variables in the predicate, we want to define
-the set of the significant variables that we won't eliminate: the
-local variables of pLTS transitions, the hole behaviors and the result
-action at the top level.
-The result of the elimination will be simpler predicates, that can be
-successfully compared (e.g. by Z3) within the bisimulation checking
-algorithm.
 
 
 
