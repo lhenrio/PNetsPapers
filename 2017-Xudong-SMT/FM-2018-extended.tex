@@ -119,18 +119,14 @@
 %\usepackage{algpseudocode} 
 
 
-
-
-
-
 \title{Using SMT engine to generate Symbolic Automata\thanks{This work was partially 
 funded by the Associated Team FM4CPS
   between INRIA and ECNU, Shanghai}}
-\author{ Xudong Qin\inst{2,3}  \ \ \  Eric Madelaine\inst{1,2}
-  \ \ \  Min Zhang\inst{3}} 
-\institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
-	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
-\and Shanghai Key Laboratory of Trustworthy Computing, ECNU, China}
+\author{ Xudong Qin\inst{1,2}  \ \ \  Simon Bliudze\inst{3} \ \ \ Eric Madelaine\inst{1}
+  \ \ \  Min Zhang\inst{2}} 
+\institute{Universit\'e C\^ote d'Azur, Inria, CNRS, I3S, 06902 Sophia Antipolis, France
+        \and Shanghai Key Laboratory of Trustworthy Computing, ECNU, China
+\and INRIA Lille }
 \date{}                                           % Activate to display a given date or no date
 
                           % Activate to display a given date or no date
@@ -145,20 +141,25 @@ funded by the Associated Team FM4CPS
 
 
 \begin{abstract}
-  \TODO{not good for a FM, (to be rewriten by Eric)}
+Open pNets are used to model the behavior of open systems, both
+synchronous or asynchronous, expressed in various calculi or
+languages. They are endowed with a symbolic operational semantics in
+terms of so-called ``Open Automata''. This allows to check properties of
+such systems in a compositionnal manner. 
+We implement an algorithm computing this semantics,
+building predicates expressing the synchronization conditions
+between the events of the pNet sub-systems. Checking such
+predicates requires symbolic reasoning over first order logics, but
+also over application-specific data. We use the Z3 SMT engine to check
+satisfiability of the predicates, and prune the open automaton of its
+unsatisfiable transitions.
+As an industrial oriented use-case, we use so-called "architectures"
+of BIP systems, that have been used to specify the control software of
+ESA microsatellites. We use pNets to encode BIP architectures,
+extended with explicite data in synchronisations, and we compute their
+open automaton semantics. Cet automate peut alors être utilisé pour
+monter les propriétés comme, \TODO{ par exemple ..}
 
-  Open pNets are used to model the behavior of open
-  synchronous or asynchronous systems expressed in various calculi
-  or languages. They are endowed with a symbolic operational semantics
-  in terms of so-called ``Open Automata''. We implement an algorithm
-  computing this semantics, and building predicates expressing the
-  synchronization conditions allowing some combination of events in
-  the pNet system. Checking such predicates requires symbolic
-  reasoning over first order logics, and specific functions of each
-  action algebra. To reduce the complexity of the generated open
-  automata, we use the Z3 SMT engine to check satisfiability of the
-  predicates, and minimize the number of significant symbolic
-  transitions.
   
 
 \end{abstract}
@@ -552,75 +553,25 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 \end{definition}
 
 
-%The preceding definition relies on the auxiliary functions below:
 
-%\begin{definition}[Sorts, Holes, Leaves of pNets]
-%  \begin{itemize}
-%  \item The sort of a pNet is its signature, i.e. the set of actions it can
-%perform. In the definition of sorts, we do not need to distinguish
-%input variables (that specify the dataflow within LTSs), so for
-%computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in K}$ is the parallel substitution 
-%operation.} to remove the
-%\emph{input marker} of variables. Formally:
-%\[
-%\begin{array}{l}
-%\Sort(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
-%x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-%		J}\rangle} s'\in \to \} \\ \Sort(\mylangle
-%\set{\pNet}, \set{\symb{S}}, \set{\symb{SV}}\myrangle) =\{\alpha'_k |\, \alpha_j^{j\in J_k}\to\alpha'_k\in\set{\symb{SV}}\}
-%\end{array}
-%\]
-%
-%\item
-%The set of holes of a pNet is defined inductively; the sets of holes
-%in a pNet node and its subnets are all disjoint:
-%  \[\begin{array}{l}
-%\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
-%\Holes(\mylangle \pNet_i^{i\in I}\!,S_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) =J\cup{\displaystyle \bigcup_{i\in I}\Holes(\pNet_i)}\\
-%\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
-%\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  \Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
-%\end{array}\]
-%\item
-%The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined inductively as:
-%\[\begin{array}{l}
-%\Leaves(\mylangle S,s_0, \to\myrangle) \!=\! \{ \mylangle S,s_0, \to\myrangle \}\\
-%\Leaves(\mylangle \pNet_i^{i\in I}\!,S_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \bigcup_{i\in I}\Leaves(\pNet_i)}
-%\end{array}\]
-%\end{itemize}
-%\end{definition}
-%
-%A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
-%is said to be \emph{open}.
-
-
-%% \begin{figure}[t]
-%% \begin{minipage}{6.1cm}
-
-%%   \includegraphics[width=\linewidth]{XFIG/Enable1}
-%%   \\[1.3ex]
-%%  \includegraphics[width=\linewidth]{XFIG/Enable2}
-%%   \caption{Two pNet encodings for  Enable }  \label{schema:enable-pnets}
-%% \end{minipage}
-%%   \hspace{2mm}
-%% \begin{minipage}{6cm}
-%%   \includegraphics[width=\linewidth]{XFIG/P-QR}
-%%   \caption{Composed pNet for ``P>>(Q>>R)''}  \label{schema:enable-composed}
-%% \end{minipage}
-
-%% \end{figure}
 
 
 \section{BIP architectures, and their encodings into pNets}
 \label{section:BIParchitectures}
+\TODO{Simon: can you do this in less than one page ? If you prefer,
+  merge with ``Running example'' may be easier to describe the syntax}
 
 \section{Running example}
 \label{section:FailureTimerMax}
+\TODO{1.5 page including figures ?}
 
-Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
-many examples of pNets, encoding
-operators of various classical process algebras, or more complex
-synchronization structures in distributed or parallel languages.
+%% Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
+%% many examples of pNets, encoding
+%% operators of various classical process algebras, or more complex
+%% synchronization structures in distributed or parallel languages.
 
+\TODO{Should have here both the original BIP drawing (Simon), and the
+  pNet encoding (fig by Eric)}
 
  \begin{figure}[t]
    \centerline{\includegraphics[width=12cm]{XFIG/BIPspec-ArchFailureTimerMax}}
@@ -730,16 +681,15 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 \\~~\land
 \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
 \end{array}\]
-%% In any other case (if the action families do not match or if there is no valuation of
-%% variables such that the above formula can be ensured) the predicate is undefined.
+
 
 %% This definition is not constructive but it is easy to build the
 %% predicate constructively by brute-force unification of the sub-pNets
 %% actions with the corresponding vector actions, possibly followed by a simplification
 %% step. 
 
-%\begin{example}\emph{An open-transition.}
-%  \label{OT:lotos-composed}
+\begin{example}\emph{An open-transition.}
+  \label{OT:lotos-composed}
 %
 %The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
 %controllers and 2 holes. We will show its full open Automaton in
@@ -753,7 +703,7 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 %                       \{s_0 \xleftarrow{} 1\}     
 %                      }
 %     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
-%\end{example}
+\end{example}
 %
 %The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
 %
@@ -767,6 +717,9 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 
 
 \paragraph{Structural Semantic Rules:}
+\TODO{Do we push the rules in the appendix, and leave only a short high
+  level desciption here ?}
+
 Now we build the semantics of an open pNet as an open automaton where
 LTSs are the pLTSs at 
 the pNet leaves, and the states are structured as in
@@ -1020,162 +973,6 @@ to TR2. This yields a final $\underline{\delta(x)}$ transition. The
 deduction tree in the figure shows how the predicates are generated in
 this process.  
 
-%\paragraph{Fresh variables management.}
-
-% This will be implemented within the open-automaton generation algorithm,
-% e.g. using name generation using a global counter as a suffix.
-
-% \TODO{To be move  by Xudong}
-
-%\subsection{Presentation of algebra}
-%One of the important goal of the Open pNet framework is to provide us
-%with a model able to express the semantics of many different algebras
-%or languages. In particular, as we have seen in section
-%\ref{section:pnets}, the \emph{term algebra} used to express the
-%action expressions and the data in their parameters is left open in
-%the pNet formalization.
-%
-%So, for a given language, we now need to specify its data and action
-%domains, giving them an abstract syntax (sorts, constructors, operators,
-%and predicates). We call this a \emph{Presentation}.
-%We also define a concrete syntax, that will be used for
-%pretty-printing, but also for translating the presentation, and the
-%predicates, into Z3 syntax (we shall detail this translation in
-%section \ref{section:pruning}).
-%
-%An algebra presentation contains:
-%\begin{itemize}
-%	\item Sorts: Constants sets of the algebra or types of the data
-%          and actions. In every presentation, sorts for integer and
-%          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
-%several others for the types of data parameters. In the LOTOS example,
-%we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
-%
-%	\item Operators: Operators used to construct action
-%          expressions (including their data parameters); they are
-%          constructors of data and action sorts, but also predicates
-%          over these objects. For instance, in our LOTOS example, we
-%          could have two constructor functions ``$DELTA$'' and ``$ACC$''
-%          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
-%          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
-%        \item Constants: The satisfiability solver need to know which
-%          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
-%          $r$ of the controllers in running example). 
-%          For a given pNet system, a sort $Action$ will include all
-%          these constants.
-%\end{itemize}
-
-
-%We need introduce operators for building expressions, of both action
-%and data sorts, when encoding the 
-%algebra into pNets. So that is needed to know about the input and
-%output of the operators used in the expressions from those
-%algebra. The input and output should belong to the sorts of the
-%pNet. When there are $k$ sorts in this pNet, the structure of a
-%$n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
-%\rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
-%% We  introduce operators for building expressions, either action
-%% expressions or predicate terms, when encoding the algebra into
-%% pNets. The operators here are treated as functions, with the sorts of
-%% the pNet acting as the types of their input and output. 
-%% For instance, in our LOTOS running example, we use a function ``$ACT$'' action to construct the action expression $\delta(x)$ and $acc(x)$. We can define the operator as a binary operator with the format like:
-
-%%  \[\OTvar{ACT:}\OTvar{< Action, Int >} \rightarrow \OTvar{Action .} \]
-
-
-%\paragraph{Implementation of the expression meta-model}
-% \TODO{maybe we could remove this paragraph (and the figure)}
-%The VerCors platform uses Ecore and EMF to define the structure of
-%both pNets and actions algebras. There exists a predefined set of
-%action and data expressions classes, including boolean, integer and
-%action expressions, with predefined variables, literal (constants),
-%and operators. Operators can be categorized into unary, binary and
-%N-ary operators.
-%The original version of VerCors did not allow to extend these classes,
-%we have modified its architecture so that a user can extend them,
-%defining more elements for his specific algebra.
-%
-%In Fig~\ref{schema:expression-pnets}, we show the Expression class we
-%improved, including extensions for CCS and LOTOS.
-%
-%\begin{figure}[t]
-%  \includegraphics[width=\linewidth]{XFIG/Expression}
-%  \caption{The architecture of Expression class}  \label{schema:expression-pnets}
-%\end{figure}
-
-%\TODO{give an example of user-defined sorts/operators, and tell that
-%  you will give it's translation into Z3 in section 5.4}
-
-% \TODO{To be move / replace by Xudong}
-
-%\subsection{Computing and using open automata}
-%In this section we present an algorithm to construct the open
-%automaton representing the behavior of an open pNet, and show
-%under which conditions this automaton is finite.
-%
-%\begin{alg}[behavioral semantics of open pNets: Sketch]
-%This is a standard residual algorithm over a set of open-automaton
-%states, but where transitions are open transitions
-%constructively ``proven'' by deduction trees.
-%
-%1) Start with a set of unexplored states containing the initial state
-%of the automaton, and an empty set of explored states.
-%
-%2) While there are unexplored states:
-%
-%2a) pick one state from the unexplored set and add it to the explored
-%set. From this state
-%build all possible deduction trees by application of the structural
-%rules Tr1 and Tr2, using all applicable combinations
-%of synchronization vectors.
-%
-%2b) For each deduction trees, extract the resulting
-%open-transition.
-%Its predicate is checked (using Z3) for  satisfiability. If it is
-%unsatisfiable, the resulting OT is discarded. This will minimize the
-%number of resulting transitions. 
-%
-%2c) For each open-transition,  add the transition in the outgoing transitions of
-%the current state, and add the
-%resulting state in the unexplored set if it is not already in the
-%explored set.
-%
-%3) Finally a reachability check could potentially
-%prune the state space.
-%
-%\end{alg}
-
-%% \TODO{ERIC: after we move / replace Algoriithm 1, this will not make sense any longer. I will replace it with a more informal paragraph, in section 5}
-
-%% To have some practical interest, it is important to know when this
-%% algorithm terminates. The following theorem shows that an open-pNet
-%% with finite synchronization sets, finitely many leaves and
-%% holes, and each pLTS at leaves having a finite number of states and
-%% (symbolic) transitions, has a finite automaton. The proof can be found
-%% in \cite{henrio:Forte2016}. 
- 
-
-%% \begin{theorem}[Finiteness of open-automata.]\\
-%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%%   J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
-%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-%%   are finite, and if
-%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-%% has a finite number of state variables, then Algorithm 1 terminates
-%% and produces an open automaton 
-%% $\mathcal{T}$ with finitely many states and transitions.
-
-
-% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
-%     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%   J}$,
-% build its semantics as in algorithm 1.
-
-% We have:
-
-% $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
-%   \to finite{(\mathcal{T})}$$
-% \end{theorem}
 
 \section{Implementation}
 \label{section:implementation}
@@ -2277,6 +2074,8 @@ gives the assertion:\\
 \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
 
 \subsection{Simplification of Predicates}
+\TODO{[Eric]: Motivate, and refs  -- reduce the section here to approx
+  half a page} 
 \QIN{
 We apply several structural rules to generate the predicates restricting the composition of the subnets by synchronization vectors.
 The predicates may contain some redundancy if there are variables in middle level are matching other variables both in lower and higher level at the same time. 
@@ -2561,6 +2360,164 @@ algorithm.
 \appendix
 
 \section{More details on the generation algorithm}
+
+%\paragraph{Fresh variables management.}
+
+% This will be implemented within the open-automaton generation algorithm,
+% e.g. using name generation using a global counter as a suffix.
+
+% \TODO{To be move  by Xudong}
+
+%\subsection{Presentation of algebra}
+%One of the important goal of the Open pNet framework is to provide us
+%with a model able to express the semantics of many different algebras
+%or languages. In particular, as we have seen in section
+%\ref{section:pnets}, the \emph{term algebra} used to express the
+%action expressions and the data in their parameters is left open in
+%the pNet formalization.
+%
+%So, for a given language, we now need to specify its data and action
+%domains, giving them an abstract syntax (sorts, constructors, operators,
+%and predicates). We call this a \emph{Presentation}.
+%We also define a concrete syntax, that will be used for
+%pretty-printing, but also for translating the presentation, and the
+%predicates, into Z3 syntax (we shall detail this translation in
+%section \ref{section:pruning}).
+%
+%An algebra presentation contains:
+%\begin{itemize}
+%	\item Sorts: Constants sets of the algebra or types of the data
+%          and actions. In every presentation, sorts for integer and
+%          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
+%several others for the types of data parameters. In the LOTOS example,
+%we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
+%
+%	\item Operators: Operators used to construct action
+%          expressions (including their data parameters); they are
+%          constructors of data and action sorts, but also predicates
+%          over these objects. For instance, in our LOTOS example, we
+%          could have two constructor functions ``$DELTA$'' and ``$ACC$''
+%          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
+%          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
+%        \item Constants: The satisfiability solver need to know which
+%          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
+%          $r$ of the controllers in running example). 
+%          For a given pNet system, a sort $Action$ will include all
+%          these constants.
+%\end{itemize}
+
+
+%We need introduce operators for building expressions, of both action
+%and data sorts, when encoding the 
+%algebra into pNets. So that is needed to know about the input and
+%output of the operators used in the expressions from those
+%algebra. The input and output should belong to the sorts of the
+%pNet. When there are $k$ sorts in this pNet, the structure of a
+%$n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
+%\rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
+%% We  introduce operators for building expressions, either action
+%% expressions or predicate terms, when encoding the algebra into
+%% pNets. The operators here are treated as functions, with the sorts of
+%% the pNet acting as the types of their input and output. 
+%% For instance, in our LOTOS running example, we use a function ``$ACT$'' action to construct the action expression $\delta(x)$ and $acc(x)$. We can define the operator as a binary operator with the format like:
+
+%%  \[\OTvar{ACT:}\OTvar{< Action, Int >} \rightarrow \OTvar{Action .} \]
+
+
+%\paragraph{Implementation of the expression meta-model}
+% \TODO{maybe we could remove this paragraph (and the figure)}
+%The VerCors platform uses Ecore and EMF to define the structure of
+%both pNets and actions algebras. There exists a predefined set of
+%action and data expressions classes, including boolean, integer and
+%action expressions, with predefined variables, literal (constants),
+%and operators. Operators can be categorized into unary, binary and
+%N-ary operators.
+%The original version of VerCors did not allow to extend these classes,
+%we have modified its architecture so that a user can extend them,
+%defining more elements for his specific algebra.
+%
+%In Fig~\ref{schema:expression-pnets}, we show the Expression class we
+%improved, including extensions for CCS and LOTOS.
+%
+%\begin{figure}[t]
+%  \includegraphics[width=\linewidth]{XFIG/Expression}
+%  \caption{The architecture of Expression class}  \label{schema:expression-pnets}
+%\end{figure}
+
+%\TODO{give an example of user-defined sorts/operators, and tell that
+%  you will give it's translation into Z3 in section 5.4}
+
+% \TODO{To be move / replace by Xudong}
+
+%\subsection{Computing and using open automata}
+%In this section we present an algorithm to construct the open
+%automaton representing the behavior of an open pNet, and show
+%under which conditions this automaton is finite.
+%
+%\begin{alg}[behavioral semantics of open pNets: Sketch]
+%This is a standard residual algorithm over a set of open-automaton
+%states, but where transitions are open transitions
+%constructively ``proven'' by deduction trees.
+%
+%1) Start with a set of unexplored states containing the initial state
+%of the automaton, and an empty set of explored states.
+%
+%2) While there are unexplored states:
+%
+%2a) pick one state from the unexplored set and add it to the explored
+%set. From this state
+%build all possible deduction trees by application of the structural
+%rules Tr1 and Tr2, using all applicable combinations
+%of synchronization vectors.
+%
+%2b) For each deduction trees, extract the resulting
+%open-transition.
+%Its predicate is checked (using Z3) for  satisfiability. If it is
+%unsatisfiable, the resulting OT is discarded. This will minimize the
+%number of resulting transitions. 
+%
+%2c) For each open-transition,  add the transition in the outgoing transitions of
+%the current state, and add the
+%resulting state in the unexplored set if it is not already in the
+%explored set.
+%
+%3) Finally a reachability check could potentially
+%prune the state space.
+%
+%\end{alg}
+
+%% \TODO{ERIC: after we move / replace Algoriithm 1, this will not make sense any longer. I will replace it with a more informal paragraph, in section 5}
+
+%% To have some practical interest, it is important to know when this
+%% algorithm terminates. The following theorem shows that an open-pNet
+%% with finite synchronization sets, finitely many leaves and
+%% holes, and each pLTS at leaves having a finite number of states and
+%% (symbolic) transitions, has a finite automaton. The proof can be found
+%% in \cite{henrio:Forte2016}. 
+ 
+
+%% \begin{theorem}[Finiteness of open-automata.]\\
+%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%%   J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
+%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+%%   are finite, and if
+%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+%% has a finite number of state variables, then Algorithm 1 terminates
+%% and produces an open automaton 
+%% $\mathcal{T}$ with finitely many states and transitions.
+
+
+% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
+%     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+%   J}$,
+% build its semantics as in algorithm 1.
+
+% We have:
+
+% $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
+%   \to finite{(\mathcal{T})}$$
+% \end{theorem}
+
 \subsection{Algebra specification}
 \subsection{Term algebra: type system and static semantics}
 \subsection{Fresh variables}
