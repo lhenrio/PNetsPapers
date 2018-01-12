@@ -23,6 +23,8 @@
 %\usepackage{setspace}
 %\usepackage{indentfirst}
 \usepackage{amsmath,amssymb,amscd,mathrsfs}
+% \usepackage{array,booktabs,arydshln,xcolor}
+\usepackage{array,booktabs,xcolor}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 \usepackage{epsfig,color,subfigure,enumitem}
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
@@ -108,6 +110,16 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 \algnewcommand{\IfThen}[2]{\State \algorithmicif\ #1\ \algorithmicthen\ #2}% \IfThenElse{<if>}{<then>}
 \algnewcommand{\IfThenElse}[3]{\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}% \IfThenElse{<if>}{<then>}{<else>}
+%\DeclareMathOperator{\card}{card}
+%\DeclareMathOperator{\Flat}{Flat}
+\renewcommand{\P}{\mathcal P}
+\usepackage{listings}
+\lstset{basicstyle=\small}
+%\usepackage{algorithm} 
+%\usepackage{algpseudocode} 
+
+
+
 
 
 
@@ -1178,28 +1190,47 @@ In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
+%\begin{algorithm}
+%\caption{Open Automaton Generation}
+%\begin{algorithmic}[1]
+%
+%\State Initialize sets $U$, $E$ for unexplored/explored global states
+%$U$, $L$ for result OTs;
+%\While{!isEmpty(U)}
+%	\State Chose a global state $S$ in $U$; recursively applying Tr1 or Tr2 on the root node;
+%	\If{Subnet is a pLTS}
+%                \State Get the local state of the pLTS $s$ from $S$;
+%		\For{each transition $tr$ starting from $s$} Apply Tr1
+%			\State Build the corresponding
+%                        $OT$; store $OT$ in $L$; 
+%                 \EndFor
+%	\EndIf
+%	\If{Subnet is a pNet}
+%		\For{each $sv \in SV$} Apply Tr2
+%			\State Invoke $Combining()$ to generate the
+%                        combination of sub-transitions, $Matching()$
+%                        to match the combination with the $sv$; Store the result OTs in $L$; 
+%		\EndFor
+%	\EndIf
+%	\For{each target global state $T$ from $OT \in L$}
+%		\IfThen{$(!U.contains(T))\ \&\&\ (!E.contains(T))$}{Add $T$ into the $U$;}
+%	\EndFor
+%\EndWhile
+%\State Prune the open transitions in $L$ using the SMT solver;
+%\State \Return $L$;
+%
+%\end{algorithmic}  
+%\end{algorithm}
+
 \begin{algorithm}
 \caption{Open Automaton Generation}
 \begin{algorithmic}[1]
-
-\State Initialize sets $U$, $E$ for unexplored/explored global states
-$U$, $L$ for result OTs;
+\Require The pNet node P.
+\State Initialize sets $U$, $E$ for unexplored/explored global states, $L$ for result OTs;
 \While{!isEmpty(U)}
-	\State Chose a global state $S$ in $U$; recursively applying Tr1 or Tr2 on the root node;
-	\If{Subnet is a pLTS}
-                \State Get the local state of the pLTS $s$ from $S$;
-		\For{each transition $tr$ starting from $s$} Apply Tr1
-			\State Build the corresponding
-                        $OT$; store $OT$ in $L$; 
-                 \EndFor
-	\EndIf
-	\If{Subnet is a pNet}
-		\For{each $sv \in SV$} Apply Tr2
-			\State Invoke $Combining()$ to generate the
-                        combination of sub-transitions, $Matching()$
-                        to match the combination with the $sv$; Store the result OTs in $L$; 
-		\EndFor
-	\EndIf
+	\State Chose $S$ in $U$;
+	\State OT = MakeTransitions(P, S);
+        \State Store $OT$ in $L$; 
 	\For{each target global state $T$ from $OT \in L$}
 		\IfThen{$(!U.contains(T))\ \&\&\ (!E.contains(T))$}{Add $T$ into the $U$;}
 	\EndFor
@@ -1210,11 +1241,41 @@ $U$, $L$ for result OTs;
 \end{algorithmic}  
 \end{algorithm}
 
-Algorithm 1 shows the main structure of the algorithm: 
-the computation repeats applying Tr1 and Tr2 to build all possible
-combinations of behaviors of pLTS and Holes, through all possible
-synchronisation vectors. The resulting open transitions are checked
-for satisfiability by the SMT solver.
+\begin{algorithm}
+\caption{MakeTransitions()}
+\begin{algorithmic}[1]
+\Require The pNet node P; The start global state S.
+\State Initialize a list $l$, $L$ for sub-transitions/transitions.
+	\For{each Subnet in P}
+	\\ ~~~ $\setminus \setminus$ Recursively applying Tr1 or Tr2 on the sub-nodes.
+                \State Store MakeTransitions(Subnet, S) in $l$;
+	\EndFor
+	\For{each $sv \in SV$}
+		\State $comb = Combining(l)$;
+                 \State $ot = Matching(sv, comb, hole, v)$;
+                 \State Store $ot$ in $L$; 
+	\EndFor
+\State \Return $L$;
+\end{algorithmic}  
+\end{algorithm}
+
+\subsection{The Generation of Open Automata}
+
+\QIN{
+We have already have the sketch of computing the open automata \cite{???}.
+While in our implementation we does not build explicitly a proof tree for every open transition.
+Instead, we repeat applying the Tr1 or Tr2 to generate the sub-transitions.
+Tr1 is applied on the leaf (pLTS) simply take the pLTS transitions through the given start state and add the predicate in pNet to generate the open transition.
+When applying Tr2 we use two methods, combining and matching, to generate the new predicate of the open transitions in a hierarchical manner
+as in this case the composition the subnets brings more constraints for synchronizing behaviors. 
+Beside the new generated predicate, the predicates from the subnets are also added as a conjunction with those new predicates.
+}
+
+%Algorithm 1 shows the main structure of the algorithm: 
+%the computation repeats applying Tr1 and Tr2 to build all possible
+%combinations of behaviors of pLTS and Holes, through all possible
+%synchronisation vectors. The resulting open transitions are checked
+%for satisfiability by the SMT solver.
 
 %From these, we compute
 %the open automaton of an open pNet. We explain here our main
@@ -1264,18 +1325,18 @@ for satisfiability by the SMT solver.
 %% }
 
 %\paragraph{Combining and Matching using TR2}
-Our implementation does not build explicitly the proof trees for each
-open transition, but instead : [Combining] enumerate all possible combinations of
-pLTS transition (using TR1) and each synchronization vector choice
-(TR2); [Matching] build the corresponding transition, and in particular
-its predicate, in a hierarchical manner.
-Each time we apply Tr2, we build a predicate as a conjunction of two
-parts. The first part, which is the simpler one, composes the
-predicate from the 
-subnets and the guard from transitions in sub-pLTS or synchronization
-vectors. The second part is the conjunction of equations generated
-during matching the subnets' behaviors with the synchronization
-vectors. 
+%Our implementation does not build explicitly the proof trees for each
+%open transition, but instead : [Combining] enumerate all possible combinations of
+%pLTS transition (using TR1) and each synchronization vector choice
+%(TR2); [Matching] build the corresponding transition, and in particular
+%its predicate, in a hierarchical manner.
+%Each time we apply Tr2, we build a predicate as a conjunction of two
+%parts. The first part, which is the simpler one, composes the
+%predicate from the 
+%subnets and the guard from transitions in sub-pLTS or synchronization
+%vectors. The second part is the conjunction of equations generated
+%during matching the subnets' behaviors with the synchronization
+%vectors. 
 
 %Note that it is simple to collect required terms in the first
 %part while in the second part we need to find out all the possible
@@ -1310,34 +1371,41 @@ vectors.
 %
 %Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the remaining part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
 
-\begin{algorithm}
-\caption{Combining}
-\begin{algorithmic}[1]
-
-%\Require The list $TR$ of the open transition sets of the subnets. 
-%\Ensure The list of all the possible combinations of open transitions $L_C$.
-\State Initialize an empty combination list $L_C$;
-\State Extract a list of open transitions $L_{ot}$ from $TR$;
-\State Add $null$ to $L_{ot}$;
-\State Get the combinations $L'_C$ of the $TR$;
-\For{each $ot \in L_{ot}$}
-	\For{each $C' \in L'_C$}
-		\State Add $ot$ into $C'$ to get a new tuple $C$;
-		\State Add $C$ into $L_C$;
-	\EndFor
-\EndFor 
-\State \Return $L_C$;
-
-\end{algorithmic}  
-\end{algorithm}
+%\begin{algorithm}
+%\caption{Combining}
+%\begin{algorithmic}[1]
+%
+%%\Require The list $TR$ of the open transition sets of the subnets. 
+%%\Ensure The list of all the possible combinations of open transitions $L_C$.
+%\State Initialize an empty combination list $L_C$;
+%\State Extract a list of open transitions $L_{ot}$ from $TR$;
+%\State Add $null$ to $L_{ot}$;
+%\State Get the combinations $L'_C$ of the $TR$;
+%\For{each $ot \in L_{ot}$}
+%	\For{each $C' \in L'_C$}
+%		\State Add $ot$ into $C'$ to get a new tuple $C$;
+%		\State Add $C$ into $L_C$;
+%	\EndFor
+%\EndFor 
+%\State \Return $L_C$;
+%
+%\end{algorithmic}  
+%\end{algorithm}
 
 \paragraph{Combining:}
-Algorithm 2 shows the combining algorithm for enumerating all possible
-working status combinations from subnets. Dealing with a list $TR$
-containing  sets of open transitions from different subnets,
-the algorithm choses one of sets $L_{ot}$ and does combining on the
-remaining part of $TR$ recursively. The case when a subnet is not working is
-managed by adding a $null$ into the $L_{ot}$.
+\QIN{
+The combining method enumerate all the possible status of the subnets.
+The result of the method hence call the combination as it present as all the possible combinations of their open transitions.
+Assume that there is a collection of $n$ subnets $L = {s_1, s_2, ..., s_n}$, if we notate $ot$ to be the set of open transitions of the subnet $s$ and $\eta$ means the subnet is not involved. 
+Then the combination $\texttt{COMB}$, a set of n-tuples, can be computed as an outer product of sets : 
+\[\texttt{COMB} : (\eta\cup ot_1) \times (\eta\cup ot_2)\times ... \times (\eta\cup ot_n) .\]
+}
+%Algorithm 2 shows the combining algorithm for enumerating all possible
+%working status combinations from subnets. Dealing with a list $TR$
+%containing  sets of open transitions from different subnets,
+%the algorithm choses one of sets $L_{ot}$ and does combining on the
+%remaining part of $TR$ recursively. The case when a subnet is not working is
+%managed by adding a $null$ into the $L_{ot}$.
 
 
 % Mixing is to match the combination of the subnets' open transitions, hole behaviors and result action with the SV (synchronization vector) to generate the possible predicates of the OT (open transition). At the same time, other parameters of the OT (global state, subnets' transitions, result action...) are also generated. Then the possible OTs of the pNet can be achieved. 
@@ -1369,87 +1437,71 @@ managed by adding a $null$ into the $L_{ot}$.
 %asked by the synchronization vector $e_2$, then this case is filtered
 %out.
 
-\begin{algorithm}
-\caption{Matching}
-\begin{algorithmic}[1]
+%\begin{algorithm}
+%\caption{Matching}
+%\begin{algorithmic}[1]
+%%\Require 
+%%The combination of subnets' open transitions $L_C$;
+%%The behaviors of the holes $B$;
+%%The set of synchronization vectors $SV$.
+%%\Ensure 
+%%The list of all the possible open transitions generated $L_{ot}$.
+%\State Initial an empty result list $L_{ot}$;
+%\For{each $C \in L_C$}
+%	\For{each $sv \in SV$}
+%		\State Clone the $sv$, the result is $sv'$;
+%		\State Generate the fresh result action $ra$;
+%		\State Combine $C, B, ra$ as a new vector $v$;
+%		\For{each $(e_1 \in v )\&\& (e_2 \in sv')$}
+%			\If{$(e_1\ is\ null\ \&\&\ e_2\ is\ not\ null)\ ||\ (e_1\ is\ not\ null\ \&\&\ e_2\ is\ null)$} 
+%			\State Skip;
+%			\Else ~ Add $(e_1 = e_2)$ into the $Pred$;
+%			\EndIf
+%		\EndFor
+%		\State Generate the result open transition $ot$ with $Pred$;
+%		\State Add the $ot$ into $L_{ot}$;
+%	\EndFor
+%\EndFor 
+%\State \Return $L_{ot}$;
+%
+%\end{algorithmic} 
+%\end{algorithm}
 
-%\Require 
-%The combination of subnets' open transitions $L_C$;
-%The behaviors of the holes $B$;
-%The set of synchronization vectors $SV$.
-%\Ensure 
-%The list of all the possible open transitions generated $L_{ot}$.
-\State Initial an empty result list $L_{ot}$;
-\For{each $C \in L_C$}
-	\For{each $sv \in SV$}
-		\State Clone the $sv$, the result is $sv'$;
-		\State Generate the fresh result action $ra$;
-		\State Combine $C, B, ra$ as a new vector $v$;
-		\For{each $(e_1 \in v )\&\& (e_2 \in sv')$}
-			\If{$(e_1\ is\ null\ \&\&\ e_2\ is\ not\ null)\ ||\ (e_1\ is\ not\ null\ \&\&\ e_2\ is\ null)$} 
-			\State Skip;
-			\Else ~ Add $(e_1 = e_2)$ into the $Pred$;
-			\EndIf
-		\EndFor
-		\State Generate the result open transition $ot$ with $Pred$;
-		\State Add the $ot$ into $L_{ot}$;
-	\EndFor
-\EndFor 
-\State \Return $L_{ot}$;
+\paragraph{Matching:} 
+\QIN{$Given a synchronization vector ~ SV_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v' , G_k , k\in K$, and a tuple
+$C_n\in \texttt{COMB} = {(v_i)}^{i\in I} , n\in N$ where $K$ and $N$ are the indices of the set elements.
+As the behavior of subnets should match with the synchronization vector to compose the subnets.
+The matching method tries matching $SV_k$ and $C_n$ to generate the predicates.
+According to the definition of predicate, the hole behaviors $Hole$ and result action $v$ are also involved. 
+}
 
-\end{algorithmic} 
-\end{algorithm}
+\QIN{
+$$Matching(SV_k, C_n, Hole, v) = 
+\begin{array}{l}
+\forall {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.
+\\
+v_i=a'_i\land \, b_j=b'_j \land v=v' \land G_k
+\end{array}$$
+which is exactly the new part of predicate for one possible result.
+}
+%Algorithm 3 shows the algorithm matches
+%combination $L_C$, hole behaviors $B$ with synchronization vectors
+%$SV$ according to the definition of the predicate declared before. We
+%clone the $sv$ using the fresh function to generate a new $sv'$ with
+%fresh variables.The mismatch on working status is easy to detect so we
+%filter them in the algorithm through checking the matching elements
+%$e_1$ and $e_2$. 
+%Then we build the resulting open transition. Satisfiability of the
+%predicate is not checked at this level, but only later, at the
+%toplevel of the pNet.
 
-\paragraph{Matching:} Algorithm 3 shows the algorithm matches
-combination $L_C$, hole behaviors $B$ with synchronization vectors
-$SV$ according to the definition of the predicate declared before. We
-clone the $sv$ using the fresh function to generate a new $sv'$ with
-fresh variables.The mismatch on working status is easy to detect so we
-filter them in the algorithm through checking the matching elements
-$e_1$ and $e_2$. 
-Then we build the resulting open transition. Satisfiability of the
-predicate is not checked at this level, but only later, at the
-toplevel of the pNet.
-
-\subsection{Fresh variables}
-
-%The variables in each synchronization vector are considered local, so
-%does the variables of an open transition such as its hole behaviors
-%and its result action. So we want rename the variables to make them
-%unique on every occurrence of a vector. Similarly, the name given to
-%the hole behaviors for each hole or the result action for each open
-%transition must be distinct. At the same time, we also hope them still
-%readable. Here we rename the variables with a regular format using the fresh function. 
-
-Application of the semantic rules require generating a lot of fresh
-names, for different kind of variables. We could use a global name
-generator to guarantee unicity, but 
-at the same time, we also hope them still
-readable. Here we rename the variables with a regular format using the fresh function.
-More precisely, the fresh function generates a new name adding a
-suffix after the original name. The suffix contains three parts
-combined by a colon.  
-
-
-\begin{definition}[Fresh variable]\label{fresh-variable}
-The format of \emph{fresh variable} (renaming) is defined as:
-``$\emph{prefix : tree\ index\ :\ counter}$''.
-\begin{itemize}
-   \item[$\bullet$] $prefix$ identifies the kind of the
-     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
-   \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
-   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
-\end{itemize}
-\end{definition}
-
-%\TODO{Option: Add the process and the vector ids ?}
-
-%$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
-
-For example, in the running example, the first possible behavior of
-the hole, it doesn't have a name, only have the prefix ``hb''. The
-hole is the second subnets of the root node so its ``tree index'' is
-``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''. 
+\paragraph{Filtering:} 
+\QIN{There is already able to filter some wrong open transitions during the matching.
+We can ensure that the synchronization vector is not matched with the subnets if there is only one side not involved.
+Then we can remove the transitions from the result of matching according to the condition $\gamma$ where
+$\gamma = \bigcup_{i\in I}(v_i\in\eta\land a'_i\in\eta)\lor(v_i\in\eta\land a'_i\in\eta) .$
+}
 
 \subsection{Management of state variable assignments}
 %The pLTS contains some variables in each of its states (state
@@ -1580,6 +1632,480 @@ the solver can use specific properties of each action algebra.
 %%   \centerline{\includegraphics[width=10cm]{XFIG/Interaction}}
 %%   \caption{The architecture of the interaction between pNet API and Z3}  \label{schema:interaction}
 %% \end{figure}
+
+\subsection{Transition to SMTlib}
+In order to submit satisfiability problems to Z3 (for the predicates
+in open transitions), we need to generate SMTlib programs, from the
+pNet Algebra presentation and predicates.
+More precisely, we need to translate to SMTlib:
+\begin{itemize}
+  \item the presentation of the action algebra
+    (sorts and operators) that is defined for a given language (process calculus, or high level programming language),
+    \item for a given pNet, the set of local constants (actions or auxiliary data) that are used in the pLTSs,
+    \item for each open transition: the declaration of variables, and
+      the predicate (including action expressions).
+\end{itemize}
+
+During this translation, in order to guarantee that the generated code
+will cause no runtime errors during parsing and execution, we need
+to ensure that all objects used in the SMTlib code are properly
+declared, and that they are correctly typed.
+
+Note that in principle, such an algebra correspond to a given
+high-level language (e.g. a process algebra), and that the algebra
+presentation will be defined once and for all in the framework of the
+pNet semantics of each specific language.
+
+\subsubsection{Algebra presentations}
+
+\begin{definition}
+  An Algebra Presentation is a pair $\mathcal{P}=<Sorts,Constrs,Ops>$ where:
+  \begin{itemize}
+  \item $Sorts$ is a set of Sort names
+    \footnote{Later we may want to extend this with Sort constructors,
+      like Array or Pair, but this is not needed now}
+  \item $Constrs$ is a set of constructor operators, with $Con$ the
+    constructor name, and arity: $arity(Con)=n \in \mathbb{N}$,
+    and with their signature and their associated selectors,
+    of the form: '$Con : (sel_1,sort_1), ... , (sel_n,sort_n) -> sort$'.
+    For each argument, the pair $(sel_i,sort_i)$ defines an auxiliary
+    operator of name $sel_i$ with signature $sel_i : sort -> sort_i$.
+    \item $Ops$ is a set of other (auxiliary) operators, with their
+      arity and signature, of the form: $Op : sort_1, ...  sort_n ->
+      sort$
+      \item $Constrs(sortname), Sels(sortname)$, respectively define the set of
+        constructors and selectors of sort $sortname$
+  \end{itemize}
+  All sorts and operator names must be distinct.\\
+  Amongst Constructors, those of arity 0 are called constants, and we
+  define $Consts(\mathcal{P}) = \{Con \in Constrs. arity(Con)=0\}$.
+\end{definition}
+
+
+We have a minimal, predefined algebra presentation for all pNets, including
+three basic sorts $Bool$, $Action$ and $Int$ and their
+operators. Table \ref{Table:predefinedSorts} defines these elements.
+
+In addition, and for convenience, we provide one generic construct for
+parameterized actions named FUN, which can accept any number of
+arguments of any sort. The result type, though, can only be $Action$,
+in order to keep the type-checking simple (see next section).
+
+\begin{table}\caption{\label{Table:predefinedSorts}\leftline{Algebra Presentation: predefined Sorts
+  and Operators}}
+	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
+		\hline\specialrule{0em}{1pt}{1pt}
+		Sort & Constructors & Other Operators
+                \\\specialrule{0em}{1pt}{1pt}
+		\hline\specialrule{0em}{3pt}{3pt}
+		Bool    			&
+                $\texttt{true},\ \texttt{false}$&
+                $\land,\ \lor$
+                \\\specialrule{0em}{1pt}{1pt} 
+		Action 			&  $\texttt{FUN}$ &
+                \\\specialrule{0em}{1pt}{1pt}
+		Int 				&
+                ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
+                $- \texttt{(unary)},\ +,\ -
+                \texttt{(binary)},\ \times,\ \div, \texttt{etc.}$
+                \\\specialrule{0em}{1pt}{1pt}
+                \textsl{for any sort} & & $=,\ \ne$
+		\\\hline
+	\end{tabular}
+\end{table}
+
+For a given language, or for a given use-case, the designer can
+declare more sorts and operators, using our pNet API.
+As an example, a (value-passing) CCS action algebra, where we assume a
+single auxiliary value domain ``Data'', can be defined as:
+
+\begin{example}
+  \begin{itemize}
+  \item $Sorts_{CCS} = \{Action, Channel, Data, Int, Bool\}$
+  \item $Constrs_{CCS} =\\
+    \texttt{Emit}: 2, \{(Chan\_E:Channel),(Value\_E:Data)\}->Action\\
+    \texttt{Receive}: 2, \{(Chan\_R:Channel),(Value\_R:Data)\}->Action\\
+    \texttt{Tau}: 0, \{\}-> Action\\
+    \texttt{... and all predefined operators}$
+  \end{itemize}
+\end{example}
+
+\begin{lstlisting}
+AlgebraSort Action = new AlgebraSortImpl("Action");
+AlgebraSort Channel = new AlgebraSortImpl("Channel");
+AlgebraSort Data = new AlgebraSortImpl("Data");
+Action.addConstructor("Emit", 
+	{"Chan_E", "Value_E"}, {Channel, Data});
+Action.addConstructor("Receive", 
+	{"Chan_E", "Value_E"}, {Channel, Data});
+Action.addConstructor("Tau");
+\end{lstlisting}
+
+\TODO{[DONE][Xudong]: Give an example of defining $Tau$ and $Emit$ using the (new
+  version of) the API}
+
+\subsubsection{Expressions}
+Once an algebra presentation is defined, we can construct expressions
+of the term algebra, using variables and operators:
+
+\begin{definition}
+  Let $\mathcal{V}$ be a set of variables. The Term Algebra
+  $\Sigma_{\mathcal{P},\mathcal{V}}$ is the set of:
+  \begin{itemize}
+  \item variables $x \in \mathcal{V}$
+  \item terms (or expressions) $op (arg_1, ... , arg_n)$ with $op$ an operator in
+  $\mathcal{P}$ of arity $n$, and each $arg_i$ an expression.
+  \end{itemize} 
+\end{definition}
+
+\paragraph{Constants and variables in pNets and in open transitions}
+
+In addition to the objects defined in the Algebra Presentation, there are
+specific objects that are introduced by the pNet construction, and by
+the semantic rules used to build the open transitions and their
+predicates. This includes, for a pNet $pnet$
+\begin{itemize}
+\item $Const(pnet)$: Constants from the pLTSs (controllers) transitions: these are
+  new constant constructors, usualy of sort Action, local to an
+  instance of a controller. The pNet definition requires that all
+  these constants are distinct from each other.
+\item $SVars(pnet)$: State variables of the controllers. Here also they are required
+  to be distinct from those of other controllers.
+\item $IVars(pnet)$: Input variables of the controllers.
+\item $FVars(pnet,ot)$: Several kinds of ``fresh'' variables, created by application of
+  rule Tr2, during the construction of each open transition $ot$:
+  Action variables for the behavior of holes and the 
+  resulting actions of transitions, variables created during the cloning
+  of synchronisation vectors.
+\end{itemize}
+
+\def\EPres{\mathcal{P}}
+\def\EEnv{\Gamma}
+
+All variable sets above include their sort.
+To define the typing rules for expressions and the translation
+functions, for any pNet $pnet$ and open transition $ot$, we define an
+extended presentation $\EPres_{pnet}$ and environment $\EEnv_{pnet,ot}$ that includes all of the
+objects above:
+
+\begin{definition}
+  Given an algebra presentation $\mathcal{P}_{pnet}=<Sorts,Constrs,Ops>$ and a pNet $pnet$, we
+  construct:
+  \begin{itemize}
+  \item An extended presentation $\EPres_{pnet}<Sorts,Constrs \cup Const(pnet),Ops>$.
+  \item For a given open transition $ot$, an environment
+    $\EEnv_{pnet,ot}=SVars(pnet) \cup IVars(pnet) \cup FVars(pnet,ot)$. 
+  \end{itemize} 
+\end{definition}
+
+
+
+\paragraph{Well-formed and well-typed expressions}
+
+The purpose of this section is to define static semantic notions that
+will guarantee that the translation to the SMT language will be
+correct, i.e. will not yield errors at runtime. This includes
+well-formness (all sorts, operators, variables are defined, and
+expressions respect the arity of operators), and typing rules. 
+
+\begin{definition}
+  Given a presentation $\EPres$ (possibly extended) and an environment $\EEnv$:
+  \begin{itemize}
+  \item $\EEnv$ is well-formed if all sorts in $\EEnv$ are
+    defined in $\EPres$
+  \item an expression is well-formed if all its operators are defined
+    in $\EPres$, and used with the proper arity, and all its
+    variables are defined in $\EEnv$
+  \item an expression is well-typed if it can be typed by the typing
+    rules in table \ref{table:typing-rules}
+  \end{itemize}
+\end{definition}
+
+The following judgment, and the typing rules in table
+\ref{table:typing-rules} can be used to check both the wellformedness
+and well-typing of expressions in a pNet or in an open transition,
+given the corresponding $\EPres$ and $\EEnv$.
+
+%\begin{table}\caption{\leftline{Typing judgment for Expressions in Open pNets}}
+\vspace{1ex}
+\noindent
+\begin{tabular}{p{5cm}p{7cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+%%		$\EEnv \vdash \diamond$ 					& $\EEnv$ is a well-formed environment 					\\\specialrule{0em}{1pt}{1pt}
+%%		$\EEnv \vdash A$ 							& A is a well-formed type in $\EEnv$	 					\\\specialrule{0em}{1pt}{1pt}
+		$\EPres,\EEnv \vdash M: A$
+                & M is a well-formed term of type A in $\EPres,\EEnv$			\\\specialrule{0em}{1pt}{1pt}
+		\specialrule{0em}{3pt}{3pt}\hline
+	\end{tabular}
+%\end{table}	
+
+\begin{table}\caption{\leftline{Type Rules for Open pNets}}
+  \label{table:typing-rules}
+	\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		%% (Env $\varnothing$) 								
+		%% & 										
+		%% &					\\\specialrule{0em}{1pt}{1pt}
+            %% $\dfrac{ }{\varnothing \vdash \diamond}$			
+            %% & %$\dfrac{\EEnv \vdash A ~~ x\ }{\varnothing \vdash \diamond}$
+            %% &					\\\specialrule{0em}{3pt}{3pt}
+		%% (Type Bool) 										
+		%% &(Type Action) 						
+		%% &(Type Int)			\\\specialrule{0em}{1pt}{1pt}
+		%% $\dfrac{\EPres \vdash Bool~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Bool}$ 
+		%% & $\dfrac{\EPres \vdash Action~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Action}$ 
+		%% & $\dfrac{\EPres \vdash Int~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Int}$        \\\specialrule{0em}{3pt}{3pt}
+		(Var x) 										
+		& 						
+		&			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{\EEnv \vdash x:A}{\EPres,\EEnv \vdash x:A}$ 
+		&  
+		&       		\\\specialrule{0em}{5pt}{5pt}
+		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
+							
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EPres \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\EEnv \vdash x_1:ty1 ~~\EEnv \vdash x_2:ty1}{\EPres,\EEnv \vdash x_1 ~BinOp~ x_2:ty2}$ 
+		& 
+		&       		\\\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for booleans, - for integers)}	
+                
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EPres \vdash UnOp :: ty1 \rightarrow ty2 ~~\EEnv \vdash x:ty1}{\EPres,\EEnv \vdash Unop~x:ty2}$   
+		&&       		\\\specialrule{0em}{5pt}{5pt}
+		(Polymorphic EQ and NEQ)							
+		&					
+		&
+                                         \\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EPres \vdash A  ~~\EEnv \vdash x_1:A ~~\EEnv \vdash x_2:A}{\EPres,\EEnv \vdash x_1 = x_2:Bool}$ 
+		& 
+		$\dfrac{\EPres \vdash A  ~~\EEnv \vdash x_1:A ~~\EEnv \vdash x_2:A}{\EPres,\EEnv \vdash x_1 \ne x_2:Bool}$ 
+		
+		&       		\\\specialrule{0em}{5pt}{5pt}
+		(Overloaded FUN)							
+		&					
+		& 			\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EPres \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow Action ~~\EPres \vdash A_1~~...~~\EPres \vdash A_n ~~\EEnv \vdash x_1:A_1~~...~~\EEnv \vdash x_n:A_n}{\EPres,\EEnv \vdash \texttt{FUN}(x_1,...,x_n):Action}$ 
+		& 
+		&			\\
+		\specialrule{0em}{5pt}{5pt}\hline
+	\end{tabular}
+\end{table}	
+
+\begin{remark}
+  These rules provide a simple type-checking algorithm: if all
+  variables in an expression are known in $\EEnv$, then a bottom-up
+  application of the rules will decide whether the expression is
+  well-typed, and compute the type of each sub-expression.
+\end{remark}
+
+\subsubsection{Map to SMT-LIB language}
+The pNet elements, as defined above, can be full translated into
+SMT-LIB language, but there are a number of differences in the
+structure of the models/langages, so the translation is not trivial.
+
+In this section we shall define separately the translation of the
+(extended) algebra presentation for one pNet (so it will be fixed for
+the study of one use-case); and the translation of each predicate in
+the context of an open-transition of this pNet.
+
+\def\translate{~\lhook\joinrel\longrightarrow}
+
+\vspace{1ex}\noindent
+%\begin{table}\caption{\leftline{Mapping}}
+	\begin{tabular}{p{3cm}p{9cm}}
+		\hline\specialrule{0em}{1pt}{1pt}			
+		(Presentation)							
+		&								\\\specialrule{0em}{1pt}{1pt}		
+		&$Sorts \& Constructors \translate$	declare-datatypes				\\\specialrule{0em}{1pt}{1pt}
+		&$Operators \lhook\joinrel\longrightarrow$	declare-function		\\\specialrule{0em}{1pt}{1pt}
+		(Predicate)							
+		&								\\\specialrule{0em}{1pt}{1pt}
+		&$\EEnv ~~\lhook\joinrel\longrightarrow$	declare-const		\\\specialrule{0em}{1pt}{1pt}
+		&$Pred ~~\lhook\joinrel\longrightarrow$	 assert		\\\specialrule{0em}{1pt}{1pt}
+		&$\texttt{FUN}(x_1,...,x_n)$		\\\specialrule{0em}{1pt}{1pt}
+		&$\texttt{pNet expression} ~~\lhook\joinrel\longrightarrow$ SMTLib expression	\\\specialrule{0em}{1pt}{1pt}
+		&$...$	\\\specialrule{0em}{1pt}{1pt}
+		\specialrule{0em}{1pt}{1pt}\hline
+	\end{tabular}
+%\end{table}
+
+\smallskip
+\ERIC{My plan here is to provide the translation principles as some
+  high-level pseudo code, together with precise definition of the
+  translation functions of a presentation+environment, and of a
+  predicate (including expressions)}
+
+In the following definitions, we use abstract functions corresponding to
+SMTlib/Z3 constructs. In practice they can be implemented either as
+SMTLib scripting programs, or as calls to the Z3 java API.
+
+\subsubsection{Presentation Translation}
+We define here the translation of the algebra presentation, extended
+with the constant operators collected from the pNet. It produces the
+declaration of sorts (excepted Bool and Int) with their constructors
+and selectors as \texttt{declare-datatypes}, and the declaration of
+other operators as \texttt{declare-function} constructs.
+For sorts, we must distinguish the case of mutually defined sorts
+(e.g. edges and vertices in a graph), that must be declared within a
+single \texttt{declare-datatypes} construct. For this we define:
+
+\begin{definition}
+Define the (strict) order "is-using" between sorts $S1 is-using S2$ iff $S2$
+occurs as the sort of one argument in the constructors of $S1$.
+\end{definition}
+
+\TODO{[Xudong: this is certainly obsolete?] At the same time, we have
+  several internal lists (actually hash 
+  maps) \texttt{exprs}, \texttt{funcDecls}, \texttt{sortDatatypes} to
+  store the generated Z3 objects with their names for later proofs.} 
+
+\begin{lstlisting}
+Let Pres = <Sorts, Constrs, Ops> an extended presentation
+(i.e. including the constants from the pnet),
+- define MySorts = Sorts \ {Bool, Int}
+- compute the strongly connected components in the graph
+  of MySorts with respect to the relation is-using
+- for each SCC in this graph, construct: 
+  dataype-declaration = TrPresentation (Pres, SCC)
+- for each other operator op in Ops, construct:
+  function-declaration = TrPresentation (Pres, op)
+\end{lstlisting}
+
+%\begin{table}\caption{\leftline{Rules for TrPresentation}}
+%  \label{table:TrPresentation}
+\noindent
+\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{One datatype declaration for each SCC}
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{name=name(Sort) \qquad constrs=Constrs(name) %\qquad sels=Sels(name)
+                  \translate constrs}
+                       {SCC \translate
+                  \texttt{(declare-datatypes () $name$ (map $\translate constrs$))}}$ 
+
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Constants: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{arity(constr)=0}
+                       {constr \translate \texttt{name($constr$)}}$
+                
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Other constructors: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{n = arity(constr) \neq 0 \qquad |sels|=n
+                  \qquad sels =  BuildSels(constr)}
+                       {constr \translate \texttt{(name($constr$) . sels)}}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Other operators: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{op : sort_1, ..., sort_n : sort}
+                       {op \translate \texttt{(declare-fun name($op$) ($sortname_1
+                           ... sortname_n$) $sortname$)}}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Special case of FUN: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {FUN \translate \texttt{map $\translate CollectFunTypes(pNet)$ }}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {argstypes \translate \texttt{(declare-fun
+                           $BuildFunInstance(argstypes)$ (map name
+                           $argstypes$) Action) }}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\hline
+\end{tabular}
+%\end{table}
+
+\smallskip
+Where:
+\begin{itemize}
+  \item the $BuildSels$ function, for a constructor with $n$ arguments,
+argument sorts $sort_i$, and selector names $sel_i$, builds the list
+$\{(sel_i, sort_i)\}_{i\in[1..n]}$.
+\item the $CollectFunTypes$ function collects all possible instances
+  of the overloaded FUN argument types found in the pNet, as computed by the typing
+  rules; and $BuildFunInstance$ use these argument types as suffixes
+  to disembiguate 
+\end{itemize}
+
+
+\begin{example}
+  For the CCS presentation above, we would get (in SMTLib syntax):
+\begin{lstlisting}
+  (declare-datatypes Data ())
+  (declare-datatypes Channel ())
+  (declare-datatypes ()
+      ((Action (Emit (Chan\_E Channel) (Value\_E Data))
+               (Receive (Chan\_R Channel) (Value\_R Data))
+               Tau )))
+  \end{lstlisting}
+\end{example}
+
+\TODO{Need to add an exemple with 2 instances of FUN}
+
+ 
+\subsubsection{Predicate translation}
+
+\QIN{Each time we submit each open transition to Z3 module, we translate
+  its predicate into Z3 language format and send it for satisfiability
+  checking. Every term of the predicate is declared as an
+  \texttt{assert} in Z3. A constant action or a parameterized
+  expression is easy to get from the internal list storing the objects
+  while all the variables are not declared at the beginning. So we
+  declare them before the submission of a predicate term with the API
+  method conducting \texttt{declare-const}.}
+
+The second part of the translation function is called for each open
+transition. More precisely we need here:
+
+\begin{lstlisting}
+Let Pres = <Sorts, Constrs, Ops> be the extended presentation
+and OT = <Leaves, Holes, Pred, Assign> an open transition.
+- compute the environment $\EEnv=\EEnv_{pnet,OT}$ collecting
+all variables used in OT
+- check that all pLTS labels (action, guard, assignement) in
+the transition, the OT predicate, and the OT assignments are
+well-formed and well-typed
+- for each variable $v$ in $\EEnv$, construct:
+  define-const = TrPredicate ($\EEnv,v$)
+- turn the predicate into conjunctive normal form
+- for each conjunct $P_i$ in the predicate, construct:
+  assert = TrPredicate $(P_i)$
+\end{lstlisting}
+
+\noindent
+\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{Variables}
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{\EEnv \vdash x:A }
+                       {x \translate \texttt{(declare-const x A)}}$
+                  
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Predicate conjunct: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {P_i \translate \texttt{(assert ... }}$
+                
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{3}{p{12cm}}{To be completed with translation of
+                expressions, including special cases for EQ, NOT\_EQ,
+                and FUN }	
+                
+		 			\\\specialrule{0em}{1pt}{1pt}
+		\hline
+\end{tabular}
 
 \paragraph{Presentation of algebra}
 
@@ -1750,6 +2276,122 @@ In the case of $ot_2$, it
 gives the assertion:\\
 \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
 
+\subsection{Simplification of Predicates}
+\QIN{
+We apply several structural rules to generate the predicates restricting the composition of the subnets by synchronization vectors.
+The predicates may contain some redundancy if there are variables in middle level are matching other variables both in lower and higher level at the same time. 
+}
+
+We already have the operational semantics of open pNets restricting the open transitions using two rules.
+The generated equations in the $predicates$ contain either intermediate variables or ground ones, but what we want is the equation between ground terms. 
+
+\QIN{
+We want to reason about the equations to eliminate the redundancy. 
+Considering pNet has a special tree-structure, the replacement between equations should be one-way, the direction is from leaves to the top level, until the root pNet node. 
+And it is easy to figure out the intermediate variables by the constraint rules.
+While it is not needed figure out if an equation is "true" , it can be left to Z3.
+}
+
+\begin{definition}[Intermediate Variable]
+\paragraph{}
+When applying Tr1, we do not collect intermediate variables. Though the result action might be the intermediate one between two result action from the SV if it is not the root of the pNet, it will be determined at the higher level instead of at the leaves.
+
+\begin{description}
+	\item[{\bf Using the parameters from Tr1:}]
+\end{description}
+
+\[ InterVar(OT) = \emptyset \]
+
+\paragraph{}
+When it comes to a pNet node, all the variables from the sources mentioned above should be contained in the $InterVar$ together with the intermediate variables from the subnets. Whatever its subnet is a pLTS or pNets. At the same time, the subnet's result action should be add into the $InterVar$.
+
+If the result of the SV also occurs in its parameters, it means the action from the subnet will be propagated as the result action of the open transition on this level through this SV result action. So it is also the intermediate variable in such situation.
+
+\begin{description}
+	\item[{\bf Using the parameters from Tr2:}]
+\end{description}
+\[ InterVar(OT) = \bigcup_{m\in I_k}{InterVar(OT_m)}  \bigcup_{m\in I_k}{\{v_m\}} \cup{InterVar(SV_k)} \]
+$$ InterVar(SV_k)=\left\{
+\begin{aligned}
+\emptyset & , & \alpha_{k}^{'} \not\in \bigcup_{m\in I_k \uplus J_k}{\{\alpha_{m}\}}\\
+{\alpha_{k}^{'}} & , & \alpha_{k}^{'} \in \bigcup_{m\in I_k \uplus J_k}{\{\alpha_{m}\}}
+\end{aligned}
+\right.
+$$
+
+\begin{itemize}
+	\item $OT$ is an open transition.
+	\item $I, J$ is the set of indices.
+	\item $k$ is the indices of the synchronization vectors.
+	\item $SV$ is the set of the synchronization vectors.
+	\item $Vars()$ is the function that gets all the variables in the object.
+	\item $\alpha$ and $\alpha^{'}$ is the element of the  the synchronization vector.
+\end{itemize}
+\end{definition}
+
+Definition of the intermediate variable shows that elimination should be done every time Tr2 is applied.
+
+%\texttt{\\
+%1. Classify the ground and intermediate variables.
+%\begin{itemize}
+%    \item (1) The predicates of the subnets: The result actions of the sub-OTs. Others are ground.
+%    \item (2) The chosen synchronization vector: If the result is also one of the elements, it is also the intermediate variable. Otherwise, all of the parameters are ground.
+%    \item (3) Hole behaviors: Ground.
+%    \item (4) The result action: Not sure. But it must be ground if it is on the root node.
+%\end{itemize}
+%2. Using a list {\em equations} to store the equations containing the intermediate variable. {\em equations} is a hasp map storing the corresponding ground terms of the variable by its name. Its structure likes <String, List<Expression> >. It will be updated during the later deduction .\\
+%3. The guards from the subnets are kept, waiting for further substitution.\\
+%4. Deduct out the new equations using the redundant Pred got in matching().\\
+%    Checking two sides of the equations.
+%\begin{itemize}
+%   \item If both are ground, then generate a new equation with them, add it to Pred.
+%   \item If the right-hand-side or left-hand-side is intermediate, then find the ground term of it from the list then generate a new equation and add it to Pred.
+%   \item If both are intermediate, then check the list {\em equations}
+%   	\begin{itemize}
+%  		\item If list contain both lhs and rhs, then get the corresponding ground terms of them, generate the new equation with the ground terms. Add it to Pred.
+%   		\item If list only contain lhs, store the rhs in {\em equations} with lhs's corresponding ground terms.
+%   		\item If list only contain rhs, store the lhs in {\em equations} with rhs's corresponding ground terms.
+%   		\item Otherwise, skip this turn.
+%         \end{itemize}
+%\end{itemize}
+%5. Search the inter in the guards if it is found, subsititute it with the ground. Then conduct step 2 again.\\
+%}
+
+\paragraph{Term Rewriting Rules}
+Predicates already have a format declaring what it verifies. According to that previous work, we define the predicates.
+Let $\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
+be a pNet. Choose a synchronisation vector $SV=clone(SV_k) ={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' \, ,G_k $, for $k\in K$. The
+predicate $\Pred$ relating
+the actions of the involved sub-pNets and the resulting actions.
+\begin{definition}[Predicate]
+\[\Pred(SV, \overline{\pNet},\overline{S}, v) = 
+\begin{array}{l}
+\forall {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.
+\\
+v_m=a'_i\land \, b_j=b'_j \land v=v' \land G_k
+\end{array}\]
+\end{definition}
+\QIN{
+The new predicates introduce more hypotheses for term rewriting. However, not every variable can be substituted. 
+Here we introduce several rewriting rules.
+}
+
+\begin{align*}
+   &v_m=a'_i \land v_m=v'_m \rightarrow a'_i = v'_m &[RL-1]\\\\
+   &v_m=a'_i \land v=v' \rightarrow v_m=v ~~ \texttt{if} ~~ a'_i = v', ~~ a'_i,v' \in InterVar &[RL-2]\\\\
+   &v_m=foo'_i(a_1,...,a_p,...,a_n) \land v=v' \rightarrow v_m=foo'_i(a_1,...,v,...,a_n) \\ 
+   &\hspace{15em}\texttt{if} ~~ a_p = v', ~~ a_p,v \in InterVar &[RL-3]\\\\
+   &b_j=b'_j \land v=v' \rightarrow b_j=v ~~ \texttt{if} ~~ b'_j = v', ~~ b'_j,v' \in InterVar &[RL-4]\\\\
+   &b_j=foo'_i(a_1,...,a_p,...,a_n) \land v=v' \rightarrow b_j=foo'_i(a_1,...,v,...,a_n) \\ 
+   &\hspace{15em}\texttt{if} ~~ a_p = v', ~~ a_p,v \in InterVar &[RL-5]\\\\
+\end{align*}
+
+\QIN{
+Rule RL-1 applies on when the result action of subnets matching other arguments of the chosen SV. It merges the predicates from the subnets with the new generated predicates.
+Rule RL-2 shows that if the result of the SV is also in its arguments, we can straightly get an equation between the subnet action and  the result action. RL-3 is the situation that there is an expression instead of a variable contains an intermediate argument. The substitution will only occur on the argument.
+Actually, what happened is similar if there is a hole behavior instead of a subnet result action attending in the equation. So we get RL-4 and RL-5. However, every hole behavior should be kept through out the computing. That's why there no rule similar to the RL-1 for hole behaviors.
+}
 
 \subsection{Result of the running example}
 \label{section:full-result}
@@ -1921,6 +2563,45 @@ algorithm.
 \section{More details on the generation algorithm}
 \subsection{Algebra specification}
 \subsection{Term algebra: type system and static semantics}
+\subsection{Fresh variables}
+
+%The variables in each synchronization vector are considered local, so
+%does the variables of an open transition such as its hole behaviors
+%and its result action. So we want rename the variables to make them
+%unique on every occurrence of a vector. Similarly, the name given to
+%the hole behaviors for each hole or the result action for each open
+%transition must be distinct. At the same time, we also hope them still
+%readable. Here we rename the variables with a regular format using the fresh function. 
+
+Application of the semantic rules require generating a lot of fresh
+names, for different kind of variables. We could use a global name
+generator to guarantee unicity, but 
+at the same time, we also hope them still
+readable. Here we rename the variables with a regular format using the fresh function.
+More precisely, the fresh function generates a new name adding a
+suffix after the original name. The suffix contains three parts
+combined by a colon.  
+
+
+\begin{definition}[Fresh variable]\label{fresh-variable}
+The format of \emph{fresh variable} (renaming) is defined as:
+``$\emph{prefix : tree\ index\ :\ counter}$''.
+\begin{itemize}
+   \item[$\bullet$] $prefix$ identifies the kind of the
+     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
+   \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
+   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
+\end{itemize}
+\end{definition}
+
+%\TODO{Option: Add the process and the vector ids ?}
+
+%$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
+
+For example, in the running example, the first possible behavior of
+the hole, it doesn't have a name, only have the prefix ``hb''. The
+hole is the second subnets of the root node so its ``tree index'' is
+``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''. 
 \subsection{Variable managment}
 \subsection{Filtering the behaviour combinations}
 \subsection{Translation to SMTlib input language}
