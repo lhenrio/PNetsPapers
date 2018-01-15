@@ -556,9 +556,10 @@ where
 $I$ and $J$ are \emph{disjoint}: $I\cap J=\emptyset$,  $I\cup J\neq\emptyset$
 
 \item[$\bullet$] $S_j \subseteq \AlgA$ is a set of action terms,
-  denoting the $\Sort$\footnote{The formal definition of $Sorts$ (set of actions of a Hole
-  or pNet), $Leaves$ and $Holes$ (all pLTSs (resp holes) in a pNet
-  hierarchical system. These can be found in \cite{henrio:Forte2016}.}
+  denoting the $\Sort$\footnote{The formal definition of $Sorts$ (the
+    set of actions of a Hole  
+  or pNet), and also of $Leaves$ and $Holes$ (respectively all pLTSs
+  and all holes in a pNet), can be found in \cite{henrio:Forte2016}.}
   of hole $j$. 
 
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
@@ -613,8 +614,8 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 \section{Operational Semantics for Open pNets}
 \label{section:op-semantics}
 
-The semantics of open pNets will be defined  as an open automaton. An open
-automaton is an automaton where each transition composes transitions
+The semantics of open pNets will be defined as an open automaton,that
+is an automaton where each transition composes transitions 
 of several LTSs with the
 actions of some holes; the transition occurs if some predicates hold,
 and can involve a set of state modifications.
@@ -714,20 +715,15 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 %% step. 
 
 \begin{example}\emph{An open-transition.}
+  \TODO{a short explanation}
   \label{OT:lotos-composed}
-%
-%The \texttt{LOTOS} pNet of Fig. \ref{schema:lotos-pnet} has 2
-%controllers and 2 holes. We will show its full open Automaton in
-%section \ref{section:full-result}. We give one of its transitions here:
-%
-% \smallskip
-% $ ot_2  = \openrule{
-%                       \{0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1\}, ~~
-%                       \{\xrightarrow{hb_{12}}_P\}, ~~ 
-%                        [s_0=0 \!\land\! hb_{12}=\delta(x)], ~~ 
-%                       \{s_0 \xleftarrow{} 1\}     
-%                      }
-%     {\ostate{00} \xrightarrow{\underline{\delta(x)}} \ostate{01}}$
+        \begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
+	  \{\xrightarrow{hb}\}, hb=fail(true) \land v=\underline{fail}, \{t := 4\}
+        }
+	{<s0,t0> \xrightarrow {v} <s1,t1>}
+	\end{mathpar}
 \end{example}
 %
 %The open transition $ot_2$ involves the possible actions from the process $P$ and prefix expression $acc(x);Q$. The hole behavior, represented by variable $hb_{12}$ must be equal to the exit action $\delta(x)$, and the accept event $acc(x)$ will capture the same value $x$.
@@ -742,261 +738,85 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 
 
 \paragraph{Structural Semantic Rules:}
-\TODO{Do we push the rules in the appendix, and leave only a short high
-  level desciption here ?}
-
-Now we build the semantics of an open pNet as an open automaton where
-LTSs are the pLTSs at 
-the pNet leaves, and the states are structured as in
-the previous section. 
-%given by Definition~\ref{def-states}.
-To build an open transition one first
- projects the global state into states of the leaves, then applies
-pLTS transitions on these states, and compose them with actions of
-holes using synchronisation vectors. %The pNet
-%structure does not appear in the open-automaton, only the
-%set of Holes and the set of Leaves.
-
-The semantics   regularly instantiates \emph{fresh} variables, and uses a
-\emph{clone} operator that clones a term replacing each variable with a
-fresh one.
-The variables in each synchronization vector are considered local:
-for a given pNet expression, we must have fresh local variables for
-each occurrence of a vector (= each time we instantiate rule
-Tr2). Similarly the state variables of each copy of a
-given pLTS in the system, must be distinct, and those created for each
-application of Tr2 have to be fresh and all distinct. 
-
-% The semantic of the open pNets is already defined as an open automaton
-% in \cite{henrio:Forte2016} using open transitions to present the
-% transitions of its global states.
-
-\begin{definition}[Operational semantics of open pNets]
-  \label{def:operationalSemantics}
-  The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
-  \mathcal{T}>$ where:
-  \begin{itemize}
-    \item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
-    %  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
-    \item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
-    \item $\mathcal{T}$ is the smallest set of open transitions
-    satisfying the rules below:
-  \end{itemize}
-  
-  The rule ({\bf Tr1}) for a pLTS $p$  checks that the guard 
-  is verified and transforms assignments into post-conditions:
-  
-  \begin{description}
-    \item[{\bf Tr1:}]
-    $\inferrule
-    { s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-          J}\rangle} s'\in \to  \\
-      {\tt fresh}(v) \\
-      Pred = ~e_b \land (v = \alpha)
-    }
-    { p = \mylangle  S,s_0, \to \myrangle
-      \models
-      \inferrule*[myfraction=\reddottedrule]
-      {\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
-      Pred,\left\{x_j\gets e_j\right\}^{j\in J}}
-      {\ostate{s} \xrightarrow{v} \ostate{s'}}
-    }
-    $
-  \end{description}
-% Note that this note is greatly simplified by the fact that variables are local to 
-% thread; introducing global state variables or accepting loops to the same 
-% state would 
-% require to reason 
-% on the scope of 
-% each variables, and to introduce additional variables to handle the several occurence 
-% of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
-% transitions 
-% ensure that the same variable never appears both on the left and on the right of the 
-% equations of a predicate.
-  
-  The second rule ({\bf Tr2}) deals with pNet nodes: for each possible
-  synchronization vector applicable to the rule subject, the premisses
-  include one {\em open transition} for each sub-pNet involved, one possible
-  {\em action} for each Hole involved, and the predicate relating these
-  with the resulting action of the vector.
-  A key to understand this rule is that the open transitions are
-  expressed in terms of the leaves and holes of the pNet structure,
-  i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
-  Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
-  are disjoint subsets of $L$. % Thus the states in the open transitions,
-%   at each level, are tuples including states of all the
-%   leaves of the pNet, not only those involved in the chosen
-%  synchronization vector.
-  
-  \begin{description}
-    \item[{\bf Tr2:}]
-  \end{description}
-  
-  \noindent
-    $\inferrule
-    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
-    \alpha'_k, G_k \\
-      Leaves(p) \!=\! \pLTS_l^{l\in L} \\     
-      \forall m\in I_k.
-      \pNet_m \models
-      \inferrule*[myfraction=\reddottedrule]
-      {\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
-      \{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
-      {\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
-        \ostate{s_{i}^{\prime\ i \in L_m}}}
-      %\land
-      %Leaves(\pNet_m) = \overline{pLTS}^{L_k})
-      \\
-      I' = \biguplus_{m\in I_k}\!\! I_m'
-      \\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k  \\
-      \Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
-      \MkPred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
-      \forall j\!\!\in\!\! J_k. {\tt 
-        fresh}(b_j) \\ {\tt fresh}(v) \\ 
-      \forall i\in
-      L\backslash I'.\,s'_i=s_i 
-    }
-    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
-      \models
-      {\inferrule*[myfraction=\reddottedrule]
-        {\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
-        \{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
-        \Post_m}
-        {\ostate{s_i^{i\in L}} \xrightarrow {v}
-          \ostate{s_i^{\prime i\in L}}}
-      }
-    }
-    $
-
-  \medskip  
-\end{definition}
-
-%
-%\begin{figure}[tb]
-%\begin{mathpar}
-%  \small
-%  \inferrule
-%    {\inferrule
-%      {
-%          \inferrule
-%              {1 \xrightarrow {l}_{C_1} 1}
-%              {C_1
-%                \models
-%                \openrule
-%                      {1 \xrightarrow{l}_{C_1} 1}
-%                      {\ostate{1}\xrightarrow{1}\ostate{1}}
-%              }
-%        }
-%        {\textrm{P}
-%          \models
-%            \openrule{
-%              1 \xrightarrow {l}_{C_1} 1,\,
-%              \{\xrightarrow{b_P}_P\},\, b_P\neq l}
-%                      {\ostate{1}\xrightarrow{b_P}\ostate{1}}
-%        }\\
-%%      \sm{fresh}v         \\
-%      \inferrule%*[right={L_1}]
-%        {
-%          \inferrule
-%              {0 \xrightarrow{b}_{C_2} 1}
-%              {C_4
-%                \models
-%                \openrule
-%                      {0 \xrightarrow{b}_{C_2} 0,\, b\neq r}
-%                      {\ostate{0}\xrightarrow{b}\ostate{1}}
-%              }
-%        }
-%        {
-%          \textrm{b:Q}\models
-%              \openrule
-%                  { 0 \xrightarrow {b}_{C_2} 1,\, \ b\neq r}
-%                  {\ostate{0}\xrightarrow{b}\ostate{1}}
-%        }   
-%    }
-%    {
-%     \textrm{PN1}
-%     \models
-%        \openrule{
-%                       1 \xrightarrow{l}_{C_1} 1 ~~
-%                       0 \xrightarrow{b}_{C_2} 1 ~~
-%                       \{ \xrightarrow{b_P}_{P} \}               ~~
-%                 [ a\neq l \land b\neq r \land b_P=?ch(v) \land b=!ch(v) ]              
-%                      }
-%     {\ostate{10} \xrightarrow{\tau} \ostate{11}}
-%      }\vspace{-4ex}
-%\end{mathpar}
-%  \caption{Proof of  $OT_{11}$ (with interaction of processes $P$ and action $b$) for ``a.P||b.Q''}
-%  \label{usingrules:OT11}
-%\end{figure}
-
-\begin{example} \emph{Using the operational rules to compute  open-transitions: }
-  in Fig. \ref{usingrules:ot2} we show the deduction tree used to construct and prove the 
-  open transition $ot_2$.
-\end{example}
-
-\begin{figure}[h]
-%  \vspace{-10mm}
-
-\begin{mathpar}
-  \small
-  \inferrule
-    {
-          \inferrule
-              {0 \xrightarrow {\delta}_{C_1} 0 ~~
-               [ s_0=0 ]
-              }
-              {C_1
-                \models
-                \openrule
-                      {0 \xrightarrow{\delta}_{C_1} 0 ~~
-                       [ s_0=0 ] ~~
-                       \{ s_0 \leftarrow 1\}
-                      }
-                      {\ostate{0}\xrightarrow{\delta}\ostate{0}}
-              }
-	\\
-      \inferrule
-        {
-          \inferrule
-              {0 \xrightarrow{acc(x)}_{C_2} 1}
-              {C_2
-                \models
-                \openrule
-                      {0 \xrightarrow{acc(x)}_{C_2} 1}
-                      {\ostate{0}\xrightarrow{acc(x)}\ostate{1}}
-              }
-        }
-        {
-          \textrm{acc(x);Q}\models
-              \openrule
-                  { 0 \xrightarrow {acc(x)}_{C_2} 1}
-                  {\ostate{0}\xrightarrow{acc(x)}\ostate{1}}
-        }   
-    }
-    {
-     \textrm{PN1}
-     \models
-        \openrule{
-                        0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1 ~~
-                       \{\xrightarrow{hb_{12}}_P\} ~~ 
-                        [s_0=0 \!\land\! hb_{12}=\delta(x)] ~~ 
-                       \{s_0 \xleftarrow{} 1\}           
-                      }
-     {\ostate{00} \xrightarrow{\tau} \ostate{01}}
-      }\vspace{-4ex}
-\end{mathpar}
-  \caption{Proof of  $ot_{2}$ (interaction of process $P$ and action $acc(x)$) for ``P>>(acc(x);Q)''}
-  \label{usingrules:ot2}
-\end{figure}
+\TODO{I have pushed the rules in the appendix, we need to add a short high
+  level desciption here.}
 
 
-The proof tree uses TR1 twice, for the $\delta$ transition of $C_1$
-and for the $acc(x)$ transition of $C_2$, then uses an action
-$hb_{12}$ of hole $P$, and combines the results using the first vector
-of the PN2 sub-pNet, and the second vector of the top node according
-to TR2. This yields a final $\underline{\delta(x)}$ transition. The
-deduction tree in the figure shows how the predicates are generated in
-this process.  
+
+
+\TODO{ERIC: I choose here to remove the expample of construction of an
+  OT as a deduction tree. First because it was already published in
+  the Forte'16 paper, but also because it is not the way the algorithm
+  is working.}
+
+%% \begin{example} \emph{Using the operational rules to compute  open-transitions: }
+%%   in Fig. \ref{usingrules:ot2} we show the deduction tree used to construct and prove the 
+%%   open transition $ot_2$.
+%% \end{example}
+
+%% \begin{figure}[h]
+%% %  \vspace{-10mm}
+
+%% \begin{mathpar}
+%%   \small
+%%   \inferrule
+%%     {
+%%           \inferrule
+%%               {0 \xrightarrow {\delta}_{C_1} 0 ~~
+%%                [ s_0=0 ]
+%%               }
+%%               {C_1
+%%                 \models
+%%                 \openrule
+%%                       {0 \xrightarrow{\delta}_{C_1} 0 ~~
+%%                        [ s_0=0 ] ~~
+%%                        \{ s_0 \leftarrow 1\}
+%%                       }
+%%                       {\ostate{0}\xrightarrow{\delta}\ostate{0}}
+%%               }
+%% 	\\
+%%       \inferrule
+%%         {
+%%           \inferrule
+%%               {0 \xrightarrow{acc(x)}_{C_2} 1}
+%%               {C_2
+%%                 \models
+%%                 \openrule
+%%                       {0 \xrightarrow{acc(x)}_{C_2} 1}
+%%                       {\ostate{0}\xrightarrow{acc(x)}\ostate{1}}
+%%               }
+%%         }
+%%         {
+%%           \textrm{acc(x);Q}\models
+%%               \openrule
+%%                   { 0 \xrightarrow {acc(x)}_{C_2} 1}
+%%                   {\ostate{0}\xrightarrow{acc(x)}\ostate{1}}
+%%         }   
+%%     }
+%%     {
+%%      \textrm{PN1}
+%%      \models
+%%         \openrule{
+%%                         0 \xrightarrow{\delta}_{C_1} 0, 0 \xrightarrow{acc(x)}_{C_2} 1 ~~
+%%                        \{\xrightarrow{hb_{12}}_P\} ~~ 
+%%                         [s_0=0 \!\land\! hb_{12}=\delta(x)] ~~ 
+%%                        \{s_0 \xleftarrow{} 1\}           
+%%                       }
+%%      {\ostate{00} \xrightarrow{\tau} \ostate{01}}
+%%       }\vspace{-4ex}
+%% \end{mathpar}
+%%   \caption{Proof of  $ot_{2}$ (interaction of process $P$ and action $acc(x)$) for ``P>>(acc(x);Q)''}
+%%   \label{usingrules:ot2}
+%% \end{figure}
+
+
+%% The proof tree uses TR1 twice, for the $\delta$ transition of $C_1$
+%% and for the $acc(x)$ transition of $C_2$, then uses an action
+%% $hb_{12}$ of hole $P$, and combines the results using the first vector
+%% of the PN2 sub-pNet, and the second vector of the top node according
+%% to TR2. This yields a final $\underline{\delta(x)}$ transition. The
+%% deduction tree in the figure shows how the predicates are generated in
+%% this process.  
 
 
 \section{Generation of Open Automata}
@@ -1239,7 +1059,7 @@ the predicates express incompatible constraints. Even if having an
 unsatisfiable (symbolic) transition in the open automaton would not be incorrect,
 we want to check them for satisfiability, and reduce the number of
 transitions and states in the automaton.
-In Fig.~\ref{schema:unsat-ot}, we display an example of an
+\TODO{Change...} In Fig.~\ref{schema:unsat-ot}, we display an example of an
 unsatisfiable open transition 
 from the result of our example. It shows the case where
 the controller C1 wants to move the control from $P$ to $(acc(x);Q)$,
@@ -1440,7 +1260,27 @@ gives the assertion:\\
 
 \subsection{Simplification of Predicates}
 \ERIC{: motivated, add refs, and an abstract presentation of stuff from pages 19-20}
-  
+
+Before:
+  	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
+	  \{\xrightarrow{hb}\},\\
+\qquad b1=true \land b2=true \land hb=fail(b0) \land b1=b2 \land (b1\cup b2
+\implies b0) \land v=\underline{fail}, \{t := 4\}
+        }
+	{<s0,t0> \xrightarrow {v} <s1,t1>}
+	\end{mathpar}
+
+After:
+          	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
+	  \{\xrightarrow{hb}\}, hb=fail(true) \land v=\underline{fail}, \{t := 4\}
+        }
+	{<s0,t0> \xrightarrow {v} <s1,t1>}
+	\end{mathpar}
+
 \subsection{Result of the running example}
 \label{section:full-result}
 
@@ -1608,6 +1448,138 @@ algorithm.
 % \newpage
 \appendix
 
+\section{pNet semantic rules}
+
+\paragraph{Note:} For convenience, we have included here the semantic rules for pNets,
+that were already published in \cite{Forte}.
+
+We build the semantics of an open pNet as an open automaton where
+LTSs are the pLTSs at 
+the pNet leaves, and the states are structured as in
+the previous section. 
+%given by Definition~\ref{def-states}.
+To build an open transition one first
+ projects the global state into states of the leaves, then applies
+pLTS transitions on these states, and compose them with actions of
+holes using synchronisation vectors. %The pNet
+%structure does not appear in the open-automaton, only the
+%set of Holes and the set of Leaves.
+
+The semantics   regularly instantiates \emph{fresh} variables, and uses a
+\emph{clone} operator that clones a term replacing each variable with a
+fresh one.
+The variables in each synchronization vector are considered local:
+for a given pNet expression, we must have fresh local variables for
+each occurrence of a vector (= each time we instantiate rule
+Tr2). Similarly the state variables of each copy of a
+given pLTS in the system, must be distinct, and those created for each
+application of Tr2 have to be fresh and all distinct. 
+
+% The semantic of the open pNets is already defined as an open automaton
+% in \cite{henrio:Forte2016} using open transitions to present the
+% transitions of its global states.
+
+\begin{definition}[Operational semantics of open pNets]
+  \label{def:operationalSemantics}
+  The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
+  \mathcal{T}>$ where:
+  \begin{itemize}
+    \item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
+    %  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+    \item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+    \item $\mathcal{T}$ is the smallest set of open transitions
+    satisfying the rules below:
+  \end{itemize}
+  
+  The rule ({\bf Tr1}) for a pLTS $p$  checks that the guard 
+  is verified and transforms assignments into post-conditions:
+  
+  \begin{description}
+    \item[{\bf Tr1:}]
+    $\inferrule
+    { s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+          J}\rangle} s'\in \to  \\
+      {\tt fresh}(v) \\
+      Pred = ~e_b \land (v = \alpha)
+    }
+    { p = \mylangle  S,s_0, \to \myrangle
+      \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
+      Pred,\left\{x_j\gets e_j\right\}^{j\in J}}
+      {\ostate{s} \xrightarrow{v} \ostate{s'}}
+    }
+    $
+  \end{description}
+% Note that this note is greatly simplified by the fact that variables are local to 
+% thread; introducing global state variables or accepting loops to the same 
+% state would 
+% require to reason 
+% on the scope of 
+% each variables, and to introduce additional variables to handle the several occurence 
+% of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
+% transitions 
+% ensure that the same variable never appears both on the left and on the right of the 
+% equations of a predicate.
+  
+  The second rule ({\bf Tr2}) deals with pNet nodes: for each possible
+  synchronization vector applicable to the rule subject, the premisses
+  include one {\em open transition} for each sub-pNet involved, one possible
+  {\em action} for each Hole involved, and the predicate relating these
+  with the resulting action of the vector.
+  A key to understand this rule is that the open transitions are
+  expressed in terms of the leaves and holes of the pNet structure,
+  i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+  Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+  are disjoint subsets of $L$. % Thus the states in the open transitions,
+%   at each level, are tuples including states of all the
+%   leaves of the pNet, not only those involved in the chosen
+%  synchronization vector.
+  
+  \begin{description}
+    \item[{\bf Tr2:}]
+  \end{description}
+  
+  \noindent
+    $\inferrule
+    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
+    \alpha'_k, G_k \\
+      Leaves(p) \!=\! \pLTS_l^{l\in L} \\     
+      \forall m\in I_k.
+      \pNet_m \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+      \{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+      {\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
+        \ostate{s_{i}^{\prime\ i \in L_m}}}
+      %\land
+      %Leaves(\pNet_m) = \overline{pLTS}^{L_k})
+      \\
+      I' = \biguplus_{m\in I_k}\!\! I_m'
+      \\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k  \\
+      \Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
+      \MkPred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
+      \forall j\!\!\in\!\! J_k. {\tt 
+        fresh}(b_j) \\ {\tt fresh}(v) \\ 
+      \forall i\in
+      L\backslash I'.\,s'_i=s_i 
+    }
+    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
+      \models
+      {\inferrule*[myfraction=\reddottedrule]
+        {\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
+        \{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+        \Post_m}
+        {\ostate{s_i^{i\in L}} \xrightarrow {v}
+          \ostate{s_i^{\prime i\in L}}}
+      }
+    }
+    $
+
+  \medskip  
+\end{definition}
+
+
 \section{More details on the generation algorithm}
 \subsection{Algebra specification}
 \subsection{Term algebra: type system and static semantics}
@@ -1621,6 +1593,7 @@ expressions and actions. Moreover, we use a generic {\em action interaction}
 mechanism, based on unification between two or more action
 expressions. This will be used in the semantics of synchronization
 vectors to express various kinds of communication or synchronization mechanisms.
+
 
 \def\Talg{\mathcal{T}_{\Sigma,\P}}
 Formally, we assume the existence of a term algebra $\Talg$,
