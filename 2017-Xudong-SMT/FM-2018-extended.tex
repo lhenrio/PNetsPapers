@@ -1001,21 +1001,30 @@ this process.
 
 \section{Generation of Open Automata}
 \label{section:implementation}
- 
-\TODO{Eric: add a header, reorganise the parts of the algorithm}
-
 In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
-\TODO{Eric: rewrite}
-We have already have the sketch of computing the open automata \cite{???}.
-While in our implementation we does not build explicitly a proof tree for every open transition.
-Instead, we repeat applying the Tr1 or Tr2 to generate the sub-transitions.
-Tr1 is applied on the leaf (pLTS) simply take the pLTS transitions through the given start state and add the predicate in pNet to generate the open transition.
-When applying Tr2 we use two methods, combining and matching, to generate the new predicate of the open transitions in a hierarchical manner
-as in this case the composition the subnets brings more constraints for synchronizing behaviors. 
-Beside the new generated predicate, the predicates from the subnets are also added as a conjunction with those new predicates.
+Our algorithm starts with an open pNet, and builds its set of open
+transitions (OTs). Its main loop is a classical residual algorithm: starting
+from the initial global state, it pick a state in an unexplored set, and
+computes all possible OTs, adding their target states in the
+unexplored set, until this set is empty. As the potential set of
+global states is finite (see \cite{henrio:Forte2016}), this terminates.
+
+The inside loop (\emph{MakeTransitions} method) applies recursively
+the semantic rules following the structure of the pNet. 
+For pLTS at leaves, rule Tr1 simply take the pLTS transitions of the
+corresponding local state and build the predicate to generate the
+open transition. 
+On a pNet node to apply rule Tr2 we use two methods, combining and
+matching, to generate the new predicate of the open transitions in a
+hierarchical manner.
+
+Last, at the root of the pNet, the predicate of each OT is translated
+into SMTlib assertions, and checked for satifiability. Unsatisfiable
+OTs are pruned, and the final open automaton is computed as the set of
+global states reachable by satisfiable OTs. 
 
 
 
@@ -1058,20 +1067,6 @@ Beside the new generated predicate, the predicates from the subnets are also add
 
 
 
-
-%Algorithm 1 shows the main structure of the algorithm: 
-%the computation repeats applying Tr1 and Tr2 to build all possible
-%combinations of behaviors of pLTS and Holes, through all possible
-%synchronisation vectors. The resulting open transitions are checked
-%for satisfiability by the SMT solver.
-
-
-
-
-%We first conduct combining. For each subnet, we enumerate all the
-%possible cases of its working status. The result action of a pLTS or a
-%pNet is the external action of the node shows the working status of
-%it.
 %
 %For holes, their behavior is unspecified, it doesn't have an exact
 %external presentation of action. We only give an action variable to each hole
@@ -1081,37 +1076,19 @@ Beside the new generated predicate, the predicates from the subnets are also add
 %In every case, the hole behaviors are unchanged, so we
 %only make the combinations of subnets' open transitions. 
 %
-%Algorithm 1 shows the combining algorithm for enumerating all the possible combinations of open transitions. The algorithm initializes an empty list $L_C$. Dealing with the list $TR$ containing several sets of open transitions from different subnets, the algorithm only chooses one of sets $L_{ot}$ and does combining on the remaining part of $TR$ recursively then get a partial result of combining, $L'_C$. Since there could exist the case that the subnet is not working, a $null$ is added into the $L_{ot}$ to represent it. We get much more combinations after combining $ot$ from $L_{ot}$ with the partial result. 
 
-%\begin{algorithm}
-%\caption{Combining}
-%\begin{algorithmic}[1]
-%
-%%\Require The list $TR$ of the open transition sets of the subnets. 
-%%\Ensure The list of all the possible combinations of open transitions $L_C$.
-%\State Initialize an empty combination list $L_C$;
-%\State Extract a list of open transitions $L_{ot}$ from $TR$;
-%\State Add $null$ to $L_{ot}$;
-%\State Get the combinations $L'_C$ of the $TR$;
-%\For{each $ot \in L_{ot}$}
-%	\For{each $C' \in L'_C$}
-%		\State Add $ot$ into $C'$ to get a new tuple $C$;
-%		\State Add $C$ into $L_C$;
-%	\EndFor
-%\EndFor 
-%\State \Return $L_C$;
-%
-%\end{algorithmic}  
-%\end{algorithm}
 
+\def\inactive{\{-\}}
 \paragraph{Combining:}
-\QIN{
-The combining method enumerate all the possible status of the subnets.
-The result of the method hence call the combination as it present as all the possible combinations of their open transitions.
-Assume that there is a collection of $n$ subnets $L = {s_1, s_2, ..., s_n}$, if we notate $ot$ to be the set of open transitions of the subnet $s$ and $\eta$ means the subnet is not involved. 
-Then the combination $\texttt{COMB}$, a set of n-tuples, can be computed as an outer product of sets : 
-\[\texttt{COMB} : (\eta\cup ot_1) \times (\eta\cup ot_2)\times ... \times (\eta\cup ot_n) .\]
-}
+The combining method enumerate all the possible behaviours of the
+subnets, as all the possible combinations of their open transitions.
+Assume that there is a collection of $n$ subnets $L = {s_1, s_2, ...,
+  s_n}$, if we notate $ot_i$ to be the set of open transitions of the
+subnet $s_i$ and ``$-$'' means the subnet is not involved.  
+Then the combination $\texttt{COMB}$, a set of n-tuples, is the
+cartesian product of sets :  
+\[\texttt{COMB} : (\inactive\cup ot_1) \times (\inactive\cup ot_2)\times ... \times (\inactive\cup ot_n) .\]
+
 %Algorithm 2 shows the combining algorithm for enumerating all possible
 %working status combinations from subnets. Dealing with a list $TR$
 %containing  sets of open transitions from different subnets,
@@ -1121,15 +1098,18 @@ Then the combination $\texttt{COMB}$, a set of n-tuples, can be computed as an o
 
 
 
-\paragraph{Matching:} 
-\QIN{$Given a synchronization vector ~ SV_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v' , G_k , k\in K$, and a tuple
-$C_n\in \texttt{COMB} = {(v_i)}^{i\in I} , n\in N$ where $K$ and $N$ are the indices of the set elements.
-As the behavior of subnets should match with the synchronization vector to compose the subnets.
-The matching method tries matching $SV_k$ and $C_n$ to generate the predicates.
-According to the definition of predicate, the hole behaviors $Hole$ and result action $v$ are also involved. 
-}
+\paragraph{Matching:}
+The next step, for each synchronisation vector, and each possible
+combination of behaviour of the subnets as generated by the \emph
+{Combining} method, consists in building the combined predicate,
+and the corresponding open transition.
+From a synchronization vector
+$sv_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'$
+and its guard $G_k$, a tuple of open transitions
+$C_n\in \texttt{COMB} = {(v_i)}^{i\in I}$, the hole behaviors $Hole$,
+and a fresh variable representing the result action $v$, we build the
+predicate: 
 
-\QIN{
 $$Matching(SV_k, C_n, Hole, v) = 
 \begin{array}{l}
 \forall {(a'_i)}^{i\in I},
@@ -1137,11 +1117,26 @@ $$Matching(SV_k, C_n, Hole, v) =
 \\
 v_i=a'_i\land \, b_j=b'_j \land v=v' \land G_k
 \end{array}$$
-which is exactly the new part of predicate for one possible result.
-}
 
 \paragraph{Filtering:}
-\TODO{Eric: 3 levels of filtering, explain our choice}
+There may be several reasons why such a matching would fail:
+\begin{itemize}
+  \item if some subnet is marked as inactive in the vector, and the
+    chosen combinaison has an active behaviour at this position,
+  \item if some subnet action expression in the vector does not match (by
+    pattern-matching) the corresponding behaviour $C_n$,
+  \item or if the whole set of active subnet actions in the vector
+    cannot be matched (by unification) with the set $\{C_n\}$.
+\end {itemize}
+
+Each of these possible failures is more precise than the previous
+ones. But even when unification succeeds, it is still possible that
+the resulting predicate would be unsatisfiable, because of some
+incompatibility involving the guards. In our algorithm, we choose to
+apply only the simplest filter inside the \emph{Matching} method. All
+the rest will be checked later, using the satisfiability ckeck in the
+SMT engine.
+
 
 \subsection{Management of state variable assignments}
 %The pLTS contains some variables in each of its states (state
@@ -1688,12 +1683,7 @@ hole is the second subnets of the root node so its ``tree index'' is
 ``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''. 
 \subsection{Variable managment}
 The variables in each synchronisation vector are considered local: for a given pNet expression, we must have fresh local variables for each occurrence of a vector (= each time we instantiate rule Tr2). Similarly the state variables of each copy of a given pLTS in the system, must be distinct, and those created for each application of Tr2 have to be fresh and all distinct. This will be implemented within the open-automaton generation algorithm, e.g. using name generation using a global counter as a suffix.
-\subsection{Filtering the behaviour combinations}
-\QIN{There is already able to filter some wrong open transitions during the matching.
-We can ensure that the synchronization vector is not matched with the subnets if there is only one side not involved.
-Then we can remove the transitions from the result of matching according to the condition $\gamma$ where
-$\gamma = \bigcup_{i\in I}(v_i\in\eta\land a'_i\in\eta)\lor(v_i\in\eta\land a'_i\in\eta) .$
-}
+
 \subsection{Translation to SMTlib input language}
 In order to submit satisfiability problems to Z3 (for the predicates
 in open transitions), we need to generate SMTlib programs, from the
