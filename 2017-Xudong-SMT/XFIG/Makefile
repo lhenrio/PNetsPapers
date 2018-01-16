@@ -41,4 +41,4 @@ clean:
 	rm -rf *.log
 	rm -rf *.aux
 	rm -rf *.tex
-	if [ -f figtex2eps-preamble.tex ]; then rm -f figtex2eps-preamble.tex; fi;
+#	if [ -f figtex2eps-preamble.tex ]; then rm -f figtex2eps-preamble.tex; fi;
