@@ -55,12 +55,25 @@
 \usepackage{hyperref}
 \usepackage{macrospNets}
 
+\input{XFIG/macros.tex}         % Definitions of macros used in XFig figures
+
 \def\AlgT{\mathcal{T}}
 \def\AlgE{\mathcal{E}}
 \def\AlgA{\mathcal{A}}
 \def\AlgAS{\mathcal{A}_S}
 \def\AlgB{\mathcal{B}}
 \def\AlgI{\mathcal{I}}
+
+\newcommand{\mdash}{---}
+\newcommand{\ndash}{--}
+\newcommand{\cf}[1][\ ]{cf.#1}
+\newcommand{\ie}[1][\ ]{i.e.#1}
+\newcommand{\etc}[1][\ ]{etc.#1}
+\newcommand{\eg}[1][\ ]{e.g.#1}
+\newcommand{\wrt}[1][\ ]{w.r.t.#1}
+
+\newcommand{\goesto}[2][]{\ensuremath{\xrightarrow[#1]{#2}}}
+\newcommand{\true}{\ensuremath{\mathit{true}}}
 
 \newcommand{\Pred}{\symb{Pred}}
 \newcommand{\MkPred}{\symb{MkPred}}
@@ -113,8 +126,12 @@
 %\newcommand\openrule[2]{\redinfer{#1}{#2}}
 \newcommand\openrule[2]{\inferrule*[myfraction=\reddottedrule,center]{#1}{#2}}
 %\newcommand\openrule[2]{\inferrule*{#1}{#2}}
+
+%% SB: Moved the macro definitions from XFIG/figtex2eps-preamble.tex
+%%     to XFIG/macros.tex and added a com and to input this latter one
+%%     into the paper source (above in this file).
 %\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
-\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+%\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
 \newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
 \usepackage{algorithm} 
 %\usepackage{algorithmicx} 
@@ -600,20 +617,86 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 
 
 
-\section{BIP architectures, and their encodings into pNets}
+\section{Running example}
+\label{section:FailureTimerMax}
 \label{section:BIParchitectures}
 \label{section:examples}
 
-\TODO{Simon: or may be better, present BIP architectures and the use-case \_BEFORE\_ The pNets definition, and define the encoding here}
+As a running example we use the Failure Monitor architecture from the
+CubETH nanosatellite on-board software
+case-study~\cite{CubETH-case-study} realised using BIP.  BIP
+(Behaviour-Interaction-Priority)~\cite{bip} is a framework for the
+component-based design of concurrent software and systems.  In
+particular, the BIP tool-set comprises compilers for generating C/C++
+code, executable by linking with one of the dedicated engines, which
+implement the BIP operational semantics.  This approach ensures that
+any property, shown to hold on a given BIP model, will also hold by
+construction on the generated code.
 
-\section{Running example}
-\label{section:FailureTimerMax}
-\TODO{1.5 page including figures ?}
+In this context, the notion of \emph{architecture} was proposed
+in~\cite{AttieBBJS16-architectures-faoc} as a mechanism for ensuring
+correctness by construction during the design of BIP models.
+Architecutres can be viewed as operators transforming BIP models.
+They formalise design patterns, which enforce global properties
+characterising the coordination among the components of the system.
+The architecture-based design process in BIP takes as input a set of
+components providing basic functionality of the system and a set of
+temporal properties that must be enforced in the final system.  For
+each property, a corresponding architecture is identified\,\footnote{%
+%
+  The current approach relies on taxonomies of predefined
+  architectures.  Future work may include automatic synthesis of
+  architectures from, \eg CTL or a similar logic. 
+%
+} and applied to the model, thereby potentially introducing additional
+coordinator components and modifying the connectors that define
+synchronisation patterns among ports of components.
+In~\cite{AttieBBJS16-architectures-faoc}, it was shown that
+application of architectures is compositional \wrt safety properties,
+\ie when several architectures are applied, each enforcing a safety
+property, the resulting system satisfies their conjunction.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v2}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{schema:ArchFailure:BIP}
+\end{figure}
+
+Figure~\ref{schema:ArchFailure:BIP} shows a refined version of the
+Failure Monitor architecture used in~\cite{CubETH-case-study}.
+Contrary to standard BIP models, architectures comprise one or several
+\emph{operand} components, whereof only the set of \emph{ports} is
+given.  Here, the operand component is $B$ and its interface consists
+of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.  The two
+\emph{coordinator} components\mdash $\NameCtrl$ and $\NameTimer$\mdash
+are standard BIP components insofar as they also have their
+\emph{behaviour} specified by finite automata extended with local data
+variables.  Transitions of these automata are labelled with the ports
+of the corresponding component, Boolean guards and update functions on
+local variables.  For instance the loop transition $\tstate{1}
+\goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$ in the
+$\NameTimer$ component is labeled by the port $\PortTick$, it can be
+fired only when the current value of the local variable $t$ is greater
+than $0$.  Upon firing, this transition decrements the value of $t$ by
+$1$.  When omitted, the default guard (resp. update function) is the
+constant predicate $\true$ (resp. the $\mathit{skip}$ operator).  The
+constant $\mathrm{Max}$, in $\tstate{0} \goesto{\PortStart,
+  \TimerInit[]} \tstate{1}$, is a parameter of the architecture.
+
+
 
 %% Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 %% many examples of pNets, encoding
 %% operators of various classical process algebras, or more complex
 %% synchronization structures in distributed or parallel languages.
+
+\TODO{1.5 page including figures ?}
+
+\TODO{Simon: can you do this in less than one page ? If you prefer,
+  merge with ``Running example'' may be easier to describe the syntax}
+
+\TODO{Simon: or may be better, present BIP architectures and the use-case \_BEFORE\_ The pNets definition, and define the encoding here}
 
 \TODO{Should have here both the original BIP drawing (Simon), and the
   pNet encoding (fig by Eric)}
@@ -621,16 +704,7 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 
  \begin{figure}[t]
    \centering
-   \includegraphics[width=\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v2}
-   \caption{The BIP specification of the FailureTimer architecture}
-   \label{schema:ArchFailure:BIP}
- \end{figure}
-%
-   %% \hfill
-%
- \begin{figure}[t]
-   \centering
-   \includegraphics[width=\columnwidth]{XFIG/FailureTimerPNET}
+   \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET}
    \caption{pNet encoding of the FailureTimer architecture}
    \label{schema:ArchFailure:pNet}
  \end{figure}

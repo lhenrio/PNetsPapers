@@ -41,5 +41,8 @@ clean:
 	rm -rf *.log
 	rm -rf *.aux
 	mv figtex2eps-preamble.tex figtex2eps-preamble.tex-backup
+	mv macros.tex macros.tex-backup
 	rm -rf *.tex
 	mv figtex2eps-preamble.tex-backup figtex2eps-preamble.tex
+	mv macros.tex-backup macros.tex
+
