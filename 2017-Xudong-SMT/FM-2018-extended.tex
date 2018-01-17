@@ -1410,6 +1410,35 @@ application of Tr2 have to be fresh and all distinct.
   \medskip  
 \end{definition}
 
+To have some practical interest, it is important to know when this
+algorithm terminates. The following theorem shows that an open-pNet
+with finite synchronization sets, finitely many leaves and
+holes, and each pLTS at leaves having a finite number of states and
+(symbolic) transitions, has a finite automaton. The proof can be found
+in \cite{henrio:Forte2016}. 
+ 
+
+\begin{theorem}[Finiteness of open-automata.]\\
+Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+  J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
+  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+  are finite, and if
+$\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+has a finite number of state variables, then Algorithm 1 terminates
+and produces an open automaton 
+$\mathcal{T}$ with finitely many states and transitions.
+
+
+Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
+    K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
+  J}$,
+build its semantics as in algorithm 1.
+
+We have:
+
+$$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
+  \to finite{(\mathcal{T})}$$
+\end{theorem}
 
 % \section{More details on the generation algorithm}
 
@@ -1424,7 +1453,38 @@ the system, must be distinct, and those created for each application
 of Tr2 have to be fresh and all distinct. This will be implemented
 within the open-automaton generation algorithm, e.g. using name
 generation using a global counter as a suffix.
-\TODO{add structure of generated names}
+
+\paragraph{Fresh variables}
+Application of the semantic rules require generating a lot of fresh
+names, for different kind of variables. We could use a global name
+generator to guarantee unicity, but 
+at the same time, we also hope them still
+readable. Here we rename the variables with a regular format using the fresh function.
+More precisely, the fresh function generates a new name adding a
+suffix after the original name. The suffix contains three parts
+combined by a colon.  
+
+
+\begin{definition}[Fresh variable]\label{fresh-variable}
+The format of \emph{fresh variable} (renaming) is defined as:
+``$\emph{prefix : tree\ index\ :\ counter}$''.
+\begin{itemize}
+   \item[$\bullet$] $prefix$ identifies the kind of the
+     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
+   \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
+   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
+\end{itemize}
+\end{definition}
+
+%\TODO{Option: Add the process and the vector ids ?}
+
+%$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
+
+For example, in the running example, the first possible behavior of
+the hole, it doesn't have a name, only have the prefix ``hb''. The
+hole is the second subnets of the root node so its ``tree index'' is
+``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''.
+
 
 \section{Translation to SMTlib input language}
 In order to submit satisfiability problems to Z3 (for the predicates
@@ -1864,9 +1924,9 @@ well-formed and well-typed.
   assert = TrPredicate $(P_i)$.
 \end{itemize}
 
-\noindent
-\TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for boolean expressions, + assignments}
+% \TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for boolean expressions, + assignments}
 
+\noindent
 \begin{tabular}{p{5cm}p{7cm}}
 		\hline\specialrule{0em}{3pt}{3pt}
 		\multicolumn{2}{l}{Variables:}
@@ -1899,139 +1959,10 @@ well-formed and well-typed.
 	        \hline
 \end{tabular}
 
-\paragraph{Presentation of algebra}
 
-\TODO{Improve this, inserting the main definition from the ``Checker'' document}
-%% Open pNet framework provides us
-%% with a model able to express the semantics of many different algebras
-%% or languages. In particular,
-As seen in section
-\ref{section:pnets}, the \emph{term algebra} used to express the
-action expressions and data parameters is left open in
-the pNet definition.
-
-So, for a given language, we now need to specify its data and action
-domains, giving them an abstract syntax (sorts, constructors, operators,
-and predicates). We call this a \emph{Presentation}.
-We also define a concrete syntax, that will be used for
-pretty-printing, but also for translating the presentation, and the
-predicates, into Z3 syntax (see the ``declare-datatypes'' statement in
-Fig~\ref{schema:smt-lib}). 
-
-An algebra presentation contains:
-
-
-\begin{itemize}
-	\item Sorts: Constants sets of the algebra or types of the data
-          and actions (integer and boolean sort are implicitly
-          declared).  There \emph{must} be one sort for actions, and
-          eventually others for the types of data
-          parameters. In the LOTOS example, 
-          we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta,
-          r, p, q, acc \} .$ 
-
-	\item Operators:
-          %Operators used to construct action expressions; they are
-          constructors and predicates for data and action sorts. For
-          instance, in our LOTOS example, we
-          have a generic action constructor ``$ACT$'', taking as
-          argument an action litteral and a data parameter, declared as:
-          $\OTvar{ACT:}\OTvar{< Action, Data >} \rightarrow \OTvar{Action.}$, 
-        \item Constants: The satisfiability solver need to know which
-          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
-          $r$ of the controllers in running example). 
-          For a given pNet system, the sort $Action$ will include all
-          these constants.
-\end{itemize}
-
-\paragraph{Interaction with Z3}
-%\TODO{1. example input of Z3 in SMT-LIB.[DONE] 2. software architecture.[DONE]}
-%There are several ways to interact with the Z3 solver. 
-%It is possible to use Z3 interactively using the SMT-LIB
-%(Python-based) language. 
-From inside our algorithm code, we submit satisfiability requests to
-Z3 using its JAVA API. Here for readability, we
-show the Z3 code using its SMT-LIB input language. As an
-example in
-Fig~\ref{schema:smt-lib}, we show the input for checking the
-transition of Fig.~\ref{schema:unsat-ot}. It contains the declaration
-of the LOTOS action algebra types 
-and constructors, then the declaration of variables, and finally the
-predicate to be checked, encoded as a set of assertions.
-%% Generally, some $datatypes$ are declared to input the sorts, while here
-%% we only declare one $datatypes$ named $Action$ to involve all the
-%% constant actions. Then we input the predicate of this open transition
-%% in two parts: the variables contained in the predicate are declared
-%% first, then the terms of predicate are inputed as $assertions$ one by
-%% one. 
-The result "unsat" in the output is just what we expected.   
-
-%\TODO{edit the figure to make it smaller in height [DONE]}
-
-%We present the architecture of the interaction with Z3 in
-%Fig~\ref{schema:interaction}.
-%For each OT generated at the toplevel of a pNet, the predicate must be
-%submitted for satisfiability check to Z3. For that we need to
-%translate into Z3 (Java-API) syntax, both the elements of the action
-%algebra, and the predicates itself, including the encoding of the
-%variable assignments (the Post part).
-%
-%The $presentation$ of the action algebra
-%is declared at the beginning of the algorithm as the $sorts$ and the
-%$operators$ will be used throughout the whole algorithm. It is
-%translated into $datatypes$ and $functions$ then submitted to the Z3
-%at the same time. Each candidate predicate will then be translated
-%into $assertions$ before submitted to Z3 after the algorithm
-%computing out all the possible open transitions, they act as
-%intermediate results there. Together with the $datatypes$ and
-%$functions$, the $assertions$ are used to check the satisfiability of
-%the predicate in Z3.
-
-To build the input submitted to Z3 for each OT,
-we translate the algebra $presentation$, the predicates and the
-variable assignments (the Post part) into Z3 (Java-API) syntax.
-% The $presentation$ and the predicates are translated separately. 
-
-\paragraph{Translation of Action algebra presentation}
-\TODO{Exerpt of the formalisation}
-The $datatypes$ are declared according to the $sorts$ the users
-declared in the $presentation$. If the return type of the $functions$
-is one of the $datatypes$, we add this $function$ to the $datatypes$ declaration.
-So when we declare the operator ACT we illustrated in section 4.1, it
-will be just declared together with the constants like :\\
-\centerline{$\OTvar{(ACT\ (action3\ Action)(data\ Int))}$}
-
-The $functions$ can also be declared independently, it usually applies to functions returning integer or boolean, in the format like:\\
-\centerline{$\OTvar{(declare\text{-}fun\ MAX\ (Int\ Int)\ Int)}$}
-
-%Although in Fig~\ref{schema:smt-lib} we have not declared $functions$ outside of $datatypes$, there still exists $functions$ declared independently. The input and output types of the $function$ are also determined by the construct of the  $operators$ in the presentation. For example, we define a new operator to present the equation between two actions in LOTOS example $\text{EQUAL}$ in the format likes:
-%
-%\[EQUAL: \quad < Action , Action > \rightarrow Bool .\]
-%
-%It will be translated into the Z3 statement: 
-%
-%\[\text{(declare-fun\ EQUAL\ (Action\ Action)\ Bool) .}\]
 
 \paragraph{Translating assignments into predicate terms}
-\TODO{Exerpt of the formalisation}
 
-%The assignments are also taken into account when checking the
-%satisfiability of the open transitions as they represent the value of
-%the variables involved in an OT. In order to do that, we employs a
-%translation from assignments into term of predicates. The assignments
-%required to be translated are only those belong to the variables
-%contain in the start states of the open transitions. The assignments
-%are represented as equations between the variables and the expressions
-%on the right side of assignment. For the assignments of the same
-%variable, we do not figure out which state is the precursor of current
-%state, we keep all these possible equations instead, and generate the
-%disjunction of these equations. The state could always move to the
-%target state if there exists one of the values of its variable
-%satisfies the guard.
-%%\TODO{It won't matter the variable of the next state
-%%except that the right hand side expression contain its variables. This
-%%is a problem left to be solved in our future work. WHICH PROBLEM ?}
-%After that, for the assignments of the different variables, we generate a conjunction of them. This way we obtain a new term of the predicate involving assignments of the variables.
 
 State-variable assignments are also treated as a part of the
 predicates when checking the satisfiability. % Here we need conduct some
@@ -2044,38 +1975,41 @@ these equations. Correspondingly, we generate a conjunction for the
 assignments from different variables. 
 
 
-\paragraph{Checking satisfiability}
+%% \paragraph{Checking satisfiability}
 
-% We check the satisfiability of open transitions on the top level of
-% the pNet, treating these open transitions as the intermediate result
-% of the algorithm. After we get the intermediate results of open
-% transitions, we check them one by one.
-Here we declare first all the variables in the predicates, with their
-sorts.
-An example of syntax is::\\
-\centerline{$\OTvar{(declare-const\ |:ra:1:1|\ Action)}$}
+%% % We check the satisfiability of open transitions on the top level of
+%% % the pNet, treating these open transitions as the intermediate result
+%% % of the algorithm. After we get the intermediate results of open
+%% % transitions, we check them one by one.
+%% Here we declare first all the variables in the predicates, with their
+%% sorts.
+%% An example of syntax is::\\
+%% \centerline{$\OTvar{(declare-const\ |:ra:1:1|\ Action)}$}
 
-\noindent Then each term of the
-predicate is an assertion in Z3, as an example, in the former
-unsatisfiable result in Fig~\ref{schema:unsat-ot}, the contradiction is occurred in terms: \\
-\centerline{$\OTvar{(:ra:11:1=l)} \OTland \OTvar{(delta=:ra:11:1)}$}\\
-from which we generate the following two assertions:\\
-\centerline{$\OTvar{(assert\ (=\ |:ra:11:1|\ l))\ \ \ (assert\ (=\ delta\ |:ra:11:1|))}$}
+%% \noindent Then each term of the
+%% predicate is an assertion in Z3, as an example, in the former
+%% unsatisfiable result in Fig~\ref{schema:unsat-ot}, the contradiction is occurred in terms: \\
+%% \centerline{$\OTvar{(:ra:11:1=l)} \OTland \OTvar{(delta=:ra:11:1)}$}\\
+%% from which we generate the following two assertions:\\
+%% \centerline{$\OTvar{(assert\ (=\ |:ra:11:1|\ l))\ \ \ (assert\ (=\ delta\ |:ra:11:1|))}$}
 
-\noindent The predicate submitted to the Z3 also contains the
-assignments encodings.
-In the case of $ot_2$, it
-gives the assertion:\\
-\centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
+%% \noindent The predicate submitted to the Z3 also contains the
+%% assignments encodings.
+%% In the case of $ot_2$, it
+%% gives the assertion:\\
+%% \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
+
 
 \subsection{Simplification of Predicates}
-\subsection{Simplification of Predicates}
+\TODO{I keep it here for now, but I think we shall not include it in
+  the FM submission, this section is not mature enough}
+
 \ERIC{: motivated, add refs, and an abstract presentation of stuff
   from pages 19-20. The following is NOT a good example, we should
   rather use a pNet with at least 2 levels, to have real intermediate
 variables; here b0, b1, b2 are NOT intermediate variables... and the
 predicate simplification is using `some form of ``tautology checking''
-rather thanm rewritting.}
+rather than rewritting.}
 
 Before:
   	\begin{mathpar}
@@ -2218,246 +2152,9 @@ Actually, what happened is similar if there is a hole behavior instead of a subn
 
 
 
-%\subsubsection{Result of CCS example}
-%\QIN{
-%also can present all the possible behavior of that CCS formula with 16 open
-%transitions in Fig. ~\ref{schema:ccs-result}, here we omitted the details of open transitions. 
-%In this example, there are 32 more transitions detected unsatisfiable by Z3.
-%}
-%
-%\QIN{
-%Here we only show one of the result transitions. It presents the value-passing between $a.P$ and $b.Q$ and they are synchronized then
-%give out an silent action $\tau$, process $P$ and $Q$ should not work in this case.
-%}
-%
-%\begin{figure}[h]
-%  \centerline{\includegraphics[width=5cm]{XFIG/CCSresult}}
-%  
-%  $\begin{array}{@{}r@{}l@{}}
-%    ot_1  = &\openrule{\{0 \xrightarrow{a}_{C_1} 1, 0 \xrightarrow{b}_{C_2} 1\}, ~~a=!ch_{11}(v_{11}) \!\land\! b=?ch_{11}(v_{11}) \!\land\! a\neq l \!\land\! b\neq r\!\land\! v_1=\tau}
-%    {\ostate{00} \xrightarrow{v_1} \ostate{11}}\\
-%  \end{array}$
-%  
-%\caption{The open automaton of the CCS parallel formula}  \label{schema:ccs-result}
-%\end{figure}
-
-%% \QIN{
-%% To sum up, from the pNets encoding the formulas of given algebra, which inputed by the user, we can exactly construct
-%% the open automaton for them. 
-%% }
-
-% \newpage
-%\appendix
-
-\section{More details on the generation algorithm}
-
-%\paragraph{Fresh variables management.}
-
-% This will be implemented within the open-automaton generation algorithm,
-% e.g. using name generation using a global counter as a suffix.
-
-% \TODO{To be move  by Xudong}
-
-%\subsection{Presentation of algebra}
-%One of the important goal of the Open pNet framework is to provide us
-%with a model able to express the semantics of many different algebras
-%or languages. In particular, as we have seen in section
-%\ref{section:pnets}, the \emph{term algebra} used to express the
-%action expressions and the data in their parameters is left open in
-%the pNet formalization.
-%
-%So, for a given language, we now need to specify its data and action
-%domains, giving them an abstract syntax (sorts, constructors, operators,
-%and predicates). We call this a \emph{Presentation}.
-%We also define a concrete syntax, that will be used for
-%pretty-printing, but also for translating the presentation, and the
-%predicates, into Z3 syntax (we shall detail this translation in
-%section \ref{section:pruning}).
-%
-%An algebra presentation contains:
-%\begin{itemize}
-%	\item Sorts: Constants sets of the algebra or types of the data
-%          and actions. In every presentation, sorts for integer and
-%          boolean are implicitly declared.  There \emph{must} be one sort for actions, and eventually 
-%several others for the types of data parameters. In the LOTOS example,
-%we have the $Action$ sort: $\OTvar{Action = } \{ l, \delta, r, p, q, acc \} .$
-%
-%	\item Operators: Operators used to construct action
-%          expressions (including their data parameters); they are
-%          constructors of data and action sorts, but also predicates
-%          over these objects. For instance, in our LOTOS example, we
-%          could have two constructor functions ``$DELTA$'' and ``$ACC$''
-%          to construct the action expression $\delta(x)$ and $acc(x)$, declared as:
-%          $\OTvar{DELTA:}\OTvar{< Data >} \rightarrow \OTvar{Action .}$
-%        \item Constants: The satisfiability solver need to know which
-%          actions in the pLTS behaviors are constants (like the $l$, $\delta$, 
-%          $r$ of the controllers in running example). 
-%          For a given pNet system, a sort $Action$ will include all
-%          these constants.
-%\end{itemize}
-
-
-%We need introduce operators for building expressions, of both action
-%and data sorts, when encoding the 
-%algebra into pNets. So that is needed to know about the input and
-%output of the operators used in the expressions from those
-%algebra. The input and output should belong to the sorts of the
-%pNet. When there are $k$ sorts in this pNet, the structure of a
-%$n$-ary operator is vector as $< Sort_{i_1}, ... , Sort_{i_n} >
-%\rightarrow Sort_j , i_1 , ... , i_n, j \in [0..k] $.
-%% We  introduce operators for building expressions, either action
-%% expressions or predicate terms, when encoding the algebra into
-%% pNets. The operators here are treated as functions, with the sorts of
-%% the pNet acting as the types of their input and output. 
-%% For instance, in our LOTOS running example, we use a function ``$ACT$'' action to construct the action expression $\delta(x)$ and $acc(x)$. We can define the operator as a binary operator with the format like:
-
-%%  \[\OTvar{ACT:}\OTvar{< Action, Int >} \rightarrow \OTvar{Action .} \]
-
-
-%\paragraph{Implementation of the expression meta-model}
-% \TODO{maybe we could remove this paragraph (and the figure)}
-%The VerCors platform uses Ecore and EMF to define the structure of
-%both pNets and actions algebras. There exists a predefined set of
-%action and data expressions classes, including boolean, integer and
-%action expressions, with predefined variables, literal (constants),
-%and operators. Operators can be categorized into unary, binary and
-%N-ary operators.
-%The original version of VerCors did not allow to extend these classes,
-%we have modified its architecture so that a user can extend them,
-%defining more elements for his specific algebra.
-%
-%In Fig~\ref{schema:expression-pnets}, we show the Expression class we
-%improved, including extensions for CCS and LOTOS.
-%
-%\begin{figure}[t]
-%  \includegraphics[width=\linewidth]{XFIG/Expression}
-%  \caption{The architecture of Expression class}  \label{schema:expression-pnets}
-%\end{figure}
-
-%\TODO{give an example of user-defined sorts/operators, and tell that
-%  you will give it's translation into Z3 in section 5.4}
-
-% \TODO{To be move / replace by Xudong}
-
-%\subsection{Computing and using open automata}
-%In this section we present an algorithm to construct the open
-%automaton representing the behavior of an open pNet, and show
-%under which conditions this automaton is finite.
-%
-%\begin{alg}[behavioral semantics of open pNets: Sketch]
-%This is a standard residual algorithm over a set of open-automaton
-%states, but where transitions are open transitions
-%constructively ``proven'' by deduction trees.
-%
-%1) Start with a set of unexplored states containing the initial state
-%of the automaton, and an empty set of explored states.
-%
-%2) While there are unexplored states:
-%
-%2a) pick one state from the unexplored set and add it to the explored
-%set. From this state
-%build all possible deduction trees by application of the structural
-%rules Tr1 and Tr2, using all applicable combinations
-%of synchronization vectors.
-%
-%2b) For each deduction trees, extract the resulting
-%open-transition.
-%Its predicate is checked (using Z3) for  satisfiability. If it is
-%unsatisfiable, the resulting OT is discarded. This will minimize the
-%number of resulting transitions. 
-%
-%2c) For each open-transition,  add the transition in the outgoing transitions of
-%the current state, and add the
-%resulting state in the unexplored set if it is not already in the
-%explored set.
-%
-%3) Finally a reachability check could potentially
-%prune the state space.
-%
-%\end{alg}
-
-%% \TODO{ERIC: after we move / replace Algoriithm 1, this will not make sense any longer. I will replace it with a more informal paragraph, in section 5}
-
-%% To have some practical interest, it is important to know when this
-%% algorithm terminates. The following theorem shows that an open-pNet
-%% with finite synchronization sets, finitely many leaves and
-%% holes, and each pLTS at leaves having a finite number of states and
-%% (symbolic) transitions, has a finite automaton. The proof can be found
-%% in \cite{henrio:Forte2016}. 
- 
-
-%% \begin{theorem}[Finiteness of open-automata.]\\
-%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%%   J}$, if the sets $L$ and $J$ are finite, if the synchronization vectors of all pNets 
-%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-%%   are finite, and if
-%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-%% has a finite number of state variables, then Algorithm 1 terminates
-%% and produces an open automaton 
-%% $\mathcal{T}$ with finitely many states and transitions.
-
-
-% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
-%     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%   J}$,
-% build its semantics as in algorithm 1.
-
-% We have:
-
-% $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
-%   \to finite{(\mathcal{T})}$$
-% \end{theorem}
-
-\subsection{Algebra specification}
-\subsection{Term algebra: type system and static semantics}
-\subsection{Fresh variables}
-
-%The variables in each synchronization vector are considered local, so
-%does the variables of an open transition such as its hole behaviors
-%and its result action. So we want rename the variables to make them
-%unique on every occurrence of a vector. Similarly, the name given to
-%the hole behaviors for each hole or the result action for each open
-%transition must be distinct. At the same time, we also hope them still
-%readable. Here we rename the variables with a regular format using the fresh function. 
-
-Application of the semantic rules require generating a lot of fresh
-names, for different kind of variables. We could use a global name
-generator to guarantee unicity, but 
-at the same time, we also hope them still
-readable. Here we rename the variables with a regular format using the fresh function.
-More precisely, the fresh function generates a new name adding a
-suffix after the original name. The suffix contains three parts
-combined by a colon.  
-
-
-\begin{definition}[Fresh variable]\label{fresh-variable}
-The format of \emph{fresh variable} (renaming) is defined as:
-``$\emph{prefix : tree\ index\ :\ counter}$''.
-\begin{itemize}
-   \item[$\bullet$] $prefix$ identifies the kind of the
-     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
-   \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
-   \item[$\bullet$] $counter$ is the current value of the corresponding counter.
-\end{itemize}
-\end{definition}
-
-%\TODO{Option: Add the process and the vector ids ?}
-
-%$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
-
-For example, in the running example, the first possible behavior of
-the hole, it doesn't have a name, only have the prefix ``hb''. The
-hole is the second subnets of the root node so its ``tree index'' is
-``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''. 
-\subsection{Variable managment}
-\subsection{Filtering the behaviour combinations}
-\subsection{Translation to SMTlib input language}
-\subsection{Elimination of intermediate variables}
 
 \section{Full examples}
-\TODO{May be we use two architecture examples here, a simpler one,
-  before the Failure Timer ?}
-\subsection{A very simple architecture}
+
 \subsection{Full input for the FailureTimer architecture}
 \subsection{Full output for the FailureTimer open automaton}
 
@@ -2526,5 +2223,7 @@ OT ------------------------------------------------------------
 
 
 \subsection{Scaling up: several subsystems on the same bus}
+
+\TODO{Not yet !}
 
 \end{document}
