@@ -99,6 +99,12 @@
 %\DeclareMathOperator{\card}{card}
 %\DeclareMathOperator{\Flat}{Flat}
 \renewcommand{\P}{\mathcal P}
+\usepackage{listings}
+\lstset{basicstyle=\small}
+%\usepackage{algorithm} 
+%\usepackage{algpseudocode}  
+
+
 
 \begin{document}
 
@@ -112,8 +118,9 @@ in open transitions), we need to generate SMTlib programs, from the
 pNet Algebra presentation and predicates.
 More precisely, we need to translate to SMTlib:
 \begin{itemize}
-  \item for a given pNet: the presentation of the action algebra
-    (sorts, operators, constants), 
+  \item the presentation of the action algebra
+    (sorts and operators) that is defined for a given language (process calculus, or high level programming language),
+    \item for a given pNet, the set of local constants (actions or auxiliary data) that are used in the pLTSs,
     \item for each open transition: the declaration of variables, and
       the predicate (including action expressions).
 \end{itemize}
@@ -124,156 +131,460 @@ to ensure that all objects used in the SMTlib code are properly
 declared, and that they are correctly typed.
 
 
-\section{Type system}
-%% The SMT solver Z3 already has conservative type rules and checks type safety in Horn logic. When translating the pNets into SMT-LIB language, pNets should also make sure that
-%% the term matching other term in SMT-LIB language will be correct in
-%% type checking. In next two section, we give out the presentation of
-%% the pNets and the type rules of them to ensure the type safety.
-The type system in pNets is quite simple, the expressions are built
-from variables, constants, and operators of a many-sorted algebra, and
-we only need simple first-order polymorphic types.
-Additionaly, for convenience, we want to introduce some ``generic''
-operators in the algebra, with an overloading mechanism; as these do
-not exist in SMTlib, we will have a specific translation mechanism.
 
 Note that in principle, such an algebra correspond to a given
 high-level language (e.g. a process algebra), and that the algebra
 presentation will be defined once and for all in the framework of the
 pNet semantics of each specific language.
 
-\subsection{Algebra Presentations}
+\section{Algebra presentations}
+
+\begin{definition}
+  An Algebra Presentation is a pair $\mathcal{P}=<Sorts,Constrs,Ops>$ where:
+  \begin{itemize}
+  \item $Sorts$ is a set of Sort names
+    \footnote{Later we may want to extend this with Sort constructors,
+      like Array or Pair, but this is not needed now}
+  \item $Constrs$ is a set of constructor operators, with $Con$ the
+    constructor name, and arity: $arity(Con)=n \in \mathbb{N}$,
+    and with their signature and their associated selectors,
+    of the form: '$Con : (sel_1,sort_1), ... , (sel_n,sort_n) -> sort$'.
+    For each argument, the pair $(sel_i,sort_i)$ defines an auxiliary
+    operator of name $sel_i$ with signature $sel_i : sort -> sort_i$.
+    \item $Ops$ is a set of other (auxiliary) operators, with their
+      arity and signature, of the form: $Op : sort_1, ...  sort_n ->
+      sort$
+      \item $Constrs(sortname), Sels(sortname)$, respectively define the set of
+        constructors and selectors of sort $sortname$
+  \end{itemize}
+  All sorts and operator names must be distinct.\\
+  Amongst Constructors, those of arity 0 are called constants, and we
+  define $Consts(\mathcal{P}) = \{Con \in Constrs. arity(Con)=0\}$.
+\end{definition}
+
 
 We have a minimal, predefined algebra presentation for all pNets, including
 three basic sorts $Bool$, $Action$ and $Int$ and their
 operators. Table \ref{Table:predefinedSorts} defines these elements.
 
+In addition, and for convenience, we provide one generic construct for
+parameterized actions named FUN, which can accept any number of
+arguments of any sort. The result type, though, can only be $Action$,
+in order to keep the type-checking simple (see next section).
+
 \begin{table}\caption{\label{Table:predefinedSorts}\leftline{Algebra Presentation: predefined Sorts
   and Operators}}
-	\begin{tabular}{p{4cm}p{8cm}}
+	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Operator
+		Sort & Constructors & Other Operators
                 \\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Bool    			&
-                $\land,\ \lor,\ \texttt{true},\ \texttt{false}$
+                $\texttt{true},\ \texttt{false}$&
+                $\land,\ \lor$
                 \\\specialrule{0em}{1pt}{1pt} 
-		Action 			& \textsl{no predefined operator}
+		Action 			&  $\texttt{FUN}$ &
                 \\\specialrule{0em}{1pt}{1pt}
-		Int 				& $\ - \texttt{(unary)},\ +,\ -
-                \texttt{(binary)},\ \times,\ \div,\ {0, 1, ...} \in \texttt{Nat}$
+		Int 				&
+                ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
+                $- \texttt{(unary)},\ +,\ -
+                \texttt{(binary)},\ \times,\ \div, \texttt{etc.}$
                 \\\specialrule{0em}{1pt}{1pt}
-                \textsl{for any sort} & $=,\ \ne$
+                \textsl{for any sort} & & $=,\ \ne$
 		\\\hline
 	\end{tabular}
 \end{table}
 
 For a given language, or for a given use-case, the designer can
 declare more sorts and operators, using our pNet API.
-As an example, the CCS action algebra include:
+As an example, a (value-passing) CCS action algebra, where we assume a
+single auxiliary value domain ``Data'', can be defined as:
+
+\begin{example}
+  \begin{itemize}
+  \item $Sorts_{CCS} = \{Action, Channel, Data, Int, Bool\}$
+  \item $Constrs_{CCS} =\\
+    \texttt{Emit}: 2, \{(Chan\_E:Channel),(Value\_E:Data)\}->Action\\
+    \texttt{Receive}: 2, \{(Chan\_R:Channel),(Value\_R:Data)\}->Action\\
+    \texttt{Tau}: 0, \{\}-> Action\\
+    \texttt{... and all predefined operators}$
+  \end{itemize}
+\end{example}
+
+\TODO{[Xudong]: Give an example of defining $Tau$ and $Emit$ using the (new
+  version of) the API}
+
+\section{Expressions}
+Once an algebra presentation is defined, we can construct expressions
+of the term algebra, using variables and operators:
+
+\begin{definition}
+  Let $\mathcal{V}$ be a set of variables. The Term Algebra
+  $\Sigma_{\mathcal{P},\mathcal{V}}$ is the set of:
+  \begin{itemize}
+  \item variables $x \in \mathcal{V}$
+  \item terms (or expressions) $op (arg_1, ... , arg_n)$ with $op$ an operator in
+  $\mathcal{P}$ of arity $n$, and each $arg_i$ an expression.
+  \end{itemize} 
+\end{definition}
+
+\subsection{Constants and variables in pNets and in open transitions}
+
+In addition to the objects defined in the Algebra Presentation, there are
+specific objects that are introduced by the pNet construction, and by
+the semantic rules used to build the open transitions and their
+predicates. This includes, for a pNet $pnet$
+\begin{itemize}
+\item $Const(pnet)$: Constants from the pLTSs (controllers) transitions: these are
+  new constant constructors, usualy of sort Action, local to an
+  instance of a controller. The pNet definition requires that all
+  these constants are distinct from each other.
+\item $SVars(pnet)$: State variables of the controllers. Here also they are required
+  to be distinct from those of other controllers.
+\item $IVars(pnet)$: Input variables of the controllers.
+\item $FVars(pnet,ot)$: Several kinds of ``fresh'' variables, created by application of
+  rule Tr2, during the construction of each open transition $ot$:
+  Action variables for the behavior of holes and the 
+  resulting actions of transitions, variables created during the cloning
+  of synchronisation vectors.
+\end{itemize}
+
+\def\EPres{\mathcal{P}}
+\def\EEnv{\Gamma}
+
+All variable sets above include their sort.
+To define the typing rules for expressions and the translation
+functions, for any pNet $pnet$ and open transition $ot$, we define an
+extended presentation $\EPres_{pnet}$ and environment $\EEnv_{pnet,ot}$ that includes all of the
+objects above:
+
+\begin{definition}
+  Given an algebra presentation $\mathcal{P}_{pnet}=<Sorts,Constrs,Ops>$ and a pNet $pnet$, we
+  construct:
+  \begin{itemize}
+  \item An extended presentation $\EPres_{pnet}<Sorts,Constrs \cup Const(pnet),Ops>$.
+  \item For a given open transition $ot$, an environment
+    $\EEnv_{pnet,ot}=SVars(pnet) \cup IVars(pnet) \cup FVars(pnet,ot)$. 
+  \end{itemize} 
+\end{definition}
 
 
 
-\subsection{Type Rule}
-The environment is a set of variables with their own types like $x_1 : A_1, ... , x_n : A_n$. And use dom$(\Gamma)$ dedicate the collection of $x_1, ... , x_n$. Let $\mathcal{P}$ to be the presentation of the pNet.
-\begin{table}\caption{\leftline{Judgments for Open pNets}}
-	\begin{tabular}{p{5cm}p{7cm}}
+\subsection{Well-formed and well-typed expressions}
+
+The purpose of this section is to define static semantic notions that
+will guarantee that the translation to the SMT language will be
+correct, i.e. will not yield errors at runtime. This includes
+well-formness (all sorts, operators, variables are defined, and
+expressions respect the arity of operators), and typing rules. 
+
+\begin{definition}
+  Given a presentation $\EPres$ (possibly extended) and an environment $\EEnv$:
+  \begin{itemize}
+  \item $\EEnv$ is well-formed if all sorts in $\EEnv$ are
+    defined in $\EPres$
+  \item an expression is well-formed if all its operators are defined
+    in $\EPres$, and used with the proper arity, and all its
+    variables are defined in $\EEnv$
+  \item an expression is well-typed if it can be typed by the typing
+    rules in table \ref{table:typing-rules}
+  \end{itemize}
+\end{definition}
+
+The following judgment, and the typing rules in table
+\ref{table:typing-rules} can be used to check both the wellformedness
+and well-typing of expressions in a pNet or in an open transition,
+given the corresponding $\EPres$ and $\EEnv$.
+
+%\begin{table}\caption{\leftline{Typing judgment for Expressions in Open pNets}}
+\vspace{1ex}
+\noindent
+\begin{tabular}{p{5cm}p{7cm}}
 		\hline\specialrule{0em}{3pt}{3pt}
-		$\Gamma \vdash \diamond$ 					& $\Gamma$ is a well-formed environment 					\\\specialrule{0em}{1pt}{1pt}
-		$\Gamma \vdash A$ 							& A is a well-formed type in $\Gamma$	 					\\\specialrule{0em}{1pt}{1pt}
-		$\Gamma \vdash M: A$ 						& M is a well-formed term of type A in $\Gamma$			\\\specialrule{0em}{1pt}{1pt}
+%%		$\EEnv \vdash \diamond$ 					& $\EEnv$ is a well-formed environment 					\\\specialrule{0em}{1pt}{1pt}
+%%		$\EEnv \vdash A$ 							& A is a well-formed type in $\EEnv$	 					\\\specialrule{0em}{1pt}{1pt}
+		$\EPres,\EEnv \vdash M: A$
+                & M is a well-formed term of type A in $\EPres,\EEnv$			\\\specialrule{0em}{1pt}{1pt}
 		\specialrule{0em}{3pt}{3pt}\hline
 	\end{tabular}
-\end{table}	
+%\end{table}	
 
 \begin{table}\caption{\leftline{Type Rules for Open pNets}}
+  \label{table:typing-rules}
 	\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
 		\hline\specialrule{0em}{3pt}{3pt}
-		(Env $\varnothing$) 								
-		& 										
-		&					\\\specialrule{0em}{1pt}{1pt}
-            $\dfrac{ }{\varnothing \vdash \diamond}$			
-            & %$\dfrac{\Gamma \vdash A ~~ x\ }{\varnothing \vdash \diamond}$
-            &					\\\specialrule{0em}{3pt}{3pt}
-		(Type Bool) 										
-		&(Type Action) 						
-		&(Type Int)			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash Bool~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Bool}$ 
-		& $\dfrac{\mathcal{P} \vdash Action~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Action}$ 
-		& $\dfrac{\mathcal{P} \vdash Int~~\Gamma \vdash \diamond}{\mathcal{P},\Gamma \vdash Int}$        \\\specialrule{0em}{3pt}{3pt}
+		%% (Env $\varnothing$) 								
+		%% & 										
+		%% &					\\\specialrule{0em}{1pt}{1pt}
+            %% $\dfrac{ }{\varnothing \vdash \diamond}$			
+            %% & %$\dfrac{\EEnv \vdash A ~~ x\ }{\varnothing \vdash \diamond}$
+            %% &					\\\specialrule{0em}{3pt}{3pt}
+		%% (Type Bool) 										
+		%% &(Type Action) 						
+		%% &(Type Int)			\\\specialrule{0em}{1pt}{1pt}
+		%% $\dfrac{\EPres \vdash Bool~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Bool}$ 
+		%% & $\dfrac{\EPres \vdash Action~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Action}$ 
+		%% & $\dfrac{\EPres \vdash Int~~\EEnv \vdash \diamond}{\EPres,\EEnv \vdash Int}$        \\\specialrule{0em}{3pt}{3pt}
 		(Var x) 										
 		& 						
 		&			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{\mathcal{P} \vdash A~~\Gamma \vdash x:A}{\mathcal{P},\Gamma \vdash x:A}$ 
+		$\dfrac{\EEnv \vdash x:A}{\EPres,\EEnv \vdash x:A}$ 
 		&  
 		&       		\\\specialrule{0em}{5pt}{5pt}
 		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
 							
 		& 			\\\specialrule{0em}{3pt}{3pt}
-		$\dfrac{\mathcal{P} \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\Gamma \vdash x_1:ty1 ~~\Gamma \vdash x_2:ty1}{\mathcal{P},\Gamma \vdash x_1 ~BinOp~ x_2:ty2}$ 
+		$\dfrac{\EPres \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\EEnv \vdash x_1:ty1 ~~\EEnv \vdash x_2:ty1}{\EPres,\EEnv \vdash x_1 ~BinOp~ x_2:ty2}$ 
 		& 
 		&       		\\\specialrule{0em}{3pt}{3pt}
 		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for booleans, - for integers)}	
                 
 		& 			\\\specialrule{0em}{3pt}{3pt}
-		$\dfrac{\mathcal{P} \vdash UnOp :: ty1 \rightarrow ty2 ~~\Gamma \vdash x:ty1}{\mathcal{P},\Gamma \vdash Unop~x:ty2}$   
+		$\dfrac{\EPres \vdash UnOp :: ty1 \rightarrow ty2 ~~\EEnv \vdash x:ty1}{\EPres,\EEnv \vdash Unop~x:ty2}$   
 		&&       		\\\specialrule{0em}{5pt}{5pt}
 		(Polymorphic EQ and NEQ)							
 		&					
 		&
-                                         \\\specialrule{0em}{1pt}{1pt}
-		\multicolumn{2}{l}{(Note: I removed the $~~\mathcal{P} \vdash \ne :: A, A \rightarrow Bool$)}
-							
-		&                        \\\specialrule{0em}{3pt}{3pt}
-		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 = x_2:Bool}$ 
+                                         \\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EPres \vdash A  ~~\EEnv \vdash x_1:A ~~\EEnv \vdash x_2:A}{\EPres,\EEnv \vdash x_1 = x_2:Bool}$ 
 		& 
-		$\dfrac{\mathcal{P} \vdash A  ~~\Gamma \vdash x_1:A ~~\Gamma \vdash x_2:A}{\mathcal{P},\Gamma \vdash x_1 \ne x_2:Bool}$ 
+		$\dfrac{\EPres \vdash A  ~~\EEnv \vdash x_1:A ~~\EEnv \vdash x_2:A}{\EPres,\EEnv \vdash x_1 \ne x_2:Bool}$ 
 		
 		&       		\\\specialrule{0em}{5pt}{5pt}
 		(Overloaded FUN)							
 		&					
 		& 			\\\specialrule{0em}{3pt}{3pt}
-		$\dfrac{\mathcal{P} \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow A ~~\mathcal{P} \vdash A_1~~...~~\mathcal{P} \vdash A_n ~~\Gamma \vdash x_1:A_1~~...~~\Gamma \vdash x_n:A_n}{\mathcal{P},\Gamma \vdash \texttt{FUN}(x_1,...,x_n):A}$ 
+		$\dfrac{\EPres \vdash \texttt{FUN} :: A_1,...,A_n \rightarrow Action ~~\EPres \vdash A_1~~...~~\EPres \vdash A_n ~~\EEnv \vdash x_1:A_1~~...~~\EEnv \vdash x_n:A_n}{\EPres,\EEnv \vdash \texttt{FUN}(x_1,...,x_n):Action}$ 
 		& 
 		&			\\
 		\specialrule{0em}{5pt}{5pt}\hline
 	\end{tabular}
 \end{table}	
 
-\subsection{Map to SMT-LIB language}
-The pNet semantics can be full translated into SMT-LIB language, though some difference on defining functions exist.
-\begin{table}\caption{\leftline{Mapping}}
-	\begin{tabular}{p{3cm}p{9cm}}
-		\hline\specialrule{0em}{5pt}{5pt}			
-		(Presentation)							
-		&								\\\specialrule{0em}{5pt}{5pt}		
-		&$Sort \lhook\joinrel\longrightarrow$	declare-datatypes				\\\specialrule{0em}{3pt}{3pt}
-		&$Operator \lhook\joinrel\longrightarrow$	declare-function		\\\specialrule{0em}{3pt}{3pt}
-		(Checking)							
-		&								\\\specialrule{0em}{5pt}{5pt}
-		&$dom(\Gamma) \lhook\joinrel\longrightarrow$	declare-const		\\\specialrule{0em}{3pt}{3pt}
-		&$Pred \lhook\joinrel\longrightarrow$	 assert		\\\specialrule{0em}{3pt}{3pt}
-		(Expressions)							
-		&								\\\specialrule{0em}{5pt}{5pt}
-		&$\texttt{FUN}(x_1,...,x_n)$		\\\specialrule{0em}{3pt}{3pt}
-		&$x_1- x_n$  $~~~~~~~\lhook\joinrel\longrightarrow$ declare-function	\\\specialrule{0em}{3pt}{3pt}
-		&$...$	\\\specialrule{0em}{3pt}{3pt}
-		\specialrule{0em}{5pt}{5pt}\hline
-	\end{tabular}
-\end{table}
+\begin{remark}
+  These rules provide a simple type-checking algorithm: if all
+  variables in an expression are known in $\EEnv$, then a bottom-up
+  application of the rules will decide whether the expression is
+  well-typed, and compute the type of each sub-expression.
+\end{remark}
 
-\paragraph{Translation} from pNets informations into SMT-LIB language format is corresponded with the mapping rules.
-\subsubsection{Sort}
-There are several basic Sorts already defined in the presentation and users can declare more customized Sorts. In addition, Bool and Int type is also Z3 default datatypes. Sorts only provide their names to the datatype constructor in Z3, the more content will be added according to the Operators in the presentation.\\\\
-\centerline{$\texttt{(declare-datatypes\ ()\ (($SortName$\ ...\ )))}$}
-%(declare-datatypes () ((SortName ... )))
-\subsubsection{FUN function}
-The signature of the FUN operators are defined by users. But they still have a fixed format.\\\\
-\centerline{$\texttt{FUN} :: Type_1, ... ,Type_n \longrightarrow Type$}\\\\
-%(declare-fun FUN (TypeName_1, ... ,TypeName_n) TypeName)
-The types of all the arguments are given to the Z3, so does the return type, but written at another place.  We use a suffix after the "FUN" name to distinct different FUN operators.\\\\
-\centerline{$\texttt{(declare-fun\ FUN\_Type1...\_TypeN\_Type\ ($Type_1$\ ... \ $Type_n$)\ $Type$)}$}
+\subsection{Map to SMT-LIB language}
+The pNet elements, as defined above, can be full translated into
+SMT-LIB language, but there are a number of differences in the
+structure of the models/langages, so the translation is not trivial.
+
+In this section we shall define separately the translation of the
+(extended) algebra presentation for one pNet (so it will be fixed for
+the study of one use-case); and the translation of each predicate in
+the context of an open-transition of this pNet.
+
+\def\translate{~\lhook\joinrel\longrightarrow}
+
+\vspace{1ex}\noindent
+%\begin{table}\caption{\leftline{Mapping}}
+	\begin{tabular}{p{3cm}p{9cm}}
+		\hline\specialrule{0em}{1pt}{1pt}			
+		(Presentation)							
+		&								\\\specialrule{0em}{1pt}{1pt}		
+		&$Sorts \& Constructors \translate$	declare-datatypes				\\\specialrule{0em}{1pt}{1pt}
+		&$Operators \lhook\joinrel\longrightarrow$	declare-function		\\\specialrule{0em}{1pt}{1pt}
+		(Predicate)							
+		&								\\\specialrule{0em}{1pt}{1pt}
+		&$\EEnv ~~\lhook\joinrel\longrightarrow$	declare-const		\\\specialrule{0em}{1pt}{1pt}
+		&$Pred ~~\lhook\joinrel\longrightarrow$	 assert		\\\specialrule{0em}{1pt}{1pt}
+		&$\texttt{FUN}(x_1,...,x_n)$		\\\specialrule{0em}{1pt}{1pt}
+		&$\texttt{pNet expression} ~~\lhook\joinrel\longrightarrow$ SMTLib expression	\\\specialrule{0em}{1pt}{1pt}
+		&$...$	\\\specialrule{0em}{1pt}{1pt}
+		\specialrule{0em}{1pt}{1pt}\hline
+	\end{tabular}
+%\end{table}
+
+\smallskip
+\ERIC{My plan here is to provide the translation principles as some
+  high-level pseudo code, together with precise definition of the
+  translation functions of a presentation+environment, and of a
+  predicate (including expressions)}
+
+In the following definitions, we use abstract functions corresponding to
+SMTlib/Z3 constructs. In practice they can be implemented either as
+SMTLib scripting programs, or as calls to the Z3 java API.
+
+\subsection{Presentation Translation}
+We define here the translation of the algebra presentation, extended
+with the constant operators collected from the pNet. It produces the
+declaration of sorts (excepted Bool and Int) with their constructors
+and selectors as \texttt{declare-datatypes}, and the declaration of
+other operators as \texttt{declare-function} constructs.
+For sorts, we must distinguish the case of mutually defined sorts
+(e.g. edges and vertices in a graph), that must be declared within a
+single \texttt{declare-datatypes} construct. For this we define:
+
+\begin{definition}
+Define the (strict) order "is-using" between sorts $S1 is-using S2$ iff $S2$
+occurs as the sort of one argument in the constructors of $S1$.
+\end{definition}
+
+\TODO{[Xudong: this is certainly obsolete?] At the same time, we have
+  several internal lists (actually hash 
+  maps) \texttt{exprs}, \texttt{funcDecls}, \texttt{sortDatatypes} to
+  store the generated Z3 objects with their names for later proofs.} 
+
+\begin{lstlisting}
+Let Pres = <Sorts, Constrs, Ops> an extended presentation
+(i.e. including the constants from the pnet),
+- define MySorts = Sorts \ {Bool, Int}
+- compute the strongly connected components in the graph
+  of MySorts with respect to the relation is-using
+- for each SCC in this graph, construct: 
+  dataype-declaration = TrPresentation (Pres, SCC)
+- for each other operator op in Ops, construct:
+  function-declaration = TrPresentation (Pres, op)
+\end{lstlisting}
+
+%\begin{table}\caption{\leftline{Rules for TrPresentation}}
+%  \label{table:TrPresentation}
+\noindent
+\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{One datatype declaration for each SCC}
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{name=name(Sort) \qquad constrs=Constrs(name) %\qquad sels=Sels(name)
+                  \translate constrs}
+                       {SCC \translate
+                  \texttt{(declare-datatypes () $name$ (map $\translate constrs$))}}$ 
+
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Constants: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{arity(constr)=0}
+                       {constr \translate \texttt{name($constr$)}}$
+                
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Other constructors: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{n = arity(constr) \neq 0 \qquad |sels|=n
+                  \qquad sels =  BuildSels(constr)}
+                       {constr \translate \texttt{(name($constr$) . sels)}}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Other operators: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{op : sort_1, ..., sort_n : sort}
+                       {op \translate \texttt{(declare-fun name($op$) ($sortname_1
+                           ... sortname_n$) $sortname$)}}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Special case of FUN: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {FUN \translate \texttt{map $\translate CollectFunTypes(pNet)$ }}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {argstypes \translate \texttt{(declare-fun
+                           $BuildFunInstance(argstypes)$ (map name
+                           $argstypes$) Action) }}$
+                       
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\hline
+\end{tabular}
+%\end{table}
+
+\smallskip
+Where:
+\begin{itemize}
+  \item the $BuildSels$ function, for a constructor with $n$ arguments,
+argument sorts $sort_i$, and selector names $sel_i$, builds the list
+$\{(sel_i, sort_i)\}_{i\in[1..n]}$.
+\item the $CollectFunTypes$ function collects all possible instances
+  of the overloaded FUN argument types found in the pNet, as computed by the typing
+  rules; and $BuildFunInstance$ use these argument types as suffixes
+  to disembiguate 
+\end{itemize}
+
+
+\begin{example}
+  For the CCS presentation above, we would get (in SMTLib syntax):
+\begin{lstlisting}
+  (declare-datatypes Data ())
+  (declare-datatypes Channel ())
+  (declare-datatypes ()
+      ((Action (Emit (Chan\_E Channel) (Value\_E Data))
+               (Receive (Chan\_R Channel) (Value\_R Data))
+               Tau )))
+  \end{lstlisting}
+\end{example}
+
+\TODO{Need to add an exemple with 2 instances of FUN}
+
+ 
+\subsection{Predicate translation}
+
+\QIN{Each time we submit each open transition to Z3 module, we translate
+  its predicate into Z3 language format and send it for satisfiability
+  checking. Every term of the predicate is declared as an
+  \texttt{assert} in Z3. A constant action or a parameterized
+  expression is easy to get from the internal list storing the objects
+  while all the variables are not declared at the beginning. So we
+  declare them before the submission of a predicate term with the API
+  method conducting \texttt{declare-const}.}
+
+The second part of the translation function is called for each open
+transition. More precisely we need here:
+
+\begin{lstlisting}
+Let Pres = <Sorts, Constrs, Ops> be the extended presentation
+and OT = <Leaves, Holes, Pred, Assign> an open transition.
+- compute the environment $\EEnv=\EEnv_{pnet,OT}$ collecting
+all variables used in OT
+- check that all pLTS labels (action, guard, assignement) in
+the transition, the OT predicate, and the OT assignments are
+well-formed and well-typed
+- for each variable $v$ in $\EEnv$, construct:
+  define-const = TrPredicate ($\EEnv,v$)
+- turn the predicate into conjunctive normal form
+- for each conjunct $P_i$ in the predicate, construct:
+  assert = TrPredicate $(P_i)$
+\end{lstlisting}
+
+\noindent
+\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+		\hline\specialrule{0em}{3pt}{3pt}
+		\multicolumn{2}{l}{Variables}
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{\EEnv \vdash x:A }
+                       {x \translate \texttt{(declare-const x A)}}$
+                  
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Predicate conjunct: }	
+                
+		& 			\\\specialrule{0em}{1pt}{1pt}
+		$\dfrac{}
+                       {P_i \translate \texttt{(assert ... }}$
+                
+		&&       		\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{3}{p{12cm}}{To be completed with translation of
+                expressions, including special cases for EQ, NOT\_EQ,
+                and FUN }	
+                
+		 			\\\specialrule{0em}{1pt}{1pt}
+		\hline
+\end{tabular}
+%\end{table}
+
 
 \section{Submission to Z3}
+\TODO{Do we still need that ? Maybe rather something linking my
+  "abstract SMTLib functions" with both SMTLib python code, and Z3 API
+  methods.}
+
+
 \subsection{Z3 Notations}
 Our semantic has already got enough informations for Z3 checking. Z3 has a number of notations for various usages. We only list the notations we needed in our algorithm as follows:
 \TODO{Finish the description.}
@@ -284,15 +595,10 @@ Our semantic has already got enough informations for Z3 checking. Z3 has a numbe
 \item \texttt{assert}
 \end{enumerate}
 
-\subsection{Submission of Algebra}
-Before the submission of the open transitions to Z3, the user-inputed algebra of the pNet should be known at first. It gives Z3 informations of the sorts of the expression and the operators, corresponding to the  
-\texttt{declare-datatypes} and \texttt{declare-function}. We declare the algebra in Z3 logic through Z3 API methods having the same effect as the notations. At the same time, we have several internal lists (actually hash maps) \texttt{exprs}, \texttt{funcDecls}, \texttt{sortDatatypes} to store the generated Z3 objects with their names for later proofs.
 
-\subsection{Submission of Open Transitions}
-Each time we submit each open transition to Z3 module, we translate its predicate into Z3 language format and send it for satisfiability checking. Every term of the predicate is declared as an \texttt{assert} in Z3. A constant action or a parameterized expression is easy to get from the internal list storing the objects while all the variables are not declared at the beginning. So we declare them before the submission of a predicate term with the API method conducting \texttt{declare-const}.
 
 \subsection{Other works}
 \paragraph{Quantifier}
-\paragraph{Filter the State without Precursor}
+
 
 \end{document}
