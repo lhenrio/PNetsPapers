@@ -41,7 +41,25 @@
 ]{caption}
 \usepackage[list=true]{subcaption}
 
-\usepackage{soul}
+\usepackage{soul}               % Highlighting: \hl, \so, \ul
+\soulregister{\st}{8}
+\soulregister\cite7
+\soulregister\citep7
+\soulregister\secn7
+\soulregister\ref7
+\soulregister\pageref7
+\soulregister{\em}{0}
+\soulregister{\bf}{0}
+\soulregister{\fig}{7}
+\soulregister{\ie}{0}
+\soulregister{\etc}{0}
+\soulregister{\eg}{0}
+\soulregister{\wrt}{0}
+\soulregister{\resp}{0}
+\soulregister{\cf}{0}
+\soulregister{\mdash}{0}
+\soulregister{\ndash}{0}
+
 \usepackage[colorinlistoftodos,bordercolor=white]{todonotes}
 %% \usepackage[disable,colorinlistoftodos,bordercolor=white]{todonotes}
 
@@ -81,9 +99,11 @@
 \newcommand{\etc}[1][\ ]{etc.#1}
 \newcommand{\eg}[1][\ ]{e.g.#1}
 \newcommand{\wrt}[1][\ ]{w.r.t.#1}
+\newcommand{\resp}[1][\ ]{resp.#1}
 
 \newcommand{\goesto}[2][]{\ensuremath{\xrightarrow[#1]{#2}}}
 \newcommand{\true}{\ensuremath{\mathit{true}}}
+\newcommand{\false}{\ensuremath{\mathit{false}}}
 
 \newcommand{\Pred}{\symb{Pred}}
 \newcommand{\MkPred}{\symb{MkPred}}
@@ -681,14 +701,14 @@ The two \emph{coordinator} components\mdash $\NameCtrl$ and
 $\NameTimer$\mdash are standard BIP components insofar as they also
 have their \emph{behaviour} specified by finite automata extended with
 local data variables.  Transitions of these automata are labelled with
-the ports of the corresponding component, Boolean guards and update
+the ports of the corresponding components, Boolean guards and update
 functions on local variables.  For instance the loop transition
 $\tstate{1} \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$
 in the $\NameTimer$ component is labeled by the port $\PortTick$, it
 can be fired only when the current value of the local variable $t$ is
 greater than $0$.  Upon firing, this transition decrements the value
-of $t$ by $1$.  When omitted, the default guard (resp. update
-function) is the constant predicate $\true$ (resp. the $\mathit{skip}$
+of $t$ by $1$.  When omitted, the default guard (\resp update
+function) is the constant predicate $\true$ (\resp the $\mathit{skip}$
 operator).  The constant $\mathrm{Max}$, in $\tstate{0}
 \goesto{\PortStart, \TimerInit[]} \tstate{1}$, is a parameter of the
 architecture.
@@ -717,16 +737,16 @@ initialising the timer.  The binary connector $\NameTimer.\PortStart
 \bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameCtrl.\PortFail$ is a
 sub-connector of a hierarchical connector, where the port
 $\NameOprnd.\PortFail$ is a trigger.  Thus, the above interaction can
-only happen together with $\NameOprnd.\PortFail$, thus forming a
+only happen together with $\NameOprnd.\PortFail$, forming a
 ternary interaction.  On the contrary, being a trigger, the port
 $\NameOprnd.\PortFail$ can fire alone, forming a singleton
 interaction.  The composition semantics of BIP systems consists in
 firing exactly one interaction, enabled through at least one of the
-connectors, at each execution round.
+top-level connectors, at each execution round.
 
 Finally, \emph{priorities}\mdash defined by a strict partial order on
 the set of possible interactions\mdash narrow the choice among the
-enabled interactions at any given round.  The default priority is the
+enabled interactions at any given execution round.  The default priority is the
 so-called \emph{maximal progress}, whereby among any two interactions
 $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
 For example, the port $\NameOprnd.\PortFail$ will never fire alone in
@@ -745,6 +765,43 @@ units.\noteSB{Here, it would be nice to explain the role of the
   \caption{pNet encoding of the FailureTimer architecture}
   \label{schema:ArchFailure:pNet}
 \end{figure}
+
+
+\noteSB{SV2 should not be closed;\\SV0, SV1: $\cup \rightarrow \lor$}\hl{%
+%
+Figure~\ref{schema:ArchFailure:pNet} shows a pNet encoding of the
+above Failure Monitor architecture.  This encoding is structural: each
+coordinator component is encoded as a pLTS, the operand
+component\mdash as a hole; connectors of the BIP model are encoded as
+synchronisation vectors.  Each connector that does not involve
+triggers is trivially encoded by a synchronisation vector comprising
+the same ports.  In order to encode the semantics of the connectors
+involving triggers, we 1)~in the pLTS encoding the coordinator
+components, add loop transitions to ensure that all ports involved in
+such connectors are enabled in all states, 2)~associate a Boolean
+value to each of these ports: the original transitions carry the value
+$\true$ (\eg $\cstate{0} \goesto{\PortFail(\true)} \cstate{1}$), the
+added loops carry the value $\false$ (\eg $\cstate{2}
+\goesto{\PortFail(\false)} \cstate{2}$), 3)~add to the corresponding
+synchronisation vectors the Boolean predicate encoding the connector
+structure.  For example, $SV0$ encodes the connector discussed above:
+the predicate $b1 = b2 \land b1 \lor b2 \Rightarrow b0$ means that the
+``true'' transitions $\NameCtrl.\PortFail$ and $\NameTimer.\PortStart$
+can only fire together ($b1 = b2$) and whenever one of them fires,
+$\NameOprnd.\PortFail$ must fire also ($b1 \lor b2 \Rightarrow b0$).
+This encoding can be systematically obtained for any hierarchical BIP
+connector~\cite{BliSif10-causal-fmsd}.
+%
+}
+\noteSB{
+%
+  Eric, could you please check my pNet terminology in this paragraph?
+%
+}
+%
+Although, for the sake of brevity, this encoding does not translate
+the maximal progress priority, it can be easily extended to do so, by
+introducing an additional Boolean variable for each relevant port.
 
 %% Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 %% many examples of pNets, encoding
