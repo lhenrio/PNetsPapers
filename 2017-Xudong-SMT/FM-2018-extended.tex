@@ -35,9 +35,19 @@
     format=hang,    
     format=plain,
     margin=0pt,
-    width=0.8\textwidth,
+    %% width=0.8\textwidth,
+    aboveskip=4pt,
+    belowskip=-12pt,
 ]{caption}
 \usepackage[list=true]{subcaption}
+
+\usepackage{soul}
+\usepackage[colorinlistoftodos,bordercolor=white]{todonotes}
+%% \usepackage[disable,colorinlistoftodos,bordercolor=white]{todonotes}
+
+\newcommand{\noteSB}[2][color=green!40, size=\tiny]{\todo[#1]{{\bf Note: } {#2}}}
+\newcommand{\noteInSB}[2][inline,color=green!40]{\todo[#1]{{\bf Note: } {#2}}}
+
 
 \newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
 \newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
@@ -627,9 +637,9 @@ case-study~\cite{CubETH-case-study} realised using BIP.  BIP
 component-based design of concurrent software and systems.  In
 particular, the BIP tool-set comprises compilers for generating C/C++
 code, executable by linking with one of the dedicated engines, which
-implement the BIP operational semantics.  This approach ensures that
-any property, shown to hold on a given BIP model, will also hold by
-construction on the generated code.
+implement the BIP operational semantics~\cite{BliSif08-acp-tc}.  This
+approach ensures that any property, shown to hold on a given BIP
+model, will also hold by construction on the generated code.
 
 In this context, the notion of \emph{architecture} was proposed
 in~\cite{AttieBBJS16-architectures-faoc} as a mechanism for ensuring
@@ -656,7 +666,7 @@ property, the resulting system satisfies their conjunction.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.9\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v2}
+  \includegraphics[width=0.8\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v2}
   \caption{The BIP specification of the Failure Monitor architecture}
   \label{schema:ArchFailure:BIP}
 \end{figure}
@@ -665,47 +675,92 @@ Figure~\ref{schema:ArchFailure:BIP} shows a refined version of the
 Failure Monitor architecture used in~\cite{CubETH-case-study}.
 Contrary to standard BIP models, architectures comprise one or several
 \emph{operand} components, whereof only the set of \emph{ports} is
-given.  Here, the operand component is $B$ and its interface consists
-of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.  The two
-\emph{coordinator} components\mdash $\NameCtrl$ and $\NameTimer$\mdash
-are standard BIP components insofar as they also have their
-\emph{behaviour} specified by finite automata extended with local data
-variables.  Transitions of these automata are labelled with the ports
-of the corresponding component, Boolean guards and update functions on
-local variables.  For instance the loop transition $\tstate{1}
-\goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$ in the
-$\NameTimer$ component is labeled by the port $\PortTick$, it can be
-fired only when the current value of the local variable $t$ is greater
-than $0$.  Upon firing, this transition decrements the value of $t$ by
-$1$.  When omitted, the default guard (resp. update function) is the
-constant predicate $\true$ (resp. the $\mathit{skip}$ operator).  The
-constant $\mathrm{Max}$, in $\tstate{0} \goesto{\PortStart,
-  \TimerInit[]} \tstate{1}$, is a parameter of the architecture.
+given.  Here, the operand component is $\NameOprnd$ and its interface
+consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
+The two \emph{coordinator} components\mdash $\NameCtrl$ and
+$\NameTimer$\mdash are standard BIP components insofar as they also
+have their \emph{behaviour} specified by finite automata extended with
+local data variables.  Transitions of these automata are labelled with
+the ports of the corresponding component, Boolean guards and update
+functions on local variables.  For instance the loop transition
+$\tstate{1} \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$
+in the $\NameTimer$ component is labeled by the port $\PortTick$, it
+can be fired only when the current value of the local variable $t$ is
+greater than $0$.  Upon firing, this transition decrements the value
+of $t$ by $1$.  When omitted, the default guard (resp. update
+function) is the constant predicate $\true$ (resp. the $\mathit{skip}$
+operator).  The constant $\mathrm{Max}$, in $\tstate{0}
+\goesto{\PortStart, \TimerInit[]} \tstate{1}$, is a parameter of the
+architecture.
 
+Connectors are hierarchical, tree-like structures with component ports
+at the leaves.  They define sets of \emph{interactions}, based on the
+attributes of the connected ports~\cite{BliSif08-acp-tc}, which may be
+either \emph{trigger} (triangles in Fig.~\ref{schema:ArchFailure:BIP})
+or \emph{synchron} (bullets in Fig.~\ref{schema:ArchFailure:BIP}).
+%
+If all sub-connectors of a connector are synchrons, then an
+interaction may be executed by the connector only if each subconnector
+can contribute.
+%
+If at least one of the sub-connectors is a trigger, then any
+interaction consisting of contributions of any set of sub-connectors,
+\emph{involving at least one of the triggers}, can be executed.
+%
+For instance, the two ports $\NameTimer.\PortStart$ and
+$\NameCtrl.\PortFail$ are always synchronised, since they belong to
+the same binary sub-connector, where they are both synchrons.  In
+particular, this means that whenever the transition $\cstate{0}
+\goesto{\PortFail} \cstate{1}$ is fired, so is the transition
+$\tstate{0} \goesto{\PortStart, \TimerInit[]} \tstate{1}$,
+initialising the timer.  The binary connector $\NameTimer.\PortStart
+\bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameCtrl.\PortFail$ is a
+sub-connector of a hierarchical connector, where the port
+$\NameOprnd.\PortFail$ is a trigger.  Thus, the above interaction can
+only happen together with $\NameOprnd.\PortFail$, thus forming a
+ternary interaction.  On the contrary, being a trigger, the port
+$\NameOprnd.\PortFail$ can fire alone, forming a singleton
+interaction.  The composition semantics of BIP systems consists in
+firing exactly one interaction, enabled through at least one of the
+connectors, at each execution round.
 
+Finally, \emph{priorities}\mdash defined by a strict partial order on
+the set of possible interactions\mdash narrow the choice among the
+enabled interactions at any given round.  The default priority is the
+so-called \emph{maximal progress}, whereby among any two interactions
+$a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
+For example, the port $\NameOprnd.\PortFail$ will never fire alone in
+a global state, where both $\NameTimer.\PortStart$ and
+$\NameCtrl.\PortFail$ are enabled.
+
+Application of the Failure Monitor architecture ensures that, whenever
+a failure is registered in the operand component, the system will be
+reset, unless a resumption is registered within $\mathrm{Max}$ time
+units.\noteSB{Here, it would be nice to explain the role of the
+  singleton connectors, but that would take too much space.}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\columnwidth]{XFIG/FailureTimerPNET}
+  \caption{pNet encoding of the FailureTimer architecture}
+  \label{schema:ArchFailure:pNet}
+\end{figure}
 
 %% Several publications \cite{HMZ:PDP15,henrio:Forte2016} already have introduced
 %% many examples of pNets, encoding
 %% operators of various classical process algebras, or more complex
 %% synchronization structures in distributed or parallel languages.
 
-\TODO{1.5 page including figures ?}
+%% \TODO{1.5 page including figures ?}
 
-\TODO{Simon: can you do this in less than one page ? If you prefer,
-  merge with ``Running example'' may be easier to describe the syntax}
+%% \TODO{Simon: can you do this in less than one page ? If you prefer,
+%%   merge with ``Running example'' may be easier to describe the syntax}
 
-\TODO{Simon: or may be better, present BIP architectures and the use-case \_BEFORE\_ The pNets definition, and define the encoding here}
+%% \TODO{Simon: or may be better, present BIP architectures and the use-case \_BEFORE\_ The pNets definition, and define the encoding here}
 
-\TODO{Should have here both the original BIP drawing (Simon), and the
-  pNet encoding (fig by Eric)}
+%% \TODO{Should have here both the original BIP drawing (Simon), and the
+%%   pNet encoding (fig by Eric)}
 
-
- \begin{figure}[t]
-   \centering
-   \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET}
-   \caption{pNet encoding of the FailureTimer architecture}
-   \label{schema:ArchFailure:pNet}
- \end{figure}
 
 
 
