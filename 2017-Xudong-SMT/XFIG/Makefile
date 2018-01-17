@@ -40,5 +40,6 @@ clean:
 	rm -rf *.dvi
 	rm -rf *.log
 	rm -rf *.aux
+	mv figtex2eps-preamble.tex figtex2eps-preamble.tex-backup
 	rm -rf *.tex
-#	if [ -f figtex2eps-preamble.tex ]; then rm -f figtex2eps-preamble.tex; fi;
+	mv figtex2eps-preamble.tex-backup figtex2eps-preamble.tex
