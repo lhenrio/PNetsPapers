@@ -1842,46 +1842,57 @@ $\{(sel_i, sort_i)\}_{i\in[1..n]}$.
 The second part of the translation function is called for each open
 transition. More precisely we need here:
 
-\begin{lstlisting}
 Let Pres = <Sorts, Constrs, Ops> be the extended presentation
 and OT = <Leaves, Holes, Pred, Assign> an open transition.
-- compute the environment $\EEnv=\EEnv_{pnet,OT}$ collecting
-all variables used in OT
-- check that all pLTS labels (action, guard, assignement) in
+\begin{itemize}
+\item compute the environment $\EEnv=\EEnv_{pnet,OT}$ collecting
+all variables used in OT.
+\item check that all pLTS labels (action, guard, assignement) in
 the transition, the OT predicate, and the OT assignments are
-well-formed and well-typed
-- for each variable $v$ in $\EEnv$, construct:
-  define-const = TrPredicate ($\EEnv,v$)
-- turn the predicate into conjunctive normal form
-- for each conjunct $P_i$ in the predicate, construct:
-  assert = TrPredicate $(P_i)$
-\end{lstlisting}
+well-formed and well-typed.
+\item for each start global state $gs$ of the open transition, using $SVar(gs)$
+  get the state variables and their possible evaluations from all the state in $gs$.
+  Then use Ass(x) as the set of evaluations of state variable x.
+\item for each variable $v$ in $\EEnv$, construct:
+  define-const = TrPredicate ($\EEnv ,v$).
+%- turn the predicate into conjunctive normal form
+\item for each conjunct $P_i$ in the predicate, construct:
+  assert = TrPredicate $(P_i)$.
+\end{itemize}
 
 \noindent
 \TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for boolean expressions, + assignments}
 
-\begin{tabular}{p{5cm}p{5cm}p{2.5cm}}
+\begin{tabular}{p{5cm}p{7cm}}
 		\hline\specialrule{0em}{3pt}{3pt}
-		\multicolumn{2}{l}{Variables}
-                
-		& 			\\\specialrule{0em}{1pt}{1pt}
+		\multicolumn{2}{l}{Variables:}
+		\\
 		$\dfrac{\EEnv \vdash x:A }
-                       {x \translate \texttt{(declare-const x A)}}$
-                  
-		&&       		\\\specialrule{0em}{1pt}{1pt}
-		\multicolumn{2}{l}{Predicate conjunct: }	
-                
-		& 			\\\specialrule{0em}{1pt}{1pt}
-		$\dfrac{}
-                       {P_i \translate \texttt{(assert ... }}$
-                
-		&&       		\\\specialrule{0em}{1pt}{1pt}
-		\multicolumn{3}{p{12cm}}{To be completed with translation of
-                expressions, including special cases for EQ, NOT\_EQ,
-                and FUN }	
-                
-		 			\\\specialrule{0em}{1pt}{1pt}
-		\hline
+                       {x \translate \texttt{(declare-const x A)}}$&
+		\\\specialrule{0em}{3pt}{3pt}
+		Open transition: 
+		\\
+		$\dfrac{Pred \translate lst_1~~Ass \translate lst_2}{ot(Pred, Assign) \translate lst_1 lst_2}$
+		\\\specialrule{0em}{3pt}{3pt}
+		Predicate: & Predicate conjunct:
+		\\
+		$\dfrac{Pred = \bigwedge\limits_{k\in K}P_k}{Pred \translate \texttt{map} \translate P_k}$&	$\dfrac{P_k = op(args)}{P_k \translate \texttt{(assert (op map}\longrightarrow \texttt{args))}}$
+		\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{\EEnv \vdash x:A }{Var(x) \longrightarrow \texttt{x}}$
+		\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{arg = op'(args)~~op'\in Constr~~arity(op') = 0}{op' \longrightarrow name(op')}$
+		\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{arg = op'(args)~~op'\in Constr~~arity(op')\neq 0}{op' \longrightarrow \texttt{(}name(op')~~map\longrightarrow args\texttt{)}}$
+		\\\specialrule{0em}{3pt}{3pt}
+		$\dfrac{arg = op'(args)~~op'\in Ops}{op' \longrightarrow \texttt{(}name(op')~~map\longrightarrow args\texttt{)}}$
+		\\\specialrule{0em}{3pt}{3pt}
+		Assignment: 
+		\\
+		$\dfrac{Assign = \bigwedge\limits_{k\in K}(x_k, a_k)~~x_k\in SVar(gs)~~a_k = Ass(x_k)}{Assign \translate \texttt{map} \translate (x_k, a_k)}$
+		\\\specialrule{0em}{3pt}{3pt}		
+		$\dfrac{a_k = e_1,...,e_n}{(x_k, a_k) \translate \texttt{(assert (or (= }x_k\texttt{ map} \longrightarrow e_1\texttt{)}\texttt{...(= }x_k\texttt{ map} \longrightarrow e_n\texttt{)}  \texttt{))}}$
+		\\\\\specialrule{0em}{1pt}{1pt}
+	        \hline
 \end{tabular}
 
 \paragraph{Presentation of algebra}
