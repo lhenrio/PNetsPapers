@@ -345,8 +345,6 @@ Finally we conclude and discuss perspectives in section
 \section{Background: pNets definition}
 \label{section:pnets}
 
-\TODO{To be reduced, moving more material to the appendix}
-  
 This section introduces pNets and the notations we will use in
 this paper. Then it gives the formal definition of pNet structures,
 together with an operational semantics for open pNets.
@@ -1145,33 +1143,6 @@ inequality, or a guard. The final command in the translation is a
 \texttt{(check-sat)}, which result (sat or unsat) will be decoded by
 our algorithm.
 
-\subsection{Simplification of Predicates}
-\ERIC{: motivated, add refs, and an abstract presentation of stuff
-  from pages 19-20. The following is NOT a good example, we should
-  rather use a pNet with at least 2 levels, to have real intermediate
-variables; here b0, b1, b2 are NOT intermediate variables... and the
-predicate simplification is using `some form of ``tautology checking''
-rather thanm rewritting.}
-
-Before:
-  	\begin{mathpar}
-	\inferrule*[myfraction=\reddottedrule]
-	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
-	  \{\xrightarrow{hb}\},\\
-\qquad b1=true \land b2=true \land hb=fail(b0) \land b1=b2 \land (b1\cup b2
-\implies b0) \land v=\underline{fail}, \{t := 4\}
-        }
-	{<s0,t0> \xrightarrow {v} <s1,t1>}
-	\end{mathpar}
-
-After:
-          	\begin{mathpar}
-	\inferrule*[myfraction=\reddottedrule]
-	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
-	  \{\xrightarrow{hb}\}, hb=fail(true) \land v=\underline{fail}, \{t := 4\}
-        }
-	{<s0,t0> \xrightarrow {v} <s1,t1>}
-	\end{mathpar}
 
 \subsection{Result of the running example}
 \label{section:full-result}
@@ -1290,10 +1261,21 @@ algorithm.
 
 \newpage
 \appendix
-\section{Appendix}
+%\section{Appendix}
 The following appendices are included for the convenience of reviewers.
 Our intention is to publish as a research report, before final publication, an
 extended version containing all technical detials, proofs, and more examples.
+
+These are organized in th efollowing way:
+
+\begin{enumerate}
+\item[A] pNet semantic rules
+\item[B] Variable managment
+\item[C] Translation to SMTlib input language
+\item[D] Well-formness and typing of expressions
+\item[E]
+  
+\end{enumerate}
 
 
 \section{pNet semantic rules}
@@ -1429,14 +1411,22 @@ application of Tr2 have to be fresh and all distinct.
 \end{definition}
 
 
-\section{More details on the generation algorithm}
+% \section{More details on the generation algorithm}
 
 
 
-\subsection{Variable managment}
-The variables in each synchronisation vector are considered local: for a given pNet expression, we must have fresh local variables for each occurrence of a vector (= each time we instantiate rule Tr2). Similarly the state variables of each copy of a given pLTS in the system, must be distinct, and those created for each application of Tr2 have to be fresh and all distinct. This will be implemented within the open-automaton generation algorithm, e.g. using name generation using a global counter as a suffix.
+\section{Variable managment}
+The variables in each synchronisation vector are considered local: for
+a given pNet expression, we must have fresh local variables for each
+occurrence of a vector (= each time we instantiate rule
+Tr2). Similarly the state variables of each copy of a given pLTS in
+the system, must be distinct, and those created for each application
+of Tr2 have to be fresh and all distinct. This will be implemented
+within the open-automaton generation algorithm, e.g. using name
+generation using a global counter as a suffix.
+\TODO{add structure of generated names}
 
-\subsection{Translation to SMTlib input language}
+\section{Translation to SMTlib input language}
 In order to submit satisfiability problems to Z3 (for the predicates
 in open transitions), we need to generate SMTlib programs, from the
 pNet Algebra presentation and predicates.
@@ -1459,7 +1449,7 @@ high-level language (e.g. a process algebra), and that the algebra
 presentation will be defined once and for all in the framework of the
 pNet semantics of each specific language.
 
-
+\subsection{Definition of an algebra presentation}
 We have a minimal, predefined algebra presentation for all pNets, including
 three basic sorts $Bool$, $Action$ and $Int$ and their
 operators. Table \ref{Table:predefinedSorts} defines these elements.
@@ -1480,7 +1470,7 @@ in order to keep the type-checking simple (see next section).
                 $\texttt{true},\ \texttt{false}$&
                 $\land,\ \lor,\ \neg,\ \implies$
                 \\\specialrule{0em}{1pt}{1pt} 
-		Action 			&  $texttt{FUN}$ &
+		Action 			&  $\texttt{FUN}$ &
                 \\\specialrule{0em}{1pt}{1pt}
 		Int 				&
                 ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
@@ -1488,6 +1478,17 @@ in order to keep the type-checking simple (see next section).
                 \texttt{(binary)},\ \times,\ \div, \texttt{etc.}$
                 \\\specialrule{0em}{1pt}{1pt}
                 \textsl{for any sort} & & $=,\ \ne$
+		\\\hline
+	\end{tabular}
+\end{table}
+
+\begin{table}\caption{\label{table:BIPalgebra}\leftline{Additional
+      operator for the BIP algebra}}
+	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
+		\hline\specialrule{0em}{1pt}{1pt}
+		Sort & Constructors & Other Operators
+                \\\hline\specialrule{0em}{1pt}{1pt} 
+		Action 			&  $\texttt{FUN\_Action\_Bool}$ &
 		\\\hline
 	\end{tabular}
 \end{table}
@@ -1509,8 +1510,25 @@ single auxiliary value domain ``Data'', can be defined as:
   \end{itemize}
 \end{example}
 
-Then in pNet API these operators or constants (seemed as non-parameter operators) can be declared as:
-\begin{lstlisting}[basicstyle=\footnotesize\ttfamily, language=java, frame=single]
+\begin{table}\caption{\label{table:BIPalgebra}\leftline{Additional
+      sorts and operators for the CCS algebra}}
+	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
+		\hline\specialrule{0em}{1pt}{1pt}
+		Sort & Constructors & Other Operators
+                \\\specialrule{0em}{1pt}{1pt}
+		\hline\specialrule{0em}{3pt}{3pt}
+		Channel, Data    			&
+                $\emptyset$&
+                $\emptyset$
+                \\\specialrule{0em}{1pt}{1pt} 
+		Action 			&  $\texttt{Emit(c,v)},\texttt{Receive(c,v)},\texttt{Tau}$ &
+		\\\hline
+	\end{tabular}
+\end{table}
+
+
+Then in pNet API these operators or constants can be declared as:
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 AlgebraSort Action = new AlgebraSortImpl("Action");
 AlgebraSort Channel = new AlgebraSortImpl("Channel");
 AlgebraSort Data = new AlgebraSortImpl("Data");
@@ -1521,22 +1539,8 @@ Action.addConstructor("Receive",
 Action.addConstructor("Tau");
 \end{lstlisting}
 
-
-\paragraph{Expressions}
-Once an algebra presentation is defined, we can construct expressions
-of the term algebra, using variables and operators:
-
-\begin{definition}
-  Let $\mathcal{V}$ be a set of variables. The Term Algebra
-  $\Sigma_{\mathcal{P},\mathcal{V}}$ is the set of:
-  \begin{itemize}
-  \item variables $x \in \mathcal{V}$
-  \item terms (or expressions) $op (arg_1, ... , arg_n)$ with $op$ an operator in
-  $\mathcal{P}$ of arity $n$, and each $arg_i$ an expression.
-  \end{itemize} 
-\end{definition}
-
-\paragraph{Constants and variables in pNets and in open transitions}
+%\subsection{Constants and variables in pNets and in open transitions}
+\subsection{Extended presentation, and Environment}
 
 In addition to the objects defined in the Algebra Presentation, there are
 specific objects that are introduced by the pNet construction, and by
@@ -1578,14 +1582,14 @@ objects above:
 
 
 
-\paragraph{Well-formed and well-typed expressions}
+\section{Well-formness and typing of expressions}
 
 The purpose of this section is to define static semantic notions that
 will guarantee that the translation to the SMT language will be
 correct, i.e. will not yield errors at runtime. This includes
 well-formness (all sorts, operators, variables are defined, and
 expressions respect the arity of operators), and typing rules.
-\TODO{Eric: refer in the appendix header}
+%\TODO{Eric: refer in the appendix header}
 
 \begin{definition}
   Given a presentation $\EPres$ (possibly extended) and an environment $\EEnv$:
@@ -1677,15 +1681,15 @@ given the corresponding $\EPres$ and $\EEnv$.
   well-typed, and compute the type of each sub-expression.
 \end{remark}
 
-\subsubsection{Map to SMT-LIB language}
+\section{Map to SMT-LIB language}
 The pNet elements, as defined above, can be full translated into
 SMT-LIB language, but there are a number of differences in the
 structure of the models/langages, so the translation is not trivial.
 
 In this section we shall define separately the translation of the
-(extended) algebra presentation for one pNet (so it will be fixed for
-the study of one use-case); and the translation of each predicate in
-the context of an open-transition of this pNet.
+extended algebra presentation for one pNet (so it will be common for
+the study of all OTs of one use-case); and the translation of each
+predicate (of an open-transition) of this pNet. 
 
 \def\translate{~\lhook\joinrel\longrightarrow}
 
@@ -2054,8 +2058,34 @@ gives the assertion:\\
 \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
 
 \subsection{Simplification of Predicates}
-\TODO{[Eric]: Motivate, and refs  -- reduce the section here to approx
-  half a page (from the next two pages...)} 
+\subsection{Simplification of Predicates}
+\ERIC{: motivated, add refs, and an abstract presentation of stuff
+  from pages 19-20. The following is NOT a good example, we should
+  rather use a pNet with at least 2 levels, to have real intermediate
+variables; here b0, b1, b2 are NOT intermediate variables... and the
+predicate simplification is using `some form of ``tautology checking''
+rather thanm rewritting.}
+
+Before:
+  	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
+	  \{\xrightarrow{hb}\},\\
+\qquad b1=true \land b2=true \land hb=fail(b0) \land b1=b2 \land (b1\cup b2
+\implies b0) \land v=\underline{fail}, \{t := 4\}
+        }
+	{<s0,t0> \xrightarrow {v} <s1,t1>}
+	\end{mathpar}
+
+After:
+          	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
+	  \{\xrightarrow{hb}\}, hb=fail(true) \land v=\underline{fail}, \{t := 4\}
+        }
+	{<s0,t0> \xrightarrow {v} <s1,t1>}
+	\end{mathpar}
+
 
 \subsection{Elimination of intermediate variables}
 
