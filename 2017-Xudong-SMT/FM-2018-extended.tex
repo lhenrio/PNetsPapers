@@ -680,7 +680,7 @@ each property, a corresponding architecture is identified\,\footnote{%
 %
   The current approach relies on taxonomies of predefined
   architectures.  Future work may include automatic synthesis of
-  architectures from, \eg CTL or a similar logic. 
+  architectures from, \eg[,] CTL~\cite{BaierKatoen2008} formulae.
 %
 } and applied to the model, thereby potentially introducing additional
 coordinator components and modifying the connectors that define
@@ -1318,21 +1318,10 @@ our algorithm.
 \subsection{Result for the running example}
 \label{section:resultOA}
 
-On this example, the tool builds 184 open
-transitions, out of which 173 are detected unsatisfiable by Z3, we
-get only 11 results left; the resulting open automaton is shown in
-Fig. ~\ref{schema:resultOA}, together with its open transitions.
-
-To improve the readability of this figure, we used the following conventions:
-we omit the transitions of the two pLTS, and the set of ``working''
-holes; and we directly write the resulting action as first element of
-each OT, rather than including it as an equality inside the
-predicate. 
-
-Remark that only 3 global states out of the possible 6 are reachable
-here. \TODO{it would be good to express here maybe 2 properties of the
-  architecture, maybe one taken fromm the original study, and another
-  one involving the timer data (number of ticks ?)}
+For this example, the tool builds 184 open transitions, whereof 173
+are detected unsatisfiable by Z3.  The resulting open automaton, with
+3 reachable global states (out of the possible 6) and 11 open
+transitions, is shown in Fig.~\ref{schema:resultOA}.
 
 \begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{XFIG/FailureTimerOA}}
@@ -1340,6 +1329,43 @@ here. \TODO{it would be good to express here maybe 2 properties of the
   \label{schema:resultOA}
 \end{figure}
 
+To improve the readability of this figure, we used the following conventions:
+we omit the transitions of the two pLTS, and the set of ``working''
+holes; and we directly write the resulting action as first element of
+each OT, rather than including it as an equality inside the
+predicate.
+%
+Notice, however that the loop transitions
+$\underline{\mathit{resume}}$ in states $\ostate{s0,t0}$ and
+$\ostate{s2,t0}$, corresponding, respectively, to open transitions
+$ot_2$ and $ot_9$ in Fig.~\ref{schema:ots} of
+App.~\ref{appendix:fullOutput}, involve $\OTvar{resume(false)}$ from
+the two pLTS, \ie only the hole, corresponding to the operand
+component of the Failure Monitor architecture, executes $\PortResume$.
+
+Failure Monitor enforces 1)~the safety property \emph{``the
+  system reset never happens, unless asked for by a timeout
+  following a failure''}, formalised in CTL by
+%
+\[
+\varphi \land \mathtt{AG} (\PortReset \rightarrow \varphi)\,,
+\quad\text{where}\quad
+%
+\varphi = \mathtt{A} [\lnot \PortReset\ \mathtt{W}\ \PortAsk]
+\land \mathtt{A} [\lnot \PortAsk\ \mathtt{W}\ \PortFail]
+\]
+%
+($\mathtt{W}$ being the \emph{weak until} operator) and 2)~the
+liveness property \emph{``a reset will be fired when asked for by
+  a timeout''}:
+%
+$\mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset)$.
+%
+
+
+\TODO{it would be good to express here maybe 2 properties of the
+  architecture, maybe one taken fromm the original study, and another
+  one involving the timer data (number of ticks ?)}
 
 
 
@@ -2409,7 +2435,7 @@ $\begin{array}{r@{}l}
 
 $\begin{array}{r@{}l}
     ot_2  = &\openrule{\{s0 \xrightarrow{\OTvar{resume(false)}} s0, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_2}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_2=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\OTland v_2=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
     \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
     	    {\ostate{s0,t0} \xrightarrow{v_2} \ostate{s0,t0}}\\
 \end{array}$
@@ -2450,7 +2476,7 @@ $\begin{array}{r@{}l}
 
 $\begin{array}{r@{}l}
     ot_9  = &\openrule{\{s2 \xrightarrow{\OTvar{resume(false)}} s2, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_9}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_9=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_9=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_9=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\OTland v_9=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
     \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
     	    {\ostate{s2,t0} \xrightarrow{v_9} \ostate{s2,t0}}\\
 \end{array}$
