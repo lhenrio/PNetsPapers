@@ -1065,7 +1065,7 @@ Assume that there is a collection of $n$ subnets $L = {s_1, s_2, ...,
 subnet $s_i$ and ``$-$'' means the subnet is not involved.  
 Then the combination $\texttt{COMB}$, a set of n-tuples, is the
 cartesian product of sets :  
-\[\texttt{COMB} : (\inactive\cup ot_1) \times (\inactive\cup ot_2)\times ... \times (\inactive\cup ot_n) .\]
+$\texttt{COMB} : (\inactive\cup ot_1) \times (\inactive\cup ot_2)\times ... \times (\inactive\cup ot_n) .$
 
 %Algorithm 2 shows the combining algorithm for enumerating all possible
 %working status combinations from subnets. Dealing with a list $TR$
@@ -1214,10 +1214,10 @@ global state (variables of different pLTS are distinct). We define:
 
 %{s0---delta-->s0},   {---:hb_P:12:1-->},   (:ra:11:1=l)/\(delta=:ra:11:1)/\(var_s0=0)/\(:hb_P:12:1=a1:sva_SV0:1:1)/\(:ra:1:1=a1:sva_SV0:1:1)/\(a1:sva_SV0:1:1!=delta(x)),   {var_s0 := 1}
 $\begin{array}{r@{}l}
-    ot  = &\openrule{\{0 \xrightarrow{\OTvar{resume(false)}} 0, 0 \xrightarrow{\OTvar{start(true)}} 1\}, ~~\{\xrightarrow{hb}\},~~\OTvar{resume(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
-    			     \OTland \OTvar{start(true)}=\OTvar{start(}\OTvar{b}_2\OTvar{)} \OTland \OTvar{hb}=\OTvar{fail(}\OTvar{b}_0\OTvar{)} \OTland \OTvar{v}=\OTvar{\underline{fail}}\\
-			     \OTland \OTvar{b}_1 = \OTvar{b}_2 \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
-    	   {\ostate{00} \xrightarrow{\OTvar{v}} \ostate{01}}\\
+    ot  = &\openrule{\{s1 \xrightarrow{\OTvar{fail(false)}} s1, t1 \xrightarrow{\OTvar{resume(true)}} t0\}, ~~\{\xrightarrow{hb}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(true)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland \OTvar{hb}=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland \OTvar{v}=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2\\
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	   {\ostate{s1,t1} \xrightarrow{\OTvar{v}} \ostate{s1,t0}}\\
   \end{array}$
 \caption{One of the unsatisfiable open transitions in FailureTimer}  \label{schema:unsat-ot}
 \end{figure}
@@ -1793,10 +1793,8 @@ Then in pNet API these operators or constants can be declared as:
 AlgebraSort Action = new AlgebraSortImpl("Action");
 AlgebraSort Channel = new AlgebraSortImpl("Channel");
 AlgebraSort Data = new AlgebraSortImpl("Data");
-Action.addConstructor("Emit", 
-	{"Chan_E", "Value_E"}, {Channel, Data});
-Action.addConstructor("Receive", 
-	{"Chan_E", "Value_E"}, {Channel, Data});
+Action.addConstructor("Emit", {"Chan_E", "Value_E"}, {Channel, Data});
+Action.addConstructor("Receive", {"Chan_E", "Value_E"}, {Channel, Data});
 Action.addConstructor("Tau");
 \end{lstlisting}
 
@@ -2084,8 +2082,8 @@ $\{(sel_i, sort_i)\}_{i\in[1..n]}$.
   (declare-datatypes Data ())
   (declare-datatypes Channel ())
   (declare-datatypes ()
-      ((Action (Emit (Chan\_E Channel) (Value\_E Data))
-               (Receive (Chan\_R Channel) (Value\_R Data))
+      ((Action (Emit (Chan_E Channel) (Value_E Data))
+               (Receive (Chan_R Channel) (Value_R Data))
                Tau )))
   \end{lstlisting}
 \end{example}
@@ -2137,7 +2135,7 @@ well-formed and well-typed.
 		\\\specialrule{0em}{3pt}{3pt}
 		Open transition: 
 		\\
-		$\dfrac{Pred \translate lst_1~~Ass \translate lst_2}{ot(Pred, Assign) \translate lst_1 lst_2}$
+		$\dfrac{Pred \translate lst_1~~Ass \translate lst_2}{ot(Pred, Ass) \translate lst_1 lst_2}$
 		\\\specialrule{0em}{3pt}{3pt}
 		Predicate: & Predicate conjunct:
 		\\
@@ -2153,7 +2151,7 @@ well-formed and well-typed.
 		\\\specialrule{0em}{3pt}{3pt}
 		Assignment: 
 		\\
-		$\dfrac{Assign = \bigwedge\limits_{k\in K}(x_k, a_k)~~x_k\in SVar(gs)~~a_k = Ass(x_k)}{Assign \translate \texttt{map} \translate (x_k, a_k)}$
+		$\dfrac{Ass = \bigwedge\limits_{k\in K}(x_k, a_k)~~x_k\in SVar(gs)~~a_k = Assigns(x_k)}{Ass \translate \texttt{map} \translate (x_k, a_k)}$
 		\\\specialrule{0em}{3pt}{3pt}		
 		$\dfrac{a_k = e_1,...,e_n}{(x_k, a_k) \translate \texttt{(assert (or (= }x_k\texttt{ map} \longrightarrow e_1\texttt{)}\texttt{...(= }x_k\texttt{ map} \longrightarrow e_n\texttt{)}  \texttt{))}}$
 		\\\\\specialrule{0em}{1pt}{1pt}
@@ -2420,6 +2418,73 @@ OT ------------------------------------------------------------
         <s2_t0>-----:ra:1:6----><s2_t0>
 \end{lstlisting}
 
+\begin{figure}[h]  
+$\begin{array}{r@{}l}
+    ot_1  = &\openrule{\{s0 \xrightarrow{\OTvar{fail(true)}} s1, t0 \xrightarrow{\OTvar{start(true)}} t1\}, ~~\{\xrightarrow{hb_1}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{start(true)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_1=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_1=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	   {\ostate{s0,t0} \xrightarrow{v_1} \ostate{s1,t1}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_2  = &\openrule{\{s0 \xrightarrow{\OTvar{resume(false)}} s0, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_2}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_2=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{t := 4\}}
+    	    {\ostate{s0,t0} \xrightarrow{v_2} \ostate{s0,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_3  = &\openrule{\{\}, ~~\{\xrightarrow{hb_3}\},~~hb_3=\OTvar{finish}\OTland v_3=\OTvar{finish}, ~~\{\}}
+    	    {\ostate{s0,t0} \xrightarrow{v_3} \ostate{s0,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_4  = &\openrule{\{s1 \xrightarrow{\OTvar{fail(false)}} s1, t1 \xrightarrow{\OTvar{start(false)}} t1\}, ~~\{\xrightarrow{hb_4}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{start(false)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_4=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_4=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	   {\ostate{s1,t1} \xrightarrow{v_4} \ostate{s1,t1}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_5  = &\openrule{\{s1 \xrightarrow{\OTvar{resume(true)}} s0, t1 \xrightarrow{\OTvar{resume(true)}} t0\}, ~~\{\xrightarrow{hb_5}\},~~\OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\OTland v_5=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	    {\ostate{s1,t1} \xrightarrow{v_5} \ostate{s0,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_6  = &\openrule{\{t1 \xrightarrow{\OTvar{tick}} t1\}, ~~\{\},~~t\neq 0\OTland v_6=\OTvar{\underline{tick}}, ~~\{t := t-1 \}}
+    	   {\ostate{s1,t1} \xrightarrow{v_6} \ostate{s1,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_7  = &\openrule{\{\}, ~~\{\xrightarrow{hb_7}\},~~hb_7=\OTvar{finish}\OTland v_7=\OTvar{finish}, ~~\{\}}
+    	    {\ostate{s1,t1} \xrightarrow{v_7} \ostate{s1,t1}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_8  = &\openrule{\{s1 \xrightarrow{\OTvar{timeout}} s2, t1 \xrightarrow{\OTvar{timeout}} t0\}, ~~\{\},~~t=0\OTland v_8=ask, ~~\{\}}
+    	   {\ostate{s1,t1} \xrightarrow{v_8} \ostate{s2,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_9  = &\openrule{\{s2 \xrightarrow{\OTvar{resume(false)}} s2, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_9}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_9=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\OTland v_9=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	    {\ostate{s2,t0} \xrightarrow{v_9} \ostate{s2,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_{10}  = &\openrule{\{s2 \xrightarrow{\OTvar{reset}} s0\}, ~~\{\},~~v_{10}=\OTvar{reset}, ~~\{\}}
+    	   {\ostate{s2,t0} \xrightarrow{v_{10}} \ostate{s0,t0}}\\
+\end{array}$
+
+$\begin{array}{r@{}l}
+    ot_{11}  = &\openrule{\{\}, ~~\{hb_{11}\},~~hb_{11}=\OTvar{finish}\OTland v_{11}=\OTvar{finish}, ~~\{\}}
+    	   {\ostate{s2,t0} \xrightarrow{v_{11}} \ostate{s2,t0}}\\
+\end{array}$
+\caption{The open transitions of the open automaton}  \label{schema:ots}
+\end{figure}
 
 \subsection{Scaling up: several subsystems on the same bus}
 
