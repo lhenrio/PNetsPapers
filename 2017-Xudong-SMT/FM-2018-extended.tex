@@ -2,6 +2,7 @@
 
 
 \documentclass{lncs/llncs}
+\usepackage{etex}
 
 \usepackage[T1]{fontenc}
 % \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
@@ -42,6 +43,7 @@
 \usepackage[list=true]{subcaption}
 
 \usepackage{soul}               % Highlighting: \hl, \so, \ul
+
 \soulregister{\st}{8}
 \soulregister\cite7
 \soulregister\citep7
@@ -63,7 +65,9 @@
 \usepackage[colorinlistoftodos,bordercolor=white]{todonotes}
 %% \usepackage[disable,colorinlistoftodos,bordercolor=white]{todonotes}
 
-\newcommand{\noteSB}[2][color=green!40, size=\tiny]{\todo[#1]{{\bf Note: } {#2}}}
+\newcommand{\noteSB}[2][color=green!40, size=\tiny]{\todo[#1]{{\bf
+      Note: } {#2}}}
+\newcommand{\noteEM}[2][color=blue!40, size=\tiny]{\todo[#1]{{\bf Eric: } {#2}}}
 \newcommand{\noteInSB}[2][inline,color=green!40]{\todo[#1]{{\bf Note: } {#2}}}
 
 
@@ -375,15 +379,16 @@ Isabelle~\cite{blanchette:FroCoS2011} or others.
 \paragraph{Structure.}
 In section
 \ref{section:pnets} we give a description and a formal definition of
-the pNet model, as found in previous publications. Then in
-\ref{section:examples} we present a simple example that will
-illustrate the rest of the paper.
-Section \ref{section:op-semantics} recalls the operational semantics
-of pNet, including its structural rules.
-Section \ref{section:implementation} explains in details our
-implementation within the Vercors platform, and shows the full result of
-the semantic computation on the running example.
-Finally we conclude and discuss perspectives in section
+the pNet model, as found in previous publications. Then in section
+\ref{section:examples} we present our use-case, based on an
+industrial-inspired study of the control software of nano-satellites,
+specified using the BIP language. 
+Section \ref{section:op-semantics} recalls briefly the operational semantics
+of pNet.
+Section \ref{section:implementation} explains in details the algorithm
+used to compute this semantics, including the interaction with Z3, and
+shows the full result of the semantic computation on the running example.
+Finally we conclude and discuss perspectives.
 \ref{section:conclusion}. 
 
 
@@ -641,7 +646,8 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 \end{itemize}
 \end{definition}
 
-
+In Fig.~\ref{schema:ArchFailure:pNet} we show examples of these
+constructs, with 2 pLTSs and one pNet node encoding our use-case.
 
 
 
@@ -664,7 +670,7 @@ model, will also hold by construction on the generated code.
 In this context, the notion of \emph{architecture} was proposed
 in~\cite{AttieBBJS16-architectures-faoc} as a mechanism for ensuring
 correctness by construction during the design of BIP models.
-Architecutres can be viewed as operators transforming BIP models.
+Architectures can be viewed as operators transforming BIP models.
 They formalise design patterns, which enforce global properties
 characterising the coordination among the components of the system.
 The architecture-based design process in BIP takes as input a set of
@@ -761,13 +767,15 @@ units.\noteSB{Here, it would be nice to explain the role of the
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\columnwidth]{XFIG/FailureTimerPNET}
-  \caption{pNet encoding of the FailureTimer architecture}
+  \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET}
+  \caption{pNet encoding of the FailureTimer architecture
+  \noteEM{A little too small for me, my eyes are getting tired...}}
   \label{schema:ArchFailure:pNet}
 \end{figure}
 
 
-\noteSB{SV2 should not be closed;\\SV0, SV1: $\cup \rightarrow \lor$}\hl{%
+\noteSB{SV2 should not be closed;\\SV0, SV1: $\cup \rightarrow \lor$}
+%\hl{%
 %
 Figure~\ref{schema:ArchFailure:pNet} shows a pNet encoding of the
 above Failure Monitor architecture.  This encoding is structural: each
@@ -785,19 +793,20 @@ added loops carry the value $\false$ (\eg $\cstate{2}
 \goesto{\PortFail(\false)} \cstate{2}$), 3)~add to the corresponding
 synchronisation vectors the Boolean predicate encoding the connector
 structure.  For example, $SV0$ encodes the connector discussed above:
-the predicate $b1 = b2 \land b1 \lor b2 \Rightarrow b0$ means that the
+the predicate $(b1=b2) \land (b1\lor b2 \Rightarrow b0)$ means that the
 ``true'' transitions $\NameCtrl.\PortFail$ and $\NameTimer.\PortStart$
 can only fire together ($b1 = b2$) and whenever one of them fires,
 $\NameOprnd.\PortFail$ must fire also ($b1 \lor b2 \Rightarrow b0$).
 This encoding can be systematically obtained for any hierarchical BIP
 connector~\cite{BliSif10-causal-fmsd}.
 %
-}
+%}
 \noteSB{
 %
   Eric, could you please check my pNet terminology in this paragraph?
 %
 }
+\noteEM{Done, it's ok.}
 %
 Although, for the sake of brevity, this encoding does not translate
 the maximal progress priority, it can be easily extended to do so, by
@@ -931,9 +940,14 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
   synchronizing the initial actions of pLTSs \texttt{Failure} and
   \texttt{Timer}, with an action of the hole \texttt{B} equal to
   \texttt{fail}. The local variable \texttt{t} of the \texttt{Timer}
-  is assigned to its initial value \texttt{Max}. \TODO{may be the
-    place to mention the ``fresh variable'' names, rather than in th
-    eZ3 syntax figure}
+  is assigned to its initial value \texttt{Max}.
+In fact this OT is displayed in a simplied, human readable form. The
+raw output of the tool is slightly more difficult to read, in
+particular it uses structured names for the fresh variables generated
+by the algorithm, allowing tracability of the result (see
+Appendix~\ref{appendix:varaibles}). A full output of 
+the use-case is provided in Appendice~\ref{appendix:fullOutput}.
+  
   \label{OT:lotos-composed}
         \begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
@@ -1631,6 +1645,7 @@ $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
 
 
 \section{Variable managment}
+\label{appendix:varaibles}
 The variables in each synchronisation vector are considered local: for
 a given pNet expression, we must have fresh local variables for each
 occurrence of a vector (= each time we instantiate rule
@@ -2339,10 +2354,8 @@ Actually, what happened is similar if there is a hole behavior instead of a subn
 
 
 
-\section{Full examples}
-
-\subsection{Full input for the FailureTimer architecture}
-\subsection{Full output for the FailureTimer open automaton}
+\section{Full output for the FailureTimer open automaton}
+\label{appendix:fullOutput}
 
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, frame=single]
    {s0---fail(true)-->s1, t0---start(true)-->t1}, {---:hb_B:13:1-->},
