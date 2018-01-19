@@ -331,7 +331,7 @@ In the article we show how:
 
 
 
-\paragraph{Related works}
+\paragraph{Related work.}
 
 %% \TODO{say that apart from the old work by J. Rathke, we know no other
 %%   research addressing our goals, and especially no attempts to develop
@@ -342,9 +342,10 @@ In the article we show how:
 %%   B-tools, or others like CVC4, as possible alternative to Z3}
 
 
-There is not much research work towards trying to develop symbolic bisimulation approaches
-for the value-passing process algebra and languages, as our long-term goals,
-especially no algorithm treatment of the symbolic systems developed by
+%% There is not much research work towards trying 
+Very few attempts were made to develop symbolic bisimulation approaches
+for the value-passing process algebras and languages\mdash our long-term goals\mdash
+especially, there is no algorithmic treatment of the symbolic systems developed by
 interacting with automatic theorem provers. The closest work is the
 one already mentioned from J. Rathke~\cite{HennessyRathke:TCS98},
 who developed the symbolic bisimulation for a
@@ -432,7 +433,7 @@ denote classically $\overline{a}$ a family when the indexing set is
 irrelevant.  $\uplus$ is the disjoint union on indexed sets.
 
 \paragraph*{Term algebra.}
-Our models rely on a notion of parameterized actions, that are
+Our models rely on a notion of parameterized actions that are
 symbolic expressions using data types and variables. As we want to encode
 the low-level behavior of possibly very different
 programming languages, we do not want to impose one specific algebra
@@ -447,7 +448,7 @@ vectors to express various kinds of communication or synchronization mechanisms.
 Formally, we assume the existence of a term algebra $\Talg$,
 where $\Sigma$ is the signature of the data and action constructors,
 and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
-data expressions $\mathcal{E}_\P$, including a set of boolean
+data expressions $\mathcal{E}_\P$, including a set of Boolean
 expressions $\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
 On top of $\mathcal{E}_\P$ we build the action algebra
 $\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
@@ -456,57 +457,56 @@ naturally action terms will use data expressions as sub-terms.
 The function $\vars(t)$ identifies the set of variables in a term
 $t\in\AlgT$.
 
-pNets can encode naturally the notion of input actions as found
-e.g. in value-passing CCS 
+pNets can encode naturally the notion of input actions as found,
+\eg in value-passing CCS 
 \cite{Milner89} or of usual point-to-point message passing calculi,
 but it also allows 
-for more general mechanisms, like gate negotiation in Lotos, or broadcast
+for more general mechanisms, like gate negotiation in Lotos~\hl{\cite{lotos}}, or broadcast
 communications.
 
 \paragraph*{Algebra presentations.}
 In practice, the parameterization of the pNet model by some specific
 action algebra is realized by the definition of an ``algebra
 presentation''. It will be used to check the
-well-formness of a pNet system, and to define the translation of the pNet
+well-formedness of a pNet system, and to define the translation of the pNet
 semantics into the SMT engine input language.
 
 \begin{definition}
-  An Algebra Presentation is a pair $\mathcal{P}=<Sorts,Constrs,Ops>$ where:
+  An \emph{algebra presentation} is a triple $\mathcal{P}=\langle\mathit{Sorts},\mathit{Constrs},\mathit{Ops}\rangle$, where
 
   \begin{itemize}
-  \item $Sorts$ is a set of Sort names
-    \footnote{Later we may want to extend this with Sort constructors,
-      like Array or Pair, but this is not needed now}
-  \item $Constrs$ is a set of constructor operators, with $Con$ the
-    constructor name, and arity: $arity(Con)=n \in \mathbb{N}$,
-    and with their signature and their associated selectors,
-    of the form: '$Con : (sel_1,sort_1), ... , (sel_n,sort_n) -> sort$'.
-    For each argument, the pair $(sel_i,sort_i)$ defines an auxiliary
-    operator of name $sel_i$ with signature $sel_i : sort -> sort_i$.
-    \item $Ops$ is a set of other (auxiliary) operators, with their
-      arity and signature, of the form: $Op : sort_1, ...  sort_n ->
-      sort$
-      \item $Constrs(sortname), Sels(sortname)$, respectively define the set of
-        constructors and selectors of sort $sortname$
+  \item $Sorts$ is a set of \emph{sorts}\noteSB{Commented out a footnote here\mdash check if still necessary.}
+    %% \footnote{Later we may want to extend this with Sort constructors,
+    %%   like Array or Pair, but this is not needed now}
+  \item $\mathit{Constrs}$ is a set of \emph{constructor operators}: for each $\mathit{Con} \in \mathit{Constrs}$, $arity(Con)=n \in \mathbb{N}$ is its arity 
+    and '$Con : (\mathit{sel}_1,\mathit{sort}_1), \dots, (\mathit{sel}_n,\mathit{sort}_n) \rightarrow \mathit{sort}$' is its signature with the associated selectors.
+    For each argument, the pair $(\mathit{sel}_i,\mathit{sort}_i)$ defines an auxiliary
+    operator of name $\mathit{sel}_i$ with signature $\mathit{sel}_i : \mathit{sort} \rightarrow \mathit{sort}_i$.
+    \item $Ops$ is a set of \emph{auxiliary operators}, with their
+      arity and signature, of the form: $Op : \mathit{sort}_1, \dots,  \mathit{sort}_n \rightarrow
+      \mathit{sort}$
+      \item $\mathit{Constrs}(\mathit{sortname})$ and $\mathit{Sels}(\mathit{sortname})$ are, respectively, the sets of
+        constructors and selectors of the sort $\mathit{sortname}$
   \end{itemize}
-  All sorts and operator names must be distinct.\\
-  Amongst Constructors, those of arity 0 are called constants, and we
-  define $Consts(\mathcal{P}) = \{Con \in Constrs. arity(Con)=0\}$.
+  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
+  Among constructors, those of arity 0 are called \emph{constants}:
+  $\mathit{Consts}(\mathcal{P}) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
 \end{definition}
+
 
 Sorts \texttt{Bool} and \texttt{Int} are predefined with standard operators.
 Sort \texttt{Action} also, with a constructor \texttt{Synchro} denoting
 a synchronized action, i.e. an ``internal'' action that cannot be
 further synchronized with the environment. It also comes with an
 overloaded \texttt{FUN} constructor, used to build actions with
-arguments, that will be instanciated to the required sorts for a given
+arguments, that will be instantiated to the required sorts for a given
 pNet.
 
-\begin{table}\caption{\label{table:BIPalgebra}\leftline{Algebra
+\begin{table}[t]\caption{\label{table:BIPalgebra}\leftline{Algebra
       Presentation: predefined Sorts and Operators}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Constructors & Other Operators
+		Sort & Constructors & Auxiliary Operators
                 \\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Bool    			&
@@ -519,7 +519,7 @@ pNet.
 		Int 				&
                 ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
                 $- \texttt{(unary)},\ +,\ -
-                \texttt{(binary)},\ \times,\ \div, \texttt{etc.}$
+                \texttt{(binary)},\ \times,\ \div \text{ \etc}$
 %                \\\specialrule{0em}{1pt}{1pt}
 %                \textsl{for any sort} & & $=,\ \ne$
 		\\\hline\specialrule{0em}{1pt}{1pt}
@@ -534,32 +534,32 @@ pNet.
 \label{section:pNets}
 
 
-A pLTS is a labelled transition system with variables; variables can be
+A pLTS is a labelled transition system with variables, which can be
 manipulated, defined, or accessed inside states, actions, guards, and
 assignments. 
-
+%
 %Without loss of generality and to simplify the formalization, we suppose 
 %here that variables are local to 
 %state: each state has its set of variables disjoint from the others. Transmitting 
 %variable values from one state to the other can be done by explicit assignment. 
-
-Each state has its set of variables called $State\ variables$, 
-which can only be modified by the assignment in the transitions targeting its owner state. 
+%
+Each state has its set of variables called \emph{state variables}, 
+which can only be modified by the assignment in transitions targeting this state. 
 A global state variable of a pLTS is a variable $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$.
-
+%
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
-Note that we make no assumption on finiteness of the set of states nor
+Note that we make no assumptions on finiteness of the set of states, nor
 on finite branching of the transition relation.
 
-We first define the set of actions a pLTS can use, let $a$
+We first define the set of actions a pLTS can use.  Let $a$
 range over action labels, $\symb{op}$ are operators, and $x_i$ range over
 variable names. Action terms are:
 \[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
   \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
   p_i&::=& ~\symb{Expr}&\text{parameters}\\
-  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
+  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,\dots,\symb{Expr}_n)&\text{expressions}
 \end{array}
 \]
 %\[
@@ -577,58 +577,60 @@ variable names. Action terms are:
 %% appear somewhere else in the same action term:
 %% $p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$]}
 
+
 \begin{definition}[pLTS]
 \label{pLTS}
+\noteSB{It's a bit strange that algebra presentations are not referred to here}
 A pLTS is a tuple
 $pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
-$S$ is a set of states.
+$S$ is a set of \emph{states}.
 \item[$\bullet$]
-$s_0 \in S$ is the initial state.
-\item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
-$L$ is the set of labels of the form
+$s_0 \in S$ is the \emph{initial state}.
+\item[$\bullet$] $\to \subseteq S \times L \times S$ is the \emph{transition relation}, with
+$L$ the set of labels of the form
 $\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
-where $\alpha \in\AlgA$ is a parameterized action, $e_b \in
-\AlgB$ is a guard, and the variables $x_j\in P$
+where $\alpha \in\AlgA$ is a parameterized action, \noteSB{Shouldn't this be $e_b \in \AlgB_{\mathcal{P}}$, for {\em some} $\mathcal{P}$?}\hl{$e_b \in
+\AlgB$} is a guard, and the variables $x_j\in P$
 are assigned the expressions $e_j\in \AlgE$.
 If 
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		J}\rangle} s'\in \to $ then 
 		$\vars(\alpha)\!\subseteq\! \vars(s)$, 
-		$\vars(e_b)\!\subseteq\! \vars(s')$, and
+		\noteSB{I would expect $\vars(e_b)\!\subseteq\! \vars(s)$, since the guard has to be tested on the source state}\hl{$\vars(e_b)\!\subseteq\! \vars(s')$}, and
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
 x_j\!\in\!\vars(s')$.
-\item[$\bullet$]
-The $x_j$ here are $state\ variables$ of state $s'$. 
-
-
+%\item[$\bullet$]
+The $x_j$ are \emph{state variables} of %% the state
+$s'$. 
 \end{itemize}
 \end{definition}
 
-Now we define
-pNet nodes, as constructors for hierarchical behavioral structures.
+Now, we define
+pNet nodes as constructors for hierarchical behavioral structures.
 A pNet node has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of Holes, playing the role of process parameters.
+set of \emph{holes}, playing the role of process parameters.
 
-A composite pNet consists of a set of sub-pNets exposing
-a set of actions, each of them triggering internal actions in each of
-the sub-pNets. The synchronization between global actions and
-internal actions is given by  \emph{synchronization vectors}: a
-synchronization vector synchronizes one or several internal actions, and
-exposes a single resulting global action.
+A composite pNet consists of a set of sub-pNets, each exposing
+a set of actions. %% , each of them triggering internal actions in each of
+%% the sub-pNets.
+The relation between actions of a pNet and those of its sub-pNets
+%% internal actions is
+are given by  \emph{synchronization vectors}, which %% : a
+%% synchronization vector 
+synchronize one or several internal actions, and
+expose a single resulting global action.
 
 
 \begin{definition}[pNets]\label{def-pnets}
-A pNet is a hierarchical structure which leaves are pLTSs and holes:\\
-$\pNet\triangleq pLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$
+A pNet is a hierarchical structure, whereof the leaves are pLTSs and holes:
+$\pNet::= pLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$,
 where
 \begin{itemize}
-\item[$\bullet$] $I \in \I$ is the set over which sub-pNets are indexed.
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
+\item[$\bullet$] \noteSB{Why is one $\I$ and the other $\I_\P$?}\hl{$I \in \I$ and $J\in\I_\P$} are the sets over which are indexed sub-pNets and holes, respectively, such that: $I\cap J=\emptyset$ and  $I\cup J\neq\emptyset$.
 
-\item[$\bullet$] $J\in\I_\P$ is the set over which holes are indexed.
-$I$ and $J$ are \emph{disjoint}: $I\cap J=\emptyset$,  $I\cup J\neq\emptyset$
+\item[$\bullet$] $\pNet_i^{i\in I}$ is a family of sub-pNets.
 
 \item[$\bullet$] $S_j \subseteq \AlgA$ is a set of action terms,
   denoting the $\Sort$\footnote{The definition of $Sorts$ (the
@@ -637,11 +639,11 @@ $I$ and $J$ are \emph{disjoint}: $I\cap J=\emptyset$,  $I\cup J\neq\emptyset$
   and all holes in a pNet), can be found in \cite{henrio:Forte2016}.}
   of hole $j$. 
 
-\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
-  synchronization vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
+\item[$\bullet$] $\symb{SV}_k^{k\in K}$, with $K\in\I_\P$, is a set of
+  synchronization vectors: for each $k\!\in\! K$,
+  $\symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
-  $\forall i\!\in\! I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,
+  $\forall i\!\in\! I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$\noteSB{What is the sort of a pNet? Should we define $\Sort(\pNet_i) \triangleq \{\Label(\symb{SV}_k\,|\,k \in K\}$?}, 
   $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!S_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
@@ -651,8 +653,8 @@ $\Label(\symb{SV}_k) = \alpha'_k$.
 \end{itemize}
 \end{definition}
 
-In Fig.~\ref{schema:ArchFailure:pNet} we show examples of these
-constructs, with 2 pLTSs and one pNet node encoding our use-case.
+In Fig.~\ref{schema:ArchFailure:pNet}, we show examples of these
+constructs, with two pLTSs, one hole and one pNet node encoding our running example.
 
 
 
@@ -685,7 +687,7 @@ each property, a corresponding architecture is identified\,\footnote{%
 %
   The current approach relies on taxonomies of predefined
   architectures.  Future work may include automatic synthesis of
-  architectures from, \eg[,] CTL~\cite{BaierKatoen2008} formulae.
+  architectures from, \eg CTL~\cite{BaierKatoen2008} formulae.
 %
 } and applied to the model, thereby potentially introducing additional
 coordinator components and modifying the connectors that define
@@ -764,10 +766,10 @@ For example, the port $\NameOprnd.\PortFail$ will never fire alone in
 a global state, where both $\NameTimer.\PortStart$ and
 $\NameCtrl.\PortFail$ are enabled.
 %
-Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
-$\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
-a failure, the operation performed by $\NameOprnd$ cannot finish
-unless it is explicitly resumed or the system is reset.
+%% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
+%% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
+%% a failure, the operation performed by $\NameOprnd$ cannot finish
+%% unless it is explicitly resumed or the system is reset.
 
 
 Application of the Failure Monitor architecture ensures that, whenever
@@ -1350,11 +1352,11 @@ Failure Monitor enforces 1)~the safety property \emph{``the
   following a failure''}, formalised in CTL by
 %
 \[
-\varphi \land \mathtt{AG} (\PortReset \rightarrow \varphi)\,,
-\quad\text{where}\quad
+\varphi \land \mathtt{AG} (\PortReset \rightarrow \varphi),
+\quad\text{where}\
 %
 \varphi = \mathtt{A} [\lnot \PortReset\ \mathtt{W}\ \PortAsk]
-\land \mathtt{A} [\lnot \PortAsk\ \mathtt{W}\ \PortFail]
+\land \mathtt{A} [\lnot \PortAsk\ \mathtt{W}\ \PortFail],
 \]
 %
 ($\mathtt{W}$ being the \emph{weak until} operator) and 2)~the
@@ -1363,51 +1365,57 @@ liveness property \emph{``a reset will be fired when asked for by
 %
 $\mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset)$.
 %
+The satisfaction of the safety property could be established by
+applying symbolic model checking techniques.  However, in this
+example, it is obvious by inspection of the open automaton.  The
+satisfaction of the liveness property relies on the above observation
+that in the state $\ostate{s2,t0}$ only the reset transition involves
+$\NameCtrl$.  Therefore, under resonable scheduling assumptions,
+$\PortReset$ will always be fired.
 
 
-\TODO{it would be good to express here maybe 2 properties of the
-  architecture, maybe one taken from the original study, and another
-  one involving the timer data (number of ticks ?)}
+%% \TODO{it would be good to express here maybe 2 properties of the
+%%   architecture, maybe one taken from the original study, and another
+%%   one involving the timer data (number of ticks ?)}
 
 
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
 
-In this paper we presented the algorithm for generating an open
-automaton representing the semantics of an open pNet, and we described
-the implementation of the
-algorithm. Our implementation includes two main parts. First, we
-compute all the possible open transitions. The actions in pLTS and
-hole behaviors are composed in the algorithm while the generation of
+In this paper, we presented an algorithm for generating an open
+automaton representing the semantics of an open pNet.
+We have also presented our implementation, which comprises two main parts. Firstly, we
+compute all the possible open transitions. \noteSB{I do not understand this sentence. Suggestion: The actions of pLTS and hole behaviours are composed by the algoritm during the generation of predicates needed to match...(?)}\hl{The actions in pLTS and
+hole behaviors are composed in the algorithm, while the generation of
 predicate need to match the combinations of the subnets with the
-synchronization vectors. Some of the open transitions obtained at this
+synchronization vectors.}  Some of the open transitions obtained at this
 intermediate step, constructed in a structural manner from all
 possible combinations of possible logical predicates, may
 contain predicates which do not represent any possible concrete
 instantiations. 
-To get rid of these useless transitions, we use the SMT solver Z3 for checking the
-satisfiability of the predicate in each open transition. In
-order to do that, we encode into Z3 the action algebra presentation,
-the a representation of the predicates, before submitting them to the
-Z3 solver. We implemented our algorithm in the VerCors platform and use some
-running examples, encoding expressions from various process algebras, to test the
-algorithm. Our use-cases show that our encoding
-identifies successfully all unsatisfiable open transitions and that
-the resulting automaton reflects correctly the expected 
+Secondly, to get rid of these useless transitions, we use the SMT solver Z3 for checking the
+satisfiability of the predicate in each open transition. 
+To this end, we encode into Z3 the representations of the action algebra and
+the predicates before submitting them to the
+Z3 solver. We implemented our algorithm in the VerCors platform and 
+tested the algorithm on available examples, such as encoding expressions from various process algebras. Our case-studies show that our encoding
+successfully identifies all unsatisfiable open transitions and that
+the resulting automata correctly reflect the expected 
 movements of the encoded process expressions.   
 
-Among the questions arising during this work, an important one is the
-efficiency of Z3 for our needs. Z3 is famous for being very fast for
-solving very large sets of assertions, and this could be important for
-us. But we encountered  some problems during the implementation the
-checking method using Z3. For example, if the $functions$ and the
-$datatypes$ part of the algebra presentation we submit to the solver
-are independent with each other, then checking the $assertions$ is a
-simple work. However, $functions$ on recursive $datatypes$ make it
-more complex, some special rules might be defined by user for the
+Among the questions that have arised during this work, an important one is the
+efficiency of Z3 for our needs. Z3 is famous for being very fast in
+solving very large sets of assertions.%% , which could be important for
+%% us
+However, we encountered problems during the implementation of the
+checking method using Z3. For example, if the $\mathit{functions}$ and the
+$\mathit{datatypes}$ part of the algebra presentation that we submit to the solver
+are independent from each other, then checking the $\mathit{assertions}$ is 
+simple. However, $\mathit{functions}$ on recursive $\mathit{datatypes}$ make it
+more complex. Special rules might be defined by the user for the
 induction. Also, we need more evidence that dealing with more complex
-action algebras, that would involve axiomatizing their data structures
+action algebras, which would involve axiomatizing their data structures
 into Z3 theories, will indeed allow us to decide validity of
 predicates.
 We may also try other automatic theorem provers, depending on the structure of the proofs we need.
@@ -1421,9 +1429,9 @@ Naturally, our next goals after the generation of the open automata
 will be to model-check, and to check equivalence of  pNets. While
 model-checking open automata (with a suitable logic including
 predicates on data) seems easy to define, equivalence checking is more challenging.
-In previous paper, we
-have already found the FH-bisimulation, inspired by~\cite{deSimone85} as a
-suitable definition. But usual approaches of bisimulation by partition
+In a previous paper~\hl{\cite{x}}, we
+have already found the FH-bisimulation, inspired by~\cite{deSimone85}, to be a
+suitable definition. However, the usual approach of computing bisimulation by partition
 refinement does not work easily with symbolic transitions. In a first
 step we may want instead to define and implement an algorithm for
 checking that a given equivalence relation between open automata 
@@ -1739,7 +1747,7 @@ in order to keep the type-checking simple (see next section).
   and Operators}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Constructors & Other Operators
+		Sort & Constructors & Auxiliary Operators
                 \\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Bool    			&
@@ -1762,7 +1770,7 @@ in order to keep the type-checking simple (see next section).
       operator for the BIP algebra}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Constructors & Other Operators
+		Sort & Constructors & Auxiliary Operators
                 \\\hline\specialrule{0em}{1pt}{1pt} 
 		Action 			&  $\texttt{FUN\_Action\_Bool}$ &
 		\\\hline
@@ -1790,7 +1798,7 @@ single auxiliary value domain ``Data'', can be defined as:
       sorts and operators for the CCS algebra}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
-		Sort & Constructors & Other Operators
+		Sort & Constructors & Auxiliary Operators
                 \\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Channel, Data    			&
@@ -1918,13 +1926,13 @@ given the corresponding $\EPres$ and $\EEnv$.
 		$\dfrac{\EEnv \vdash x:A}{\EPres,\EEnv \vdash x:A}$ 
 		&  
 		&       		\\\specialrule{0em}{5pt}{5pt}
-		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
+		\multispan{2} (Binary operators, e.g.: $\land, \lor$ for Booleans, $+, -, \times, \div, \le, \ge$ for integers, etc.)								
 							
 		& 			\\\specialrule{0em}{3pt}{3pt}
 		$\dfrac{\EPres \vdash BinOp :: ty1, ty1 \rightarrow ty2 ~~\EEnv \vdash x_1:ty1 ~~\EEnv \vdash x_2:ty1}{\EPres,\EEnv \vdash x_1 ~BinOp~ x_2:ty2}$ 
 		& 
 		&       		\\\specialrule{0em}{3pt}{3pt}
-		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for booleans, - for integers)}	
+		\multicolumn{2}{l}{(Unary operators, e.g. $\lnot$ for Booleans, - for integers)}	
                 
 		& 			\\\specialrule{0em}{3pt}{3pt}
 		$\dfrac{\EPres \vdash UnOp :: ty1 \rightarrow ty2 ~~\EEnv \vdash x:ty1}{\EPres,\EEnv \vdash Unop~x:ty2}$   
@@ -2032,7 +2040,7 @@ We define here the translation of the algebra presentation, extended
 with the constant operators collected from the pNet. It produces the
 declaration of sorts (excepted Bool and Int) with their constructors
 and selectors as \texttt{declare-datatypes}, and the declaration of
-other operators as \texttt{declare-function} constructs.
+auxiliary operators as \texttt{declare-function} constructs.
 For sorts, we must distinguish the case of mutually defined sorts
 (e.g. edges and vertices in a graph), that must be declared within a
 single \texttt{declare-datatypes} construct. For this we define:
@@ -2084,7 +2092,7 @@ Let Pres = <Sorts, Constrs, Ops> an extended presentation
                        {constr \translate \texttt{(name($constr$) . sels)}}$
                        
 		&&       		\\\specialrule{0em}{1pt}{1pt}
-		\multicolumn{2}{l}{Other operators: }	
+		\multicolumn{2}{l}{Auxiliary operators: }	
                 
 		& 			\\\specialrule{0em}{1pt}{1pt}
 		$\dfrac{op : sort_1, ..., sort_n : sort}
@@ -2169,7 +2177,7 @@ well-formed and well-typed.
   assert = TrPredicate $(P_i)$.
 \end{itemize}
 
-% \TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for boolean expressions, + assignments}
+% \TODO{This is incomplete... Xudong: Conjunctive normal form, translation function for Boolean expressions, + assignments}
 
 \noindent
 \begin{tabular}{p{5cm}p{7cm}}
