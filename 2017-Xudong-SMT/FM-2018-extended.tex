@@ -503,7 +503,7 @@ arguments, that will be instanciated to the required sorts for a given
 pNet.
 
 \begin{table}\caption{\label{table:BIPalgebra}\leftline{Algebra
-      Presentation: predefined and BIP Sorts and Operators}}
+      Presentation: predefined Sorts and Operators}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
 		Sort & Constructors & Other Operators
@@ -513,7 +513,8 @@ pNet.
                 $\texttt{true},\ \texttt{false}$&
                 $\land,\ \lor,\ \neg,\ \implies,\ =,\ \ne$
                 \\\specialrule{0em}{1pt}{1pt} 
-		Action 			&  $\texttt{Synchro},\ \texttt{FUN\_Action\_Bool}$ &
+                %               		Action 			&  $\texttt{Synchro},\ \texttt{FUN\_Action\_Bool}$ &
+                Action 			&  $\texttt{Synchro},\ \texttt{FUN}$ &
                 \\\specialrule{0em}{1pt}{1pt}
 		Int 				&
                 ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
@@ -521,6 +522,10 @@ pNet.
                 \texttt{(binary)},\ \times,\ \div, \texttt{etc.}$
 %                \\\specialrule{0em}{1pt}{1pt}
 %                \textsl{for any sort} & & $=,\ \ne$
+		\\\hline\specialrule{0em}{1pt}{1pt}
+\multicolumn{3}{l}{\sl Extension for the BIP use-case of Fig.~\ref{schema:ArchFailure:pNet}}
+		\\\hline\specialrule{0em}{1pt}{1pt}
+                Action & \multicolumn{2}{l} \texttt{FUN\_Action\_Bool}, \texttt{}fail, resume, timeout, reset, start, tick, ask 
 		\\\hline
 	\end{tabular}
 \end{table}
@@ -963,8 +968,9 @@ the use-case is provided in appendice~\ref{appendix:fullOutput}.
 
 \paragraph{Structural Semantic Rules:}
 The semantics of pNet in term of open automata has been defined in
-\cite{henrio:Forte2016}. For convenience we include these 
-rules in appendix \ref{appendix:semRules}.
+\cite{henrio:Forte2016}, in the form of 2 structural rules, one for
+pLTSs, one for pNet nodes.. For convenience we include these rules in
+appendix \ref{appendix:semRules}. 
 
 
 \section{Generation of Open Automata}
@@ -974,8 +980,8 @@ semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
 Our algorithm starts with an open pNet, and builds its set of open
-transitions (OTs). Its main loop is a classical residual algorithm: starting
-from the initial global state, it pick a state in an unexplored set, and
+transitions. Its main loop is a classical residual algorithm: starting
+from the initial global state, it picks a state in an unexplored set, and
 computes all possible OTs, adding their target states in the
 unexplored set, until this set is empty. As the potential set of
 global states is finite (see \cite{henrio:Forte2016}), this terminates.
@@ -985,7 +991,7 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
   \label{alg1}
 \begin{algorithmic}[1]
 \Require The pNet node P.
-\State Initialize sets $U$, $E$ for unexplored/explored global states, $L$ for result OTs;
+\State Initialize sets $U=InitSate(P)$, $E=\emptyset$ for unexplored/explored global states, $L$ for result OTs;
 \While{!isEmpty(U)}
 	\State Chose $S$ in $U$;
 	\State OT = MakeTransitions(P, S);
@@ -995,21 +1001,21 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
 	\EndFor
 \EndWhile
 \State Prune the open transitions in $L$ using the SMT solver;
-\State \Return $L$;
+\State \Return $OA=Reachable(InitState(P),L)$;
 
 \end{algorithmic}  
 \end{algorithm}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet. 
-For pLTS at leaves, rule Tr1 simply take the pLTS transitions of the
+For pLTS at leaves, we simply take the pLTS transitions of the
 corresponding local state and build the predicate to generate the
 open transition. 
-On a pNet node to apply rule Tr2 we use two methods, combining and
-matching, to generate the new predicate of the open transitions in a
+On a pNet node we use two methods, combining and
+matching, to generate the predicate of the open transitions in a
 hierarchical manner.
 
-Last, at the root of the pNet, the predicate of each OT is translated
+Then, at the root of the pNet, the predicate of each OT is translated
 into SMTlib assertions, and checked for satisfiability. Unsatisfiable
 OTs are pruned, and the final open automaton is computed as the set of
 global states reachable by satisfiable OTs. 
@@ -1020,16 +1026,16 @@ global states reachable by satisfiable OTs.
 \caption{MakeTransitions()}
   \label{alg2}
 \begin{algorithmic}[1]
-\Require The pNet node P; The start global state S.
+\Require a pNet node Pn; a global state S.
 \State Initialize a list $l$, $L$ for sub-transitions/transitions.
-	\For{each Subnet in P}
-	\\ ~~~ $\setminus \setminus$ Recursively applying Tr1 or Tr2 on the sub-nodes.
+	\For{each Subnet in Pn}
+	~~~ $\setminus \setminus$ Recursively applying Tr1 or Tr2 on the sub-nodes.
                 \State Store MakeTransitions(Subnet, S) in $l$;
 	\EndFor
 	\For{each $sv \in SV$}
-		\State $comb = Combining(l)$;
-                 \State $ot = Matching(sv, comb, hole, v)$;
-                 \State Store $ot$ in $L$; 
+		\State $\overline{comb} = Combining(l)$;
+                 \State $ot = Matching(sv, \overline{comb}, hole, v)$;
+                 \State Store $ot$ in $L$; ~~~ $\setminus \setminus$ if Filter(ot) succeeds
 	\EndFor
 \State \Return $L$;
 \end{algorithmic}  
@@ -1052,12 +1058,13 @@ global states reachable by satisfiable OTs.
 \paragraph{Combining:}
 The combining method enumerate all the possible behaviours of the
 subnets, as all the possible combinations of their open transitions.
-Assume that there is a collection of $n$ subnets $L = {s_1, s_2, ...,
-  s_n}$, if we notate $ot_i$ to be the set of open transitions of the
-subnet $s_i$ and ``$-$'' means the subnet is not involved.  
-Then the combination $\texttt{COMB}$, a set of n-tuples, is the
+Assume that there is a collection of $n$ subnets
+$L = {s_1, s_2, ...,  s_n}$; we denote $\overline{ot}_i$ the set of open
+transitions of the 
+subnet $s_i$ and ``$-$'' means the subnet is not involved;
+then the combination $\overline{comb}$, a set of n-tuples, is the
 cartesian product of sets :  
-$\texttt{COMB} : (\inactive\cup ot_1) \times (\inactive\cup ot_2)\times ... \times (\inactive\cup ot_n) .$
+$\overline{comb} : (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times ... \times (\inactive\cup \overline{ot}_n).$
 
 %Algorithm 2 shows the combining algorithm for enumerating all possible
 %working status combinations from subnets. Dealing with a list $TR$
@@ -1076,7 +1083,7 @@ and the corresponding open transition.
 From a synchronization vector
 $sv_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'$
 and its guard $G_k$, a tuple of open transitions
-$C_n\in \texttt{COMB} = {(v_i)}^{i\in I}$, the hole behaviors $Hole$,
+$C_n\in \overline{comb} = {(v_i)}^{i\in I}$, the hole behaviors $Hole$,
 and a fresh variable representing the result action $v$, we build the
 predicate: 
 
@@ -1099,7 +1106,7 @@ There may be several reasons why such a matching would fail:
     cannot be matched (by unification) with the set $\{C_n\}$.
 \end {itemize}
 
-Each of these possible failures is more precise than the previous
+Each of these possible filters is more precise than the previous
 ones. But even when unification succeeds, it is still possible that
 the resulting predicate would be unsatisfiable, because of some
 incompatibility involving the guards. In our algorithm, we choose to
@@ -1142,25 +1149,19 @@ SMT engine.
 
 In a pLTS, there may be several incoming transitions 
 that assign potentially different values to a state variable.
-To handle such cases, the algorithm manages the assignments
-within a list for each pLTS.
-The list we used contains triples <$v$, $S$, $AssignRH$> 
-where $v$ is the variable in pLTS, $S$ is its owner state and
-$AssignRH$ is a list of expressions over other variables in the right
-hand side of assignments of $v$.
+To handle such cases, the algorithm manages for each pLTS state, as a
+list of expressions collected from the assignments of each state
+variable $v$.
+%% The list we used contains triples <$v$, $S$, $AssignRH$> 
+%% where $v$ is the variable in pLTS, $S$ is its owner state and
+%% $AssignRH$ is a list of expressions over other variables in the right
+%% hand side of assignments of $v$.
 % As a pragmatic extension to the formal definition, we also manage
 % ``global variables'', defined in all states of the pLTS.
 For a global state in the open automaton, getting the set of state
 variables (which may be used in a transition) will simply be the union
 of state variables of the individual pLTS states constituting this
-global state (variables of different pLTS are distinct). We define:
-\begin{itemize}
-  \item $SVars(gs)$ the state variables of all states in the global
-    state $gs$
-  \item $Assigns(svar)$ the set of possible assignments of variable
-      $svar$.
-\end{itemize}
-
+global state (variables of different pLTS are distinct).
 %There are some assignment on the variables in each of states of the pLTS (state variables), or just as global states of it (global variables). There is usually not only one assignment for a state variable, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, 
 
 
@@ -1188,7 +1189,8 @@ unsatisfiable open transition
 from the result of our example. It shows the case where
 the failure controller performs a ``$fail$'' action, while the timer
 executes a ``$resume$''. The chosen synchronization
-vector (SV0) does not match with these actions, as shown the predicate
+vector (SV0 from Fig.~\ref{schema:ArchFailure:pNet}) does not match
+with these actions, as shown by the predicate
 fragment ``resume(true)=start($b_2$)''. 
 
 \begin{figure}[t]
@@ -1198,20 +1200,20 @@ fragment ``resume(true)=start($b_2$)''.
     \OTland (b_1\lor b_2) \Rightarrow b_0, ~~\{\}}
     	   {\ostate{s1,t1} \xrightarrow{v} \ostate{s1,t0}}\\
   \end{mathpar}
-\caption{One of the unsatisfiable open transitions in FailureTimer}  \label{schema:unsat-ot}
+\caption{One of the unsatisfiable open transitions in the Failure Monitor pNet}  \label{schema:unsat-ot}
 \end{figure}
 
 Checking satisfiability requires some symbolic computation
 on the action expressions and the predicates, and this 
-may depend on the specific theory of the action algebra. 
+may depend on the specific theory of the action algebra datatypes. 
 The ``Modulo Theory'' part of SMT solvers is important here, so that
 the solver can use specific properties of each action algebra.
 
 
 \subsection{Translation to SMTlib}
 
-As the last step of \ref{alg1}, we use the SMT solver Z3 to check the
-satisfiability of each open transitions. More precisely, we translate
+We check the satisfiability of each open transitions
+using the SMT solver Z3. More precisely, we translate
 the OT predicate into a SMTlib assertion, in the context provided by
 the possible state variable assignments in the source state. In this
 section we describe the translation of the algebra presentation, of
@@ -1432,25 +1434,6 @@ different structure, strong bisimulation will be too strong a notion,
 and that we will have to define proper notions of weak equivalence or
 refinements. 
 
-Before that work, we need to reconsider the result open transitions
-from our algorithm. The ideal
-result that we showed in the bottom part of
-Fig.~\ref{schema:resultOA} is not the one generated by the algorithm,
-because the original one contains many intermediate
-variables, such as fresh local variables of synchronization
-vectors, and fresh result variables of intermediate open transitions.
-Such intermediate variables come from the way predicates are
-generated, and depends on the particular structure of the pNet. But
-they are not significant in the resulting behavior, and should be
-eliminated before comparing such behavior with another pNet.
-To eliminate the intermediate variables in the predicate, we want to define
-the set of the significant variables that we won't eliminate: the
-local variables of pLTS transitions, the hole behaviors and the result
-action at the top level.
-The result of the elimination will be simpler predicates, that can be
-successfully compared (e.g. by Z3) within the bisimulation checking
-algorithm.
-
 
 
 \bibliographystyle{lncs/splncs}
@@ -1616,7 +1599,35 @@ with finite synchronization sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
 (symbolic) transitions, has a finite automaton. The proof can be found
 in \cite{henrio:Forte2016}. 
- 
+
+In rule TR2, the generated predicate is composed of the conjunction of
+the predicates of the subnets' OTs, with the additional part encoding
+the application of the chosen synchronisation vector.
+In \cite{henrio:Forte2016} this last part is defined as:
+\[\MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+\begin{array}{l}
+\exists {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+\\~~\land
+\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\end{array}\]
+
+This definition is not constructive, but the existentialy quantified
+variable sets here correspond the subsets of subnets and holes that
+are effectively involved in vector $SV_k$.
+Within our algorithm, these subsets have been computed by $Combining$ and
+passed as arguments to the $Matching$ method, so
+we can construct this predicate fragment as:
+
+\[\Pred(SV, \overline{\pNet},\overline{S}, v) = 
+\begin{array}{l}
+\forall {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.
+\\
+v_m=a'_i\land \, b_j=b'_j \land v=v' \land G_k
+\end{array}\]
+\TODO{Eric: to be checked}
+
 
 \begin{theorem}[Finiteness of open-automata.]\\
 Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
@@ -1668,8 +1679,10 @@ The format of \emph{fresh variable} (renaming) is defined as:
 ``$\emph{prefix : tree\ index\ :\ counter}$''.
 \begin{itemize}
    \item[$\bullet$] $prefix$ identifies the kind of the
-     variable. current kinds are: sva (SV action), ra (result action), hb (hole behavior).
-   \item[$\bullet$] $tree\ index$ is the index of the node containing the variable in the tree-like structure of the pNet.
+     variable. Current kinds are: sva\_<SV> (action variable in vector
+     $SV$), ra (result action), hb\_<B> (behavior of hole $B$).
+   \item[$\bullet$] $tree\ index$ is the index of the node containing
+     the variable in the tree-like structure of the pNet. 
    \item[$\bullet$] $counter$ is the current value of the corresponding counter.
 \end{itemize}
 \end{definition}
@@ -1678,10 +1691,14 @@ The format of \emph{fresh variable} (renaming) is defined as:
 
 %$Prefix$ avoids the confusion between variables from different structures with the same name by attaching the type of the structure. $Tree\ index$ is given to every node of the pNets to mention which node the variable belongs to as pNets has a tree-like structure. To each node, the tree index is always a number sequence of the tree index of its higher level and the index of the node in this level at the last. $A\ set\ of\ counters$ is used to count the current times the SV, Hole, subnet invoked, or the number of possible OT generated to provide an identity. 
 
-For example, in the running example, the first possible behavior of
-the hole, it doesn't have a name, only have the prefix ``hb''. The
-hole is the second subnets of the root node so its ``tree index'' is
-``12''. The fresh variable name is ``$\OTvar{:hb:12:1}$''.
+For example, in the running example, in the raw output listing in
+Appendix~ref{}, in the first OT, you find variables: 
+\begin{itemize}
+   \item $\OTvar{:hb\_B:13:1}$ that is the behaviour of hole ``B''
+   \item $\OTvar{b1:sva\_SV0:1:1}$ variable ``b1'' from vector ``SV0''
+   \item $\OTvar{:ra:1:1}$ result action of the current OT
+\end{itemize}
+
 
 
 \section{Algebra presentations}
@@ -1938,10 +1955,40 @@ given the corresponding $\EPres$ and $\EEnv$.
   well-typed, and compute the type of each sub-expression.
 \end{remark}
 
+
+\section{Management of state variables}
+\label{appendix:translating-assignments}
+In a pLTS, there may be several incoming transitions 
+that assign potentially different values to a state variable.
+To handle such cases, the algorithm manages for each pLTS state, as a
+list of expressions collected from the assignments of each state
+variable $v$ (as registered in the incoming OTs).
+%% The list we used contains triples <$v$, $S$, $AssignRH$> 
+%% where $v$ is the variable in pLTS, $S$ is its owner state and
+%% $AssignRH$ is a list of expressions over other variables in the right
+%% hand side of assignments of $v$.
+% As a pragmatic extension to the formal definition, we also manage
+% ``global variables'', defined in all states of the pLTS.
+For a global state in the open automaton, getting the set of state
+variables (which may be used in a transition) will simply be the union
+of state variables of the individual pLTS states constituting this
+global state, as variables of different pLTS are distinct.
+
+ We define:
+\begin{itemize}
+  \item $SVars(gs)$ the state variables of all states in the global
+    state $gs$
+  \item $Assigns(svar)$ the set of possible assignments of variable
+      $svar$.
+\end{itemize}
+These will be used when translating the predicates into SMTlib
+language.
+
+
 \section{Translation to SMTlib input language}
 \label{appendix:mapsmt}
 The pNet elements, as defined above, can be full translated into
-SMT-LIB language, but there are a number of differences in the
+SMT-LIB language (\ref{SMTlibv2.5}), but there are a number of differences in the
 structure of the models/languages, so the translation is not trivial.
 
 In this section we shall define separately the translation of the
@@ -2092,14 +2139,14 @@ $\{(sel_i, sort_i)\}_{i\in[1..n]}$.
  
 \subsubsection{Predicate translation}
 
-\QIN{Each time we submit each open transition to Z3 module, we translate
-  its predicate into Z3 language format and send it for satisfiability
+Each time we submit each open transition to Z3 module, we translate
+  its predicate into the SMTlib language  and send it for satisfiability
   checking. Every term of the predicate is declared as an
   \texttt{assert} in Z3. A constant action or a parameterized
   expression is easy to get from the internal list storing the objects
   while all the variables are not declared at the beginning. So we
   declare them before the submission of a predicate term with the API
-  method conducting \texttt{declare-const}.}
+  method conducting \texttt{declare-const}.
 
 The second part of the translation function is called for each open
 transition. More precisely we need here:
@@ -2114,7 +2161,7 @@ the transition, the OT predicate, and the OT assignments are
 well-formed and well-typed.
 \item for each start global state $gs$ of the open transition, using $SVar(gs)$
   get the state variables and their possible evaluations from all the state in $gs$.
-  Then use Ass(x) as the set of evaluations of state variable x.
+  Then use Assigns(x) as the set of evaluations of state variable x.
 \item for each variable $v$ in $\EEnv$, construct:
   define-const = TrPredicate ($\EEnv ,v$).
 %- turn the predicate into conjunctive normal form
@@ -2159,43 +2206,185 @@ well-formed and well-typed.
 
 
 
-\paragraph{Translating assignments into predicate terms}
-\label{appendix:translating-assignments}
-\TODO{INCORRECT, to be rewritten}
-State-variable assignments are also treated as a part of the
-predicates when checking the satisfiability. % Here we need conduct some
-% translations,
-For each assignement in a $\Post$ predicate, such as $\{s_0 \leftarrow 1\}$ in section
-~\ref{section:op-semantics}, we translate it into an equation
-$s_0=1$. For several assignments of the same variable in the same state,
-we generate the disjunction of 
-these equations. Correspondingly, we generate a conjunction for the
-assignments from different variables. 
+
+\subsection{properties}
+The rules in the sections above are meant to guarantee that no runtime
+errors would occur when running Z3 from our algorithm. More precisely,
+we ensure that:
+\begin{itemize}
+\item all datatypes, functions, variable used are declared,
+\item datatypes declared are well-founded,
+\item all expressions in declarations and assertions are well-typed.
+\end{itemize}
+
+  
+
+\section{Full output for the FailureTimer open automaton}
+\label{appendix:fullOutput}
+
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, frame=single]
+	{s0---failure(true)-->s1, t0---start(true)-->t1},{---:hb_B:13:1-->},   
+	(failure(true)=failure(b1:sva_SV0:1:1))
+	/\(start(true)=start(b2:sva_SV0:1:1))
+	/\(:hb_B:13:1=fail(b0:sva_SV0:1:1))/\((b1:sva_SV0:1:1=b2:sva_SV0:1:1)
+	/\(~(b1:sva_SV0:1:1\/b2:sva_SV0:1:1)\/b0:sva_SV0:1:1))
+	/\(_fail_=:ra:1:1),{t := Max}
+OT ---------------------------------------------------------------------------
+		<s0_t0>-----:ra:1:1----><s1_t1>
+
+	{s0---resume(false)-->s0, t0---resume(false)-->t0},{---:hb_B:16:2-->},   
+	(resume(false)=resume(b1:sva_SV1:1:2))
+	/\(resume(false)=resume(b2:sva_SV1:1:2))
+	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
+	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2)
+	/\(_resume_=:ra:1:2),{}
+OT ---------------------------------------------------------------------------
+	<s0_t0>-----:ra:1:2----><s0_t0>
+
+	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
+OT ---------------------------------------------------------------------------
+	<s0_t0>-----:ra:1:6----><s0_t0>
+ 
+	{s1---failure(false)-->s1, t1---start(false)-->t1},{---:hb_B:13:1-->},   
+	(failure(false)=failure(b1:sva_SV0:1:1))
+	/\(start(false)=start(b2:sva_SV0:1:1))
+	/\(:hb_B:13:1=fail(b0:sva_SV0:1:1))/\((b1:sva_SV0:1:1=b2:sva_SV0:1:1)
+	/\(~(b1:sva_SV0:1:1\/b2:sva_SV0:1:1)\/b0:sva_SV0:1:1))
+	/\(_fail_=:ra:1:1),{}
+OT ---------------------------------------------------------------------------
+	<s1_t1>-----:ra:1:1----><s1_t1>
+
+	{s1---resume(true)-->s0, t1---resume(true)-->t0},{---:hb_B:16:2-->},   
+	(resume(true)=resume(b1:sva_SV1:1:2))
+	/\(resume(true)=resume(b2:sva_SV1:1:2))
+	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
+	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2))
+	/\(_resume_=:ra:1:2),{}
+OT ---------------------------------------------------------------------------
+	<s1_t1>-----:ra:1:2----><s0_t0>
+
+	{t1---tick-->t1},{},(t>0)/\(tick=:ra:1:3),{t := (t-1)}
+OT ---------------------------------------------------------------------------
+	<s1_t1>-----:ra:1:3----><s1_t1>
+
+	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
+OT ---------------------------------------------------------------------------
+	<s1_t1>-----:ra:1:6----><s1_t1>
+
+	{s1---timeout-->s2, t1---timeout-->t0}, {},(t=0)/\(ask=:ra:1:4),{}
+OT ---------------------------------------------------------------------------
+	<s1_t1>-----:ra:1:4----><s2_t0>
+
+	{s2---resume(false)-->s2, t0---resume(false)-->t0},{---:hb_B:16:2-->},   
+	(resume(false)=resume(b1:sva_SV1:1:2))
+	/\(resume(false)=resume(b2:sva_SV1:1:2))
+	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
+	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2))
+	/\(_resume_=:ra:1:2),{}
+OT ---------------------------------------------------------------------------
+	<s2_t0>-----:ra:1:2----><s2_t0>
+
+	{s2---reset-->s0},{},(reset=:ra:1:5),{}
+OT ---------------------------------------------------------------------------
+	<s2_t0>-----:ra:1:5----><s0_t0>
+
+	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
+OT ---------------------------------------------------------------------------
+	<s2_t0>-----:ra:1:6----><s2_t0>
+\end{lstlisting}
+
+\newpage
+\begin{figure}[h]
+$\begin{array}{r@{}l}
+    ot_1  = &\openrule{\{s0 \xrightarrow{\OTvar{fail(true)}} s1, t0 \xrightarrow{\OTvar{start(true)}} t1\}, ~~\{\xrightarrow{hb_1}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{start(true)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_1=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\\
+    \OTland v_1=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{t := Max\}}
+    	   {\ostate{s0,t0} \xrightarrow{v_1} \ostate{s1,t1}}\\
+\end{array}$
+  \smallskip
+  
+$\begin{array}{r@{}l}
+    ot_2  = &\openrule{\{s0 \xrightarrow{\OTvar{resume(false)}} s0, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_2}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
+    \OTland v_2=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	    {\ostate{s0,t0} \xrightarrow{v_2} \ostate{s0,t0}}\\
+  \end{array}$
+\smallskip
+  
+$\begin{array}{r@{}l}
+    ot_3  = &\openrule{\{\}, ~~\{\xrightarrow{hb_3}\},~~hb_3=\OTvar{finish}\OTland v_3=\OTvar{finish}, ~~\{\}}
+    	    {\ostate{s0,t0} \xrightarrow{v_3} \ostate{s0,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_4  = &\openrule{\{s1 \xrightarrow{\OTvar{fail(false)}} s1, t1 \xrightarrow{\OTvar{start(false)}} t1\}, ~~\{\xrightarrow{hb_4}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{start(false)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_4=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\\
+    \OTland v_4=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	   {\ostate{s1,t1} \xrightarrow{v_4} \ostate{s1,t1}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_5  = &\openrule{\{s1 \xrightarrow{\OTvar{resume(true)}} s0, t1 \xrightarrow{\OTvar{resume(true)}} t0\}, ~~\{\xrightarrow{hb_5}\},~~\OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
+    \OTland v_5=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	    {\ostate{s1,t1} \xrightarrow{v_5} \ostate{s0,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_6  = &\openrule{\{t1 \xrightarrow{\OTvar{tick}} t1\}, ~~\{\},~~t\neq 0\OTland v_6=\OTvar{tick}, ~~\{t := t-1 \}}
+    	   {\ostate{s1,t1} \xrightarrow{v_6} \ostate{s1,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_7  = &\openrule{\{\}, ~~\{\xrightarrow{hb_7}\},~~hb_7=\OTvar{finish}\OTland v_7=\OTvar{finish}, ~~\{\}}
+    	    {\ostate{s1,t1} \xrightarrow{v_7} \ostate{s1,t1}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_8  = &\openrule{\{s1 \xrightarrow{\OTvar{timeout}} s2, t1 \xrightarrow{\OTvar{timeout}} t0\}, ~~\{\},~~t=0\OTland v_8=ask, ~~\{\}}
+    	   {\ostate{s1,t1} \xrightarrow{v_8} \ostate{s2,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_9  = &\openrule{\{s2 \xrightarrow{\OTvar{resume(false)}} s2, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_9}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
+    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_9=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
+    \OTland v_9=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
+    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
+    	    {\ostate{s2,t0} \xrightarrow{v_9} \ostate{s2,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_{10}  = &\openrule{\{s2 \xrightarrow{\OTvar{reset}} s0\}, ~~\{\},~~v_{10}=\OTvar{reset}, ~~\{\}}
+    	   {\ostate{s2,t0} \xrightarrow{v_{10}} \ostate{s0,t0}}\\
+\end{array}$
+\smallskip
+
+$\begin{array}{r@{}l}
+    ot_{11}  = &\openrule{\{\}, ~~\{hb_{11}\},~~hb_{11}=\OTvar{finish}\OTland v_{11}=\OTvar{finish}, ~~\{\}}
+    	   {\ostate{s2,t0} \xrightarrow{v_{11}} \ostate{s2,t0}}\\
+\end{array}$
+\caption{The open transitions of the open automaton}  \label{schema:ots}
+\end{figure}
+
+\newpage
+\subsection{Scaling up: several subsystems on the same bus}
+
+\TODO{Not yet !}
+
+\end{document}
 
 
-%% \paragraph{Checking satisfiability}
-
-%% % We check the satisfiability of open transitions on the top level of
-%% % the pNet, treating these open transitions as the intermediate result
-%% % of the algorithm. After we get the intermediate results of open
-%% % transitions, we check them one by one.
-%% Here we declare first all the variables in the predicates, with their
-%% sorts.
-%% An example of syntax is::\\
-%% \centerline{$\OTvar{(declare-const\ |:ra:1:1|\ Action)}$}
-
-%% \noindent Then each term of the
-%% predicate is an assertion in Z3, as an example, in the former
-%% unsatisfiable result in Fig~\ref{schema:unsat-ot}, the contradiction is occurred in terms: \\
-%% \centerline{$\OTvar{(:ra:11:1=l)} \OTland \OTvar{(delta=:ra:11:1)}$}\\
-%% from which we generate the following two assertions:\\
-%% \centerline{$\OTvar{(assert\ (=\ |:ra:11:1|\ l))\ \ \ (assert\ (=\ delta\ |:ra:11:1|))}$}
-
-%% \noindent The predicate submitted to the Z3 also contains the
-%% assignments encodings.
-%% In the case of $ot_2$, it
-%% gives the assertion:\\
-%% \centerline{$\OTvar{assert (or (= var\_s0 0) (= var\_s0 01)))}$}
 
 
 \subsection{Simplification of Predicates}
@@ -2348,158 +2537,3 @@ Rule RL-2 shows that if the result of the SV is also in its arguments, we can st
 Actually, what happened is similar if there is a hole behavior instead of a subnet result action attending in the equation. So we get RL-4 and RL-5. However, every hole behavior should be kept through out the computing. That's why there no rule similar to the RL-1 for hole behaviors.
 }
 
-
-
-
-\section{Full output for the FailureTimer open automaton}
-\label{appendix:fullOutput}
-
-\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, frame=single]
-	{s0---failure(true)-->s1, t0---start(true)-->t1},{---:hb_B:13:1-->},   
-	(failure(true)=failure(b1:sva_SV0:1:1))
-	/\(start(true)=start(b2:sva_SV0:1:1))
-	/\(:hb_B:13:1=fail(b0:sva_SV0:1:1))/\((b1:sva_SV0:1:1=b2:sva_SV0:1:1)
-	/\(~(b1:sva_SV0:1:1\/b2:sva_SV0:1:1)\/b0:sva_SV0:1:1))
-	/\(_fail_=:ra:1:1),{t := Max}
-OT ---------------------------------------------------------------------------
-		<s0_t0>-----:ra:1:1----><s1_t1>
-
-	{s0---resume(false)-->s0, t0---resume(false)-->t0},{---:hb_B:16:2-->},   
-	(resume(false)=resume(b1:sva_SV1:1:2))
-	/\(resume(false)=resume(b2:sva_SV1:1:2))
-	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
-	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2)
-	/\(_resume_=:ra:1:2),{}
-OT ---------------------------------------------------------------------------
-	<s0_t0>-----:ra:1:2----><s0_t0>
-
-	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
-OT ---------------------------------------------------------------------------
-	<s0_t0>-----:ra:1:6----><s0_t0>
- 
-	{s1---failure(false)-->s1, t1---start(false)-->t1},{---:hb_B:13:1-->},   
-	(failure(false)=failure(b1:sva_SV0:1:1))
-	/\(start(false)=start(b2:sva_SV0:1:1))
-	/\(:hb_B:13:1=fail(b0:sva_SV0:1:1))/\((b1:sva_SV0:1:1=b2:sva_SV0:1:1)
-	/\(~(b1:sva_SV0:1:1\/b2:sva_SV0:1:1)\/b0:sva_SV0:1:1))
-	/\(_fail_=:ra:1:1),{}
-OT ---------------------------------------------------------------------------
-	<s1_t1>-----:ra:1:1----><s1_t1>
-
-	{s1---resume(true)-->s0, t1---resume(true)-->t0},{---:hb_B:16:2-->},   
-	(resume(true)=resume(b1:sva_SV1:1:2))
-	/\(resume(true)=resume(b2:sva_SV1:1:2))
-	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
-	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2))
-	/\(_resume_=:ra:1:2),{}
-OT ---------------------------------------------------------------------------
-	<s1_t1>-----:ra:1:2----><s0_t0>
-
-	{t1---tick-->t1},{},(t>0)/\(tick=:ra:1:3),{t := (t-1)}
-OT ---------------------------------------------------------------------------
-	<s1_t1>-----:ra:1:3----><s1_t1>
-
-	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
-OT ---------------------------------------------------------------------------
-	<s1_t1>-----:ra:1:6----><s1_t1>
-
-	{s1---timeout-->s2, t1---timeout-->t0}, {},(t=0)/\(ask=:ra:1:4),{}
-OT ---------------------------------------------------------------------------
-	<s1_t1>-----:ra:1:4----><s2_t0>
-
-	{s2---resume(false)-->s2, t0---resume(false)-->t0},{---:hb_B:16:2-->},   
-	(resume(false)=resume(b1:sva_SV1:1:2))
-	/\(resume(false)=resume(b2:sva_SV1:1:2))
-	/\(:hb_B:16:2=resume(b0:sva_SV1:1:2))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2)
-	/\(~(b1:sva_SV1:1:2\/b2:sva_SV1:1:2)\/b0:sva_SV1:1:2))
-	/\(_resume_=:ra:1:2),{}
-OT ---------------------------------------------------------------------------
-	<s2_t0>-----:ra:1:2----><s2_t0>
-
-	{s2---reset-->s0},{},(reset=:ra:1:5),{}
-OT ---------------------------------------------------------------------------
-	<s2_t0>-----:ra:1:5----><s0_t0>
-
-	{},{---:hb_B:118:6-->},(:hb_B:118:6=finish)/\(finish=:ra:1:6),{}
-OT ---------------------------------------------------------------------------
-	<s2_t0>-----:ra:1:6----><s2_t0>
-\end{lstlisting}
-
-\begin{figure}[h]  
-$\begin{array}{r@{}l}
-    ot_1  = &\openrule{\{s0 \xrightarrow{\OTvar{fail(true)}} s1, t0 \xrightarrow{\OTvar{start(true)}} t1\}, ~~\{\xrightarrow{hb_1}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{start(true)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_1=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\\
-    \OTland v_1=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
-    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{t := Max\}}
-    	   {\ostate{s0,t0} \xrightarrow{v_1} \ostate{s1,t1}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_2  = &\openrule{\{s0 \xrightarrow{\OTvar{resume(false)}} s0, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_2}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
-    \OTland v_2=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
-    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
-    	    {\ostate{s0,t0} \xrightarrow{v_2} \ostate{s0,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_3  = &\openrule{\{\}, ~~\{\xrightarrow{hb_3}\},~~hb_3=\OTvar{finish}\OTland v_3=\OTvar{finish}, ~~\{\}}
-    	    {\ostate{s0,t0} \xrightarrow{v_3} \ostate{s0,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_4  = &\openrule{\{s1 \xrightarrow{\OTvar{fail(false)}} s1, t1 \xrightarrow{\OTvar{start(false)}} t1\}, ~~\{\xrightarrow{hb_4}\},~~\OTvar{fail(false)}=\OTvar{fail(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{start(false)}=\OTvar{start(}\OTvar{b}_2\OTvar{)}\OTland hb_4=\OTvar{fail(}\OTvar{b}_0\OTvar{)}\\
-    \OTland v_4=\OTvar{\underline{fail}}\OTland \OTvar{b}_1 = \OTvar{b}_2
-    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
-    	   {\ostate{s1,t1} \xrightarrow{v_4} \ostate{s1,t1}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_5  = &\openrule{\{s1 \xrightarrow{\OTvar{resume(true)}} s0, t1 \xrightarrow{\OTvar{resume(true)}} t0\}, ~~\{\xrightarrow{hb_5}\},~~\OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{resume(true)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_2=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
-    \OTland v_5=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
-    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
-    	    {\ostate{s1,t1} \xrightarrow{v_5} \ostate{s0,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_6  = &\openrule{\{t1 \xrightarrow{\OTvar{tick}} t1\}, ~~\{\},~~t\neq 0\OTland v_6=\OTvar{tick}, ~~\{t := t-1 \}}
-    	   {\ostate{s1,t1} \xrightarrow{v_6} \ostate{s1,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_7  = &\openrule{\{\}, ~~\{\xrightarrow{hb_7}\},~~hb_7=\OTvar{finish}\OTland v_7=\OTvar{finish}, ~~\{\}}
-    	    {\ostate{s1,t1} \xrightarrow{v_7} \ostate{s1,t1}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_8  = &\openrule{\{s1 \xrightarrow{\OTvar{timeout}} s2, t1 \xrightarrow{\OTvar{timeout}} t0\}, ~~\{\},~~t=0\OTland v_8=ask, ~~\{\}}
-    	   {\ostate{s1,t1} \xrightarrow{v_8} \ostate{s2,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_9  = &\openrule{\{s2 \xrightarrow{\OTvar{resume(false)}} s2, t0 \xrightarrow{\OTvar{resume(false)}} t0\}, ~~\{\xrightarrow{hb_9}\},~~\OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_1\OTvar{)}\\
-    \OTland \OTvar{resume(false)}=\OTvar{resume(}\OTvar{b}_2\OTvar{)}\OTland hb_9=\OTvar{resume(}\OTvar{b}_0\OTvar{)}\\
-    \OTland v_9=\OTvar{\underline{resume}}\OTland \OTvar{b}_1 = \OTvar{b}_2
-    \OTland \OTvar{(}\OTvar{b}_1 \lor \OTvar{b}_2\OTvar{)} \Rightarrow \OTvar{b}_0, ~~\{\}}
-    	    {\ostate{s2,t0} \xrightarrow{v_9} \ostate{s2,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_{10}  = &\openrule{\{s2 \xrightarrow{\OTvar{reset}} s0\}, ~~\{\},~~v_{10}=\OTvar{reset}, ~~\{\}}
-    	   {\ostate{s2,t0} \xrightarrow{v_{10}} \ostate{s0,t0}}\\
-\end{array}$
-
-$\begin{array}{r@{}l}
-    ot_{11}  = &\openrule{\{\}, ~~\{hb_{11}\},~~hb_{11}=\OTvar{finish}\OTland v_{11}=\OTvar{finish}, ~~\{\}}
-    	   {\ostate{s2,t0} \xrightarrow{v_{11}} \ostate{s2,t0}}\\
-\end{array}$
-\caption{The open transitions of the open automaton}  \label{schema:ots}
-\end{figure}
-
-\subsection{Scaling up: several subsystems on the same bus}
-
-\TODO{Not yet !}
-
-\end{document}
