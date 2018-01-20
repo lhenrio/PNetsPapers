@@ -164,10 +164,11 @@
 %\newcommand\openrule[2]{\inferrule*{#1}{#2}}
 
 %% SB: Moved the macro definitions from XFIG/figtex2eps-preamble.tex
-%%     to XFIG/macros.tex and added a com and to input this latter one
+%%     to XFIG/macros.tex and added a command to input this latter one
 %%     into the paper source (above in this file).
 %\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
 %\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+
 \newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
 \usepackage{algorithm} 
 %\usepackage{algorithmicx} 
@@ -836,33 +837,33 @@ Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 
 The semantics of open pNets will be defined as an open automaton, that
 is an automaton where each transition composes transitions 
-of several LTSs with the
+of several \noteSB{These should all be pLTSs, right? Or did I miss something?}\hl{LTSs} with the
 actions of some holes; the transition occurs if some predicates hold,
 and can involve a set of state modifications. Each state of an open
-automaton has a set of \emph{state variables} that can be assigned
+automaton has a set of \emph{state variables} that can be assigned by
 incoming transitions.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
-	I}$ of LTSs, a
+	An \emph{open transition} over a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in
+	I}$ of \hl{LTSs}, a
 	set $J$ of holes with sorts $Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is a structure of the form:	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
 	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
-		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred, \Post}
-	{s \xrightarrow {v}s'}
+		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred\,, \Post}
+	{s \xrightarrow {v}s'}\,,
 	\end{mathpar}
-	Where $s, s'\in\mathcal{S}$ and for all
+	where $s, s'\in\mathcal{S}$ and, for all
         $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
+	\hl{LTS} $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, and $\xrightarrow{b_j}_j$
         is a transition of the hole $j$, for any action $b_j$ in the
         sort $Sort_j$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
         $b_j$, $s$, $v$. \Post\ is a set of equations that  
 	hold \emph{after the open transition}, represented as a
         substitution $\{x_k\gets e_k\}^{k\in K}$  
-	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are
+	where $x_k$ are variables of $s'$ and $s'_i$, whereas $e_k$ are
         expressions over the other variables of the open transition.
 \end{definition}
 
@@ -870,14 +871,13 @@ incoming transitions.
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
-	<LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	\langle \mathit{LTS}_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}\rangle$ where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
-		\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
-		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
-		among $\mathcal{S}$,
-		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
-		$t\in \mathcal{T}$ there exist $I'$, $J'$ with $I'\subseteq I$, $J'
+		\item[$\bullet$]  \noteSB{And one more above}\hl{$LTS_i^{i\in I}$} is a family of \hl{LTSs},
+		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0 \in \mathcal{S}$ the initial state,
+		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and, for each
+		$t\in \mathcal{T}$, there exist $I'$, $J'$ with $I'\subseteq I$, $J'
 		\subseteq J$, such that $t$ is an open transition over $LTS_i^{i\in I'}$, $J'$,
 		and  $\mathcal{S}$.
 		
@@ -894,21 +894,22 @@ incoming transitions.
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
 % \TODO{Relate to the algorithm, or even move to section 5}
-When building an Open Automaton as the semantics of a pNet, its
-\emph{states}, and the shape of the \emph{predicates} in its
-transitions have a specific structure:
+The \emph{states} and the shape of \emph{predicates} in the
+transitions
+of an open automaton representing the semantics of a pNet
+have the following specific structure.
 
-\paragraph{States of open pNets:}\label{def-states}
+\paragraph{States of open pNets.}\label{def-states}
   A state of an open pNet is a tuple of the
   states of its leaves (in which we denote tuples
   in structured states as $\triangleleft\ldots\triangleright$).
-  For any pNet p, let $\overline{Leaves} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
-  then $States(p) = \{\triangleleft s_i^{i\in L}
-  \triangleright| \forall i\in L. s_i \in S_i\}$.
+  For any pNet p, let $\overline{\mathit{Leaves}} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
+  then $\mathit{States}(p) = \{\ostate{s_i^{i\in L}}
+  |\, \forall i\in L. s_i \in S_i\}$.
 A pLTS being its own single leave:
-  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
+  $\mathit{States}(\mylangle S,s_0, \to\myrangle) = \{\ostate{s}|\, s \in S\}$.
 The initial state is defined as:
-$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
+$\mathit{InitState}(p) = \ostate{{{s_i}_0}^{i\in L}}$.
 
 
 %% \begin{example} \emph{State of a pNet}
@@ -916,19 +917,23 @@ $InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 %%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 \triangleright$
 %% \end{example}
 
-\paragraph{Predicates:}
+\paragraph{Predicates.}
 Let
 $\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
 be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We build a
 predicate $\MkPred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
-\begin{array}{l}
-\exists {(a'_i)}^{i\in I},
-{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
-\\~~\land
-\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
-\end{array}\]
+\begin{multline*}
+  \MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Longleftrightarrow
+  %% \begin{array}{l}
+  \exists {(a'_i)}^{i\in I},
+          {(b'_j)}^{j\in J},v'.\\
+          SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+          \land
+          \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\end{multline*}
+
+%% \end{array}
 
 
 %% This definition is not constructive but it is easy to build the
@@ -936,24 +941,24 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 %% actions with the corresponding vector actions, possibly followed by a simplification
 %% step. 
 
-\begin{example}\emph{An open transition.}
-  This transition is generated by application of vector \texttt{SV0},
-  synchronizing the initial actions of pLTSs \texttt{Failure} and
-  \texttt{Timer}, with an action of the hole \texttt{B} equal to
+\begin{example}[An open transition]
+  This transition is generated by application of the vector \texttt{SV0},
+  synchronizing the initial actions of pLTSs \texttt{Control} and
+  \texttt{Timer} (see Fig.~\ref{schema:ArchFailure:pNet}), with an action of the hole \texttt{B} equal to
   \texttt{fail}. The local variable \texttt{t} of the \texttt{Timer}
   is assigned to its initial value \texttt{Max}.
-In fact this OT is displayed in a simplied, human readable form. The
+\noteSB{This is the first mention of the tool\mdash I would move this text much further.}\hl{In fact this OT is displayed in a simplied, human readable form. The
 raw output of the tool is slightly more difficult to read, in
 particular it uses structured names for the fresh variables generated
 by the algorithm, allowing tracability of the result (see
 appendix~\ref{appendix:variables}). A full output of 
-the use-case is provided in appendice~\ref{appendix:fullOutput}.
-  
+the use-case is provided in appendice~\ref{appendix:fullOutput}.}
+
   \label{OT:example-1}
         \begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
-	{\{s0~{\xrightarrow{fail(true)}} ~s1, t0~{\xrightarrow{start(true)}} ~t1\}
-	  \{\xrightarrow{hb}\}, hb=fail(true) \land v=\underline{fail}, \{t := Max\}
+	{\{s0~{\xrightarrow{\mathit{fail}(\true)}} ~s1, t0~{\xrightarrow{\mathit{start}(\true)}} ~t1\}
+	  \{\xrightarrow{\mathit{hb}}\}, \mathit{hb}=\mathit{fail}(\true) \land v=\underline{\mathit{fail}}, \{t := \mathit{Max}\}
         }
 	{\ostate{s0,t0} \xrightarrow {v} \ostate{s1,t1}}
 	\end{mathpar}
@@ -973,8 +978,8 @@ the use-case is provided in appendice~\ref{appendix:fullOutput}.
 \paragraph{Structural Semantic Rules:}
 The semantics of pNet in term of open automata has been defined in
 \cite{henrio:Forte2016}, in the form of 2 structural rules, one for
-pLTSs, one for pNet nodes.. For convenience we include these rules in
-appendix \ref{appendix:semRules}. 
+pLTSs, one for pNet nodes.  For convenience we include these rules in
+App.~\ref{appendix:semRules}. 
 
 
 \section{Generation of Open Automata}
@@ -983,7 +988,8 @@ In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
-Our algorithm starts with an open pNet, and builds its set of open
+\noteSB{$E$ is never updated, so $E = \emptyset$}
+Algorithm~\ref{alg1} starts with an open pNet, and builds its set of open
 transitions. Its main loop is a classical residual algorithm: starting
 from the initial global state, it picks a state in an unexplored set, and
 computes all possible OTs, adding their target states in the
@@ -995,30 +1001,31 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
   \label{alg1}
 \begin{algorithmic}[1]
 \Require The pNet node P.
-\State Initialize sets $U=InitSate(P)$, $E=\emptyset$ for unexplored/explored global states, $L$ for result OTs;
-\While{!isEmpty(U)}
-	\State Chose $S$ in $U$;
-	\State OT = MakeTransitions(P, S);
-        \State Store $OT$ in $L$; 
-	\For{each target global state $T$ from $OT \in L$}
-		\IfThen{$(!U.contains(T))\ \&\&\ (!E.contains(T))$}{Add $T$ into the $U$;}
+\State Initialize sets $U=\mathit{InitState}(P)$, $E=\emptyset$ for unexplored/explored global states, $L=\emptyset$ for the resulting OTs;
+\While{!$\mathit{isEmpty}(U)$}
+	\State Choose $S$ in $U$;
+	\State $\mathit{OT} = \mathit{MakeTransitions}(P, S)$;
+        \State Store $\mathit{OT}$ in $L$; 
+	\ForAll{$\mathit{OT} \in L$}
+        \State Let $T$ be the target global state of $\mathit{OT}$
+	\IfThen{($T \not\in U$ \&\& \hl{$T \not\in E$})}{Add $T$ into $U$;}
 	\EndFor
 \EndWhile
 \State Prune the open transitions in $L$ using the SMT solver;
-\State \Return $OA=Reachable(InitState(P),L)$;
+\State \Return $\mathit{OA}=\mathit{Reachable}(\mathit{InitState}(P),L)$;
 
 \end{algorithmic}  
 \end{algorithm}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet. 
-For pLTS at leaves, we simply take the pLTS transitions of the
+For pLTSs at the leaves, we simply take the pLTS transitions of the
 corresponding local state and build the predicate to generate the
 open transition. 
 On a pNet node we use two methods, combining and
 matching, to generate the predicate of the open transitions in a
 hierarchical manner.
-
+%
 Then, at the root of the pNet, the predicate of each OT is translated
 into SMTlib assertions, and checked for satisfiability. Unsatisfiable
 OTs are pruned, and the final open automaton is computed as the set of
