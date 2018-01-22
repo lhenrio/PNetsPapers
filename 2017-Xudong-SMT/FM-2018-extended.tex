@@ -96,7 +96,7 @@
 \def\AlgA{\mathcal{A}}
 \def\AlgAS{\mathcal{A}_S}
 \def\AlgB{\mathcal{B}}
-\def\AlgI{\mathcal{I}}
+%\def\AlgI{\mathcal{I}}
 
 \newcommand{\mdash}{---}
 \newcommand{\ndash}{--}
@@ -179,7 +179,6 @@
 \algnewcommand{\IfThenElse}[3]{\State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3}% \IfThenElse{<if>}{<then>}{<else>}
 %\DeclareMathOperator{\card}{card}
 %\DeclareMathOperator{\Flat}{Flat}
-\renewcommand{\P}{\mathcal P}
 \usepackage{listings}
 \lstset{basicstyle=\small}
 %\usepackage{algorithm} 
@@ -447,6 +446,7 @@ mechanism, based on unification between two or more action
 expressions. This will be used in the semantics of synchronization
 vectors to express various kinds of communication or synchronization mechanisms.
 
+\renewcommand{\P}{\mathcal V}
 \def\Talg{\mathcal{T}_{\Sigma,\P}}
 Formally, we assume the existence of a term algebra $\Talg$,
 where $\Sigma$ is the signature of the data and action constructors,
@@ -474,8 +474,9 @@ presentation''. It will be used to check the
 well-formedness of a pNet system, and to define the translation of the pNet
 semantics into the SMT engine input language.
 
+\def\APres{\mathcal{P}}
 \begin{definition}
-  An \emph{algebra presentation} is a triple $\mathcal{P}=\langle\mathit{Sorts},\mathit{Constrs},\mathit{Ops}\rangle$, where
+  An \emph{algebra presentation} is a triple $\APres=\langle\mathit{Sorts},\mathit{Constrs},\mathit{Ops}\rangle$, where
 
   \begin{itemize}
   \item $Sorts$ is a set of \emph{sorts}\noteSB{Commented out a footnote here\mdash check if still necessary.}
@@ -491,9 +492,9 @@ semantics into the SMT engine input language.
       \item $\mathit{Constrs}(\mathit{sortname})$ and $\mathit{Sels}(\mathit{sortname})$ are, respectively, the sets of
         constructors and selectors of the sort $\mathit{sortname}$
   \end{itemize}
-  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
+%  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
   Among constructors, those of arity 0 are called \emph{constants}:
-  $\mathit{Consts}(\mathcal{P}) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
+  $\mathit{Consts}(\APres) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
 \end{definition}
 
 
@@ -504,6 +505,9 @@ further synchronized with the environment. It also comes with an
 overloaded \texttt{FUN} constructor, used to build actions with
 arguments, that will be instantiated to the required sorts for a given
 pNet.
+
+The definition of an Algebra Presentation, and a set of variables
+$\P$ fixes the Term algebra elements $\Talg, \AlgB_{\P}, \AlgA_\P$.
 
 \begin{table}[t]\caption{\label{table:BIPalgebra}\leftline{Algebra
       Presentation: predefined Sorts and Operators}}
@@ -548,7 +552,8 @@ assignments.
 %
 Each state has its set of variables called \emph{state variables}, 
 which can only be modified by the assignment in transitions targeting this state. 
-A global state variable of a pLTS is a variable $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$.
+A global state variable of a pLTS is a variable $x$ satisfying
+$\forall s\!\in\! S .\, x\!\in\! \vars(s)$. 
 %
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
@@ -573,18 +578,10 @@ variable names. Action terms are:
 %\end{array}
 %\]
 
-%% \QIN{
-%% [The input variables in an action term are those marked with a
-%% $\symb{?}$.
-%% We additionally suppose that each input variable does not
-%% appear somewhere else in the same action term:
-%% $p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$]}
-
-
 \begin{definition}[pLTS]
 \label{pLTS}
-\noteSB{It's a bit strange that algebra presentations are not referred to here}
-A pLTS is a tuple
+%\noteSB{It's a bit strange that algebra presentations are not referred to here}
+Given a term algebra $\Talg$, a pLTS is a tuple
 $pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
@@ -594,19 +591,23 @@ $s_0 \in S$ is the \emph{initial state}.
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the \emph{transition relation}, with
 $L$ the set of labels of the form
 $\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
-where $\alpha \in\AlgA$ is a parameterized action, \noteSB{Shouldn't this be $e_b \in \AlgB_{\mathcal{P}}$, for {\em some} $\mathcal{P}$?}\hl{$e_b \in
-\AlgB$} is a guard, and the variables $x_j\in P$
-are assigned the expressions $e_j\in \AlgE$.
+  where $\alpha \in\AlgA_{\P}$ is a parameterized action,
+    $e_b \in \AlgB_{\P}$ is a guard, and the
+  variables $x_j\in P$ are assigned the expressions \noteEM{Or rather
+    $\AlgE_{\P}\cup\AlgA_{P}$ ?}$e_j\in \AlgE_{\P}$. 
 If 
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		J}\rangle} s'\in \to $ then 
-		$\vars(\alpha)\!\subseteq\! \vars(s)$, 
-		\noteSB{I would expect $\vars(e_b)\!\subseteq\! \vars(s)$, since the guard has to be tested on the source state}\hl{$\vars(e_b)\!\subseteq\! \vars(s')$}, and
+%		$\vars(\alpha)\!\subseteq\! \vars(s)$, 
+%		\noteSB{I would expect $\vars(e_b)\!\subseteq\!
+%                  \vars(s)$, since the guard has to be tested on the
+%                 source state}
+%                \hl{$\vars(e_b)\!\subseteq\! \vars(s')$}, and
+                $\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
 x_j\!\in\!\vars(s')$.
 %\item[$\bullet$]
-The $x_j$ are \emph{state variables} of %% the state
-$s'$. 
+%The $x_j$ are \emph{state variables} of %% the state $s'$. 
 \end{itemize}
 \end{definition}
 
@@ -631,7 +632,7 @@ A pNet is a hierarchical structure, whereof the leaves are pLTSs and holes:
 $\pNet::= pLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$,
 where
 \begin{itemize}
-\item[$\bullet$] \noteSB{Why is one $\I$ and the other $\I_\P$?}\hl{$I \in \I$ and $J\in\I_\P$} are the sets over which are indexed sub-pNets and holes, respectively, such that: $I\cap J=\emptyset$ and  $I\cup J\neq\emptyset$.
+\item[$\bullet$] \noteEM{Pire que ca, $\I$ n'est pas defini...}\noteSB{Why is one $\I$ and the other $\I_\P$?}\hl{$I \in \I$ and $J\in\I_\P$} are the sets over which are indexed sub-pNets and holes, respectively, such that: $I\cap J=\emptyset$ and  $I\cup J\neq\emptyset$.
 
 \item[$\bullet$] $\pNet_i^{i\in I}$ is a family of sub-pNets.
 
@@ -646,7 +647,10 @@ where
   synchronization vectors: for each $k\!\in\! K$,
   $\symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
-  $\forall i\!\in\! I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$\noteSB{What is the sort of a pNet? Should we define $\Sort(\pNet) \triangleq \{\Label(\symb{SV}_k\,|\,k \in K\}$?}, 
+  $\forall i\!\in\! I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$
+%  \noteSB{What is the sort of a pNet? Should we define $\Sort(\pNet)
+%    \triangleq \{\Label(\symb{SV}_k\,|\,k \in K\}$?}
+  , 
   $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!S_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
@@ -837,7 +841,9 @@ Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 
 The semantics of open pNets will be defined as an open automaton, that
 is an automaton where each transition composes transitions 
-of several \noteSB{These should all be pLTSs, right? Or did I miss something?}\hl{LTSs} with the
+of several \noteSB{These should all be pLTSs, right? Or did I miss
+  something?}\noteEM{Hum, nor really, something intermediate; the actions there can be
+  parameterised actions, but the label has no guard and no assignments}\hl{LTSs} with the
 actions of some holes; the transition occurs if some predicates hold,
 and can involve a set of state modifications. Each state of an open
 automaton has a set of \emph{state variables} that can be assigned by
@@ -1900,7 +1906,7 @@ extended presentation $\EPres_{pnet}$ and environment $\EEnv_{pnet,ot}$ that inc
 objects above:
 
 \begin{definition}
-  Given an algebra presentation $\mathcal{P}_{pnet}=<Sorts,Constrs,Ops>$ and a pNet $pnet$, we
+  Given an algebra presentation $\APres_{pnet}=<Sorts,Constrs,Ops>$ and a pNet $pnet$, we
   construct:
   \begin{itemize}
   \item An extended presentation $\EPres_{pnet}<Sorts,Constrs \cup Const(pnet),Ops>$.
