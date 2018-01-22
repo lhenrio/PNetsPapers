@@ -1000,14 +1000,16 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
   \caption{Open Automaton Generation}
   \label{alg1}
 \begin{algorithmic}[1]
-\Require The pNet pn (cannot be reduce to a hole)
-\State Initialize sets $U=\{\mathit{InitState}(pn)\}$, $E=\emptyset$
-for unexplored/explored global states, $L=\emptyset$ for the resulting OTs;
+\Require The pNet \hl{$P$} (cannot be a hole)
+        \qquad \hl{\textbackslash\textbackslash~SB: was `` pn ''}
+\State Initialize sets $U=\{\mathit{InitState}(pn)\}$ and $E=\emptyset$,
+for unexplored and explored global states, respectively; $L=\emptyset$ for the resulting OTs;
 \While{!$\mathit{isEmpty}(U)$}
-	\State Choose $S$ in $U$; add $S$ in $E$;
+	\State Choose $S$ in \hl{$U\setminus E$}; add $S$ in $E$;
+        \qquad \hl{\textbackslash\textbackslash~SB: was `` Choose $S$ in $U$ ''}
 	\State $\mathit{OT} = \mathit{MakeTransitions}(P, S)$;
         \State Store $\mathit{OT}$ in $L$; 
-	\ForAll{$\mathit{OT} \in L$}
+	\For {each $\mathit{OT} \in L$}
         \State Let $T$ be the target global state of $\mathit{OT}$
 	\IfThen{($T \not\in U$ \&\& $T \not\in E$)}{Add $T$ into $U$;}
 	\EndFor
@@ -1022,16 +1024,25 @@ The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
 When applied to a pLTSs at the leaves, we simply take the pLTS transitions of the
 corresponding local state and use the semantic rule (see TR1 in
-Appendix~\ref{appendix:semRules}) to build the OT. 
+App.~\ref{appendix:semRules}) to build the OT.\footnote{%
+%
+  \hl{We omit detailed presentation of this case for the sake of brevity.}
+%
+}
 When applied to a pNet node we use two methods, combining and
 matching, to generate the open transitions in a hierarchical manner,
-as detailed in algorithm~\ref{alg2}. This method also manages directly the
-holes of the node, so \emph{MakeTransitions} will never be called on a Hole.
+as shown in Alg.~\ref{alg2}. This method directly manages the
+holes of the node, so \emph{MakeTransitions} is never called on a hole.
 
-Then, at the root of the pNet, the predicate of each OT is translated
-into SMTlib assertions, and checked for satisfiability. Unsatisfiable
-OTs are pruned, and the final open automaton is computed as the set of
-global states reachable by satisfiable OTs. 
+At the root of the pNet, the predicate of each OT is translated
+into SMTlib assertions, and checked for satisfiability.
+%
+The final open automaton is computed as the set of global states,
+reachable after pruning the unsatisfiable OTs.
+%
+%% Unsatisfiable
+%% OTs are pruned, and the final open automaton is computed as the set of
+%% global states reachable by satisfiable OTs. 
 
 %
 %% \noteInSB{Algorithm~\ref{alg2}, as presented below is not
@@ -1067,16 +1078,16 @@ global states reachable by satisfiable OTs.
 \caption{MakeTransitions() \em{for a pNet node}}
   \label{alg2}
 \begin{algorithmic}[1]
-\Require a pNet node $Pn$ with subnets $\overline{sn}$ and holes $\overline{hole}$; a global state $S$.
-\State Initialize empty list $l$ and set $L$ for sub-transitions/transitions.
+\Require a pNet node $P$ with subnets $\overline{sn}$ and holes $\overline{hole}$; a global state $S$.
+\State Initialize empty list $l$ and set $L$ for sub-transitions and transitions, respectively;
 	\For{each $\mathit{Subnet}$ in $\overline{sn}$}
-	~~~ $\setminus \setminus$ Recursively applying the semantic rules on the sub-nodes.
-                \State Store $\mathit{MakeTransitions}(Subnet, S)$ in $l$;
+        \hfill $\setminus \setminus$ Recursively apply the semantic rules on the subnets
+           \State Store $\mathit{MakeTransitions}(Subnet, S)$ in $l$;
 	\EndFor
 	\State $\overline{comb} = \mathit{Combining}(l)$;
-	\For{ each $sv \in SV$, for each $comb \in \overline{comb}$ }
+	\For{ each $sv \in SV$ and each $comb \in \overline{comb}$ }
            \State $ot = \mathit{Matching}(sv, \overline{\mathit{comb}}, \overline{\mathit{hole}})$;
-           \State Store $ot$ in $L$; ~~~ $\setminus \setminus$ when $\mathit{Matching}(ot)$ succeeds
+           \IfThen{($ot$ is defined)}{Store $ot$ in $L$; ~~~ $\setminus \setminus$ if $\mathit{Matching}()$ succeeds}
 	\EndFor
 \State \Return $L$;
 \end{algorithmic}  
@@ -1098,7 +1109,7 @@ global states reachable by satisfiable OTs.
 \def\inactive{\{-\}}
 \paragraph{Combining.}
 The combining method enumerates all the possible behaviours of the
-subnets, as all the possible combinations of their open transitions.
+subnets as all the possible combinations of their open transitions.
 Assume that there is a collection of $n$ subnets.
 %% \noteSB{These variables are not used and conflict with the returned
 %%   set $L$ in Alg.~\ref{alg2}, on one hand, and control states $s_i$ of
@@ -1106,11 +1117,11 @@ Assume that there is a collection of $n$ subnets.
 %% \st{$L = {s_1, s_2, ...,  s_n}$;}
 We denote $\overline{ot}_i$ the set of open
 transitions of the $i$-th
-subnet; %% $s_i$ and 
+subnet (obtained in line~3 of the algorithm); %% $s_i$ and 
 ``$-$'' means that the subnet is not involved.
 The combination $\overline{comb}$, a set of n-tuples, is the
 cartesian product:  
-$\overline{comb} = (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times \dots \times (\inactive\cup \overline{ot}_n)$, where, for each $i \in [1, n]$, $\overline{ot}_i$ is the set of open transitions obtained from the $i$-th subnet in line~3 of the algorithm.
+$\overline{comb} = (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times \dots \times (\inactive\cup \overline{ot}_n)$.
 
 %Algorithm 2 shows the combining algorithm for enumerating all possible
 %working status combinations from subnets. Dealing with a list $TR$
@@ -1123,11 +1134,11 @@ $\overline{comb} = (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overli
 
 \paragraph{Matching.}
 The \emph{Matching} method builds the OTs of a pNet node from those of
-its subnets (see rule Tr2 in Appendix~\ref{appendix:semRules}).
-For each synchronisation vector, and each possible
-combination of behaviour of the subnets as generated by the \emph
-{Combining} method, it builds the open transition.
-By lack of space, we only detail here the construction of the predicate.
+its subnets (see rule Tr2 in App.~\ref{appendix:semRules}).
+For each synchronisation vector and each possible
+combination of behaviours of the subnets, as generated by the \emph
+{Combining} method, it builds the corresponding open transition.
+Here, we only detail the construction of the predicate.
 From a synchronization vector
 $sv = \left((a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'\right) \in SV$
 and its guard $G_k$; a tuple of open transitions
@@ -1203,7 +1214,7 @@ global state (variables of different pLTS are distinct).
 \subsection{Pruning the unsatisfiable results}
 \label{section:pruning}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \begin{mathpar}
     ot = \openrule{\{s0 \xrightarrow{fail(true)} s0, t0 \xrightarrow{resume(false)} t0\}, ~~\{\xrightarrow{hb}\},~~fail(true)=fail(b_1)\\
     \OTland resume(false)=start(b_2)\OTland hb=fail(b_0)\OTland v=\underline{fail}\OTland b_1=b_2\\
@@ -1268,7 +1279,7 @@ Here we display also the proof generated by Z3;
 The result "unsat" in the output is just what we expected.
 % as appears in the ``unsat'' proof generated by Z3 in which ``\{= ?x66 ?x70\}'' is shown to be false (see Fig. \ref{schema:smt-lib})
 
-\begin{figure}[h]
+\begin{figure}[t]
   %  \centerline{\includegraphics[width=12cm]{XFIG/SMTLIB2}}
     \centerline{\includegraphics[width=\linewidth]{XFIG/SMTLIB3}}
   \caption{The input of the Z3 solver in SMT-LIB language and the output result}  \label{schema:smt-lib}
@@ -1362,7 +1373,7 @@ are detected unsatisfiable by Z3.  The resulting open automaton, with
 3 reachable global states (out of the possible 6) and 11 open
 transitions, is shown in Fig.~\ref{schema:resultOA}.
 
-\begin{figure}[h]
+\begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{XFIG/FailureTimerOA}}
   \caption{Open Automaton for the Failure Monitor architecture}
   \label{schema:resultOA}
@@ -1422,10 +1433,10 @@ In this paper, we presented an algorithm for generating an open
 automaton representing the semantics of an open pNet.
 We have also presented our implementation, which comprises two main parts. Firstly, we
 compute all the possible open transitions.
-\hl{The algorithm combines the actions of subnets and
-hole behaviours, which are then matched with the
+The algorithm combines the actions of subnets and
+hole behaviors, which are then matched with the
 synchronization vectors by the generated
-predicate.}  Some of the open transitions obtained at this
+predicate.  Some of the open transitions obtained at this
 intermediate step, constructed in a structural manner from all
 possible combinations of possible logical predicates, may
 contain predicates which do not represent any possible concrete
@@ -1435,8 +1446,30 @@ satisfiability of the predicate in each open transition.
 To this end, we encode into Z3 the representations of the action algebra and
 the predicates before submitting them to the
 Z3 solver. We implemented our algorithm in the VerCors platform and 
-tested the algorithm on available examples, such as encoding expressions from various process algebras. Our case-studies show that our encoding
-successfully identifies all unsatisfiable open transitions and that
+\noteSB{Is this still relevant or has it been replaced by the Failure Monitor example?}%
+\hl{tested the algorithm on available examples, such as encoding expressions from various process algebras}.
+%
+\noteSB{New text}%
+%
+\hl{%
+%
+In this paper, we used an additional running example, based on a BIP
+architecture from an earlier nanosatellite case
+study~\cite{CubETH-case-study}.  This example shows that
+open-automata-based semantics can be instrumental in verifying the
+properties enforced by the architectures through an encoding into open
+pNets.  This encoding\mdash which we intend to formalise and prove
+correct in a separate paper\mdash also opens the way for an extension
+of BIP architectures with the transfer of data among variables of
+different components.  Indeed, such data transfer can be easily
+encoded using the predicates associated to synchronisation vectors in
+open pNets.  The encoding of open transitions into SMTlib and the
+availability of theories can guide the definition of such an extension.
+%
+}
+%
+Our case-studies show that our encoding
+successfully identifies \noteSB{Is this, indeed, the case?}\hl{all} unsatisfiable open transitions and that
 the resulting automata correctly reflect the expected 
 movements of the encoded process expressions.   
 
