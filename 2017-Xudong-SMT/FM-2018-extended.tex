@@ -988,7 +988,8 @@ In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
-\noteSB{$E$ is never updated, so $E = \emptyset$}
+\noteSB{line 8: $E$ is never updated, so $E = \emptyset$ always;\\
+line 11: Would it not be better to prune unsatisfiable transitions on-the-fly, \ie inside the loop?}
 Algorithm~\ref{alg1} starts with an open pNet, and builds its set of open
 transitions. Its main loop is a classical residual algorithm: starting
 from the initial global state, it picks a state in an unexplored set, and
@@ -1011,17 +1012,17 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
 	\IfThen{($T \not\in U$ \&\& \hl{$T \not\in E$})}{Add $T$ into $U$;}
 	\EndFor
 \EndWhile
-\State Prune the open transitions in $L$ using the SMT solver;
+\State \hl{Prune the open transitions in $L$ using the SMT solver;}
 \State \Return $\mathit{OA}=\mathit{Reachable}(\mathit{InitState}(P),L)$;
 
 \end{algorithmic}  
 \end{algorithm}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
-the semantic rules following the structure of the pNet. 
-For pLTSs at the leaves, we simply take the pLTS transitions of the
+the semantic rules following the structure of the pNet.
+\hl{For pLTSs at the leaves, we simply take the pLTS transitions of the
 corresponding local state and build the predicate to generate the
-open transition. 
+open transition.}
 On a pNet node we use two methods, combining and
 matching, to generate the predicate of the open transitions in a
 hierarchical manner.
@@ -1031,22 +1032,49 @@ into SMTlib assertions, and checked for satisfiability. Unsatisfiable
 OTs are pruned, and the final open automaton is computed as the set of
 global states reachable by satisfiable OTs. 
 
+%
+\noteInSB{Algorithm~\ref{alg2}, as presented below is not
+  well-defined: when we reach the leaves, a pLTS does not have any
+  subnets, hence the loop in lines 2--4 is empty and so is the list
+  $l$. $\mathit{Combining}(l)$ is then called on an empty list...}
 
+\noteInSB{Line 2: Tr1 and Tr2 are the semantic rules, right?}
+
+\noteInSB{Line 6: Nothing in the assignment $\overline{comb} =
+  \mathit{Combining}(l)$ depends on $sv$.  Hence, this should probably
+  be done outside of the loop.}
+
+\noteInSB{Line 7: There are two type mismatches here: $ot$ is an open
+  transition, whereas $\mathit{Matching}$ is a predicate\mdash one
+  cannot assign a predicate to an open transition.  Furthermore, in
+  the definition of $\mathit{Matching}$, below, $C_n$ is an open
+  transition, whereas $\overline{comb}$ is a {\em set} of open
+  transitions, so this call does not type either. There is probably
+  another inner loop over all tuples of OTs in $\overline{comb}$; even
+  so the open transition has to be defined completely, not just the
+  predicate\mdash what is the value of $Post$ for the new transition?
+  Maybe $\mathit{Matching}$ should not be a predicate, but an OT?
+  Finally, how is $\mathit{hole}$? (I have removed $v$\mdash here and
+  in the parameters of the definition of the $\mathit{Matching}$
+  predicate, because the text in the paragraph ``Matching'' says that
+  $v$ is fresh.)}
+
+\noteInSB{Line 8: When is $\mathit{Filter}(ot)$ called?}
 
 \begin{algorithm}
 \caption{MakeTransitions()}
   \label{alg2}
 \begin{algorithmic}[1]
-\Require a pNet node Pn; a global state S.
-\State Initialize a list $l$, $L$ for sub-transitions/transitions.
-	\For{each Subnet in Pn}
-	~~~ $\setminus \setminus$ Recursively applying Tr1 or Tr2 on the sub-nodes.
-                \State Store MakeTransitions(Subnet, S) in $l$;
+\Require a pNet node $Pn$; a global state $S$.
+\State Initialize empty list $l$ and set $L$ for sub-transitions/transitions.
+	\For{each $\mathit{Subnet}$ in $Pn$}
+	~~~ $\setminus \setminus$ Recursively applying \hl{Tr1 or Tr2} on the sub-nodes.
+                \State Store $\mathit{MakeTransitions}(Subnet, S)$ in $l$;
 	\EndFor
 	\For{each $sv \in SV$}
-		\State $\overline{comb} = Combining(l)$;
-                 \State $ot = Matching(sv, \overline{comb}, hole, v)$;
-                 \State Store $ot$ in $L$; ~~~ $\setminus \setminus$ if Filter(ot) succeeds
+		\State $\overline{comb} = \mathit{Combining}(l)$;
+                 \State \hl{$ot = \mathit{Matching}(sv, \overline{\mathit{comb}}, \mathit{hole})$;} % SB: removed the fourth parameter v here
+                 \State Store $ot$ in $L$; ~~~ \hl{$\setminus \setminus$ if $\mathit{Filter}(ot)$ succeeds}
 	\EndFor
 \State \Return $L$;
 \end{algorithmic}  
@@ -1066,16 +1094,17 @@ global states reachable by satisfiable OTs.
 
 
 \def\inactive{\{-\}}
-\paragraph{Combining:}
-The combining method enumerate all the possible behaviours of the
+\paragraph{Combining.}
+The combining method enumerates all the possible behaviours of the
 subnets, as all the possible combinations of their open transitions.
-Assume that there is a collection of $n$ subnets
-$L = {s_1, s_2, ...,  s_n}$; we denote $\overline{ot}_i$ the set of open
-transitions of the 
-subnet $s_i$ and ``$-$'' means the subnet is not involved;
-then the combination $\overline{comb}$, a set of n-tuples, is the
-cartesian product of sets :  
-$\overline{comb} : (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times ... \times (\inactive\cup \overline{ot}_n).$
+Assume that there is a collection of $n$ subnets.\noteSB{These variables are not used and conflict with the returned set $L$ in Alg.~\ref{alg2}, on one hand, and control states $s_i$ of the subnets, on the other.}\st{
+$L = {s_1, s_2, ...,  s_n}$;} We denote $\overline{ot}_i$ the set of open
+transitions of the $i$-th
+subnet; %% $s_i$ and 
+``$-$'' means that the subnet is not involved.
+The combination $\overline{comb}$, a set of n-tuples, is the
+cartesian product:  
+$\overline{comb} = (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times \dots \times (\inactive\cup \overline{ot}_n)$\hl{, where, for each $i \in [1, n]$, $\overline{ot}_i$ is the set of open transitions obtained from the $i$-th subnet in line~3 of the algorithm}.
 
 %Algorithm 2 shows the combining algorithm for enumerating all possible
 %working status combinations from subnets. Dealing with a list $TR$
@@ -1086,39 +1115,39 @@ $\overline{comb} : (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overli
 
 
 
-\paragraph{Matching:}
+\paragraph{Matching.}
 The next step, for each synchronisation vector, and each possible
 combination of behaviour of the subnets as generated by the \emph
-{Combining} method, consists in building the combined predicate,
+{Combining} method, consists in building the combined predicate
 and the corresponding open transition.
-From a synchronization vector
-$sv_k\in SV = (a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'$
-and its guard $G_k$, a tuple of open transitions
-$C_n\in \overline{comb} = {(v_i)}^{i\in I}$, the hole behaviors $Hole$,
-and a fresh variable representing the result action $v$, we build the
-predicate: 
+\hl{From a synchronization vector
+$sv = \left((a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'\right) \in SV$
+and its guard $G_k$; a tuple of open transitions
+$C = ({ot}_i)^{i \in [1,n]} \in \overline{comb}$, such that, for each $i \in [1,n]$, either $ot_i = -$, or the result action of $ot_i$ is $a_i$; the hole behaviors $\mathit{Hole} = (b_j)^{j \in J}$; and a fresh variable $v$, representing the result action of the OT under construction, we build the predicate}
 %
 \begin{multline*}
-  \mathit{Matching}(SV_k, C_n, \mathit{Hole}, v) = 
+  \mathit{Matching}(sv, C, \mathit{Hole}) = 
   \\
-  \forall {(a'_i)}^{i\in I},
-          {(b'_j)}^{j\in J},v'.\
-          v_i=a'_i\land \, b_j=b'_j \land v=v' \land G_k
+  (\forall i\in I, a_i=a'_i) \land
+  (\forall i \not\in I, ot_i = -) \land
+  (\forall j\in J, b_j=b'_j) \land
+  (v=v') \land G_k.
 \end{multline*}
 
-\paragraph{Filtering:}
+
+\paragraph{Filtering.}
 There may be several reasons why such a matching would fail:
 \begin{itemize}
   \item if some subnet is marked as inactive in the vector, and the
     chosen combination has an active behaviour at this position,
   \item if some subnet action expression in the vector does not match (by
-    pattern-matching) the corresponding behaviour $C_n$,
+    pattern-matching) the corresponding \hl{action in $C$},
   \item or if the whole set of active subnet actions in the vector
-    cannot be matched (by unification) with the set $\{C_n\}$.
+    cannot be matched (by unification) with \hl{the tuple $C$}.
 \end {itemize}
 
-Each of these possible filters is more precise than the previous
-ones. But even when unification succeeds, it is still possible that
+\st{Each of these possible filters is more precise than the previous
+ones. But e}Even when unification succeeds, it is still possible that
 the resulting predicate would be unsatisfiable, because of some
 incompatibility involving the guards. In our algorithm, we choose to
 apply only the simplest filter inside the \emph{Matching} method. All
@@ -1160,9 +1189,9 @@ SMT engine.
 
 In a pLTS, there may be several incoming transitions 
 that assign potentially different values to a state variable.
-To handle such cases, the algorithm manages for each pLTS state, as a
+To handle such cases, the algorithm manages, for each pLTS state, a
 list of expressions collected from the assignments of each state
-variable $v$.
+variable. %% $v$.
 %% The list we used contains triples <$v$, $S$, $AssignRH$> 
 %% where $v$ is the variable in pLTS, $S$ is its owner state and
 %% $AssignRH$ is a list of expressions over other variables in the right
@@ -1170,8 +1199,10 @@ variable $v$.
 % As a pragmatic extension to the formal definition, we also manage
 % ``global variables'', defined in all states of the pLTS.
 For a global state in the open automaton, getting the set of state
-variables (which may be used in a transition) will simply be the union
-of state variables of the individual pLTS states constituting this
+variables (which may be used in a transition) %% will simply be
+\hl{is realised by taking
+the union
+of sets of} state variables of the individual pLTS states constituting this
 global state (variables of different pLTS are distinct).
 %There are some assignment on the variables in each of states of the pLTS (state variables), or just as global states of it (global variables). There is usually not only one assignment for a state variable, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, 
 
@@ -1192,17 +1223,18 @@ global state (variables of different pLTS are distinct).
 
 Our matching/filtering strategy builds some transitions where
 the predicates express incompatible constraints. Even if having an
-unsatisfiable (symbolic) transition in the open automaton would not be incorrect,
-we want to check them for satisfiability, and reduce the number of
-transitions and states in the automaton.
-In Fig.~\ref{schema:unsat-ot}, we display an example of an
+unsatisfiable (symbolic) transition would not be incorrect,
+\hl{we choose to minimize the open automaton (\ie its number of
+transitions and states), by checking these predicates} for satisfiability.
+In Fig.~\ref{schema:unsat-ot}, we show an 
 unsatisfiable open transition 
-from the result of our example. It shows the case where
-the failure controller performs a ``$fail$'' action, while the timer
-executes a ``$resume$''. The chosen synchronization
+from the open automaton of our running example. It shows the case where
+the failure controller performs a ``$\PortFail$'' action, while the timer
+executes a ``$\PortResume$''. The chosen synchronization
 vector (SV0 from Fig.~\ref{schema:ArchFailure:pNet}) does not match
-with these actions, as shown by the predicate
-fragment ``resume(true)=start($b_2$)''. 
+with these actions, \hl{since it expects $\NameTimer.\PortStart$. This mismatch is materialised} %% as shown
+by the predicate
+fragment ``$\mathit{resume}(\true)=\mathit{start}(b_2)$''. 
 
 \begin{figure}[t]
 \begin{mathpar}
@@ -1215,7 +1247,7 @@ fragment ``resume(true)=start($b_2$)''.
 \end{figure}
 
 Checking satisfiability requires some symbolic computation
-on the action expressions and the predicates, and this 
+on the action expressions and the predicates, which
 may depend on the specific theory of the action algebra datatypes. 
 The ``Modulo Theory'' part of SMT solvers is important here, so that
 the solver can use specific properties of each action algebra.
@@ -1225,13 +1257,13 @@ the solver can use specific properties of each action algebra.
 
 We check the satisfiability of each open transitions
 using the SMT solver Z3. More precisely, we translate
-the OT predicate into a SMTlib assertion, in the context provided by
+the OT predicate into an SMTlib assertion in the context provided by
 the possible state variable assignments in the source state. In this
-section we describe the translation of the algebra presentation, of
+section, we describe the translation of the \noteSB{The algebra presentation only appears here for the first time after its definition in Sect.~\ref{section:pnets}}\hl{algebra presentation}, of
 assignments, and of the predicates.
 
-From inside our algorithm code, we submit satisfiability requests to
-Z3 using its JAVA API. Here for readability, we
+Our implementation submits satisfiability requests to
+Z3 using its JAVA API. Here, for readability, we
 show the Z3 code using its SMT-LIB input language.
 
 Figure~\ref{schema:smt-lib} shows the translation of the
@@ -1242,8 +1274,8 @@ of the BIP action algebra sorts
 and constructors, then the declaration of variables, and finally the
 predicate to be checked, encoded as a set of assertions.
 Here we display also the proof generated by Z3,
-though in practice our tool only needs the brute information ``sat''
-or ``unsat''. The result "unsat" in the output is just what we expected.
+\noteSB{I am not sure I understand the entire message of this phrase}\hl{though in practice our tool only needs the brute information ``sat''
+or ``unsat''. The result "unsat" in the output is just what we expected.}
 % as appears in the ``unsat'' proof generated by Z3 in which ``\{= ?x66 ?x70\}'' is shown to be false (see Fig. \ref{schema:smt-lib})
 
 \begin{figure}[t]
@@ -1258,27 +1290,27 @@ or ``unsat''. The result "unsat" in the output is just what we expected.
 %% \end{figure}
 
 To build the input submitted to Z3 for each OT,
-we translate the algebra $presentation$, the predicates and the
+we translate the algebra presentation, the predicates and the
 variable assignments (the Post part) into Z3 (Java-API) syntax.
 % The $presentation$ and the predicates are translated separately. 
 
-\paragraph{Translation of Action algebra presentation}
-In appendix \ref{appendix:mapsmt} we define formally a condition of
-well-formness of an algebra presentation, and its translation into
+\paragraph{Translation of action algebra presentation.}
+In App.~\ref{appendix:mapsmt}, we formally define the condition of
+well-formedness of an algebra presentation, and its translation into
 SMTlib declarations (\texttt{declare-datatypes} and
 \texttt{declare-fun}). It ensures that the generated code is correct,
 and will not raise runtime errors in the SMT engine. Remark that the
-\texttt{declare-datatypes} command include both the Action
-constructors from table \ref{table:BIPalgebra}, but also the constant action
+\texttt{declare-datatypes} command comprises both the action
+constructors from table \ref{table:BIPalgebra} and also the constant action
 names from our example.
 
 
-\paragraph{Translating assignments into predicate terms}
+\paragraph{Translating assignments into predicate terms.}
 State variable assignments that were collected during the open
 automaton are used when generating the SMTlib asserts (see
-appendix~\ref{appendix:translating-assignments}). This appears in
-Fig.~\ref{schema:smt-lib} in line 10, that encodes possible values of
-the variable $t$ of the timer.
+App.~\ref{appendix:translating-assignments}). \noteSB{I am not an expert of Z3 or SMT-LIB, but the clause '\texttt{(= t (- t 1))}' looks very suspicious to me.}\hl{This appears in
+line 10 of Fig.~\ref{schema:smt-lib}, which encodes possible values of
+the variable $t$ of the timer.}
 
 %The assignments are also taken into account when checking the
 %satisfiability of the open transitions as they represent the value of
@@ -1309,15 +1341,19 @@ the variable $t$ of the timer.
 %% assignments from different variables. 
 
 
-\paragraph{Checking satisfiability}
+\paragraph{Checking satisfiability.}
 
-In App.~\ref{appendix:mapsmt} we formally define the translation of each
+In App.~\ref{appendix:mapsmt} we formally define all steps of the translation of each
 open transition, including:
-- collect all variables in the transition, and declare them,
-- check well-formness and correct typing of expressions
-- translate the predicate into a conjunction of assertions
-- if present in the source state, translate the state-variable
-assignments into a disjunctive assertion.
+%
+\begin{itemize}
+\item collect all variables in the transition, and declare them,
+\item check well-formedness and correct typing of expressions,
+\item translate the predicate into a conjunction of assertions,
+\item if present in the source state, translate the state-variable
+  assignments into a disjunctive assertion.
+\end{itemize}
+%
 Here again, this translation ensures that no runtime error will occur
 when running the SMT engine.
 
