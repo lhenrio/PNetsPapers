@@ -226,10 +226,8 @@ of BIP systems, that have been used to specify the control software of
 ESA microsatellites. We use pNets to encode BIP architectures,
 extended with explicite data in synchronisations, and we compute their
 open automaton semantics. This automaton may then be used to prove
-behavioral properties, like e.g., \TODO{ par exemple ..} 
-
-  
-
+behavioral properties; we give 2 examples, a safety and a liveness
+properties of a BIP architecture.
 \end{abstract}
 
 
@@ -841,18 +839,22 @@ Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 
 The semantics of open pNets will be defined as an open automaton, that
 is an automaton where each transition composes transitions 
-of several \noteSB{These should all be pLTSs, right? Or did I miss
-  something?}\noteEM{Hum, nor really, something intermediate; the actions there can be
-  parameterised actions, but the label has no guard and no assignments}\hl{LTSs} with the
-actions of some holes; the transition occurs if some predicates hold,
+of several
+% \noteSB{These should all be pLTSs, right? Or did I miss
+%  something?}\noteEM{Hum, nor really, something intermediate; the actions there can be
+%  parameterised actions, but the label has no guard and no
+%  assignments}
+LTSs with the actions of some holes; the transition occurs if some predicates hold,
 and can involve a set of state modifications. Each state of an open
 automaton has a set of \emph{state variables} that can be assigned by
-incoming transitions.
+incoming transitions. Strictly speaking, the LTSs at the leaves of the
+open automaton are a restricted form of pLTSs, where labels are
+parametrised actions, but include no guard nor assignments.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
 	An \emph{open transition} over a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in
-	I}$ of \hl{LTSs}, a
+	I}$ of LTSs, a
 	set $J$ of holes with sorts $Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is a structure of the form:	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
@@ -862,7 +864,7 @@ incoming transitions.
 	\end{mathpar}
 	where $s, s'\in\mathcal{S}$ and, for all
         $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	\hl{LTS} $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, and $\xrightarrow{b_j}_j$
+	LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, and $\xrightarrow{b_j}_j$
         is a transition of the hole $j$, for any action $b_j$ in the
         sort $Sort_j$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
@@ -880,8 +882,8 @@ incoming transitions.
 	\langle \mathit{LTS}_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}\rangle$ where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
-		\item[$\bullet$]  \noteSB{And one more above}\hl{$LTS_i^{i\in I}$} is a family of \hl{LTSs},
-		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0 \in \mathcal{S}$ the initial state,
+		\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
+		\item[$\bullet$]  $\mathcal{S}$ is a set of states and $s_0 \in \mathcal{S}$ the initial state,
 		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and, for each
 		$t\in \mathcal{T}$, there exist $I'$, $J'$ with $I'\subseteq I$, $J'
 		\subseteq J$, such that $t$ is an open transition over $LTS_i^{i\in I'}$, $J'$,
@@ -994,8 +996,13 @@ In this section we describe the algorithm implementing the pNet
 semantics, the interaction with the Z3 SMT solver, and we show the
 result on our  example.
 
-\noteSB{line 8: $E$ is never updated, so $E = \emptyset$ always;\\
-line 11: Would it not be better to prune unsatisfiable transitions on-the-fly, \ie inside the loop?}
+\noteSB{
+line 11: Would it not be better to prune unsatisfiable transitions
+on-the-fly, \ie inside the loop?}
+\noteEM{Not so easy, it would require a proof... on one side this
+  would implement reachability on the fly; but there is the question
+  of collecting the assignments of the state variables, that are used
+  in the sat check !}
 Algorithm~\ref{alg1} starts with an open pNet, and builds its set of open
 transitions. Its main loop is a classical residual algorithm: starting
 from the initial global state, it picks a state in an unexplored set, and
@@ -1007,31 +1014,34 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
   \caption{Open Automaton Generation}
   \label{alg1}
 \begin{algorithmic}[1]
-\Require The pNet node P.
-\State Initialize sets $U=\mathit{InitState}(P)$, $E=\emptyset$ for unexplored/explored global states, $L=\emptyset$ for the resulting OTs;
+\Require The pNet pn (cannot be reduce to a hole)
+\State Initialize sets $U=\{\mathit{InitState}(pn)\}$, $E=\emptyset$
+for unexplored/explored global states, $L=\emptyset$ for the resulting OTs;
 \While{!$\mathit{isEmpty}(U)$}
-	\State Choose $S$ in $U$;
+	\State Choose $S$ in $U$; add $S$ in $E$;
 	\State $\mathit{OT} = \mathit{MakeTransitions}(P, S)$;
         \State Store $\mathit{OT}$ in $L$; 
 	\ForAll{$\mathit{OT} \in L$}
         \State Let $T$ be the target global state of $\mathit{OT}$
-	\IfThen{($T \not\in U$ \&\& \hl{$T \not\in E$})}{Add $T$ into $U$;}
+	\IfThen{($T \not\in U$ \&\& $T \not\in E$)}{Add $T$ into $U$;}
 	\EndFor
 \EndWhile
 \State \hl{Prune the open transitions in $L$ using the SMT solver;}
-\State \Return $\mathit{OA}=\mathit{Reachable}(\mathit{InitState}(P),L)$;
+\State \Return $\mathit{OA}=\mathit{Reachable}(\mathit{InitState}(pn),L)$;
 
 \end{algorithmic}  
 \end{algorithm}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
-\hl{For pLTSs at the leaves, we simply take the pLTS transitions of the
-corresponding local state and build the predicate to generate the
-open transition.}
-On a pNet node we use two methods, combining and
-matching, to generate the predicate of the open transitions in a
-hierarchical manner.
+When applied to a pLTSs at the leaves, we simply take the pLTS transitions of the
+corresponding local state and use the semantic rule (see TR1 in
+Appendix~\ref{appendix:semRules}) to build the OT. 
+When applied to a pNet node we use two methods, combining and
+matching, to generate the open transitions in a hierarchical manner,
+as detailed in algorithm~\ref{}. This method also manages directly the
+holes of the node, so \emph{MakeTransitions} will never be called on a Hole.
+
 %
 Then, at the root of the pNet, the predicate of each OT is translated
 into SMTlib assertions, and checked for satisfiability. Unsatisfiable
@@ -1044,7 +1054,7 @@ global states reachable by satisfiable OTs.
   subnets, hence the loop in lines 2--4 is empty and so is the list
   $l$. $\mathit{Combining}(l)$ is then called on an empty list...}
 
-\noteInSB{Line 2: Tr1 and Tr2 are the semantic rules, right?}
+%\noteInSB{Line 2: Tr1 and Tr2 are the semantic rules, right?}
 
 \noteInSB{Line 6: Nothing in the assignment $\overline{comb} =
   \mathit{Combining}(l)$ depends on $sv$.  Hence, this should probably
@@ -1065,22 +1075,22 @@ global states reachable by satisfiable OTs.
   predicate, because the text in the paragraph ``Matching'' says that
   $v$ is fresh.)}
 
-\noteInSB{Line 8: When is $\mathit{Filter}(ot)$ called?}
+%\noteInSB{Line 8: When is $\mathit{Filter}(ot)$ called?}
 
 \begin{algorithm}
-\caption{MakeTransitions()}
+\caption{MakeTransitions() for pNet nodes}
   \label{alg2}
 \begin{algorithmic}[1]
 \Require a pNet node $Pn$; a global state $S$.
 \State Initialize empty list $l$ and set $L$ for sub-transitions/transitions.
 	\For{each $\mathit{Subnet}$ in $Pn$}
-	~~~ $\setminus \setminus$ Recursively applying \hl{Tr1 or Tr2} on the sub-nodes.
+	~~~ $\setminus \setminus$ Recursively applying the semantic rules on the sub-nodes.
                 \State Store $\mathit{MakeTransitions}(Subnet, S)$ in $l$;
 	\EndFor
 	\For{each $sv \in SV$}
 		\State $\overline{comb} = \mathit{Combining}(l)$;
                  \State \hl{$ot = \mathit{Matching}(sv, \overline{\mathit{comb}}, \mathit{hole})$;} % SB: removed the fourth parameter v here
-                 \State Store $ot$ in $L$; ~~~ \hl{$\setminus \setminus$ if $\mathit{Filter}(ot)$ succeeds}
+                 \State Store $ot$ in $L$; ~~~ \hl{$\setminus \setminus$ when $\mathit{Matching}(ot)$ succeeds}
 	\EndFor
 \State \Return $L$;
 \end{algorithmic}  
@@ -1103,8 +1113,12 @@ global states reachable by satisfiable OTs.
 \paragraph{Combining.}
 The combining method enumerates all the possible behaviours of the
 subnets, as all the possible combinations of their open transitions.
-Assume that there is a collection of $n$ subnets.\noteSB{These variables are not used and conflict with the returned set $L$ in Alg.~\ref{alg2}, on one hand, and control states $s_i$ of the subnets, on the other.}\st{
-$L = {s_1, s_2, ...,  s_n}$;} We denote $\overline{ot}_i$ the set of open
+Assume that there is a collection of $n$ subnets.
+%% \noteSB{These variables are not used and conflict with the returned
+%%   set $L$ in Alg.~\ref{alg2}, on one hand, and control states $s_i$ of
+%%   the subnets, on the other.}
+%% \st{$L = {s_1, s_2, ...,  s_n}$;}
+We denote $\overline{ot}_i$ the set of open
 transitions of the $i$-th
 subnet; %% $s_i$ and 
 ``$-$'' means that the subnet is not involved.
@@ -1152,8 +1166,9 @@ There may be several reasons why such a matching would fail:
     cannot be matched (by unification) with \hl{the tuple $C$}.
 \end {itemize}
 
-\st{Each of these possible filters is more precise than the previous
-ones. But e}Even when unification succeeds, it is still possible that
+%\st{Each of these possible filters is more precise than the previous
+%  ones. But e}
+Even when unification succeeds, it is still possible that
 the resulting predicate would be unsatisfiable, because of some
 incompatibility involving the guards. In our algorithm, we choose to
 apply only the simplest filter inside the \emph{Matching} method. All
