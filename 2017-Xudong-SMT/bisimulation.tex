@@ -1,0 +1,149 @@
+\documentclass[a4paper]{lncs/llncs}
+
+\usepackage[T1]{fontenc}
+%\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+%\geometry{a4paper}                   % ... or a4paper or a5paper or ...
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+
+%\usepackage{amsfonts}
+%\usepackage{fancyhdr}
+%\usepackage{cite}
+%\usepackage{ifthen}
+%\usepackage{amssymb}
+%\usepackage{fancyhdr}
+%\usepackage{pifont}
+\usepackage{stmaryrd}
+\usepackage{mathtools,mathpartir}
+\usepackage{proof}
+%\usepackage{setspace}
+%\usepackage{indentfirst}
+\usepackage{amsmath,amssymb,amscd,mathrsfs}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\usepackage{epsfig,color,subfigure,enumitem}
+\newcommand{\TODO}[1]{\textcolor{red}{\textbf{[TODO:#1]}}}
+\newcommand{\NOTE}[1]{\textcolor{blue}{\textbf{[NOTE:#1]}}}
+\newcommand{\ERIC}[1]{\textcolor{blue}{#1}}
+\newcommand{\LUDO}[1]{\textcolor{green}{#1}}
+\definecolor{airforceblue}{rgb}{0.26, 0.44, 0.56}
+\newcommand{\QIN}[1]{\textcolor{airforceblue}{#1}}
+\newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
+\makeatletter
+\newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
+\newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
+\makeatother
+
+%\usepackage{macrospNets}
+
+\def\R{\mathcal{R}}
+
+\def\AlgT{\mathcal{T}}
+\def\AlgE{\mathcal{E}}
+\def\AlgA{\mathcal{A}}
+\def\AlgAS{\mathcal{A}_S}
+\def\AlgB{\mathcal{B}}
+\def\AlgI{\mathcal{I}}
+\newcommand{\set}[1]{\overline{#1}}
+\newcommand{\Pred}{\symb{Pred}}
+\newcommand{\Post}{\symb{Post}}
+%\usepackage[math]{cellspace}
+%\setlength\cellspacetoplimit{ 37pt}
+%\setlength\cellspacebottomlimit{18pt}
+
+\pagestyle{plain}
+
+% addition to the mathpartir package for red dotted rules,
+% that we use for open-transitions
+
+\makeatletter
+\def \dotover {\textcolor{red}{\leavevmode\cleaders\hb@xt@ .22em{\hss $\cdot$\hss}\hfill\kern\z@}}
+\def \reddottedrule #1#2{\hbox {\advance \hsize by -0.5em
+%\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$} \phantom{\copy0} %
+ {\ooalign{\vphantom{$\genfrac{}{}{0pt}{0}{#1}{#2}$}\cr\dotover\cr$\genfrac{}{}{0pt}{0}{#1}{#2}$\cr}}}}
+
+ \def \dottedrule #1#2 {
+  {\sbox0{$\genfrac{}{}{0pt}{0}{#1}{#2}$}%
+    \vphantom{\copy0}%
+    \ooalign{%
+      \hidewidth
+      $\vcenter{\moveright\nulldelimiterspace
+        \hbox to\wd0{%
+         \xleaders\hbox{\kern.5pt\vrule height 0.4pt width 1.5pt\kern.5pt}\hfill
+          \kern-1.5pt
+        }%
+      }$
+      \hidewidth\cr
+    \box0\cr}}
+}
+
+\let \defaultfraction \mpr@@fraction
+\makeatother
+
+%\newtheorem{theorem}{Theorem}[section]
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{cor}[theorem]{Corollary}
+%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{algorithm}[theorem]{Algorithm}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{example}[theorem]{Example}
+%\newtheorem{problem}[theorem]{Problem}
+%\newtheorem{proof}[theorem]{Proof}
+
+% Macros for the SOS rules and proof trees:
+%\newcommand\openrule[2]{\redinfer{#1}{#2}}
+\newcommand\openrule[2]{\inferrule*[myfraction=\reddottedrule,center]{#1}{#2}}
+%\newcommand\openrule[2]{\inferrule*{#1}{#2}}
+%\newcommand\ostate[1]{\triangleleft{\;#1\;}\triangleright}
+\newcommand\ostate[1]{\triangleleft{#1}\triangleright}
+\newcommand{\sm}[1]{\mbox{\boldmath\small #1}}
+
+
+
+
+\DeclareMathOperator{\card}{card}
+\DeclareMathOperator{\Flat}{Flat}
+\renewcommand{\P}{\mathcal P}
+
+
+\begin{document}
+
+\section{Current State of Bisimulation}
+There are two new classes added in the $\texttt{fr.inria.oasis.vercors.vce.openpnets.prover}$.
+\begin{itemize}
+	\item $Relation$ is the input for bisimulation checking.
+	\item $BisimulationChecker$ generate the proof obligation and submit it to the Z3 solver to check.
+\end{itemize}
+
+\subsection{Relation}
+User gives the pair of states and the predicates between two open automata for bisimulation checking. Relation is the structure created for storing these informations. So there would be a list of Relations as the input of checking. There are 4 fields in the $Relation$ class storing corresponding information (state1, state2, predicate1, predicate2).
+
+\subsection{BisimulationChecker}
+Most of the methods are the same as the $Checker$ module. Except $checkRelation()$ and $checkProofObligation()$.
+
+\paragraph{toplevelloop}
+\ERIC{This is currently missing ?} Checking that a given relation is a
+bisimulation means checking for each triple $<s_1,s_2,pred>$ in $\R$,
+for each $OT_1$ in the transitions of $s_1$ leading to a state $s'_1$, it is
+``covered'' by the $\{OT_{2i}$ of $s_2$ that leads to states equivalent to
+$s'_1$ (under assumption $pred$). Here ``covered'' means that the
+disjunction of the predicates in the OTs of $s_2$ implies the
+predicate of $OT_1$, and is realized by:
+
+\paragraph{checkRelation()} first chooses a open transition $OT_1$
+start at the $state1$. Then collects the open transitions $OT_{2x}$
+start at the $state2$. Collect the $Pred$ and $Assignment$ of the OTs
+at the same time. At Last, invoke $checkProofObligation()$ to check 
+$OT_1$ and the list of collected $OT_{2x}$s.
+
+\paragraph{checkProofObligation()} generates the imply formula for bisimulation checking and submit it to Z3. The left side of the formula $lhs$ is the conjunction of predicate term and assignments in $OT_1$ (there is no difference with what we do in $Checker$). Conjunctions are also generated by the list of collected $OT_{2x}$ one by one. The right hand side $rhs$ is the disjunction of these conjunctions. Then invoke Z3 method to make a implication relation between $lhs$ and $rhs$.
+But what to check is if there is no case to satisfy the negation of the formula. If solver returns "UNSAT" meaning no case makes implication formula fail, then this relation is proved.
+
+\subsection{TODO}
+\begin{itemize}	
+	\item Change the objects attending into the bisimulation checking. Collect the OTs with both given start and target state instead of the start state only.
+	\item Take the predicates into account when generating proof obligation.
+\end{itemize}
+
+\end{document}
