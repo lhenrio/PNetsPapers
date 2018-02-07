@@ -32,6 +32,7 @@
 \usepackage{soul}
 \usepackage[colorinlistoftodos,bordercolor=white]{todonotes}
 %% \usepackage[disable,colorinlistoftodos,bordercolor=white]{todonotes}
+\usepackage{macrospNets}
 
 \newcommand{\Simon}{\\\hfill\mdash Simon}
 
@@ -39,6 +40,11 @@
 \newcommand{\noteSBin}[2][inline,color=green!40]{\todo[#1]{{#2}\Simon}}
 \newcommand{\todoSB}[2][color=green!40, size=\tiny]{\todo[#1]{\textbf{To-do Simon:} {#2}}}
 \newcommand{\todoSBin}[2][inline,color=green!40]{\todo[#1]{\textbf{To-do Simon: } {#2}}}
+\newcommand{\Ludo}{\\\hfill\mdash Ludo}
+\newcommand{\noteLH}[2][color=green!40, size=\tiny]{\todo[#1]{{#2}\Ludo}}
+\newcommand{\noteLHin}[2][inline,color=green!40]{\todo[#1]{{#2}\Ludo}}
+\newcommand{\todoLH}[2][color=green!40, size=\tiny]{\todo[#1]{\textbf{To-do Ludo:} {#2}}}
+\newcommand{\todoLHin}[2][inline,color=green!40]{\todo[#1]{\textbf{To-do Ludo: } {#2}}}
 
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
 \newcommand{\defntwo}[2]{Defs~\ref{defn:#1} and \ref{defn:#2}}
@@ -438,6 +444,263 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 
 \section{Open pNets}
 \label{secn:pNets}
+
+pNets are tree-like structures, where the leaves are either
+\emph{parameterised labelled transition systems (pLTSs)}, expressing the
+behaviour of basic processes, or \emph{holes}, used as placeholders
+for unknown processes, of which we only specify the set of possible
+actions, this set is named the \emph{sort}.
+Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+set of \emph{synchronisation vectors} that express the possible
+synchronisation between the parameterised actions of a subset of the
+sub-trees.
+
+
+%\smallskip\noindent
+\paragraph*{Notations.}
+We extensively use indexed structures
+over some countable indexed sets, which are equivalent to mappings over
+the countable set. % . The indexes will usually be
+% integers, bounded or not. Such an indexed family is
+%denoted
+%follows:
+$a_i^{i\in I}$
+%, or equivalently  $(i\mapsto a_i)^{i\in I}$
+denotes a family of elements $a_i$ indexed over the
+set $I$. % Such a family
+% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+% To specify the set over which the structure is indexed,
+% indexed structures are always denoted with an exponent of the form $i\in I$
+% (arithmetic only appears in the indexes if necessary).
+$a_i^{i\in I}$ defines both $I$ the set over which the family is
+indexed (called \emph{range}), and $a_i$ the elements of the family.
+E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
+$3$ ; abbreviated $(3\mapsto a)$ in the following.
+When this is not
+ambiguous, we shall use notations for sets, and typically write
+``indexed set over I'' when formally we should speak of multisets, and
+write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
+family is denoted $\emptyset$. We
+denote classically with an overline -- $\overline{a}$  -- a family when the indexing set 
+is
+not meaningful.  $\uplus$ is the disjoint union on
+indexed sets.
+
+\paragraph*{Term algebra.}
+Our models rely on a notion of parameterised actions, that are
+symbolic expressions using data types and variables. As our model aims
+at encoding the low-level behaviour of possibly very different
+programming languages, we do not want to impose one specific algebra
+for denoting actions, nor any specific communication mechanism. So we
+leave unspecified the constructors of the algebra that will allow building
+expressions and actions. Moreover, we use a generic {\em action interaction}
+mechanism, based on (some sort of) unification between two or more action
+expressions, to express various kinds of communication or
+synchronisation mechanisms.
+
+\def\Talg{\mathcal{T}_{\Sigma,\P}}
+Formally, we assume the existence of a term algebra $\Talg$,
+where $\Sigma$ is the signature of the data and action constructors,
+and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
+data expressions $\mathcal{E}_\P$, including a set of boolean
+expressions $\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
+On top of $\mathcal{E}_\P$ we build the action algebra
+$\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
+\mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
+naturally action terms will use data expressions as subterms.
+To be able to reason about the data flow between pLTSs, we
+distinguish \emph{input variables} of the form $?x$ within terms; the function
+$\vars(t)$ identifies the set of variables in a term
+$t\in\AlgT$, and $iv(t)$ returns its input variables.
+
+
+pNets can encode naturally the notion of input actions in value-passing CCS
+\cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
+for more general mechanisms, like gate negociation in Lotos, or broadcast
+communications. Using our notations, value-passing actions \emph{\`a la} CCS would be
+encoded as $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs (in which $v_i$ are 
+action terms containing no input variables). 
+%For Lotos-style
+%distributed synchronisation, we use synchronisation vectors that encode matching data
+%offers on a common gate; or 
+We can also use more complex action structure such as Meije-SCCS action
+monoids, like in $a.b$, $a^{f(n)}$ (see \cite{deSimone85}). The expressiveness of the 
+synchronisation constructs
+will depend on the action algebra.
+
+
+
+
+\subsection{The (open) pNets Core Model}
+\label{section:pNets}
+
+
+A pLTS is a labelled transition system with variables; variables can be
+manipulated, defined, or accessed inside states, actions, guards, and
+assignments. Without loss of generality and to simplify the formalisation, we suppose 
+here that 
+variables are local to each 
+state: each state has its set of variables disjoint from the others. Transmitting 
+variable values from one state to the other can be done by explicit assignment. 
+%Similarly, to simplify the management of variables and without loss of expressivity, we 
+%suppose that transitions looping to the same state does not do assignments.
+Note that we make no assumption on finiteness of the set of states nor
+on finite branching of the transition relation.
+
+We first define the set of actions a pLTS can use, let $a$
+range over action labels, $\symb{op}$ are operators, and $x_i$ range over
+variable names. Action terms are:
+\[
+\begin{array}[l]{rcl@{\quad}p{5.5cm}}
+  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
+  p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
+  \symb{Expr}&::=& 
+  \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
+\end{array}
+\]
+The input variables in an action term are those marked with a
+$\symb{?}$.
+We additionally suppose that each input variable does not
+appear somewhere else in the same action term:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+
+\begin{definition}[pLTS]
+\label{pLTS}
+A pLTS is a tuple
+$\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
+\begin{itemize}
+\item[$\bullet$]
+$S$ is a set of states.
+\item[$\bullet$]
+$s_0 \in S$ is the initial state.
+%\item[$\bullet$]
+ %Variables in
+%$\iv(\alpha)$ are assigned by the action, other variables can be assigned
+%by the additional assignments.
+\item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
+$L$ is the set of labels of the form
+$\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
+where $\alpha \in\AlgA$ is a parameterised action, $e_b \in
+\AlgB$ is a guard, and the variables $x_j\in P$
+are assigned the expressions $e_j\in \AlgE$.
+If 
+$s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+		J}\rangle} s'\in \to $ then $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
+		$\vars(e_b)\!\subseteq\! \vars(s')$, and
+		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
+		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		
+\end{itemize}
+\end{definition}
+
+Now we define
+pNet nodes, as constructors for hierarchical behavioural structures.
+A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
+set of Holes, playing the role of process parameters.
+
+A composite pNet consists of a set of sub-pNets exposing
+a set of actions, each of them triggering internal actions in each of
+the sub-pNets. The synchronisation between global actions and
+internal actions is given by  \emph{synchronisation vectors}: a
+synchronisation vector synchronises one or several internal actions, and
+exposes a single resulting global action.
+Actions involved at the pNet level (in the synchronisation vectors) do
+not need to distinguish between input and output
+variables. Action terms for pNets are defined as follows:
+\[\begin{array}[l]{rcl@{\quad}l}
+  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
+\end{array}
+\]
+
+
+
+\begin{definition}[pNets]\label{def-pnets}
+A pNet is a hierarchical structure where leaves are pLTSs and holes:\\
+$\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, \symb{SV}_k^{k\in 
+K}\myrangle$
+where
+\begin{itemize}
+\item[$\bullet$] $I \in \I$ is the set over which sub-pNets are indexed.
+\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
+%  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
+%sub-pNets are indexed.
+
+\item[$\bullet$] $J\!\in\!\I_\P$ is a set of indexes, called \emph{holes}.
+$I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
+\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
+\emph{sort} of
+hole $j$.
+
+\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
+  synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
+  $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
+  $\forall i\!\in\!
+  I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
+  J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
+  J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
+$\Label(\symb{SV}_k) = \alpha'_k$.
+
+
+\end{itemize}
+\end{definition}
+
+The preceding definition relies on the auxiliary functions below:
+
+\begin{definition}[Sorts, Holes, Leaves of pNets]
+  \begin{itemize}
+  \item The sort of a pNet is its signature, i.e. the set of actions it can
+perform. In the definition of sorts, we do not need to distinguish
+input variables (that specify the dataflow within LTSs), so for
+computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
+K}$ is the parallel substitution 
+operation.} to remove the
+\emph{input marker} of variables. Formally:
+\[
+\begin{array}{l}
+\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
+x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+    J}\rangle} s'\in \to \} \\
+\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
+\overline{\pNet}\!,
+\overline{\symb{SV}}\myrangle)
+=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
+\to\alpha'\in\set{\symb{SV}}\}
+\end{array}
+\]
+
+\item
+The set of holes of a pNet is defined inductively; the sets of holes
+in a pNet node and its subnets are all disjoint:
+  \[\begin{array}{l}
+\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
+\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
+=J\uplus{\displaystyle \bigcup_{i\in 
+I}\Holes(\pNet_i)}\\
+\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
+\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
+\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
+\end{array}\]
+\item
+The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
+inductively as:
+\noteLH{Not very nice but at least of the right kind for the definition of composition}
+\[\begin{array}{l}
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\
+\Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
+\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
+I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i=\mylangle S,s_0, \to\myrangle\}}
+\end{array}\]
+\end{itemize}
+\end{definition}
+
+
+
+A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
+is said to be \emph{open}.
+
+
 
 %****************************************************************
 %****************************************************************
