@@ -184,7 +184,8 @@ In the following definitions, we extensively use indexed structures
 integers, bounded or not. Such an indexed family is denoted as
 follows: $a_i^{i\in I}$ is a family of elements $a_i$ indexed over the
 set $I$. Such a family
-is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$, and we will also use mapping 
+notations to manipulate indexed sets.
 To specify the set over which the structure is indexed, 
 indexed structures are always denoted with an exponent of the form $i\in I$
 (arithmetic only appears in the indexes if necessary).
@@ -193,7 +194,10 @@ family is indexed, and then $a_i$ the elements of the family.
 
 For example $a^{i\in\{3\}}$ is
 the mapping with a single entry $a$ at index $3$; exceptionally, such mappings with
-only a few entries will also be denoted $(3\mapsto a)$. \TODO{We need to define update as $A \uplus \{j \mapsto a\}$ or $A[j \mapsto a]$}
+only a few entries will also be denoted $(3\mapsto a)$.
+%The operation  $A[j \mapsto a]$ updates the value associated to $j$ in map $A$ so that 
+%it 
+%now corresponds to $a$. 
 When this is not ambiguous, we shall use abusive vocabulary and
 notations for sets, and typically write ``indexed set over I'' when  
 formally we should speak of multisets, and ``$x\in
@@ -202,9 +206,11 @@ An empty family is denoted $[]$. % (it can be defined as $a_i^{i\in\emptyset}$).
 To simplify equations, an indexed set can be denoted $\set{M}$
 instead of $M_l^{l\in L}$ when $L$ is irrelevant.
 
-Let $\uplus$ be the disjoint union operator on indexed sets. 
+$\uplus$ is the disjoint operator on sets. We extend it to  disjoint union  of indexed 
+sets defined by the merge of the 
+two sets provided they are indexed on disjoint families.
 The elements
-of the union are then accessed by using an index of one of the two
+of the union of two indexed sets are then accessed by using an index of one of the two
 joined families.
 We suppose here that disjoint unions are always well defined; this
 requires to choose disjoint  
@@ -217,8 +223,6 @@ trivial).
 
 \section{Parameterised Networks (pNets): definition}
 \label{section:pnets}
-
-\ERIC{Keep minimum defs here too be independent from FORTE}
 
 This section introduces pNets and the notations we will use in
 this paper. Then it gives the formal definition of pNet structures,
@@ -264,8 +268,6 @@ denote classically with an overline -- $\overline{a}$  -- a family when the inde
 is
 not meaningful.  $\uplus$ is the disjoint union on
 indexed sets.
-
-% \TODO{Check whether we really use all these notations}
 
 \paragraph*{Term algebra.}
 Our models rely on a notion of parameterised actions, that are
@@ -453,18 +455,20 @@ in a pNet node and its subnets are all disjoint:
   \[\begin{array}{l}
 \Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
 \Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
-=J\cup{\displaystyle \bigcup_{i\in 
+=J\uplus{\displaystyle \bigcup_{i\in 
 I}\Holes(\pNet_i)}\\
 \forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
 \forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  \Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
 \end{array}\]
 \item
-The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined inductively as:
+The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
+inductively as:
+\TODO{Not very nice but at least of the right kind for the definition of composition}
 \[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\! \{ \mylangle S,s_0, \to\myrangle \}\\
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\
 \Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
-\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \bigcup_{i\in 
-I}\Leaves(\pNet_i)}
+\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
+I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i=\mylangle S,s_0, \to\myrangle\}}
 \end{array}\]
 \end{itemize}
 \end{definition}
@@ -588,6 +592,8 @@ states from other tuples.
   the set of pLTS at its leaves,
   then $States(p) = \{\triangleleft s_i^{i\in L}
   \triangleright| \forall i\in L. s_i \in S_i\}$.
+\TODO{this definition is not valid because L is undefined and leaves only exist for pNets 
+-> REMOVE? this would mean that a pNet is not a pLTS ...}
 A pLTS being its own single leave:
   $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
 
@@ -816,8 +822,6 @@ fresh one.
 \end{figure}
 
 \end{example}
-
-\RAB{Exemple  Fig3 a revoir: Les regles ne passent... }
 
 Note that while the scenario above is expressed as a single
 instantiation of the possible behaviours, the constructions below are
@@ -1096,7 +1100,7 @@ reflexive, symmetric and transitive.
 	\overline{\symb{SV}}\myrangle
 	\]
 \end{definition}
-\TODO{$\uplus\{j_0\mapsto \pNet'\}$ non defini}
+
 
 \begin{theorem}[Congruence]\label{thm-congr-eq}
 	Consider an open pNet:
@@ -1226,11 +1230,10 @@ $t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we
 
 Two pNets are Weak FH-bisimilar if there exist a relation between their associated open
 automata that is an Weak FH-bisimulation and their initial states are equivalent.
-\TODO{define equivalent}
+\TODO{LUDO: define equivalent}
  \end{definition}
 
 \TODO{Here we should include:
-  \\  - A definition for Weak FH-Bisimulation
   \\  - A sufficient condition for an open PNet to preserve Weak-FH,
   including: 1) no non-deterministic Tau-choice in the pLTSs, 2) a
   synch vector propagating Tau from a subnet $pNet_i$ mandatory
@@ -1240,10 +1243,6 @@ automata that is an Weak FH-bisimulation and their initial states are equivalent
   \\  - the corresponding Congruence theorem
   \\- An example
 }
-
-\TODO{Eric: ask Elie, Hubert or others about interesting weak
-  equationnal theories for Lotos -- DONE, no answer..., so I got some examples from \cite{Lotos:ISO}}
-
 
 Possible Lotos small examples:
 
@@ -2192,8 +2191,11 @@ $\Pred(SV,a_i^{i\in I_k}\uplus(j_0\mapsto v_Q),b_j^{j\in J_k},v)\Leftrightarrow
  $\Leaves(P)=p_l^{l\in L_P}$.
  Consider $Q$ FH-bisimilar to $Q'$. It means that there is a relation 
  $\mathcal{R}$ that is an FH-bisimulation between the open automata of the two pNets. 
- We will consider the relation $\mathcal{R}'=\{(s,t|\Pred_{s,t})|s=s'\uplus s'' \land 
- t=t'\uplus s'' \land s''\in \mathcal{S}_P \land (s',t'|\Pred_{s,t})\in\mathcal{R}\}$ \TODO{$\uplus$ entre states?} 
+ We will consider the relation\footnote{$\uplus$ is defined on sets as the disjoint union 
+ of the contained indexed 
+ sets} $\mathcal{R}'=\{(s,t|\Pred_{s,t})|s=s'\uplus s'' \land 
+ t=t'\uplus s'' \land s''\in \mathcal{S}_P \land (s',t'|\Pred_{s,t})\in\mathcal{R}\}$ 
+  
  where $\mathcal{S}_S$ is the set of states of the open automaton of $P$.	We will prove 
  that $\mathcal{R}'$ is an open FH-bisimulation. Consider a pair of FH-bisimilar 
  states: $(\ostate{s_{i}^{i \in L_P\uplus L}},\ostate{{t}_{i}^{i \in L'}\uplus 
