@@ -14,9 +14,10 @@
 \let\endproof\relax
 
 \usepackage{amsmath,amsthm,amscd}
-\usepackage{amssymb}  %for blackboard B
-\usepackage{rotating} %to rotate the figures
+\usepackage{amssymb}    % for blackboard B
+\usepackage{rotating}   % to rotate the figures
 \usepackage{mathpartir} % math paragraph + inference rules
+\usepackage{mathtools}  % for align, multline etc.
 \usepackage{caption}
 \usepackage{xifthen}
 \usepackage{stmaryrd} % double brackets (\llbracket, \rrbracket)
@@ -142,6 +143,9 @@
 \newcommand{\semclosed}[1]{\ensuremath{\llbracket{#1}\rrbracket}}
 \newcommand{\reachable}[1]{\ensuremath{\mathit{reachable}({#1})}}
 \newcommand{\IMextend}[2]{\ensuremath{#1 \ltimes #2}}
+\newcommand{\arcomp}{\oplus}
+\newcommand{\Arcomp}{\Bigoplus}
+\newcommand{\expmix}{\oplus}
 
 % %%%%%%%%%%%%%%%%%%%%%
 
@@ -437,8 +441,58 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 
 \begin{definition}[Composition of architectures]
   \label{defn:arch:composition}
-  
+  Let $A_i = (\cC_i, P_{A_i}, V_{A_i}, \Gamma_i)$, for $i = 1,2$,
+  be two architectures.  The \emph{composition} of $A_1$ and
+  $A_2$ is the architecture $A_1 \arcomp A_2 = (\cC_1 \cup \cC_2,
+  P_{A_1} \cup P_{A_2}, V_{A_1} \cup V_{A_2}, \Gamma)$, where
+%
+  \begin{equation}
+    \label{eq:arch:composition}
+    \Gamma = \setdefb{
+      (a, g_1 \land g_2, e_1 \expmix e_2) 
+    }{
+      (a \cap P_{A_i}, g_i, e_i) \in \Gamma_i,
+      \text{ for } i = 1,2
+    }
+    \,.
+  \end{equation}
 \end{definition}
+
+\begin{proposition}[Properties of $\arcomp$]
+  \label{prop:arcomp:nice}
+  Architecture composition $\arcomp$ is commutative and
+  associative; it is idempotent if all coordinating components
+  are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
+  \emptyset, \{\emptyset\}\bigr)$ is its neutral element, \ie for
+  any architecture $A$, we have $A \oplus A_{id} = A$.
+  Furthermore, for any component $B$, we have $A_{id}(B) = B$.
+  %PCA: replaced ``holds'' by ``we have''
+\end{proposition}
+%
+\begin{proof}[Sketch of the proof]
+  Commutativity and associativity follow from the corresponding
+  properties of set union, Boolean conjunction and
+  \todoSB{Check ``semi''}\hl{semilattice meet}.
+%
+  Suppose we have two architectures $A = A'$.  This does not
+  necessarily mean that their sets of coordinating components
+  coincide.  However, if all the involved coordinating components
+  are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
+  both architectures will impose the same restrictions, enabling
+  the same interactions between the coordinating and operand
+  components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
+  A'(\cB)$.  Since this holds for any set of components $\cB$, we
+  conclude that $A \arcomp A' = A = A'$.
+%
+  The properties of $A_{id}$ follow immediately from the
+  definitions of architecture application and composition.
+\end{proof}
+
+
+%****************************************************************
+\subsection{Preservation of safety properties}
+\label{secn:safety}
+
 
 %****************************************************************
 %****************************************************************
