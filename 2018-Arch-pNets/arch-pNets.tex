@@ -567,22 +567,10 @@ To be able to reason about the data flow between pLTSs, we
 distinguish \emph{input variables} of the form $?x$ within terms; the function
 $\vars(t)$ identifies the set of variables in a term
 $t\in\AlgT$, and $iv(t)$ returns its input variables.
-
-
-pNets can encode naturally the notion of input actions in value-passing CCS
-\cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
+Action algebras can encode naturally usual point-to-point message passing calculi (using 
+$a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
 for more general mechanisms, like gate negociation in Lotos, or broadcast
-communications. Using our notations, value-passing actions \emph{\`a la} CCS would be
-encoded as $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs (in which $v_i$ are 
-action terms containing no input variables). 
-%For Lotos-style
-%distributed synchronisation, we use synchronisation vectors that encode matching data
-%offers on a common gate; or 
-We can also use more complex action structure such as Meije-SCCS action
-monoids, like in $a.b$, $a^{f(n)}$ (see \cite{deSimone85}). The expressiveness of the 
-synchronisation constructs
-will depend on the action algebra.
-
+communications. 
 
 
 
@@ -640,10 +628,11 @@ where $\alpha \in\AlgA$ is a parameterised action, $e_b \in
 are assigned the expressions $e_j\in \AlgE$.
 If 
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-		J}\rangle} s'\in \to $ then $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+		J}\rangle} s'\in \to $ then 
+% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
-		$\vars(e_b)\!\subseteq\! \vars(s')$, and
-		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
+		$\vars(e_b)\!\subseteq\! \vars(s)\cup\varsigma(\alpha)$, and
+		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\cup\varsigma(\alpha)\land 
 		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
 		
 \end{itemize}
@@ -655,13 +644,13 @@ A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
 set of Holes, playing the role of process parameters.
 
 A composite pNet consists of a set of sub-pNets exposing
-a set of actions, each of them triggering internal actions in each of
+a set of actions, each of them synchronising actions in each of
 the sub-pNets. The synchronisation between global actions and
 internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
-not need to distinguish between input and output
+not need to distinguish  input 
 variables. Action terms for pNets are defined as follows:
 \[\begin{array}[l]{rcl@{\quad}l}
   \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
@@ -689,13 +678,14 @@ hole $j$.
 
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$ where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
   $\forall i\!\in\!
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\Label(\symb{SV}_k) = \alpha'_k$.
+$\Label(\symb{SV}_k) = \alpha'_k$. $g_k \in \AlgB$ is a guard associated to the vector 
+$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.
 
 
 \end{itemize}
