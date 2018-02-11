@@ -270,6 +270,25 @@ when nothing is comparable, \emph{any guard or expression is
   monotonic}.  Thus, this is not really a constraint!
 }
 
+\paragraph{Unifying notations -- remarks}
+
+\todoLHin{proposed notations:}
+$g$ are boolean expressions
+$e_i$ are updates/assignments
+
+\todoLHin{Remove term algebra or simplify?}
+\todoLHin{universal domain $\implies$ remove sort}
+\todoLHin{replace assignments by $e_i$}
+
+In Archi we have a whereas in pnets we have $\alpha$ where, approximately $\alpha = 
+a(x_1..x_n)$ except that a is port name in archi and action name in pnets.
+Is this true? can we unify better? or is it sufficient?
+
+states looks ok, but initial state is $s_0$ in pnet and not in archi : $s^0$ . exponent 
+position was removed from pnet because we found it complex with indexed set notation but 
+could be ok.
+
+
 \begin{definition}[Components]
   \label{defn:component}
   A \emph{component} is a tuple $(Q, q^0, V, \val{0}{}, P,
@@ -1096,7 +1115,7 @@ Below, we omit mentioning this explicitly.
 
 \section{Open pNets}
 \label{secn:pNets}
-
+\todoLHin{rewrite after uniformisation}
 pNets are tree-like structures, where the leaves are either
 \emph{parameterised labelled transition systems (pLTSs)}, expressing the
 behaviour of basic processes, or \emph{holes}, used as placeholders
@@ -1155,7 +1174,8 @@ Formally, we assume the existence of a term algebra $\Talg$,
 where $\Sigma$ is the signature of the data and action constructors,
 and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
 data expressions $\mathcal{E}_\P$, including a set of boolean
-expressions $\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
+expressions \todoLHin{$\mathcal{B} \to g$}
+$\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
 On top of $\mathcal{E}_\P$ we build the action algebra
 $\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
 \mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
@@ -1164,22 +1184,10 @@ To be able to reason about the data flow between pLTSs, we
 distinguish \emph{input variables} of the form $?x$ within terms; the function
 $\vars(t)$ identifies the set of variables in a term
 $t\in\AlgT$, and $iv(t)$ returns its input variables.
-
-
-pNets can encode naturally the notion of input actions in value-passing CCS
-\cite{Milner89} or of usual point-to-point message passing calculi, but it also allows
+Action algebras can encode naturally usual point-to-point message passing calculi (using 
+$a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
 for more general mechanisms, like gate negociation in Lotos, or broadcast
-communications. Using our notations, value-passing actions \emph{\`a la} CCS would be
-encoded as $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs (in which $v_i$ are 
-action terms containing no input variables). 
-%For Lotos-style
-%distributed synchronisation, we use synchronisation vectors that encode matching data
-%offers on a common gate; or 
-We can also use more complex action structure such as Meije-SCCS action
-monoids, like in $a.b$, $a^{f(n)}$ (see \cite{deSimone85}). The expressiveness of the 
-synchronisation constructs
-will depend on the action algebra.
-
+communications. 
 
 
 
@@ -1201,7 +1209,8 @@ on finite branching of the transition relation.
 
 We first define the set of actions a pLTS can use, let $a$
 range over action labels, $\symb{op}$ are operators, and $x_i$ range over
-variable names. Action terms are:
+variable names. Action terms are:\noteLH{Eric suggests to remove this: too precise. I 
+think last Expression should be removed not sure about the rest -- to be discussed}
 \[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
   \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
@@ -1231,34 +1240,35 @@ $s_0 \in S$ is the initial state.
 %by the additional assignments.
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
-$\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
-where $\alpha \in\AlgA$ is a parameterised action, $e_b \in
-\AlgB$ is a guard, and the variables $x_j\in P$
-are assigned the expressions $e_j\in \AlgE$.
+
+$\langle \alpha,~g,~e\rangle$,
+where $\alpha \in\AlgA$ is a parameterised action, $g$ is a guard, and the variables 
+$x_j\in \vars(s')$
+are assigned the updates in $e$.
 If 
-$s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-		J}\rangle} s'\in \to $ then $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+$s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then 
+% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
-		$\vars(e_b)\!\subseteq\! \vars(s')$, and
-		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
-		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
+		$\vars(\codom(e))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
+		\vars(\dom(e))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
 		
 \end{itemize}
 \end{definition}
-
+\noteLH[]{}is dom and codom clear?
 Now we define
 pNet nodes, as constructors for hierarchical behavioural structures.
 A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
 set of Holes, playing the role of process parameters.
 
 A composite pNet consists of a set of sub-pNets exposing
-a set of actions, each of them triggering internal actions in each of
+a set of actions, each of them synchronising actions in each of
 the sub-pNets. The synchronisation between global actions and
 internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
-not need to distinguish between input and output
+not need to distinguish  input 
 variables. Action terms for pNets are defined as follows:
 \[\begin{array}[l]{rcl@{\quad}l}
   \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
@@ -1269,7 +1279,7 @@ variables. Action terms for pNets are defined as follows:
 
 \begin{definition}[pNets]\label{def-pnets}
 A pNet is a hierarchical structure where leaves are pLTSs and holes:\\
-$\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, \symb{SV}_k^{k\in 
+$\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
 K}\myrangle$
 where
 \begin{itemize}
@@ -1280,19 +1290,20 @@ where
 
 \item[$\bullet$] $J\!\in\!\I_\P$ is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
-\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
-\emph{sort} of
-hole $j$.
+%\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
+%\emph{sort} of
+%hole $j$.
 
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$ where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
   $\forall i\!\in\!
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\Label(\symb{SV}_k) = \alpha'_k$.
+$\Label(\symb{SV}_k) = \alpha'_k$. $g_k $ is a guard associated to the vector 
+$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.
 
 
 \end{itemize}
