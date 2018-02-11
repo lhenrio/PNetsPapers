@@ -112,6 +112,7 @@
 \newcommand{\eg}[1][\ ]{e.g.#1}
 \newcommand{\cf}[1][\ ]{cf.#1}
 \newcommand{\wrt}[1][\ ]{w.r.t.#1}
+\newcommand{\resp}[1][\ ]{resp.#1}
 
 \newcommand{\bydef}[1]{\ensuremath{\stackrel{\mathit{\scriptscriptstyle def}}{#1}}}
 \newcommand{\suchthat}{\ensuremath{\,|\,}}
@@ -126,26 +127,51 @@
 
 \newcommand{\true} {\ensuremath{\mathtt{t\!t}}}
 \newcommand{\false}{\ensuremath{\mathtt{f\!f}}}
-\newcommand{\noop} {\ensuremath{\mathsf{skip}}}
+\newcommand{\noop} {\ensuremath{\emptyset}} % \mathsf{skip}
 
 \newcommand{\data}{\ensuremath{\sD}}
 \newcommand{\guards}[1]{\ensuremath{\sB_{#1}}}
 \newcommand{\exprs}[1]{\ensuremath{\sE_{#1}}}
 \newcommand{\valuations}[1]{\ensuremath{\sV_{#1}}}
 \newcommand{\val}[3][]{%
-  \ensuremath{\sigma^{#2}_{#3}%
-    \ifthenelse{\isempty{#1}}{}{(#1)}%
-  }%
+  \ensuremath{#1{\sigma}^{#2}_{#3}}%
 }
-%% \DeclareMathOperator{\supp}{supp}
+\newcommand{\primeit}[1]{#1'}
+\newcommand{\doubleprimeit}[1]{#1''}
+
+\newcommand{\export}[1][]{\ensuremath{\varepsilon_{#1}}}
+\newcommand{\valdiff}[2]{\ensuremath{#1 \triangle #2}}
 \newcommand{\supp}[1]{\ensuremath{\mathrm{supp}(#1)}}
 \newcommand{\semopen}[1]{\ensuremath{[{#1}]}}
 \newcommand{\semclosed}[1]{\ensuremath{\llbracket{#1}\rrbracket}}
 \newcommand{\reachable}[1]{\ensuremath{\mathit{reachable}({#1})}}
 \newcommand{\IMextend}[2]{\ensuremath{#1 \ltimes #2}}
 \newcommand{\arcomp}{\oplus}
+\newcommand{\arequiv}{\equiv}
 \newcommand{\Arcomp}{\Bigoplus}
-\newcommand{\expmix}{\oplus}
+\newcommand{\expmix}{\wedge}
+\newcommand{\order}{\leqslant}
+
+\makeatletter
+\newcommand{\doubletilde}[1]{{%
+  \mathpalette\double@tilde{#1}%
+}}
+\newcommand{\double@tilde}[2]{%
+  \sbox\z@{$\m@th#1\tilde{#2}$}%
+  \ht\z@=.9\ht\z@
+  \tilde{\box\z@}%
+}
+\makeatother
+
+\newcounter{tempctr}
+\newcommand{\breakenumistart}{%
+  \setcounter{tempctr}{\value{enumi}}%
+  \end{enumerate}%
+}
+\newcommand{\breakenumiend}{%
+  \begin{enumerate}%
+  \setcounter{enumi}{\value{tempctr}}%
+}
 
 % %%%%%%%%%%%%%%%%%%%%%
 
@@ -231,30 +257,43 @@ Eric~Madelaine\inst{3}
 \label{sec:components}
 
 \todoSBin{Preliminaries on the universal(?) data domain $\data$
-  and valuations.}
+  and valuations.
+
+For two valuations $\val{1}{}, \val{2}{} : V \rightarrow \data$,
+we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=} \setdefb{v
+  \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of variables
+that are assigned different values by the two valuations.
+
+To guarantee preservation of properties guards and expressions
+have to be \emph{monotonic}.  In the case of a trivial order, \ie
+when nothing is comparable, \emph{any guard or expression is
+  monotonic}.  Thus, this is not really a constraint!
+}
 
 \begin{definition}[Components]
   \label{defn:component}
-  A \emph{component} is a tuple $(Q, q^0, P, V, \val{0}{},
-  \goesto{})$, where
+  A \emph{component} is a tuple $(Q, q^0, V, \val{0}{}, P,
+  \export{}, \goesto{})$, where
   \begin{itemize}
   \item $Q$ is a set of \emph{states}, with $q^0 \in Q$ the
     \emph{initial state}, 
-  \item $P$ is a set of \emph{ports},
   \item $V$ is a set of \emph{component variables},
   \item $\val{0}{} : V \rightarrow \data$ is an \emph{initial
     valuation} of the component variables, 
+  \item $P$ is a set of \emph{ports}, with
+    \noteSB{Added this}\hl{$\export : P \rightarrow 2^V$ 
+    the \emph{export function},}
   \item $\goesto{}\, \subseteq
     Q \times 2^P \times \guards{V} \times \exprs{V} \times Q$
 %
     is a \emph{transition relation}, with transitions
     labelled by triples consisting of an \emph{interaction}
-    $a \subseteq P$, a Boolean \emph{guard} $g \in
+    $\emptyset \neq a \subseteq P$, a Boolean \emph{guard} $g \in
     \guards{V}$ and an \emph{update expression} $e \in
     \exprs{V}$.
   \end{itemize}
 %
-  We call the pair of sets $(P,V)$ the \emph{interface} of the
+  We call \noteSB{Maybe rather $(P, \export)$}\hl{the pair of sets $(V,P)$} the \emph{interface} of the
   component.\,\footnote{%
 %
   In practice, component variables are split in two sub-sets:
@@ -265,94 +304,133 @@ Eric~Madelaine\inst{3}
 %
   }
 %
-  Notations $q \goesto{a} q'$, $q \goesto{a}$ and $q
-  \notgoesto{a}$ are as usual; for a component $B$, we denote
-  $Q_B$, $q^0_B$, $P_B$, $V_B$, $\val{0}{B}$ and $\goesto[B]{}$
-  the constituents of $B$.
+  Notations $q \goesto{a} q'$ and $q \goesto{a}$ are as usual;
+  for a component $B$, we denote $Q_B$, $q^0_B$, $P_B$, $V_B$ and
+  $\val{0}{B}$ the corresponding constituents of $B$.  We will
+  skip the index on the transition relations $\goesto{}$, since it
+  is always clear from the context.
 \end{definition}
 
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
-  The \emph{open semantics} of a component $B = (Q, q^0, P, V,
-  \val{0}{}, \goesto{})$ is given by the LTS $\semopen{B} = (S,
+  The \emph{open semantics} of a component $B = (Q, q^0, V,
+  \val{0}{}, P, \export, \goesto{})$ is given by the LTS $\semopen{B} = (S,
   s^0, \goesto{})$, where $S = Q \times \valuations{V}$, $s^0 =
   (q^0, \val{0}{})$ and $\goesto{}$ is the minimal transition
-  relation satisfying the following rule:
+  relation satisfying the rule
   %
   \begin{equation}
     \label{eq:comp:semantics}
     \infer{
       q \goesto{a, g, e} q'
       \and
-      v \models g
+      \val{}{} \models g
       \and
-      v' = v[e]
+      \val[\primeit]{}{} = \tilde{\val{}{}}[e]
+      \and
+      \valdiff{\val{}{}}{\tilde{\val{}{}}} \subseteq \export(a)
     }{
-      (q, v) \goesto{a} (q', v')
+      (q, \val{}{}) \goesto{a,\tilde{\val{}{}}} (q', \val[\primeit]{}{})
     }
     \,.
   \end{equation}
-  The \emph{closed semantics} of $B$ is given by the LTS
+  %
+  \todoSB{Do we actually need this?}
+  \hl{The \emph{closed semantics} of $B$ is given by the LTS
   $\semclosed{B} \bydef{=}\reachable{\semopen{B}}$, comprising
-  only the reachable states of $\semopen{B}$.
+  only the reachable states of $\semopen{B}$.}
 \end{definition}
+
+The use of the intermediate valuation $\tilde{\val{}{}}$ in the
+conclusion and the third premise of rule \eq{comp:semantics}
+allows some of the variables to get new values before the
+transition is actually fired.  Thus the component is \emph{open}
+to the exchange of data with its environment.  However, the
+fourth premise in \eq{comp:semantics} restricts the set of
+variables, which can be affected by such data transfer, to those
+that are exported through the ports participating in the
+interaction.
 
 \begin{definition}[Interaction model \& composition]
   \label{defn:im}
-  Let $\cB = \{B_1,\dots,B_n\}$ be a finite set of
-  components with $B_i = (Q_i, q^0_i, P_i, V_i, \val{0}{i},
-  \goesto{})$,\footnote{%
+  Consider a finite set of components $\cB = (Q_i, q^0_i, V_i,
+  \val{0}{i}, P_i, \export[i], \goesto{})^{i \in I}$, such that
+  all their respective components (\ie $Q_i$, $P_i$, and $V_i$)
+  are pairwise disjoint, \ie $\forall i \neq j,\ Q_i \cap Q_j =
+  P_i \cap P_j = V_i \cap V_j = \emptyset$.  Let $P = \bigcup_{i
+  \in I} P_i$ and $V = \bigcup_{i \in I} V_i$.
 %
-    Here and below, we skip the index on the transition
-    relation $\goesto{}$, since it is always clear from the
-    context.
-%
-} such that all their respective components (\ie $Q_i$, $P_i$,
-  and $V_i$) are pairwise disjoint, \ie $\forall i \neq j,\ Q_i
-  \cap Q_j = P_i \cap P_j = V_i \cap V_j = \emptyset$.  Let $P =
-  \bigcup_{i = 1}^n P_i$ and $V = \bigcup_{i = 1}^n V_i$.
+  For a set of ports $a \subseteq P$, we denote $\supp{a}
+  \bydef{=} \setdef{i \in I}{a \cap P_i \neq \emptyset}$ the
+  \emph{support} of $a$,
+  \noteSB{Updated this}\hl{and $V_a \bydef{=} \bigcup_{i \in
+    \supp{a}} \export[i](a \cap P_i)$ the set of component
+  variables exported for $a$.}
 
-  An \emph{interaction model over $(P,V)$} is a set $\Gamma
+  An \emph{interaction model over \hl{$(V,P)$}} is a set $\Gamma
   \subseteq 2^P \times \guards{V} \times \exprs{V}$, such that,
   for any $(a, g, e) \in \Gamma$, the guard and update expression
   associated to the \emph{interaction} $a$ satisfy, respectively,
-  $g \in \guards{V_a}$ and $e \in \exprs{V_a}$, with $V_a
-  \bydef{=} \bigcup_{i:\, a \cap P_i \neq \emptyset} V_i$.  We
-  denote $\supp{a} \bydef{=} \setdef{i \in [1,n]}{a \cap P_i \neq
-    \emptyset}$ the \emph{support} of the interaction $a$.
-\noteLH{why not introduce supp earlier and use it for $V_a$?}
+  $g \in \guards{V_a}$ and $e \in \exprs{V_a}$.\footnote{%
+%
+    Notice that this definition allows $(\emptyset, \true,
+    \noop)$ and $(\emptyset, \false, \noop)$ to be included in
+    $\Gamma$.
+%
+  }
   %% We call the set of ports $P$ the \emph{domain} of the
   %% interaction model.
 
   The \emph{composition of $\cB$ with the interaction model
-    $\Gamma$} is the component $\Gamma(\cB) = (Q, q^0, P, V,
-  \val{0}, \goesto{})$, where $Q = \prod_{i=1}^n Q_i$, $q^0 =
-  q_1^0\dots q_n^0$, $\val{0}{}: V \rightarrow \data$ is such
-  that, for any $v \in V_i$, $\val[v]{0}{} = \val[v]{0}{i}$, and
-  $\goesto{}$ is the minimal transition relation satisfying
-  following rules:
+    $\Gamma$} is the component
+  $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P, \export, \goesto{})$,
+  where
 %
-  \begin{mathpar}
-    \infer{
-      q_i \goesto{\emptyset, \true, \noop} q_i'
-    }{
-      q_1 \dots q_i \dots q_n \goesto{\emptyset, \true, \noop} q_1 \dots q_i' \dots q_n
-    }\,,
-    
+  $Q = \prod_{i \in I} Q_i$;
+%
+  $q^0 = (q_i^0)^{i \in I}$;
+%
+  $\val{0}{}: V \rightarrow \data$ is such that, for any $v \in
+  V_i$, $\val{0}{}(v) = \val{0}{i}(v)$;
+%
+  $\export : P \rightarrow 2^V$ is such that, for any $p \in
+  P_i$, $\export(p) = \export[i](p)$;
+%
+  and $\goesto{}$ is the minimal transition relation satisfying
+  the rule
+%
+  \begin{gather}
+%%     \label{eq:im:empty}
+%%     \infer{
+%%       q_j \goesto{\emptyset, g, e} q_j'
+%%       \and
+%%       \forall i \neq j, q_i = q_i'
+%%     }{
+%%       (q_i)^{i \in I} \goesto{\emptyset, g, e} (q_i')^{i \in I}
+%%     }\,,
+%% %
+%%     \\[0.5\baselineskip]
+    \label{eq:im:int}
+%
     \infer{    
       (a, g, e) \in \Gamma
+      \and
+      a \neq \emptyset
       \and
       \forall i \in \supp{a}, q_i \goesto{a \cap P_i, g_i, e_i} q_i'
       \and
       \forall i \not\in \supp{a}, q_i = q_i'
+%
       \\\\
+      \textstyle
+%
       G = g \land \bigwedge_{i \in \supp{a}} g_i
       \and
-      E = e; (e_i)_{i \in \supp{a}}
+      E = e; (e_i)^{i \in \supp{a}}
     }{
-      q_1\dots q_n \goesto{a, G, E} q_1'\dots q_n'
+      (q_i)^{i \in I} \goesto{a, G, E} (q_i')^{i \in I}
     }\,.
-  \end{mathpar}
+  \end{gather}
 \end{definition}
 
 Below, when speaking of a set of components $\cB$, we will always
@@ -369,33 +447,35 @@ always be clear from the context.
 
 \begin{definition}[Architecture]
   \label{defn:arch}
-  An \emph{architecture} is a tuple $A = (\cC, P_A, V_A, \Gamma)$,
+  An \emph{architecture} is a tuple $A = (\cC, V_A, P_A, \Gamma)$,
   where $\cC$ is a finite set of \emph{coordinating components}
   with pairwise disjoint sets of ports and variables, such that
   $\bigcup_{C \in \cC} P_C \subseteq P_A$ and
   $\bigcup_{C \in \cC} V_C \subseteq V_A$, and
   $\Gamma \subseteq 2^{P_A} \times \guards{V_A} \times \exprs{V_A}$
-  is an interaction model over $(P_A, V_A)$.
+  is an interaction model over \hl{$(V_A, P_A)$}.
 \end{definition}
 
 \begin{definition}[Application of an architecture]
   \label{defn:arch:application}
-  Let $A = (\cC, P_A, V_A, \Gamma)$ be an architecture and let $\cB$
+  Let $A = (\cC, V_A, P_A, \Gamma)$ be an architecture and let $\cB$
   be a set of components, such that
 %
   \begin{align}
-    \bigcup_{B \in \cB} P_B \cap \bigcup_{C \in \cC} P_C = \emptyset\,,
-    &&
-    P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B\,,
-    \\
     \bigcup_{B \in \cB} V_B \cap \bigcup_{C \in \cC} V_C = \emptyset\,,
     &&
     V_A \subseteq V \bydef{=} \bigcup_{B \in \cB \cup \cC} V_B\,,
+    \\
+    \bigcup_{B \in \cB} P_B \cap \bigcup_{C \in \cC} P_C = \emptyset\,,
+    &&
+    P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B\,,
   \end{align}
 %
-  and, denoting, for any $(a, g, e) \in \Gamma$, $V_a \bydef{=}
-  \bigcup_{B \in \supp{a}} V_B$, we have $g \in \guards{V_a}$ and
-  $e \in \exprs{V_a}$.
+  and
+  %% , denoting, for any $(a, g, e) \in \Gamma$, $V_a \bydef{=}
+  %% \bigcup_{B \in \supp{a}} \export[B](a \cap P_B)$, we have
+  $g \in \guards{V_a}$ and
+  $e \in \exprs{V_a}$ (see \defn{im} for the notation $V_a$).
 %
   The \emph{application of the architecture $A$ to the set of
   components $\cB$} is the component $ A(\cB) \bydef{=}
@@ -415,8 +495,10 @@ always be clear from the context.
   to the set of ports $P$.
 \end{definition}
 
+\todoSBin{Define equivalence $\arequiv$?}
+
 An architecture $A$ enforces coordination constraints on the
-components in $\cB$.  The interface $(P_A, V_A)$ of an
+components in $\cB$.  The interface \hl{$(V_A, P_A)$} of an
 architecture $A$ contains all ports of the coordinating
 components $\cC$ and some additional ports, which must belong to
 the components in $\cB$.  In the application $A(\cB)$, the ports
@@ -441,10 +523,10 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 
 \begin{definition}[Composition of architectures]
   \label{defn:arch:composition}
-  Let $A_i = (\cC_i, P_{A_i}, V_{A_i}, \Gamma_i)$, for $i = 1,2$,
+  Let $A_i = (\cC_i, V_{A_i}, P_{A_i}, \Gamma_i)$, for $i = 1,2$,
   be two architectures.  The \emph{composition} of $A_1$ and
   $A_2$ is the architecture $A_1 \arcomp A_2 = (\cC_1 \cup \cC_2,
-  P_{A_1} \cup P_{A_2}, V_{A_1} \cup V_{A_2}, \Gamma)$, where
+  V_{A_1} \cup V_{A_2}, P_{A_1} \cup P_{A_2}, \Gamma)$, where
 %
   \begin{equation}
     \label{eq:arch:composition}
@@ -464,9 +546,8 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   associative; it is idempotent if all coordinating components
   are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
   \emptyset, \{\emptyset\}\bigr)$ is its neutral element, \ie for
-  any architecture $A$, we have $A \oplus A_{id} = A$.
+  any architecture $A$, we have $A \oplus A_{id} \arequiv A$.
   Furthermore, for any component $B$, we have $A_{id}(B) = B$.
-  %PCA: replaced ``holds'' by ``we have''
 \end{proposition}
 %
 \begin{proof}[Sketch of the proof]
@@ -482,7 +563,7 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   the same interactions between the coordinating and operand
   components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
   A'(\cB)$.  Since this holds for any set of components $\cB$, we
-  conclude that $A \arcomp A' = A = A'$.
+  conclude that $A \arcomp A' \arequiv A \arequiv A'$.
 %
   The properties of $A_{id}$ follow immediately from the
   definitions of architecture application and composition.
@@ -492,6 +573,522 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 %****************************************************************
 \subsection{Preservation of safety properties}
 \label{secn:safety}
+
+For a component $B$, we denote $S_{\semopen{B}}$,
+$s^0_{\semopen{B}}$ the corresponding constituents of
+$\semopen{B}$.
+
+\begin{definition}[Safety properties]
+  \label{defn:property}
+  Let $B$ be a component.  A \emph{safety property} (below,
+  simply \emph{property}) of $B$ is a state predicate $\Phi:
+  S_{\semopen{B}} \rightarrow \sB$, such that $\bigl((q,
+  \val{}{}) \models \Phi\bigr) \land (\val[\primeit]{}{} \order
+  \val{}{})$ implies $(q, \val[\primeit]{}{}) \models \Phi$,
+  where we write $(q, \val{}{}) \models \Phi$ iff $\Phi(q,
+  \val{}{}) = \true$.  A property $\Phi$ is \emph{initial} if
+  $s^0_{\semopen{B}} \models \Phi$\todoSB{Do we need this?}\hl{;
+    it is \emph{reachable} iff there exists a possibly empty path
+    $s^0_{\semopen{B}} \goesto{a^1, \val{1}{}} s^1 \goesto{a^2,
+      \val{2}{}} \cdots \goesto{a^n, \val{n}{}} s^n$, such that
+    $s^n \models \Phi$}.
+\end{definition}
+
+\todoSB{Cite the original paper somewhere.}
+The main idea of our approach is that an architecture enforces
+its characteristic property on the set of its operand components.
+From this point of view, the set of coordinating components is
+not relevant, neither are their states.  Thus, to talk about
+properties enforced by architectures, we consider properties on
+the unrestricted composition of the operand components as
+formalized by the following definition.
+
+\begin{definition}[Enforcing properties]
+  \label{defn:impose}
+  Let $A = (\cC, P_A, V_A, \Gamma)$ be an architecture; let $\cB$
+  be a set of components and $\Phi$ an initial property of
+  their parallel composition $A_{id}(\cB)$ (see
+  \prop{arcomp:nice}).  We say that \emph{$A$ enforces $\Phi$ on
+    $\cB$} iff, for every state $s = (s_b, s_c)$ reachable in
+  $\semopen{A(\cB)}$, with $s_b \in \prod_{B\in \cB}
+  S_{\semopen{B}}$ and $s_c \in \prod_{C \in \cC}
+  S_{\semopen{C}}$, we have $s_b \models \Phi$.
+\end{definition}
+
+According to the above definition, when we say that an
+architecture enforces some property $\Phi$, it is implicitly
+assumed that $\Phi$ is initial for the coordinated components.
+Below, we omit mentioning this explicitly.
+
+\begin{theorem}[Preserving enforced properties]
+  \label{thm:combining}
+  Let $\cB$ be a set of components; let $A_i = (\cC_i, V_{A_i},
+  P_{A_i}, \Gamma_i)$, for $i = 1,2$, be two architectures
+  enforcing on $\cB$ the properties $\Phi_1$ and $\Phi_2$
+  respectively.  The composition $A_1 \arcomp A_2$ enforces on
+  $\cB$ the property $\Phi_1 \land \Phi_2$.
+\end{theorem}
+
+\begin{lemma}
+  \label{lem:onlyone}
+  Let $A = (\cC, V_A, P_A, \Gamma)$ be an architecture and denote
+  by $\Gamma_\cC \bydef{=}
+%
+  \setdef{
+    (a \cap P_\cC, \true, \noop)
+  }{
+    (a, g, e) \in \Gamma
+  }$, with $P_\cC = \bigcup_{C \in \cC} P_C$,
+%  
+  the projection of $\Gamma$ onto the coordinating components of
+  $A$.  Consider the architecture $A' = (\{C'\}, V_A, P_A,
+  \Gamma)$, where $C' = \Gamma_\cC(\cC)$.  For any set of
+  components $\cB$, satisfying the conditions of
+  \defn{arch:application}, we have
+  $\semopen{A(\cB)} = \semopen{A'(\cB)}$.
+\end{lemma}
+%
+\begin{proof}
+  First of all, notice that, by \defn{im},
+  $V_{C'} = \bigcup_{C \in \cC} V_C$ and $P_{C'} = P_\cC$.
+  The conditions of \defn{arch} are satisfied and $A'$ is indeed
+  an architecture.  Furthermore, $\cB$ satisfies the conditions
+  of \defn{arch:application} \wrt $A'$.  Hence, the component
+  $A'(\cB)$ is well defined.
+
+  Clearly the state spaces, initial states and interfaces of both
+  components coincide.  Thus we only have to prove that so do the
+  transition relations.  Let us assume that
+  $\cC = (C_i)^{i \in I}$ and $\cB = (B_j)^{j \in J}$.
+  We will use $q^i, q^{i\prime}$ to denote the states of
+  $C_i$ and $q_j, q_j'$ to denote the states of $B_j$,
+  and similarly for the valuations of variables.
+
+  By \defn{comp:semantics}, a transition
+%
+  \begin{equation}
+    \label{eq:lem1:trans:sem}
+    (q^i, \val{i}{})^{i \in I} (q_j, \val{}{j})^{j \in J}
+    \goesto{a, \val[\tilde]{}{}}
+    (q^{i\prime}, \val{i\prime}{})^{i \in I}
+    (q_j', \val{\prime}{j})^{j \in J}
+  \end{equation}
+%  
+  is a transition in $\semopen{A(\cB)}$ (\resp
+  $\semopen{A'(\cB)}$) iff
+%
+  \begin{equation}
+    \label{eq:lem1:trans}
+    (q^i)^{i \in I} (q_j)^{j \in J}
+    \goesto{a, G, E}
+    (q^{i\prime})^{i \in I} (q_j')^{j \in J}
+    \,,
+  \end{equation}
+%
+  is a transition in $A(\cB)$ (\resp $A'(\cB)$) and
+%
+  \begin{mathpar}
+    (\val{i}{})^{i \in I} (\val{}{j})^{j \in J}
+    \models G
+    \,,
+    \and
+    (\val{i\prime}{})^{i \in I} (\val{\prime}{j})^{j \in J}
+    = \val[\tilde]{}{}[E]
+    \,,
+    \and
+    \valdiff{(\val{i}{})^{i \in I} (\val{}{j})^{j \in J}}{
+      \val[\tilde]{}{}} \subseteq \export(a)
+    \,.   
+  \end{mathpar}
+
+  By \defn{im}, \eq{lem1:trans} is a transition in $A(\cB)$
+  iff $a \neq \emptyset$, $(a, g, e) \in \IMextend{\Gamma}{P}$,
+  where $P = \bigcup_{B \in \cB \cup \cC} P_B$, and
+  %
+  \begin{enumerate}
+  \item for $i \in I$,
+    $q^i \goesto{a \cap P_{C_i}, g_{C_i}, e_{C_i}} q^{i\prime}$
+    is a transition in $C_i$, or
+    $a \cap P_{C_i} = \emptyset$ and $q^i = q^{i\prime}$,
+    $g_{C_i} = \true$ and $e_{C_i} = \noop$\,;
+  \item for $j \in J$,
+    $q_j \goesto{a \cap P_{B_j}, g_{B_j}, e_{B_j}} q_j'$
+    is a transition in $B_j$, or
+    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$,
+    $g_{B_j} = \true$ and $e_{B_j} = \noop$\,;
+  \item $G = g \land \bigwedge_{i \in I} g_{C_i} \land
+    \bigwedge_{j \in J} g_{B_j}$ and
+    $E = e; (e_{C_i})^{i \in I} (e_{B_j})^{j \in J}$.
+  \end{enumerate}
+  %
+
+  Similarly, \eq{lem1:trans} is a transition in
+  $A'(\cB)$ iff $a \neq \emptyset$,
+  $(a, g, e) \in \IMextend{\Gamma}{P}$ and
+  %
+  \begin{enumerate}
+  \item \label{only1:coord}
+    $(q^i)^{i \in I}
+    \goesto{a \cap P_{C'}, g_{C'}, e_{C'}}
+    (q^{i\prime})^{i \in I}$ is a transition in $C'$,
+    or $a \cap P_{C'} = \emptyset$ and $q^i = q^{i\prime}$,
+    for all $i \in [1,m]$,
+    $g_{C'} = \true$ and $e_{C'} = \noop$\,;
+  \item for $j \in J$,
+    $q_j \goesto{a \cap P_{B_j}, g_{B_j}, e_{B_j}} q_j'$
+    is a transition in $B_j$, or
+    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$,
+    $g_{B_j} = \true$, and $e_{B_j} = \noop$;
+  \item $G = g \land g_{C'} \land
+    \bigwedge_{j \in J} g_{B_j}$ and
+    $E = e; e_{C'}, (e_{B_j})^{j \in J}$.
+%
+  \breakenumistart
+  Notice that, for any $i \in I$, since
+  $P_{C_i} \subseteq P_{C'}$, we have
+  $a \cap P_{C_i} = (a \cap P_{C'}) \cap P_{C_i}$.
+  Thus, if $a \cap P_{C'} \neq \emptyset$, 
+  the transition in condition~\ref{only1:coord} above is
+  present in $C'$ iff
+  $(a \cap P_{C'}, \true, \noop) \in \Gamma_\cC$ and
+  \breakenumiend
+% 
+  \item for $i \in I$,
+    $q^i \goesto{a \cap P_{C_i}, g_{C_i}, e_{C_i}} q^{i\prime}$
+    is a transition in $C_i$, or $a \cap P_{C_i} = \emptyset$
+    and $q^i = q^{i\prime}$,
+    $g_{C_i} = \true$ and $e_{C_i} = \noop$,
+  \item $g_{C'} = \bigwedge_{i \in I} g_{C_i}$ and
+    $e_{C'} = (e_{C_i})^{i \in I}$.
+  \end{enumerate}
+
+  Consider $(a,g,e) \in \IMextend{\Gamma}{P}$.  By
+  \eq{im:extension}, this is equivalent to
+  $(a \cap P_A, g, e) \in \Gamma$.
+  Since $P_{C'} = P_\cC \subseteq P_A$, we have
+  $a \cap P_{C'} = a \cap P_\cC = (a \cap P_A) \cap P_\cC$.
+  Hence, this is also equivalent to
+  $(a \cap P_{C'}, \true, \noop) \in \Gamma_\cC$,
+  which concludes the proof.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:onestep}
+  Let $\cB$ be a set of components; let $A_i = (\{C_i\}, V_{A_i},
+  P_{A_i}, \Gamma_i)$, for $i = 1,2$, be two architectures
+  applicable to $\cB$, with one coordinator each, and denote
+  $P_i = P_{C_i} \cup \bigcup_{B \in \cB} P_B$.
+  Finally, let
+%
+  $
+  s_1 s_2 s
+%
+  \goesto{a, \tilde{\val{}{}}}
+%
+  s_1' s_2' s'
+  $,
+%
+  be a transition in $\semopen{(A_1 \arcomp A_2)(\cB)}$, with
+  $a \neq \emptyset$, 
+  $s, s' \in \prod_{B \in \cB} S_{\semopen{B}}$
+  and
+  $s_i, s_i' \in S_{\semopen{C_i}}$ ($i=1,2$).
+%
+  Then, for $i=1,2$, either $a \cap P_i = \emptyset$ and $s_i s=
+  s_i' s'$, or there exists a transition
+%
+  $
+  s_i s
+%
+  \goesto{a \cap P_i, \val[\doubletilde]{}{}}
+%
+  s_i' s''
+  $ 
+%
+  in $\semopen{A_i(\cB)}$, with
+  $\val[\doubletilde]{}{}$ being the restriction of
+  $\val[\tilde]{}{}$ to
+  $V_1 = V_{C_1} \cup \bigcup_{B \in \cB} V_B$ and
+  $s' \order s''$.
+\end{lemma}
+%
+\begin{proof}
+  By \defn{comp:semantics}, every semantic state consists of a
+  component state and a valuation of component variables.  Thus,
+  we have
+%
+  \[
+  (q_1, \val{}{1}, q_2, \val{}{2}, q, \val{}{})
+%
+  \goesto{a, \tilde{\val{}{}}}
+%
+  (q_1', \val[\primeit]{}{1}, q_2', \val[\primeit]{}{1}, q', \val[\primeit]{}{})
+  \,.
+  \]
+%
+  By \eq{comp:semantics} and \eq{im:int}, this implies
+  $(q_1, q_2, q) \goesto {a, G, E} (q_1', q_2', q')$, with
+%
+  $G = g \land g_1 \land g_2 \land g_b$
+  and
+  $E = e; (e_1, e_2, e_b)$,
+  where
+%    
+  \begin{mathpar}
+    g_b = \bigwedge_{B \in \supp{a} \cap \cB} g_B
+    \,,
+    \and
+    e_b = (e_B)^{B \in \supp{a} \cap \cB}
+  \end{mathpar}
+%
+  and such that $(a, g, e) \in \Gamma$ (see
+  \eq{arch:composition}) and
+%
+  \begin{align}
+    \label{eq:guard}
+    (\val{}{1}, \val{}{2}, \val{}{}) &\models G
+    \,,
+    \\
+    \label{eq:substitution}
+    (\val[\primeit]{}{1}, \val[\primeit]{}{2}, \val[\primeit]{}{})
+    &= \val[\tilde]{}{}[E]
+    \,,
+    \\
+    \label{eq:transient}
+    \valdiff{(\val{}{1}, \val{}{2}, \val{}{})}{\val[\tilde]{}{}}
+    &\subseteq \export(a)
+    \,.
+  \end{align}
+%
+  If $a \cap P_1 = \emptyset$, then $\supp{a} = \{C_2\}$ and, by
+  \eq{transient} and \defn{im}, $s_1 = s_1'$ and $s = s'$
+  (recall, \defn{im}, that, for $(a,g,e) \in \Gamma$, we have $e
+  \in \exprs{V_a}$).  Hereafter, assume $a \cap P_1 \neq
+  \emptyset$.
+
+  Denoting $P_b = \bigcup_{B \in \supp{a} \cap \cB} P_B$, we
+  have, by \eq{im:int},
+%
+  \begin{mathpar}
+    q_1 \goesto{a \cap P_{C_1}, g_1, e_1} q_1'
+    \and
+    \text{and}
+    \and
+    q \goesto{a \cap P_b, g_b, e_b} q'
+    \,.
+  \end{mathpar}
+ 
+  By \eq{arch:composition}, for $i=1,2$, there exist
+  $(a \cap P_{A_i}, g^i, e^i) \in \Gamma_i$,
+  such that $g = g^1 \land g^2$ and $e = e^1 \land e^2$.
+  By \eq{guard}, we have
+  $(\val{}{1}, \val{}{}) \models g^1 \land g_1 \land g_b$.
+
+  Denoting $\val[\doubletilde]{}{}$ the restriction of
+%
+  $\val[\tilde]{}{}$ to
+  $V_1 = V_{C_1} \cup \bigcup_{B \in \cB} V_B$,
+%
+  we have, by \eq{substitution} and the monotonicity of
+  expressions,
+%
+  $(\val[\primeit]{}{1}, \val[\primeit]{}{}) \order
+  \val[\doubletilde]{}{}[e^1; (e_1, e_b)]$.  Notice that all
+  variables affected by both $e^1$ and $e^2$ must necessarily
+  belong to $\bigcup_{B \in \cB} V_B$.  Hence,
+%
+  $\val[\doubletilde]{}{}[e^1; (e_1, e_b)] =
+  (\val[\primeit]{}{1}, \val[\doubleprimeit]{}{})$ with 
+  $\val[\primeit]{}{} \order \val[\doubleprimeit]{}{}$.
+
+  By \eq{comp:semantics} and \eq{im:int}, we have
+  \[
+  (q_1, \val{}{1}, q, \val{}{})
+  \goesto{a \cap P_1, \val[\doubletilde]{}{}}
+  (q_1', \val[\primeit]{}{1}, q, \val[\doubleprimeit]{}{})
+  \,.
+  \]
+\end{proof}
+
+\begin{lemma}
+  \label{lem:stepabove}
+  Consider a component $B$ and let 
+%
+  $
+  (q_1, \val{}{1})
+%
+  \goesto{a, \val[\tilde]{}{}}
+%
+  (q_2, \val{}{2})
+  $,
+%
+  be a transition in $\semopen{B}$.  For any valuation
+  $\val[\primeit]{}{1}$, such that
+  $\val{}{1} \order \val[\primeit]{}{1}$ and
+  $\valdiff{\val{}{1}}{\val[\primeit]{}{1}} \subseteq \export(a)$,
+  there exists a transition
+%
+  $
+  (q_1, \val[\primeit]{}{1})
+%
+  \goesto{a, \val[\tilde]{}{}}
+%
+  (q_2, \val{}{2})
+  $
+%
+  in $\semopen{B}$.
+\end{lemma}
+%
+\begin{proof}
+  By \eq{comp:semantics}, we have
+%
+  \begin{mathpar}
+    q_1 \goesto{a, g, e} q_2
+    \,,
+    \and
+    \val{}{1} \models g
+    \,,
+    \and
+    \val{}{2} = \val[\tilde]{}{}[e]
+    \,,
+    \and
+    \text{and}
+    \and
+    \valdiff{\val{}{1}}{\val[\tilde]{}{}} \subseteq \export(a)
+    \,.
+  \end{mathpar}
+
+  By monotonicity of guards, we deduce
+  $\val[\primeit]{}{1} \models g$.
+  For any $v \in \export(a)$,
+  $\val[\primeit]{}{1}(v) = \val{}{1}(v) = \val[\tilde]{}{}(v)$.
+  Hence, 
+  $\valdiff{\val[\primeit]{}{1}}{\val[\tilde]{}{}}
+  \subseteq \export(a)$.
+  By \eq{comp:semantics}, we conclude 
+%
+  $
+  (q_1, \val[\primeit]{}{1})
+%
+  \goesto{a, \val[\tilde]{}{}}
+%
+  (q_2, \val{}{2})
+  $.  
+\end{proof}
+
+\begin{proof}[Proof of \thm{combining}]
+  By \lem{onlyone}, we can assume that each of the two
+  architectures has only one coordinating component.  For $i =
+  1,2$, we denote $\{C_i\} = \cC_i$, $P_i = P_{C_i}
+  \cup\ \bigcup_{B \in \cB} P_B$ and $V_i = V_{C_i}
+  \cup\ \bigcup_{B \in \cB} V_B$.
+  
+  The initiality of $\Phi_1 \land \Phi_2$, is trivial: both
+  $\Phi_1$ and $\Phi_2$ are initial, hence $s^0 \models \Phi_1
+  \land \Phi_2$.
+
+  Consider a path
+%
+  \[
+  s^0_1 s^0_2 s^0
+%
+  \goesto{a^1, \val[\tilde]{1}{}}
+%
+  s^1_1 s^1_2 s^1
+%
+  \goesto{a^2, \val[\tilde]{2}{}}
+  \cdots
+  \goesto{a^k, \val[\tilde]{k}{}}
+%
+  s^k_1 s^k_2 s^k
+  \]
+%
+  in $\semopen{(A_1 \arcomp A_2)(\cB)}$, where
+  $s^0,\dots,s^k \in \prod_{B \in \cB} S_{\semopen{B}}$ and
+  $s^0_i,\dots, s^k_i \in S_{\semopen{C_i}}$, for $i=1,2$.
+  We have to show that $s^k \models \Phi_1 \land \Phi_2$.
+
+  Assuming that $a^1 \cap P_1 \neq \emptyset$, by \lem{onestep},
+  there exists $s^{1\prime} \in \prod_{B \in \cB} S_{\semopen{B}}$,
+  such that
+%
+  \[
+  s^0_1 s^0
+%
+  \goesto{a^1 \cap P_1, \val[\doubletilde]{1}{}}
+%
+  s^1_1 s^{1\prime}
+  \]
+%
+  is a transition in $\semopen{A_1(\cB)}$ with
+  $\val[\doubletilde]{1}{}$ being the restriction of
+  $\val[\tilde]{1}{}$ to $V_1$ and
+  $s^1 \order s^{1\prime}$.
+%
+  By \lem{stepabove}, 
+  \[
+  s^1_1 s^1_2 s^{1\prime}
+%
+  \goesto{a^2, \val[\tilde]{2}{}}
+%
+  s^2_1 s^2_2 s^2
+  \]
+  is a transition in $\semopen{(A_1 \arcomp A_2)(\cB)}$ and,
+  therefore, 
+  \[
+  s^1_1 s^1_2 s^{1\prime}
+%
+  \goesto{a^2, \val[\tilde]{2}{}}
+%
+  s^2_1 s^2_2 s^2
+%
+  \goesto{a^3, \val[\tilde]{3}{}}
+  \cdots
+  \goesto{a^k, \val[\tilde]{k}{}}
+%
+  s^k_1 s^k_2 s^k
+  \]
+%  
+  is a path in $\semopen{(A_1 \arcomp A_2)(\cB)}$.
+%
+  Notice that, if the above assumption, $a^1 \cap P_1 \neq
+  \emptyset$, does not hold, then $s^0_1 = s^1_1$, $s^0 = s^1$
+  and we can take $s^{1\prime} = s^1$ in this latter path.
+
+  Repeating the entire argument $k-1$ times, starting with this
+  shorter path, we obtain a path
+%
+  \begin{equation}
+    \label{eq:path-in-1}
+    s^0_1 s^0
+    %
+    \goesto{a^1 \cap P_1, \val[\doubletilde]{1}{}}
+    %
+    s^1_1 s^{1\prime}
+    %
+    \goesto{a^2 \cap P_1, \val[\doubletilde]{2}{}}
+    %
+    s^2_1 s^{2\prime}
+    %
+    \goesto{a^3 \cap P_1, \val[\doubletilde]{3}{}}
+    \cdots
+    \goesto{a^k \cap P_1, \val[\doubletilde]{k}{}}
+    %
+    s^k_1 s^{k'}
+  \end{equation}
+%  
+  with $s^i \order s^{i\prime}$, for all $i \in [1,k]$.
+
+  From \eq{path-in-1}, we conclude that the state $s^k_1
+  s^{k\prime}$ is reachable in $\semopen{A_1(\cB)}$.  Since $A_1$
+  enforces $\Phi_1$ on $\cB$, this implies that $s^{k\prime}
+  \models \Phi_1$.  Since $s^k \order s^{k\prime}$, we deduce, by
+  \defn{property}, that $s^k \models \Phi_1$.
+
+  Symmetrically, $s^k \models \Phi_2$, which concludes
+  the proof.
+\end{proof}
+
 
 
 %****************************************************************
