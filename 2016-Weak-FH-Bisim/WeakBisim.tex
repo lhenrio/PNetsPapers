@@ -233,9 +233,9 @@ set of \emph{synchronisation vectors} that express the possible
 synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
-\LUDO{introduce magic op}
-$\CreateISet{a}{i}$ creates a single entry indexed set $(i\mapsto a)$ \emph{but only if 
-$a$ is not already an indexed set.}
+%\LUDO{introduce magic op}
+%$\CreateISet{a}{i}$ creates a single entry indexed set $(i\mapsto a)$ \emph{but only if 
+%$a$ is not already an indexed set.}
 
 %\smallskip\noindent
 \paragraph*{Notations.}
@@ -453,10 +453,10 @@ The set of leaves of a pNet is the set of all pLTSs occurring in the structure, 
 inductively as:
 \TODO{Nicer here at least}
 \[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\mylangle S,s_0, \to\myrangle\\
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\{\mylangle S,s_0, \to\myrangle\}\\
 \Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
 \overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
-I}\CreateISet{\Leaves(\pNet_i)}{i} }
+I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i=\pLTS\}}
 \end{array}\]
 \end{itemize}
 \end{definition}
@@ -580,8 +580,6 @@ states from other tuples.
   the set of pLTS at its leaves,
   then $States(p) = \{\triangleleft s_i^{i\in L}
   \triangleright| \forall i\in L. s_i \in S_i\}$.
-\TODO{this definition is not valid because L is undefined and leaves only exist for pNets 
--> REMOVE? this would mean that a pNet is not a pLTS ...}
 A pLTS being its own single leave:
   $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
 
@@ -598,17 +596,19 @@ $InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 
 \paragraph{Predicates:}
 Let
-$\mylangle\overline{\pNet},\overline{\Sort},\symb{SV}_k^{k\in K} \myrangle$
-be a pNet. Consider a synchronisation vector $SV_k$, for $k\in K$. We define a
+$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
+be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
+define a
 predicate $\Pred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\Pred_{\symb{sv}}(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow \bigg(
+\[\Pred_{\symb{sv}}(SV, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow \bigg(
 \begin{array}{l}
 \exists {(a'_i)}^{i\in I},
-{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+{(b'_j)}^{j\in J},v'.\, SV={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' | g
 \\~~\land
-\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v' \land g
 \end{array} \bigg)\]
+\LUDO{Is and g sufficient? I would say yes}
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
 predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
@@ -694,36 +694,39 @@ fresh one.
 	at each level, are tuples including states of all the
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
-	\LUDO{now with the magical operator ... $s_m$ and $s_m'$ are a bit ill-typed terms. 
-	Not very happy of the new rule}
+	\LUDO{now with two cases of induction} \LUDO{Why I'm and not Im?}
 	\begin{description}
 		\item[{\bf Tr2:}]
 	\end{description}
 	
 	\noindent
     $\inferrule
-    {k\!\in\! K \\ SV\!\!= \!{\tt clone}(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
-    \alpha'_k \\
-    	Leaves(p) \!=\! \pLTS_l^{l\in L} \\    	
-    	\forall m\in I_k.
-    	\pNet_m \models
-    	\inferrule*[myfraction=\reddottedrule]
+    {k\!\in\! K \\SV_k \!=\! \alpha_m^{m \in I\uplus J} \!\to\! 
+    \alpha' |g \\
+    	Leaves(\mylangle \pNet_i^{i\in I}, \overline{\Sort}, \symb{SV}_k^{k\in 
+    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \\    	
+    	\forall m\!\!\in\!\! I. 	
+    {\left(\begin{array}{l}
+	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
     	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
     	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
+		{ \pNet_m 
+    	 \models
+    	\inferrule*[myfraction=\reddottedrule]
+    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
     	{\ostate{s_m} \OTarrow {v_m}
-    		\ostate{s_m'}}
+    		\ostate{s_m'}} \land I'_m=\{m\} \land J'_m=\emptyset}
+\end{array}\right)}\\
     	%\land
-    	%Leaves(\pNet_m) = \overline{\pLTS}^{L_k})
-    	\\\forall m\in I_k. \CreateISet{s_m}{i}=s_{i}^{i \in L_m} \\
-		\forall m\in I_k. \CreateISet{s_m'}{i}=(s_i^\prime)^{i\in L_m} \\
-    	I' = \biguplus_{m\in I_k}\!\! I_m'
-    	\\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k 	\\
-    	\Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV,a_i^{i\in I_k},b_j^{j\in J_k},v)\\
-    	\forall j\!\!\in\!\! J_k. {\tt 
-    		fresh}(b_j) \\ {\tt fresh}(v) \\ 
-    	\forall i\in
-    	L\backslash I'.\,s'_i=s_i 
+    	%Leaves(\pNet_m) = \overline{\pLTS}^{L_k})  	
+     J' = \biguplus_{m\in I}\!\! J'_m \uplus J 	\\
+    	\Pred = \bigwedge_{m\in I}\!\! \Pred_m \land
+    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J},v)\\ 
+    		I' = \biguplus_{m\in I}\!\! I_m'
+    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+    {\tt fresh}(\alpha_m,\alpha',b_j,v) 
     }
     {\mylangle \pNet_i^{i\in I}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
     	\models
@@ -736,11 +739,6 @@ fresh one.
     	}
     }
     $
-	
-
-
-
-	
 	\medskip
 %        \TODO{may be explain how $\Pred(SV,a_i^{i\in I_k},b_j^{j\in
 %            J_k},v)$ is built ? You mean more than what is written on previous page????}
@@ -1936,7 +1934,9 @@ corresponding behaviours of $P$ and $Q$, and determine the relation between thei
 predicates:
 
 \begin{lemma}[OT decomposition]\label{lem-decompose} 
-	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose:
+	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose\footnote{Note that the hypotheses of the 
+	lemma imply that $Q$ is 
+	not a \pLTS\ but a similar lemma can be proven for a pLTS $Q$}:
 	\[ P[Q]_{j_0}  
 		\models
 		{\inferrule*[myfraction=\reddottedrule]
@@ -1978,46 +1978,104 @@ predicates:
 \end{lemma}
 
    \begin{small}\begin{proof}
-       Consider each premise of the open transition (as constructed by rule TR2 in Definition~\ref{def:operationalSemantics}). 
+       Consider each premise of the open transition (as constructed by rule TR2 in 
+       Definition~\ref{def:operationalSemantics}). 
+	\begin{description}
+		\item[{\bf Tr2:}]
+	\end{description}
+	
+	\noindent
+    $\inferrule
+    {k\!\in\! K \\SV_k \!=\! \alpha_m^{m \in I\uplus J} \!\to\! 
+    \alpha' |g \\
+    	Leaves(\mylangle \pNet_i^{i\in I}, \overline{\Sort}, \symb{SV}_k^{k\in 
+    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \\    	
+    	\forall m\!\!\in\!\! I. 	
+    {\left(\begin{array}{l}
+	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
+    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+    	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
+		{ \pNet_m 
+    	 \models
+    	\inferrule*[myfraction=\reddottedrule]
+    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\ostate{s_m} \OTarrow {v_m}
+    		\ostate{s_m'}} \land I'_m=\{m\} \land J'_m=\emptyset}
+\end{array}\right)}\\
+    	%\land
+    	%Leaves(\pNet_m) = \overline{\pLTS}^{L_k})  	
+     J' = \biguplus_{m\in I}\!\! J'_m \uplus J 	\\
+    	\Pred = \bigwedge_{m\in I}\!\! \Pred_m \land
+    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J},v)\\ 
+    		I' = \biguplus_{m\in I}\!\! I_m'
+    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+    {\tt fresh}(\alpha_m,\alpha',b_j,v) 
+    }
+    {\mylangle \pNet_i^{i\in I}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+    	\models
+    	{\inferrule*[myfraction=\reddottedrule]
+    		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
+    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+    		\Post_m}
+    		{\ostate{s_i^{i\in L}} \OTarrow {v}
+    			\ostate{(s_i^\prime)^{i\in L}}}
+    	}
+    }
+    $
+	\medskip
+
 We know each premise is true for $P[Q]_{j_0}$ and try to prove the equivalent premise for 
 $P$. 
 First, $K$ and the synchronisation vector $SV_k$ are unchanged\footnotemark (however 
 $j_0$ passes from 
-the set of subnets to the set of holes). Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus 
-J_k})$. $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
-\TODO{Revoir la def des leaves set ou multisets}
+the set of subnets to the set of holes). 
+%Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus J_k})$.
+We have $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
 
-Now focus on OTs of the subnets\footnotemark[\thefootnote]:\\[-2ex]
-\[\forall m\in I_k\cup \{j_0\}.
-\pNet_m \models
-\inferrule*[myfraction=\reddottedrule]
-{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
-	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
-{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
-	\ostate{s_{i}'^{\, i \in L_m}}}\]
-Only elements of $I_k$ are useful to assert the premise for reduction of $P$; the last 
+Now focus on OTs of the subnets. For each $m\in I\cup \{j_0\}$ we have one of the two 
+following OT\footnotemark[\thefootnote]:\\[-2ex]
+\[
+\pNet_m \models\inferrule*[myfraction=\reddottedrule]
+    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+    	\{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    		\ostate{(s_i^\prime)^{i\in L_m}}}\]
+Or
+\[{ \pNet_m 
+    	 \models
+    	\inferrule*[myfraction=\reddottedrule]
+    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\ostate{s_m} \OTarrow {v_m}
+    		\ostate{s_m'}} \land I'_m=\{m\} \land J'_m=\emptyset}\]
+
+	
+Only elements of $I$ are useful to assert the premise for reduction of $P$; the last 
 one ensures (note that $Q$ is at place $j_0$, and by definition of the open transition 
-for $P[Q]_{j_0}$, $I_{j_0}=I\cap L_Q$, 
-$L_{j_0}=L_Q$):\\[-2ex]
+for $P[Q]_{j_0}$, $I'_{j_0}=I\cap L_Q$, 
+$L_{j_0}=L_Q$, and $J_{j_0}=	J\cap\Holes(Q)$):\\[-2ex]
 	\[Q\models{\inferrule*[myfraction=\reddottedrule]
 		{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
 			\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
 			\Post\,''}
 		{\ostate{s_i^{i\in L_Q}} \OTarrow {v_{j_0}}
-			\ostate{s_i'^{\, i\in L_Q}}}
+			\ostate{(s_i')^{\, i\in L_Q}}}
 	}\]
-\TODO{We need to add: Note that $J_{j_0}=	J\cap\Holes(Q)$ this is a direct consequence of Tr2??}
 
-This already ensures the second part of the conclusion if we 
-choose\footnotemark[\thefootnote]  $v_Q=v_{j_0}$ ($\Pred\,''= \Pred_{j_0}$). Now let $I'= 
-\biguplus I'_m=I\setminus L_Q$, $J'=\biguplus J'_m\uplus J_k 
-\uplus\{j_0\}=J\setminus\Holes(Q)\uplus \{j_0\}$; the predicate is 
-$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m 
-\land \Pred(SV,a_i^{i\in I_k},b_j^{j\in J_k\cup \{j_0\}},v)$
-where\footnotemark[\thefootnote] $\Pred(SV,a_i^{i\in I_k},b_j^{j\in 
-J_k},v)\Leftrightarrow 
-\forall i\in I_k.\, \alpha_i=a_i\land \forall j \in J_k\cup \{j_0\}.\, \alpha_j=b_j \land 
-v=\alpha'_k 
+
+This already ensures the second part of the conclusion of the lemma, i.e. the OT for $Q$ 
+if we 
+choose\footnotemark[\thefootnote]  $v_Q=v_{j_0}$ ($\Pred\,''= \Pred_{j_0}$). Considering 
+the OT of $P$ let $I'= 
+\biguplus I'_m=I\setminus L_Q$, $J'=\biguplus J'_m\uplus J
+\uplus\{j_0\}=J\setminus\Holes(Q)\uplus \{j_0\}$;  the predicate is 
+$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Pred_{\symb{sv}}(SV_k,v_m^{m\in 
+I},b_j^{j\in J\cup \{j_0\}},v)$
+where\footnotemark[\thefootnote] $\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J\cup 
+\{j_0\}},v)\Leftrightarrow 
+\forall i\in I_k.\, \alpha_i=a_i\land \forall j \in J\cup \{j_0\}.\, \alpha_j=b_j \land 
+v=\alpha'
 $. Modulo renaming of fresh variables, this is identical to the predicate that occurs in 
 the source open transition except $\alpha_{j_0}=v_{j_0}$ has been replaced by  
 $\alpha_{j_0}=b_{j_0}$.
