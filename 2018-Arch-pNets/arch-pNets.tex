@@ -52,11 +52,13 @@
 \newcommand{\add}[2][Added]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#2}}
 %% \newcommand{\remove}[2][Removed]{\todo[color=red!20, size=\tiny]{#1}}
 \newcommand{\remove}[2][Removed]{\todo[color=red!20, size=\tiny]{#1}{\color{red}\st{#2}}}
+\newcommand{\removeIn}[2][Removed]{\todo[color=red!10, inline]{{\color{red}#2}#1}}
 %% \newcommand{\replace}[3][Replaced]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#3}}
 \newcommand{\replace}[3][Replaced]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#3}{\color{red}\st{#2}}}
 
 \newcommand{\addSB}[1]{\add[Added by Simon]{#1}}
 \newcommand{\removeSB}[1]{\remove[Removed by Simon]{#1}}
+\newcommand{\removeSBin}[1]{\removeIn[Removed by Simon]{#1}}
 \newcommand{\replaceSB}[2]{\replace[Replaced by Simon]{#1}{#2}}
 
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
@@ -914,8 +916,8 @@ sub-trees.
 \label{section:pNets}
 
 
-A pLTS is a labelled transition system with variables; variables can be
-manipulated, defined, or accessed inside states, actions, guards, and
+A pLTS is a labelled transition system with variables\replaceSB{; variables}{. Variables} can be
+manipulated, defined, or accessed \noteSB{What does this mean?}\hl{inside states}, actions, guards, and
 assignments. Without loss of generality and to simplify the formalisation, we suppose 
 here that 
 variables are local to each 
@@ -923,26 +925,26 @@ state: each state has its set of variables disjoint from the others. Transmittin
 variable values from one state to the other can be done by explicit assignment. 
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
-Note that we make no assumption on finiteness of the set of states nor
-on finite branching of the transition relation.
+Note that we make no assumption on \addSB{the }finiteness of the set of states, nor
+on \addSB{the }finite branching of the transition relation.
 
 We first define the set of actions a pLTS can use, let $a$
-range over action labels, $\symb{op}$ are operators, and $x_i$ range over
-variable names. Action terms are:\noteLH{Eric suggests to remove this: too precise. I 
-think last Expression should be removed not sure about the rest -- to be discussed}
-\[
+range over action labels\removeSB{, $\symb{op}$ are operators, and $x_i$ range over
+variable names}. Action terms are\replaceSB{:}{{} of the form $\alpha=a((?x_i)^{i \in I}, \symb{Expr}_j^{j \in J})$, where $(?x_i)^{i \in I}$ are input variables, $\symb{Expr}_j^{j \in J})$ are expressions.}\noteLH{Eric suggests to remove this: too precise. I 
+think last Expression should be removed not sure about the rest -- to be discussed}\noteSB{I agree: expressions are not needed, but it is nice to explain how action terms are formed }
+\removeSBin{\[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
   \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
   p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
   \symb{Expr}&::=& 
   \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
 \end{array}
-\]
-The input variables in an action term are those marked with a
-$\symb{?}$.
+\]}
+\removeSB{The input variables in an action term are those marked with a
+$\symb{?}$.}
 We additionally suppose that each input variable does not
-appear somewhere else in the same action term:
-$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+appear \replaceSB{somewhere else }{anywhere }in the same action term\replace[Maybe? Not sure this is necessary.\Simon]{:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$}{.}
 
 \begin{definition}[pLTS]
 \label{pLTS}
@@ -950,20 +952,20 @@ A pLTS is a tuple
 $\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
-$S$ is a set of states.
+$S$ is a set of states\addSB{, $\vars(s)$ denotes the set of associated variables}.
 \item[$\bullet$]
-$s_0 \in S$ is the initial state.
+$s_0 \in S$ is the initial state.\noteSB{I usually put commas or semicolons in itemised lists}
 %\item[$\bullet$]
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
-
+% SB: I removed a new paragraph here, ok?
 $\langle \alpha,~g,~e\rangle$,
-where $\alpha \in\AlgA$ is a parameterised action, $g$ is a guard, and the variables 
+where \noteSB{I suggest using $\actions{V}$ (\ie \texttt{\textbackslash actions\{V\}}), with $V = \bigcup_{s \in S} \vars(s)$.}\hl{$\alpha \in\AlgA$} is a parameterised action, $g$ is a guard, and \hl{the variables 
 $x_j\in \vars(s')$
-are assigned the updates in $e$.
+are assigned the updates in $e$. }\noteSB{I still have to update in my section, but it seems that my initial use of expressions conflicts with that in the SVs.  I suggest writing explicitly $(?x_i := e_i)^{i \in I}$ or $\overline{?x := e}$ (not sure these should be input vars, though).}
 If 
 $s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then 
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
@@ -975,10 +977,11 @@ $s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then
 \end{itemize}
 \end{definition}
 \noteLH{is dom and codom clear?}
+\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
 Now we define
 pNet nodes, as constructors for hierarchical behavioural structures.
 A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of Holes, playing the role of process parameters.
+set of \replaceSB{Holes}{holes}, playing the role of process parameters.
 
 A composite pNet consists of a set of sub-pNets exposing
 a set of actions, each of them synchronising actions in each of
@@ -987,42 +990,43 @@ internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
-not need to distinguish  input 
-variables. Action terms for pNets are defined as follows:
+not \replaceSB{need to distinguish  input 
+variables. Action terms for pNets are defined as follows:}{have input variables, \ie they have the form $a(e_j^{j \in J})$.}
+\removeSBin{
 \[\begin{array}[l]{rcl@{\quad}l}
   \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
 \end{array}
 \]
-
+}
 
 
 \begin{definition}[pNets]\label{def-pnets}
-A pNet is a hierarchical structure where leaves are pLTSs and holes:\\
+A pNet is a hierarchical structure where leaves are pLTSs and holes:\\\noteSB{I would not put a new line here}
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] $I \in \I$ is the set over which sub-pNets are indexed.
+\item[$\bullet$] \noteSB{This is clear from $\pNet_i^{i\in I}$.}\hl{$I \in \I$ is the set over which sub-pNets are indexed.}
 \item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
 %sub-pNets are indexed.
 
-\item[$\bullet$] $J\!\in\!\I_\P$ is a set of indexes, called \emph{holes}.
+\item[$\bullet$] \noteSB{$I_P$ is not defined and, probably, not necessary.}\hl{$J\!\in\!\I_\P$} is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 %\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
 %\emph{sort} of
 %hole $j$.
 
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
-  synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$ where
+  synchronisation vectors (\hl{$K\in\I_\P$}). $\forall k\!\in\! K,
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$, where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
   $\forall i\!\in\!
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\Label(\symb{SV}_k) = \alpha'_k$. $g_k $ is a guard associated to the vector 
-$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.
+\replaceSB{$\Label(\symb{SV}_k) = \alpha'_k$}{$\alpha'_k$, also denoted $\Label(\symb{SV}_k)$}. \replaceSB{$g_k $ is a guard associated to the vector 
+$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.}{The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.}
 
 
 \end{itemize}
@@ -1032,9 +1036,10 @@ The preceding definition relies on the auxiliary functions below:
 
 \begin{definition}[Sorts, Holes, Leaves of pNets]
   \begin{itemize}
-  \item The sort of a pNet is its signature, i.e. the set of actions it can
-perform. In the definition of sorts, we do not need to distinguish
-input variables (that specify the dataflow within LTSs), so for
+  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all straightforward, whereas the notation is complex.  Maybe reformulate in words and move the formal definitions in the appendix?}
+ The sort of a pNet is its signature, i.e. the set of actions it can
+perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), we could eliminate the need to distinguish the input variables at all? That would simplify things.}\hl{In the definition of sorts, we do not need to distinguish
+input variables} (that specify the dataflow within LTSs), so for
 computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
 K}$ is the parallel substitution 
 operation.} to remove the
@@ -1086,16 +1091,16 @@ is said to be \emph{open}.
 
 \noteLH{a pred is a g a post is a e}
 The semantics of open pNets will be defined  as an open automaton. An open
-automaton is an automaton where each transition composes transitions of several LTSs with
-action of some holes, the transition occurs if some predicates hold, and can involve a 
+automaton is an automaton where \noteSB{This might give a false impression that there is some kind of CCS-like ``duality'' between pLTSs and holes}\hl{each transition composes transitions of several LTSs with
+actions of some holes}, the transition occurs if some predicates hold, and can involve a 
 set of state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
-	I}$ of LTSs, a
+	An \emph{open transition} over a set \noteSB{In the architecture section, I say that we omit indices on $\goesto{}$ and that they are always clear from the context.}\hl{$(S_i,s_{0 i}, \rightarrow_i)^{i\in
+	I}$} of LTSs, a
 	set $J$ of holes with sorts $\Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
 	\begin{mathpar}
@@ -1106,9 +1111,9 @@ set of state modifications.
 	\end{mathpar}
 	Where $s, s'\in\mathcal{S}$ and for all
         $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
-        is a transition of the hole $j$, for any action $b_j$ in the
-        sort $\Sort_j$. $v$ is a variable denoting the resulting action
+	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and \noteSB{Why insist on ``transition'' and $\goesto{b_j}_j$? Why not simply ``$b_j$ is an action in the sort $\Sort_j$?}\hl{$\xrightarrow{b_j}_j$
+        is a transition of the hole $j$}, for any action $b_j$ in the
+        sort $\Sort_j$.  \noteSB{Why $v$? Why not $\alpha$? As now, it is not clear whether this is an action term or a variable $v \in \vars(s)$ of some hypothetical state $s$.}\hl{$v$ is a variable denoting the resulting action}
         of this open transition. \Pred\ is a predicate 
 	over the different variables of the
 	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
@@ -1133,14 +1138,14 @@ set of state modifications.
                       }
   %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
     {A1_0 \OTarrow{\underline{\delta(x4)}} A1_1}
-  $
+  $\noteSB{The underline notation did not appear until here.}
 \end{example}
 
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
-	<\LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	\langle\LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}\rangle$, where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
 		\item[$\bullet$]  $\LTS_i^{i\in I}$ is a family of LTSs,
@@ -1196,14 +1201,20 @@ be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$
 define a
 predicate $\Pred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\Pred_{\symb{sv}}(SV, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow \bigg(
-\begin{array}{l}
+\begin{multline}
+  \Pred_{\symb{sv}}(SV, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+  \\
+%%   \bigg(
+%% \begin{array}{l}
 \exists {(a'_i)}^{i\in I},
-{(b'_j)}^{j\in J},v'.\, SV={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' | g
-\\~~\land
+{(b'_j)}^{j\in J},v'.\, SV=\bigl({(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' | g\bigr)
+\\
+\land
 \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v' \land g
-\end{array} \bigg)\]
+%% \end{array} \bigg)
+\end{multline}
 \noteLH{Is and g sufficient? I would say yes}
+\noteSB{In principle, yes. I am not 100\% sure that the implicit dependency of $g$ on the variables in $a'_i$ and $b'_j$ is clear.}
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
 predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
@@ -1234,8 +1245,8 @@ fresh one.
 \begin{definition}[Operational semantics of open pNets]
 	\label{def:operationalSemantics}
 	The semantics of a pNet $p$ is an open automaton $A = 
-	<Leaves(p),Holes(p),States(p),InitState(p),
-	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
+	\langle\symb{Leaves}(p),\symb{Holes}(p),\symb{States}(p),\symb{InitState}(p),
+	\mathcal{T}\rangle$, where \noteSB{We use $\cT$ for term algebra}\hl{$\mathcal{T}$} is the smallest set of open transitions		
 	satisfying the rules below:
 %	\begin{itemize}
 %		\item $J$ is the set of holes: $Holes(p)= J$. 
@@ -1278,20 +1289,20 @@ fresh one.
 %	equations of a predicate.
 	
 	The second rule deals with pNet nodes: for each possible
-	synchronisation vector applicable to the rule subject, the premisses
+	synchronisation vector applicable to the rule subject, the premises
 	include one {\em open transition} for each sub-pNet involved, one possible
 	{\em action} for each Hole involved, and the predicate relating these
 	with the resulting action of the vector.
 	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
-	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+	i.e. a \noteSB{Is this compatible with the ``compositionality'' argument?}\hl{flattened view of the pNet}: e.g. $L$ is the index set of the
 	Leaves, $L_m$ the index set of the leaves of one subnet indexed $m$, so all $L_m$
 	are disjoint subsets of $L$. Thus the states in the open transitions,
 	at each level, are tuples including states of all the
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
 	\begin{description}
-		\item[{\bf Tr2:}]
+		\item[{\bf Tr2:}]\noteSB{I do not understand why the second line $pNet_m \models\dots$ is not subsumed by the first one?}
 	\end{description}
 	
 	\noindent
