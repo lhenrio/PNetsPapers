@@ -42,12 +42,24 @@
 \newcommand{\todoSB}[2][color=green!40, size=\tiny]{\todo[#1]{\textbf{To-do Simon:} {#2}}}
 \newcommand{\todoSBin}[2][inline,color=green!40]{\todo[#1]{\textbf{To-do Simon: } {#2}}}
 \newcommand{\Ludo}{\\\hfill\mdash Ludo}
-\newcommand{\noteLH}[2][color=blue!40, size=\tiny]{\todo[#1]{{#2}\Ludo}}
-\newcommand{\noteLHin}[2][inline,color=blue!40]{\todo[#1]{{#2}\Ludo}}
-\newcommand{\todoLH}[2][color=blue!40, size=\tiny]{\todo[#1]{\textbf{To-do Ludo:} {#2}}}
-\newcommand{\todoLHin}[2][inline,color=blue!40]{\todo[#1]{\textbf{To-do Ludo: } {#2}}}
+\newcommand{\noteLH}[2][color=orange!40, size=\tiny]{\todo[#1]{{#2}\Ludo}}
+\newcommand{\noteLHin}[2][inline,color=orange!40]{\todo[#1]{{#2}\Ludo}}
+\newcommand{\todoLH}[2][color=orange!40, size=\tiny]{\todo[#1]{\textbf{To-do Ludo:} {#2}}}
+\newcommand{\todoLHin}[2][inline,color=orange!40]{\todo[#1]{\textbf{To-do Ludo: } {#2}}}
 
 \newcommand{\noteIn}[2][inline,color=black!20]{\todo[#1]{{#2}}}
+
+\newcommand{\add}[2][Added]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#2}}
+%% \newcommand{\remove}[2][Removed]{\todo[color=red!20, size=\tiny]{#1}}
+\newcommand{\remove}[2][Removed]{\todo[color=red!20, size=\tiny]{#1}{\color{red}\st{#2}}}
+\newcommand{\removeIn}[2][Removed]{\todo[color=red!10, inline]{{\color{red}#2}#1}}
+%% \newcommand{\replace}[3][Replaced]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#3}}
+\newcommand{\replace}[3][Replaced]{\todo[color=blue!20, size=\tiny]{#1}{\color{blue}#3}{\color{red}\st{#2}}}
+
+\newcommand{\addSB}[1]{\add[Added by Simon]{#1}}
+\newcommand{\removeSB}[1]{\remove[Removed by Simon]{#1}}
+\newcommand{\removeSBin}[1]{\removeIn[Removed by Simon]{#1}}
+\newcommand{\replaceSB}[2]{\replace[Replaced by Simon]{#1}{#2}}
 
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
 \newcommand{\defntwo}[2]{Defs~\ref{defn:#1} and \ref{defn:#2}}
@@ -73,8 +85,10 @@
 % %%%%%%%%%%%%%%%%%%%%%
 
 \newcommand{\cA}{\ensuremath{\mathcal{A}}}
-\newcommand{\bB}{\ensuremath{\mathbf{B}}}
+\newcommand{\fA}{\ensuremath{\mathsf{A}}}
+\newcommand{\sA}{\ensuremath{\mathbb{A}}}
 \newcommand{\cB}{\ensuremath{\mathcal{B}}}
+\newcommand{\fB}{\ensuremath{\mathsf{B}}}
 \newcommand{\sB}{\ensuremath{\mathbb{B}}}
 \newcommand{\cC}{\ensuremath{\mathcal{C}}}
 \newcommand{\sC}{\ensuremath{\mathbb{C}}}
@@ -131,15 +145,21 @@
 \newcommand{\false}{\ensuremath{\mathtt{f\!f}}}
 \newcommand{\noop} {\ensuremath{\emptyset}} % \mathsf{skip}
 
+\newcommand{\ordbool}{\ensuremath{\sB^{<}}}
 \newcommand{\data}{\ensuremath{\sD}}
-\newcommand{\guards}[1]{\ensuremath{\sB_{#1}}}
+\newcommand{\signature}{\ensuremath{\Sigma}}
+\newcommand{\variables}{\ensuremath{\cV}}
+\newcommand{\Talg}{\ensuremath{\cT_{\signature,\variables}}}
+\newcommand{\actions}[1]{\ensuremath{\cA_{#1}}}
+\newcommand{\guards}[1]{\ensuremath{\ordbool_{#1}}}
 \newcommand{\exprs}[1]{\ensuremath{\sE_{#1}}}
-\newcommand{\valuations}[1]{\ensuremath{\sV_{#1}}}
-\newcommand{\val}[3][]{%
-  \ensuremath{#1{\sigma}^{#2}_{#3}}%
-}
+\newcommand{\assigns}[1]{\ensuremath{\sA_{#1}}}
+\newcommand{\valuations}[1]{\ensuremath{\data^{#1}}}
+\newcommand{\val}[3][]{\ensuremath{#1{\sigma}^{#2}_{#3}}}
+
 \newcommand{\primeit}[1]{#1'}
 \newcommand{\doubleprimeit}[1]{#1''}
+
 
 \newcommand{\export}[1][]{\ensuremath{\varepsilon_{#1}}}
 \newcommand{\valdiff}[2]{\ensuremath{#1 \triangle #2}}
@@ -247,49 +267,45 @@ Eric~Madelaine\inst{3}
 \section{Introduction}
 \label{secn:introduction}
 
-\noteSBin{%
-  Need preliminaries on the universal(?) data domain $\data$
-  and valuations.
-}
+%****************************************************************
+%****************************************************************
 
-\noteSBin{%
-For two valuations $\val{1}{}, \val{2}{} : V \rightarrow \data$,
-we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=} \setdefb{v
-  \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of variables
-that are assigned different values by the two valuations.
-}
+\section{Preliminaries}
+\label{secn:preliminaries}
 
-\noteSBin{%
-To guarantee preservation of properties guards and expressions
-have to be \emph{monotonic}.  In the case of a trivial order, \ie
-when nothing is comparable, \emph{any guard or expression is
-  monotonic}.  Thus, this is not really a constraint!
+%****************************************************************
 
-Do we put this in the definition of expressions and guards or in
-the definitions of components and interaction models?
-}
+\subsection{Notations}
+\label{secn:notations}
 
-\subsection*{Unifying notations -- remarks}
-
-\todoLHin{proposed notations:}
-$g$ are boolean expressions
-$e_i$ are updates/assignments
-
-\todoLHin{Remove term algebra or simplify?}
-\todoLHin{universal domain $\implies$ remove sort}
-\todoLHin{replace assignments by $e_i$}
-
-\noteIn{In Archi we have $a$, whereas in pNets we have $\alpha$, where, approximately $\alpha = 
-a(x_1..x_n)$, except that $a$ is port name in archi and action name in pNets.
-Is this true? can we unify better? or is it sufficient?
-\Ludo
-
-$a$ is a set of ports, but otherwise, yes, this is true.  I think
-this is coherent, since, in archi, we have the ``interaction
-part'', \ie only ports, plus the data part, \ie variables,
-guards, expressions.  In pNets, these are combined.  So, it seems
-ok that notations differ\mdash ``uniformisation'' will be
-achieved by encoding archi $\rightarrow$ pNets.  \Simon }
+We extensively use \replaceSB{indexed structures
+over some countable indexed sets, which are equivalent to mappings over
+the countable set. }{structures indexed over some finite or countable sets of indices, which can be equivalently defined as mappings over such index sets. }% . The indexes will usually be
+% integers, bounded or not. Such an indexed family is
+%denoted
+%follows:
+\addSB{Thus, }
+$a_i^{i\in I}$
+%, or equivalently  $(i\mapsto a_i)^{i\in I}$
+denotes a family of elements $a_i$ indexed over the
+set $I$. % Such a family
+% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+% To specify the set over which the structure is indexed,
+% indexed structures are always denoted with an exponent of the form $i\in I$
+% (arithmetic only appears in the indexes if necessary).
+\replaceSB{$a_i^{i\in I}$ }{This notation }defines both $I$ the set over which the family is
+indexed (called \emph{range}), and $a_i$ the elements of the family.
+E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
+$3$ ; abbreviated $(3\mapsto a)$ in the following.
+When this is not
+ambiguous, we shall use notations for sets, and typically write
+``indexed set over I''\replaceSB{ when}{, even though} formally we should speak of multisets; and
+write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
+family is denoted $\emptyset$. \replaceSB{
+We denote classically with an overline -- $\overline{a}$ -- a family when the indexing set 
+is
+not meaningful.}{We use a classical overline notation, \eg $\overline{a}$, for a family, where the indexing set is irrelevant} \replaceSB{$\uplus$ is }{Finally, we use $\uplus$ to denote }the disjoint union on
+indexed sets.
 
 \noteIn{states looks ok, but initial state is $s_0$ in pNet and not in archi : $s^0$.  Exponent 
 position was removed from pNet because we found it complex with indexed set notation but 
@@ -304,6 +320,197 @@ think this can be solved, where necessary, by using parentheses,
 }
 
 %****************************************************************
+
+\subsection{Term algebra}
+\label{secn:terms}
+
+\todoLHin{Remove term algebra or simplify?}
+\todoLHin{universal domain $\implies$ remove sort}
+\todoLHin{replace assignments by $e_i$
+
+  In fact, in the pNet action terms, you need expressions, not
+  assignements.  Therefore assuming that all expressions are
+  assignments will not work, so the right approach is to have
+  expressions (for pNets) and assignments (for BIP) separately.
+  \Simon
+%
+}
+
+\noteSBin{In Archi we have $a$, whereas in pNets we have $\alpha$, where, approximately $\alpha = 
+a(x_1..x_n)$, except that $a$ is port name in archi and action name in pNets.
+Is this true? can we unify better? or is it sufficient?
+\Ludo
+
+$a$ is a set of ports, but otherwise, yes, this is true.  I think
+this is coherent, since, in archi, we have the ``interaction
+part'', \ie only ports, plus the data part, \ie variables,
+guards, expressions.  In pNets, these are combined.  So, it seems
+ok that notations differ\mdash ``uniformisation'' will be
+achieved by encoding archi $\rightarrow$ pNets.
+}
+
+\replaceSB{Our models rely }{The pNet model in \secn{pNets} relies }on a notion of parameterised actions, that are
+symbolic expressions using data types and variables. As \replaceSB{our model aims }{we aim }at encoding the low-level behaviour of possibly very different
+programming languages, we do not want to impose one specific algebra
+for denoting actions, nor any specific communication mechanism. So we
+leave unspecified the constructors of the algebra that will allow building
+expressions and actions. Moreover, we use a generic {\em action interaction}
+mechanism, based on (some sort of) unification between two or more action
+expressions, to express various kinds of communication or
+synchronisation mechanisms.
+
+%\def\Talg{\mathcal{T}_{\Sigma,\P}}  % Moved to the header
+
+\noteSBin{proposed notations:
+  
+  $g$ are boolean expressions;
+  $e_i$ are updates/assignments
+  \Ludo
+ 
+  In fact, I am not sure whether I have correctly understood this
+  suggestion: do you mean, \eg using $g$ to denote the set of
+  Boolean expressions or individual Boolean expressions? Using
+  lower case letters to denote sets might be problematic, since
+  we (at least I) use them a lot to denote instances, as in
+  \[q \goesto{a, g, e} q'\,.\]
+  In fact, I even use capital letters: in the definition of
+  interaction model composition, I use
+  \[\cdot \goesto{a, G, E} \cdot\]
+  in the conclusion of the rule.  However, for this latter I can
+  easily change the notation.
+
+  I have set up macros for, general and Boolean expressions,
+  actions, variables \etc[,] which I have substituted everywhere,
+  where appropriate in the following paragraph.
+}
+
+  \begin{tabular}{
+      @{}p{0.15\columnwidth}@{}
+      p{0.35\columnwidth}@{}
+      p{0.5\columnwidth}@{}
+    }
+    {\bf Output} & {\bf Command} & {\bf Definition}
+    \\
+    $\data$ &
+    {\ttfamily\textbackslash data} &
+    {\ttfamily\textbackslash sD}
+    \\
+    \signature &
+    {\ttfamily\textbackslash signature} &
+    {\ttfamily\textbackslash Sigma}
+    \\
+    \variables &
+    {\ttfamily\textbackslash variables} &
+    {\ttfamily\textbackslash cV}
+    \\
+    \Talg &
+    {\ttfamily\textbackslash Talg} &
+    {\ttfamily\textbackslash cT\_\{\textbackslash signature,\textbackslash variables\}}
+    \\
+    \actions{\#1} &
+    {\ttfamily\textbackslash actions\{\#1\}} &
+    {\ttfamily\textbackslash cA\_\{\#1\}}
+    \\
+    \guards{\#1} &
+    {\ttfamily\textbackslash guards\{\#1\}} &
+    {\ttfamily\textbackslash sB\^{}\{<\}\{\#1\}}
+    \\
+    \exprs{\#1} &       
+    {\ttfamily\textbackslash exprs\{\#1\}} &
+    {\ttfamily\textbackslash sE\_\{\#1\}}
+    \\
+    \assigns{\#1} &
+    {\ttfamily\textbackslash assigns\{\#1\}} &
+    {\ttfamily\textbackslash sA\_\{\#1\}}
+    \\
+    \valuations{\#1} &
+    {\ttfamily\textbackslash valuations\{\#1\}} &
+    {\ttfamily\textbackslash data\^{}\{\#1\}}
+    \\[6pt]
+    \val{\#2}{\#3} &
+    {\ttfamily\textbackslash val\{\#2\}\{\#3\}} &
+    {\ttfamily\#1\{\textbackslash sigma\}\^{}\{\#2\}\_\{\#3\}}
+    \\[6pt]
+    \val[\tilde]{\#2}{\#3} &
+    {\ttfamily\textbackslash val[\textbackslash tilde]\{\#2\}\{\#3\}} &
+    {\ttfamily\#1\{\textbackslash sigma\}\^{}\{\#2\}\_\{\#3\}}
+  \end{tabular}
+\noteSBin{commands above (tabular generates an error inside a
+  note)}
+  
+Formally, we assume the existence of a term algebra $\Talg$,
+where $\signature$ is the signature of the data and action constructors,
+and $\variables$ a set of \emph{variables}. Within $\Talg$, we distinguish a set of
+\emph{data expressions} $\exprs{\variables}$ \replaceSB{, including}{and} a set of \emph{Boolean
+expressions} \todoLH{$\mathcal{B} \to g$}
+$\guards{\variables}$ ($\guards{\variables}\subseteq\exprs{\variables}$).
+On top of $\exprs{\variables}$ we build the \emph{action algebra}
+$\actions{\variables}$, with $\actions{\variables}\subseteq\Talg$ \replaceSB{,}{and}
+$\exprs{\variables}\cap\actions{\variables} = \emptyset$;
+naturally action terms will use data expressions as subterms.
+\addSB{In addition to the above notations, we will use
+\[
+\assigns{\variables} \bydef{=}
+\Setdef{(x_i := e_i)^{i \in I}}{
+  x_i^{i \in I}\subseteq \variables,
+  e_i^{i \in I}\subseteq \exprs{\variables},
+  I \text{ is a finite index set}
+}
+\]
+to denote the set of \emph{variable assignments}.}
+
+To be able to reason about the data flow between pLTSs, we
+distinguish \emph{input variables} of the form $?x$ within terms; the function
+$\vars(t)$ identifies the set of variables in a term
+$t\in\Talg$, and $iv(t)$ returns its input variables.
+Action algebras can \replaceSB{encode naturally }{naturally encode }usual point-to-point message passing calculi (using 
+$a(?x_1,\dots,?x_n)$ for inputs, $a(v_1,\dots,v_n)$ for outputs), but it also allows
+for more general mechanisms, like gate negotiation in Lotos, or broadcast
+communications.
+
+\addSB{%
+%
+  Finally, we assume the existence of a universal data domain
+  given as a partially-ordered set $(\data, \order)$, potentially
+  encompassing several copies of any given data type with
+  different orders.  For example, we assume that $(\data,
+  \order)$ comprises both the unordered set of Booleans $\sB =
+  (\{\true, \false\}, \emptyset)$ and the naturally ordered one
+  $\sB^< = (\{\true, \false\}, \{\false < \true\})$, and
+  similarly for integer and real numbers; as well as the set of
+  intervals ordered by inclusion.
+
+  For a set of variables $V \subseteq \variables$, we denote
+  $\valuations{V} \bydef{=} \{\val{}{}: V \rightarrow \data\}$
+  the set of \emph{valuations} of the variables in $V$.
+  Valuations extend canonically to expressions.  Thus
+  $\val{}{}(x)$ and $\val{}{}(e)$ denote, respectively, the
+  values of the variable $x$ and the expression $e$ under the
+  valuation $\val{}{}$.  For a valuation $\val{}{} \in
+  \valuations{V}$ and an assignment $(x_i := e_i)^{i \in I} \in
+  \assigns{V}$, we denote $\val{}{}[(x_i := e_i)^{i \in I}]$ the
+  valuation defined by
+  \[
+  \val{}{}\bigl[(x_i := e_i)^{i \in I}\bigr](x) \bydef{=}
+  \begin{cases}
+    \val{}{}(x), & \text{if } x \not\in x_i^{i \in I}\,,\\
+    \val{}{}(e_i), & \text{if } x = x_i, \text{for some } i \in I\,.
+  \end{cases}
+  \]
+  For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
+  \data$, we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
+  \setdefb{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
+  variables that are assigned different values by the two
+  valuations.  As usual, we write $\val{1}{} \order \val{2}{}$
+  iff $\val{1}{}(x) \order \val{2}{}(x)$, for all $x \in V$.  An
+  expression $e \in \exprs{V}$ is called \emph{monotonic} if, for
+  any two valuations $\val{1}{}, \val{2}{} \in \valuations{V}$,
+  $\val{1}{} \order \val{2}{}$ implies $\val{1}{}(e) \order
+  \val{2}{}(e)$.
+%
+}
+
+%****************************************************************
 %****************************************************************
 
 \section{The theory of architectures with data}
@@ -313,6 +520,16 @@ think this can be solved, where necessary, by using parentheses,
 
 \subsection{Components and composition}
 \label{sec:components}
+
+\noteSBin{%
+To guarantee preservation of properties guards and expressions
+have to be \emph{monotonic}.  In the case of a trivial order, \ie
+when nothing is comparable, \emph{any guard or expression is
+  monotonic}.  Thus, this is not really a constraint!
+
+Do we put this in the definition of expressions and guards or in
+the definitions of components and interaction models?
+}
 
 \begin{definition}[Components]
   \label{defn:component}
@@ -332,9 +549,9 @@ think this can be solved, where necessary, by using parentheses,
 %
     is a \emph{transition relation}, with transitions
     labelled by triples consisting of an \emph{interaction}
-    $\emptyset \neq a \subseteq P$, a Boolean \emph{guard} $g \in
-    \guards{V}$ and an \emph{update expression} $e \in
-    \exprs{V}$.
+    $\emptyset \neq a \subseteq P$, a monotonic Boolean \emph{guard} $g \in
+    \guards{V}$ and a monotonic \emph{update expression} \todoSB{$e \rightarrow u$}\hl{$e \in
+    \exprs{V}$}.
   \end{itemize}
 %
   We call \noteSB{Maybe rather $(P, \export)$}\hl{the pair of sets $(V,P)$} the \emph{interface} of the
@@ -484,6 +701,10 @@ For an interaction $a$, we will abuse the notation by writing
 $\supp{a}$ to also denote the set $\setdef{B \in \cB}{a \cap P_B
   \neq \emptyset}$.  The precise meaning of this notation will
 always be clear from the context.
+
+%****************************************************************
+\subsection{Graphical representation of composed systems}
+\label{secn:connectors}
 
 %****************************************************************
 \subsection{Architectures}
@@ -691,77 +912,12 @@ set of \emph{synchronisation vectors} that express the possible
 synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
-
-%\smallskip\noindent
-\paragraph*{Notations.}
-We extensively use indexed structures
-over some countable indexed sets, which are equivalent to mappings over
-the countable set. % . The indexes will usually be
-% integers, bounded or not. Such an indexed family is
-%denoted
-%follows:
-$a_i^{i\in I}$
-%, or equivalently  $(i\mapsto a_i)^{i\in I}$
-denotes a family of elements $a_i$ indexed over the
-set $I$. % Such a family
-% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
-% To specify the set over which the structure is indexed,
-% indexed structures are always denoted with an exponent of the form $i\in I$
-% (arithmetic only appears in the indexes if necessary).
-$a_i^{i\in I}$ defines both $I$ the set over which the family is
-indexed (called \emph{range}), and $a_i$ the elements of the family.
-E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
-$3$ ; abbreviated $(3\mapsto a)$ in the following.
-When this is not
-ambiguous, we shall use notations for sets, and typically write
-``indexed set over I'' when formally we should speak of multisets, and
-write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
-family is denoted $\emptyset$. We
-denote classically with an overline -- $\overline{a}$  -- a family when the indexing set 
-is
-not meaningful.  $\uplus$ is the disjoint union on
-indexed sets.
-
-\paragraph*{Term algebra.}
-Our models rely on a notion of parameterised actions, that are
-symbolic expressions using data types and variables. As our model aims
-at encoding the low-level behaviour of possibly very different
-programming languages, we do not want to impose one specific algebra
-for denoting actions, nor any specific communication mechanism. So we
-leave unspecified the constructors of the algebra that will allow building
-expressions and actions. Moreover, we use a generic {\em action interaction}
-mechanism, based on (some sort of) unification between two or more action
-expressions, to express various kinds of communication or
-synchronisation mechanisms.
-
-\def\Talg{\mathcal{T}_{\Sigma,\P}}
-Formally, we assume the existence of a term algebra $\Talg$,
-where $\Sigma$ is the signature of the data and action constructors,
-and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
-data expressions $\mathcal{E}_\P$, including a set of boolean
-expressions \todoLHin{$\mathcal{B} \to g$}
-$\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
-On top of $\mathcal{E}_\P$ we build the action algebra
-$\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
-\mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
-naturally action terms will use data expressions as subterms.
-To be able to reason about the data flow between pLTSs, we
-distinguish \emph{input variables} of the form $?x$ within terms; the function
-$\vars(t)$ identifies the set of variables in a term
-$t\in\AlgT$, and $iv(t)$ returns its input variables.
-Action algebras can encode naturally usual point-to-point message passing calculi (using 
-$a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
-for more general mechanisms, like gate negociation in Lotos, or broadcast
-communications. 
-
-
-
 \subsection{The (open) pNets Core Model}
 \label{section:pNets}
 
 
-A pLTS is a labelled transition system with variables; variables can be
-manipulated, defined, or accessed inside states, actions, guards, and
+A pLTS is a labelled transition system with variables\replaceSB{; variables}{. Variables} can be
+manipulated, defined, or accessed \noteSB{What does this mean?}\hl{inside states}, actions, guards, and
 assignments. Without loss of generality and to simplify the formalisation, we suppose 
 here that 
 variables are local to each 
@@ -769,26 +925,26 @@ state: each state has its set of variables disjoint from the others. Transmittin
 variable values from one state to the other can be done by explicit assignment. 
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
-Note that we make no assumption on finiteness of the set of states nor
-on finite branching of the transition relation.
+Note that we make no assumption on \addSB{the }finiteness of the set of states, nor
+on \addSB{the }finite branching of the transition relation.
 
 We first define the set of actions a pLTS can use, let $a$
-range over action labels, $\symb{op}$ are operators, and $x_i$ range over
-variable names. Action terms are:\noteLH{Eric suggests to remove this: too precise. I 
-think last Expression should be removed not sure about the rest -- to be discussed}
-\[
+range over action labels\removeSB{, $\symb{op}$ are operators, and $x_i$ range over
+variable names}. Action terms are\replaceSB{:}{{} of the form $\alpha=a((?x_i)^{i \in I}, \symb{Expr}_j^{j \in J})$, where $(?x_i)^{i \in I}$ are input variables, $\symb{Expr}_j^{j \in J})$ are expressions.}\noteLH{Eric suggests to remove this: too precise. I 
+think last Expression should be removed not sure about the rest -- to be discussed}\noteSB{I agree: expressions are not needed, but it is nice to explain how action terms are formed }
+\removeSBin{\[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
   \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
   p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
   \symb{Expr}&::=& 
   \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
 \end{array}
-\]
-The input variables in an action term are those marked with a
-$\symb{?}$.
+\]}
+\removeSB{The input variables in an action term are those marked with a
+$\symb{?}$.}
 We additionally suppose that each input variable does not
-appear somewhere else in the same action term:
-$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+appear \replaceSB{somewhere else }{anywhere }in the same action term\replace[Maybe? Not sure this is necessary.\Simon]{:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$}{.}
 
 \begin{definition}[pLTS]
 \label{pLTS}
@@ -796,20 +952,20 @@ A pLTS is a tuple
 $\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
-$S$ is a set of states.
+$S$ is a set of states\addSB{, $\vars(s)$ denotes the set of associated variables}.
 \item[$\bullet$]
-$s_0 \in S$ is the initial state.
+$s_0 \in S$ is the initial state.\noteSB{I usually put commas or semicolons in itemised lists}
 %\item[$\bullet$]
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
-
+% SB: I removed a new paragraph here, ok?
 $\langle \alpha,~g,~e\rangle$,
-where $\alpha \in\AlgA$ is a parameterised action, $g$ is a guard, and the variables 
+where \noteSB{I suggest using $\actions{V}$ (\ie \texttt{\textbackslash actions\{V\}}), with $V = \bigcup_{s \in S} \vars(s)$.}\hl{$\alpha \in\AlgA$} is a parameterised action, $g$ is a guard, and \hl{the variables 
 $x_j\in \vars(s')$
-are assigned the updates in $e$.
+are assigned the updates in $e$. }\noteSB{I still have to update in my section, but it seems that my initial use of expressions conflicts with that in the SVs.  I suggest writing explicitly $(?x_i := e_i)^{i \in I}$ or $\overline{?x := e}$ (not sure these should be input vars, though).}
 If 
 $s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then 
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
@@ -821,10 +977,11 @@ $s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then
 \end{itemize}
 \end{definition}
 \noteLH{is dom and codom clear?}
+\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
 Now we define
 pNet nodes, as constructors for hierarchical behavioural structures.
 A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of Holes, playing the role of process parameters.
+set of \replaceSB{Holes}{holes}, playing the role of process parameters.
 
 A composite pNet consists of a set of sub-pNets exposing
 a set of actions, each of them synchronising actions in each of
@@ -833,42 +990,43 @@ internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
-not need to distinguish  input 
-variables. Action terms for pNets are defined as follows:
+not \replaceSB{need to distinguish  input 
+variables. Action terms for pNets are defined as follows:}{have input variables, \ie they have the form $a(e_j^{j \in J})$.}
+\removeSBin{
 \[\begin{array}[l]{rcl@{\quad}l}
   \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
 \end{array}
 \]
-
+}
 
 
 \begin{definition}[pNets]\label{def-pnets}
-A pNet is a hierarchical structure where leaves are pLTSs and holes:\\
+A pNet is a hierarchical structure where leaves are pLTSs and holes:\\\noteSB{I would not put a new line here}
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] $I \in \I$ is the set over which sub-pNets are indexed.
+\item[$\bullet$] \noteSB{This is clear from $\pNet_i^{i\in I}$.}\hl{$I \in \I$ is the set over which sub-pNets are indexed.}
 \item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
 %sub-pNets are indexed.
 
-\item[$\bullet$] $J\!\in\!\I_\P$ is a set of indexes, called \emph{holes}.
+\item[$\bullet$] \noteSB{$I_P$ is not defined and, probably, not necessary.}\hl{$J\!\in\!\I_\P$} is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 %\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
 %\emph{sort} of
 %hole $j$.
 
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
-  synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$ where
+  synchronisation vectors (\hl{$K\in\I_\P$}). $\forall k\!\in\! K,
+  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$, where
   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
   $\forall i\!\in\!
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\Label(\symb{SV}_k) = \alpha'_k$. $g_k $ is a guard associated to the vector 
-$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.
+\replaceSB{$\Label(\symb{SV}_k) = \alpha'_k$}{$\alpha'_k$, also denoted $\Label(\symb{SV}_k)$}. \replaceSB{$g_k $ is a guard associated to the vector 
+$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.}{The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.}
 
 
 \end{itemize}
@@ -878,9 +1036,10 @@ The preceding definition relies on the auxiliary functions below:
 
 \begin{definition}[Sorts, Holes, Leaves of pNets]
   \begin{itemize}
-  \item The sort of a pNet is its signature, i.e. the set of actions it can
-perform. In the definition of sorts, we do not need to distinguish
-input variables (that specify the dataflow within LTSs), so for
+  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all straightforward, whereas the notation is complex.  Maybe reformulate in words and move the formal definitions in the appendix?}
+ The sort of a pNet is its signature, i.e. the set of actions it can
+perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), we could eliminate the need to distinguish the input variables at all? That would simplify things.}\hl{In the definition of sorts, we do not need to distinguish
+input variables} (that specify the dataflow within LTSs), so for
 computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
 K}$ is the parallel substitution 
 operation.} to remove the
@@ -917,7 +1076,7 @@ inductively as:
 \Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\{\mylangle S,s_0, \to\myrangle\}\\
 \Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
 \overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
-I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i=\pLTS\}}
+I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
 \end{array}\]
 \end{itemize}
 \end{definition}
@@ -932,16 +1091,16 @@ is said to be \emph{open}.
 
 \noteLH{a pred is a g a post is a e}
 The semantics of open pNets will be defined  as an open automaton. An open
-automaton is an automaton where each transition composes transitions of several LTSs with
-action of some holes, the transition occurs if some predicates hold, and can involve a 
+automaton is an automaton where \noteSB{This might give a false impression that there is some kind of CCS-like ``duality'' between pLTSs and holes}\hl{each transition composes transitions of several LTSs with
+actions of some holes}, the transition occurs if some predicates hold, and can involve a 
 set of state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
-	I}$ of LTSs, a
+	An \emph{open transition} over a set \noteSB{In the architecture section, I say that we omit indices on $\goesto{}$ and that they are always clear from the context.}\hl{$(S_i,s_{0 i}, \rightarrow_i)^{i\in
+	I}$} of LTSs, a
 	set $J$ of holes with sorts $\Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
 	\begin{mathpar}
@@ -952,9 +1111,9 @@ set of state modifications.
 	\end{mathpar}
 	Where $s, s'\in\mathcal{S}$ and for all
         $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
-        is a transition of the hole $j$, for any action $b_j$ in the
-        sort $\Sort_j$. $v$ is a variable denoting the resulting action
+	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and \noteSB{Why insist on ``transition'' and $\goesto{b_j}_j$? Why not simply ``$b_j$ is an action in the sort $\Sort_j$?}\hl{$\xrightarrow{b_j}_j$
+        is a transition of the hole $j$}, for any action $b_j$ in the
+        sort $\Sort_j$.  \noteSB{Why $v$? Why not $\alpha$? As now, it is not clear whether this is an action term or a variable $v \in \vars(s)$ of some hypothetical state $s$.}\hl{$v$ is a variable denoting the resulting action}
         of this open transition. \Pred\ is a predicate 
 	over the different variables of the
 	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
@@ -979,14 +1138,14 @@ set of state modifications.
                       }
   %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
     {A1_0 \OTarrow{\underline{\delta(x4)}} A1_1}
-  $
+  $\noteSB{The underline notation did not appear until here.}
 \end{example}
 
 
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
-	<\LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	\langle\LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}\rangle$, where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
 		\item[$\bullet$]  $\LTS_i^{i\in I}$ is a family of LTSs,
@@ -1042,14 +1201,20 @@ be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$
 define a
 predicate $\Pred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\Pred_{\symb{sv}}(SV, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow \bigg(
-\begin{array}{l}
+\begin{multline}
+  \Pred_{\symb{sv}}(SV, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+  \\
+%%   \bigg(
+%% \begin{array}{l}
 \exists {(a'_i)}^{i\in I},
-{(b'_j)}^{j\in J},v'.\, SV={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' | g
-\\~~\land
+{(b'_j)}^{j\in J},v'.\, SV=\bigl({(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v' | g\bigr)
+\\
+\land
 \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v' \land g
-\end{array} \bigg)\]
+%% \end{array} \bigg)
+\end{multline}
 \noteLH{Is and g sufficient? I would say yes}
+\noteSB{In principle, yes. I am not 100\% sure that the implicit dependency of $g$ on the variables in $a'_i$ and $b'_j$ is clear.}
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
 predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
@@ -1080,8 +1245,8 @@ fresh one.
 \begin{definition}[Operational semantics of open pNets]
 	\label{def:operationalSemantics}
 	The semantics of a pNet $p$ is an open automaton $A = 
-	<Leaves(p),Holes(p),States(p),InitState(p),
-	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
+	\langle\symb{Leaves}(p),\symb{Holes}(p),\symb{States}(p),\symb{InitState}(p),
+	\mathcal{T}\rangle$, where \noteSB{We use $\cT$ for term algebra}\hl{$\mathcal{T}$} is the smallest set of open transitions		
 	satisfying the rules below:
 %	\begin{itemize}
 %		\item $J$ is the set of holes: $Holes(p)= J$. 
@@ -1124,20 +1289,20 @@ fresh one.
 %	equations of a predicate.
 	
 	The second rule deals with pNet nodes: for each possible
-	synchronisation vector applicable to the rule subject, the premisses
+	synchronisation vector applicable to the rule subject, the premises
 	include one {\em open transition} for each sub-pNet involved, one possible
 	{\em action} for each Hole involved, and the predicate relating these
 	with the resulting action of the vector.
 	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
-	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+	i.e. a \noteSB{Is this compatible with the ``compositionality'' argument?}\hl{flattened view of the pNet}: e.g. $L$ is the index set of the
 	Leaves, $L_m$ the index set of the leaves of one subnet indexed $m$, so all $L_m$
 	are disjoint subsets of $L$. Thus the states in the open transitions,
 	at each level, are tuples including states of all the
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
 	\begin{description}
-		\item[{\bf Tr2:}]
+		\item[{\bf Tr2:}]\noteSB{I do not understand why the second line $pNet_m \models\dots$ is not subsumed by the first one?}
 	\end{description}
 	
 	\noindent
