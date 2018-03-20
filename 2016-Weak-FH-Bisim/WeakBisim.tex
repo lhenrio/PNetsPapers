@@ -446,12 +446,12 @@ is said to be \emph{open}.
   \includegraphics[width=7cm]{XFIG/Transport}
   \hspace{0.5cm}
  \includegraphics[width=4.5cm]{XFIG/TransportSpec}
-  \caption{Schema and specification of the protocol }  \label{schema:enable-pnets}
+  \caption{Schema and specification of the protocol }  \label{schema:ABP-pnets}
 %\end{minipage}
   \vspace{1cm}
 %\begin{minipage}{6cm}
-  \centerline{\includegraphics[width=11cm]{XFIG/ABPSchema}}
-  \caption{Composed pNet with the ABP protocol}  \label{schema:enable-composed}
+  \centerline{\includegraphics[width=11cm]{XFIG/ABP3-Schema}}
+  \caption{Composed pNet with the ABP protocol}  \label{schema:ABP-composed}
 %\end{minipage}
 
 \end{figure}
@@ -499,18 +499,16 @@ set of state modifications.
 
 
 \begin{example}\emph{An open-transition.}
-  \label{OT:enable-composed}
-  The \texttt{EnableCompL} pNet of Fig. \ref{schema:enable-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
+  \label{OT:ABP}
+  The \texttt{ABP} pNet of Fig. \ref{schema:ABP-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
 
  \smallskip
  $  OT_2  = \openrule{
-                       0 \xrightarrow{\delta}_{C_3} 1 ~~
-                            0 \xrightarrow{l}_{C_4} 0  ~~                 
-                            \xrightarrow{\delta(x4)}_P ~~
-                            \xrightarrow{accept(x4)}_Q 
+                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
+                            \xrightarrow{in(?m,?b)}_{M1}
                       }
   %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {A1_0 \OTarrow{\underline{\delta(x4)}} A1_1}
+    { \OTarrow{\ostate{1,0,0,0}\underline{send(m,b)}} \ostate{2,1,0,0}}
   $
 \end{example}
 
@@ -722,7 +720,7 @@ fresh one.
 \begin{example} \emph{Using the operational rules to compute
     open-transitions}
   In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
-  open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:enable-composed}).
+  open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:ABP-composed}).
   The rule uses TR1 for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
   
 \begin{figure}[tb]
@@ -821,35 +819,33 @@ build all possible deduction trees by application of the structural
 rules Tr1 and Tr2, using all \ERIC{applicable} combinations
 of synchronisation vectors.
 
-2b) For each of the obtained deduction trees, extract the resulting
-open-transition, with its predicate and \Post\ assignments by exploring the structure of 
-the pNet.
+2b) For each of the obtained deduction trees:\\
+- Extract the resulting open-transition, with its predicate and
+\Post\ assignments by exploring the structure of the pNet.  
 
-2c)
-\ERIC{The predicate is submitted to Z3 for checking satisfiability. If it is NOT stisfiable, the resulting OT is discarded. This will minimize the number of
-resulting transitions, and potentialy prune the search-space.}
+- The predicate is submitted to Z3 for checking satisfiability. If it
+is NOT stisfiable, the resulting OT is discarded. This will minimize
+the number of resulting transitions, and potentialy prune the search-space.
 
-2d)
-\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
-- the input variables of pLTS transitions\\
-- the actions of holes\\
-- the result action at toplevel.}
-
-For each open-transition,  add the transition in the outgoing transitions of
+- For each open-transition,  add the transition in the outgoing transitions of
 the current state, and add the
-resulting state in the unexplored set if it is not already in the
-explored set.
+resulting state in the unexplored set if it is not already there.
 
 %3) this ends with the "while" from step 2, when we have no more
 %unexplored set.
 \end{algorithm}
 
-
-
 Given an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
 (symbolic) transitions, has a finite automaton (see \ref{Forte}).
+
+\subsection{Post-processing: Elimination of intermediate variables}
+
+\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
+- the input variables of pLTS transitions\\
+- the actions of holes\\
+- the result action at toplevel.}
 
   \TODO{Eric: define ``elimination of intermediate variables ?'' it
     transforms the predicates, it is not an
@@ -933,7 +929,7 @@ the following:
 \hspace{2mm}
 \begin{minipage}{0.30\linewidth}
 	\includegraphics[width=\linewidth]{XFIG/Bisim}
-	\TODO{J'ai ajoute les predicats. Il reste a dessiner la ``couverture'' si j'y arrive...}
+%	\TODO{J'ai ajoute les predicats. Il reste a dessiner la ``couverture'' si j'y arrive...}
 \end{minipage}
 
 
@@ -969,7 +965,143 @@ the following:
      %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x})
      %     \right)$.
 
-     \TODO{Eric: j'ai ajoute $\exists$ sur les predicats $\Pred_{s',t_x}$, qui n'etaient pas definis...}
+%     \TODO{Eric: j'ai ajoute $\exists$ sur les predicats $\Pred_{s',t_x}$, qui n'etaient pas definis...}
+     
+ \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
+      covered by a set of transitions from $s$ in $\mathcal{T}_1$.
+ \end{itemize}
+
+% \TODO{Eric: il reste des petits bugs genre $s^{2'}_x$ plutot que
+%   $s^{2}_x$}
+ 
+%Where $\symb{Subst}(\Pred,\Post)$ is the parallel substitution of all
+%assigned variables.
+Two pNets are FH-bisimilar if there exist a relation between their associated 
+automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
+the predicate associated to the relation between the initial states is true.
+% \TODO{do we want formulas for this?}
+ \end{definition}
+Classically, $\Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}$
+applies in parallel the  
+substitutions $\Post_{OT}$ and $\Post_{OT_x}$ (parallelism is crucial
+inside each $\Post$ set but $\Post_{OT}$ is independent from
+$\Post_{OT_x}$), applying the assignments of the involved rules.
+
+
+
+\medskip
+If we assume that everything is finite (states and transitions in the
+open automata, and the predicates in $\mathcal{R}$, then it is easy to
+prove that it is decidable whether a relation is a 
+FH-bisimulation, provided the logic of the predicates is decidable (see
+\cite{henrio:Forte2016}).
+
+\subsection{Post-processing: Elimination of intermediate variables}
+
+\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
+- the input variables of pLTS transitions\\
+- the actions of holes\\
+- the result action at toplevel.}
+
+  \TODO{Eric: define ``elimination of intermediate variables ?'' it
+    transforms the predicates, it is not an
+    ``equivalence'' transformation, rather some sort of
+    abstraction... Does it change the satisfiability ?}
+
+\subsection{Running example}
+
+\TODO{Eric: full result of the tool execution on the running
+  example. Full ? certainly not, just a subset...}
+
+
+\section{Bisimulation}
+\label{section:bisimulation}
+
+	Now we use our symbolic operational semantics to define a notion of
+	strong (symbolic) bisimulation. Moreover this equivalence is decidable whenever we 
+	have some
+	decision procedure on the predicates of the action algebra.
+
+
+%% , that we prove compatible with the
+%% composition of open pNets. \TODO{do we really know this ?}
+
+The equivalence we need is a strong bisimulation between
+pNets having exactly the same Holes with the same sorts, but using a
+flexible matching 
+between open transition, to accommodate comparisons between pNet
+expressions with different architectures.
+ We name it FH-bisimulation,
+ as a short cut for the ``Formal Hypotheses'' manipulated in the
+ transitions, but also as a reference to the work of De Simone~\cite{deSimone85},
+ that pioneered this idea.
+
+Let $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$ be a relation over the set $\mathcal{S}_1$ and 
+$\mathcal{S}_2$ constrained by a predicate.
+More precisely, for any pair $(s,t)$, there is a 
+   single
+      $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
+      if $\Pred_{s,t}$ 
+      is 
+      true, i.e. the states are related when the variables in $s$ and $t$ verify the 
+      predicate $\Pred_{s,t}$.
+ FH-bisimulation is defined formally: 
+ \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} 
+
+\noindent
+\begin{minipage}{0.69\linewidth} 	Suppose that
+   $A_1 = <\overline{\LTS_1},J,\mathcal{S}_1, s_0,
+   \mathcal{T}_1>$ and $A_2 = <\overline{\LTS_2},J,\mathcal{S}_2,t_0, \mathcal{T}_2>$
+   are open automata where the set
+   of holes are equal 
+   and of the same sort.  
+
+ Then 
+$\mathcal{R}$ is an FH-bisimulation iff for any  states
+$s\in\mathcal{S}_1$ and $t\in\mathcal{S}_2$, $(s,t|\Pred_{s,t})\in\mathcal{R}$, we 
+have
+the following:
+\end{minipage}
+\hspace{2mm}
+\begin{minipage}{0.30\linewidth}
+	\includegraphics[width=\linewidth]{XFIG/Bisim}
+%	\TODO{J'ai ajoute les predicats. Il reste a dessiner la ``couverture'' si j'y arrive...}
+\end{minipage}
+
+
+
+
+ \begin{itemize}
+ \item  For any open transition $OT$ in $\mathcal{T}_1$:
+ \begin{mathpar}
+     \inferrule*[myfraction=\reddottedrule]
+         {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I_1}, % , s_i,s'_i\in 
+         %States(I_1)
+           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s \OTarrow {v} s'}
+
+\end{mathpar}
+ there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2$:
+ \begin{mathpar}
+%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
+    \inferrule*[myfraction=\reddottedrule]
+         {\{t_i\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{ x}},
+           \{\xrightarrow{b_{j x}}_j\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {t \OTarrow {v_x} t_x}
+%         \right)
+\end{mathpar}
+ such that  $\forall x, J_1=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
+ \mathcal{R}$; 
+ and  \\
+ $\Pred_{s,t} \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+   \left( \forall j. b_j=b_{jx}  \Rightarrow \Pred_{OT_x}
+     \land v\!=\!v_x \land  
+     \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
+     %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x})
+     %     \right)$.
+
+%     \TODO{Eric: j'ai ajoute $\exists$ sur les predicats $\Pred_{s',t_x}$, qui n'etaient pas definis...}
      
  \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
       covered by a set of transitions from $s$ in $\mathcal{T}_1$.
@@ -1125,10 +1257,12 @@ actions of other systems in its environment.
 Classically, we start by defining a derived transition relation based
 on sequences of invisible actions:
 
+\def\InvAct{\mathcal{Inv}}
+
 \begin{definition}[Weak open transitions]
   Let $A = <\overline{\LTS},J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton.
   We define $\mathcal{T^*}$ the \emph{weak open transition relation}
-  with respect to a set of invisible actions $\mathcal{I}$ as:
+  with respect to a set of invisible actions $\InvAct$ as:
 
  \begin{mathpar}
  \inferrule*[myfraction=\reddottedrule]
@@ -1143,7 +1277,47 @@ on sequences of invisible actions:
 
  \TODO{Pas si simple !!!!!!!!!!!!!!!!!!!}
  
- \end{definition}
+\end{definition}
+
+\subsection{Running example}
+- Detail of a $\tau$* sequence, \\
+- construction of the predicate\\
+- defn / elimination of the intermediaite variables\\
+- construction of the weak OT.
+
+\noindent
+$\ostate{1000}\OTarrow{m\_rec(m,x), \phi_1 = [x=s_1\_b \land
+    m=s_1\_m]}\ostate{2100}$\\
+$\qquad\ostate{2100}$ variables: $\psi_1 = \{m_1\_m:=m; m_1\_x:=x; s_2\_b:=s_1\_b\}$;\\
+\\
+$\ostate{2100}\OTarrow{\tau <m\_send(m_1\_m,m_1\_x), r\_rec(?m',?b)>,
+  \phi_2 = [r_0\_b=b \land m'=m_1\_m \land b=m_1\_x]}\ostate{2001}$\\
+$\qquad\ostate{2001}$ variables: $\psi_2 = \{r_1\_b:=r_0\_b; r_1\_m:=m;
+...\}$;\\
+\\
+$\ostate{2001}\OTarrow{v,
+  \phi_3 = [v=out(r_1\_m)]}\ostate{2002}$\\
+$\qquad\ostate{2002}$ variables: $\psi_3 = \{r_2\_b:=r_1\_b\}$;\\
+
+Resulting Weak Transition:
+
+\noindent
+$\ostate{1000}\OTWeakarrow{v,
+  \phi = \phi_1\land\phi_2\psi_1\land\phi_3\psi_2\psi_1}\ostate{2002}$\\
+\\
+$\phi=[x=s_1\_b \land m=s_1\_m\\
+  \land r_0\_b=b \land m'=m_1\_m \land b=m_1\_x\\
+  \land v=out(r_1\_m)]\\
+and \\
+\psi= \{r_2\_b:=r_0\_b\}$
+
+Note that in $\phi$ the application of assignments
+$\psi_1,\psi_2,\psi_3$ have already ``eliminated'' the intermediate
+state variables
+$m_1\_m, b=m_1\_x, r_1\_m$, but not the intermediate input variables
+$m,m',x,b$. But now $\phi$ includes enough information to eliminate them, giving
+a final $\phi'= [v=out(s_1\_m)\land r_0\_b=s_1\_b]$
+
 
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
 
@@ -1255,7 +1429,7 @@ versions of the FH-bisimulation, using the notion of
 \label{appendix:assoc}
 
 Using the usual encoding of the Lotos Enable operator (see
-Fig. \ref{schema:enable-pnets}), we build now open automata for two  
+Fig. \ref{schema:ABP-pnets}), we build now open automata for two  
 open pNets \texttt{P>>(Q>>R)} and \texttt{(P>>Q)>>R)}, and 
 prove their bisimilarity.
 \begin{figure}[t]
