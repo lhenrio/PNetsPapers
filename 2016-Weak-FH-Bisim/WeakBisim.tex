@@ -473,19 +473,15 @@ set of state modifications.
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
-	I}$ of LTSs, a
-	set $J$ of holes with sorts $\Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is 
+	An \emph{open transition} over a
+	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
-	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
-		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred, \Post}
+	{	\{b_j\}^{j\in J}, \Pred, \Post}
 	{s \OTarrow {v}s'}
 	\end{mathpar}
-	Where $s, s'\in\mathcal{S}$ and for all
-        $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
+	Where $s, s'\in\mathcal{S}$ and $b_j$
         is a transition of the hole $j$, for any action $b_j$ in the
         sort $\Sort_j$. $v$ is a variable denoting the resulting action
         of this open transition. \Pred\ is a predicate 
@@ -497,7 +493,7 @@ set of state modifications.
 	variables of the open transition.
 \end{definition}
 
-
+\TODO{rewrite example with new OTs}
 \begin{example}\emph{An open-transition.}
   \label{OT:ABP}
   The \texttt{ABP} pNet of Fig. \ref{schema:ABP-composed} has 2 controllers and 2 holes. One of its possible open-transition is:
@@ -516,15 +512,14 @@ set of state modifications.
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
-	<\LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	<J,\mathcal{S},s_0,\mathcal{T}>$ where:
 	\begin{itemize}
-		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
-		\item[$\bullet$]  $\LTS_i^{i\in I}$ is a family of LTSs,
+		\item[$\bullet$]   $J$ is a  set of indices,
 		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
 		among $\mathcal{S}$,
 		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
-		$t\in \mathcal{T}$ there exist $I'$, $J'$ with $I'\subseteq I$, $J'
-		\subseteq J$, such that $t$ is an open transition over $\LTS_i^{i\in I'}$, $J'$,
+		$t\in \mathcal{T}$ there exist  $J'$ with  $J'
+		\subseteq J$, such that $t$ is an open transition over  $J'$,
 		and  $\mathcal{S}$.
 		
 	\end{itemize}
@@ -607,7 +602,8 @@ fresh one.
 
 \begin{definition}[Operational semantics of open pNets]
 	\label{def:operationalSemantics}
-	The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),Holes(p),States(p),InitState(p),
+	The semantics of a pNet $p$ is an open automaton $A = 
+	<Holes(p),States(p),InitState(p),
 	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		satisfying the rules below:
 %	\begin{itemize}
 %		\item $J$ is the set of holes: $Holes(p)= J$. 
@@ -633,11 +629,11 @@ fresh one.
 		{ \mylangle  S,s_0, \to \myrangle
 			\models
 			\inferrule*[myfraction=\reddottedrule]
-			{\{s \xrightarrow{\alpha} s'\} ,\emptyset ,
+			{\emptyset ,
 			e_b,\left\{x_j\gets e_j\right\}^{j\in J}}
 			{\ostate{s} \OTarrow{\alpha} \ostate{s'}}
 		}
-		$\LUDO {removed a ${}_p$ that was not bound}
+		$
 	\end{description}
 %	Note that this note is greatly simplified by the fact that variables are local to 
 %	thread; introducing global state variables or accepting loops to the same 
@@ -652,9 +648,15 @@ fresh one.
 	
 	The second rule deals with pNet nodes: for each possible
 	synchronisation vector applicable to the rule subject, the premisses
-	include one {\em open transition} for each sub-pNet involved, one possible
+	include one {\em open transition} for each sub-pNet involved , one possible
 	{\em action} for each Hole involved, and the predicate relating these
-	with the resulting action of the vector.
+	with the resulting action of the vector. The sub-pNets involved are split between two 
+	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
+	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
+	\in M}}{\alpha'}{e_b}$ is a synchronisation vector  of \pNet  then $K=M\cap 
+	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus K \setminus 
+	I_2$}.                                                                               
+	                                                       
 	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
 	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
@@ -663,44 +665,41 @@ fresh one.
 	at each level, are tuples including states of all the
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
-	\LUDO{now with two cases of induction} \LUDO{Why I'm and not Im?}
 	\begin{description}
 		\item[{\bf Tr2:}]
 	\end{description}
 	
 	\noindent
     $\inferrule
-    {k\!\in\! K \\SV_k \!=\! \SV{\alpha_m^{m \in I\uplus J}}{\alpha'}{e_b} \\
-    	Leaves(\mylangle \pNet_i^{i\in I'}, \overline{\Sort}, \symb{SV}_k^{k\in 
-    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \\    	
-    	\forall m\!\!\in\!\! I. 	
-    {\left(\begin{array}{l}
-	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
-    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
-    	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+    {
+	\forall m\!\!\in\!\! I_1. {\pNet_m \models\inferrule*[myfraction=\reddottedrule]
+    	{
+    	\{{b_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
     	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
-    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
-		{ \pNet_m 
+    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
+  \qquad
+\forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\inferrule*[myfraction=\reddottedrule]
-    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\emptyset, \Pred_m, \Post_m}
     	{\ostate{s_m} \OTarrow {v_m}
-    		\ostate{s_m'}} \land I_m=\{m\} \land J_m=\emptyset}
-\end{array}\right)}\\
-    	%\land
-    	%Leaves(\pNet_m) = \overline{\pLTS}^{L_k})  	
-     J' = \biguplus_{m\in I}\!\! J_m \uplus J 	\\
-    	\Pred = \bigwedge_{m\in I}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J},v)\\ 
-    		I' = \biguplus_{m\in I}\!\! I_m
+    		\ostate{s_m'}} }\\\\
+\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
+k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} \\
+\\     	
+     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
+    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
+    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in (I_1\uplus I_2)},b_j^{j\in J},v)\\ 
+    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
     {\tt fresh}(\alpha_m,\alpha',b_j,v) 
     }
-    {\mylangle \pNet_i^{i\in I'}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
     	\models
     	{\inferrule*[myfraction=\reddottedrule]
-    		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
-    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+    		{
+    		\{{b_j}\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
     		\Post_m}
     		{\ostate{s_i^{i\in L}} \OTarrow {v}
     			\ostate{(s_i^\prime)^{i\in L}}}
@@ -773,7 +772,8 @@ fresh one.
          {\ostate{00} \OTarrow{v} \ostate{10}}
       }\vspace{-4ex}
 \end{mathpar}
-  \caption{Proof of transition $OT_2$ (with interaction of processes $P$ and $Q$) for ``P>>(Q>>R)''}
+  \caption{Proof of transition $OT_2$ (with interaction of processes $P$ and $Q$) for 
+  ``P>>(Q>>R)'' \TODO{remove?}}
   \label{usingrules:OT2}
 \end{figure}
 
@@ -914,8 +914,8 @@ More precisely, for any pair $(s,t)$, there is a
 
 \noindent
 \begin{minipage}{0.69\linewidth} 	Suppose that
-   $A_1 = <\overline{\LTS_1},J,\mathcal{S}_1, s_0,
-   \mathcal{T}_1>$ and $A_2 = <\overline{\LTS_2},J,\mathcal{S}_2,t_0, \mathcal{T}_2>$
+   $A_1 = <J,\mathcal{S}_1, s_0,
+   \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0, \mathcal{T}_2>$
    are open automata where the set
    of holes are equal 
    and of the same sort.  
@@ -939,9 +939,8 @@ the following:
  \item  For any open transition $OT$ in $\mathcal{T}_1$:
  \begin{mathpar}
      \inferrule*[myfraction=\reddottedrule]
-         {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I_1}, % , s_i,s'_i\in 
-         %States(I_1)
-           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {
+           \{{b_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
          {s \OTarrow {v} s'}
 
 \end{mathpar}
@@ -949,8 +948,8 @@ the following:
  \begin{mathpar}
 %    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
     \inferrule*[myfraction=\reddottedrule]
-         {\{t_i\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{ x}},
-           \{\xrightarrow{b_{j x}}_j\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {
+           \{{b_{j x}}\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
          {t \OTarrow {v_x} t_x}
 %         \right)
 \end{mathpar}
@@ -995,145 +994,6 @@ open automata, and the predicates in $\mathcal{R}$, then it is easy to
 prove that it is decidable whether a relation is a 
 FH-bisimulation, provided the logic of the predicates is decidable (see
 \cite{henrio:Forte2016}).
-
-\subsection{Post-processing: Elimination of intermediate variables}
-
-\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
-- the input variables of pLTS transitions\\
-- the actions of holes\\
-- the result action at toplevel.}
-
-  \TODO{Eric: define ``elimination of intermediate variables ?'' it
-    transforms the predicates, it is not an
-    ``equivalence'' transformation, rather some sort of
-    abstraction... Does it change the satisfiability ?}
-
-\subsection{Running example}
-
-\TODO{Eric: full result of the tool execution on the running
-  example. Full ? certainly not, just a subset...}
-
-
-\section{Bisimulation}
-\label{section:bisimulation}
-
-	Now we use our symbolic operational semantics to define a notion of
-	strong (symbolic) bisimulation. Moreover this equivalence is decidable whenever we 
-	have some
-	decision procedure on the predicates of the action algebra.
-
-
-%% , that we prove compatible with the
-%% composition of open pNets. \TODO{do we really know this ?}
-
-The equivalence we need is a strong bisimulation between
-pNets having exactly the same Holes with the same sorts, but using a
-flexible matching 
-between open transition, to accommodate comparisons between pNet
-expressions with different architectures.
- We name it FH-bisimulation,
- as a short cut for the ``Formal Hypotheses'' manipulated in the
- transitions, but also as a reference to the work of De Simone~\cite{deSimone85},
- that pioneered this idea.
-
-Let $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$ be a relation over the set $\mathcal{S}_1$ and 
-$\mathcal{S}_2$ constrained by a predicate.
-More precisely, for any pair $(s,t)$, there is a 
-   single
-      $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
-      if $\Pred_{s,t}$ 
-      is 
-      true, i.e. the states are related when the variables in $s$ and $t$ verify the 
-      predicate $\Pred_{s,t}$.
- FH-bisimulation is defined formally: 
- \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} 
-
-\noindent
-\begin{minipage}{0.69\linewidth} 	Suppose that
-   $A_1 = <\overline{\LTS_1},J,\mathcal{S}_1, s_0,
-   \mathcal{T}_1>$ and $A_2 = <\overline{\LTS_2},J,\mathcal{S}_2,t_0, \mathcal{T}_2>$
-   are open automata where the set
-   of holes are equal 
-   and of the same sort.  
-
- Then 
-$\mathcal{R}$ is an FH-bisimulation iff for any  states
-$s\in\mathcal{S}_1$ and $t\in\mathcal{S}_2$, $(s,t|\Pred_{s,t})\in\mathcal{R}$, we 
-have
-the following:
-\end{minipage}
-\hspace{2mm}
-\begin{minipage}{0.30\linewidth}
-	\includegraphics[width=\linewidth]{XFIG/Bisim}
-%	\TODO{J'ai ajoute les predicats. Il reste a dessiner la ``couverture'' si j'y arrive...}
-\end{minipage}
-
-
-
-
- \begin{itemize}
- \item  For any open transition $OT$ in $\mathcal{T}_1$:
- \begin{mathpar}
-     \inferrule*[myfraction=\reddottedrule]
-         {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I_1}, % , s_i,s'_i\in 
-         %States(I_1)
-           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
-         {s \OTarrow {v} s'}
-
-\end{mathpar}
- there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2$:
- \begin{mathpar}
-%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
-    \inferrule*[myfraction=\reddottedrule]
-         {\{t_i\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{ x}},
-           \{\xrightarrow{b_{j x}}_j\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
-         {t \OTarrow {v_x} t_x}
-%         \right)
-\end{mathpar}
- such that  $\forall x, J_1=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
- \mathcal{R}$; 
- and  \\
- $\Pred_{s,t} \land \Pred_{OT}\\
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-   \left( \forall j. b_j=b_{jx}  \Rightarrow \Pred_{OT_x}
-     \land v\!=\!v_x \land  
-     \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
-     %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x})
-     %     \right)$.
-
-%     \TODO{Eric: j'ai ajoute $\exists$ sur les predicats $\Pred_{s',t_x}$, qui n'etaient pas definis...}
-     
- \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
-      covered by a set of transitions from $s$ in $\mathcal{T}_1$.
- \end{itemize}
-
-% \TODO{Eric: il reste des petits bugs genre $s^{2'}_x$ plutot que
-%   $s^{2}_x$}
- 
-%Where $\symb{Subst}(\Pred,\Post)$ is the parallel substitution of all
-%assigned variables.
-Two pNets are FH-bisimilar if there exist a relation between their associated 
-automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
-the predicate associated to the relation between the initial states is true.
-% \TODO{do we want formulas for this?}
- \end{definition}
-Classically, $\Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}$
-applies in parallel the  
-substitutions $\Post_{OT}$ and $\Post_{OT_x}$ (parallelism is crucial
-inside each $\Post$ set but $\Post_{OT}$ is independent from
-$\Post_{OT_x}$), applying the assignments of the involved rules.
-
-
-
-\medskip
-If we assume that everything is finite (states and transitions in the
-open automata, and the predicates in $\mathcal{R}$, then it is easy to
-prove that it is decidable whether a relation is a 
-FH-bisimulation, provided the logic of the predicates is decidable (see
-\cite{henrio:Forte2016}). 
-
-
-
 
 
 
@@ -1266,8 +1126,8 @@ on sequences of invisible actions:
 
  \begin{mathpar}
  \inferrule*[myfraction=\reddottedrule]
-         {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I_1}, 
-           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred,\Post}
+         {
+           \{{b_j}\}^{j\in J_1},\Pred,\Post}
          {s \OTWeakarrow {v} s'}
          \in \mathcal{T}^*
  \end{mathpar}
@@ -1341,16 +1201,16 @@ $t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we
  \item  For any open transition $OT$ in $\mathcal{T}_1$:
  \begin{mathpar}
      \inferrule*[myfraction=\reddottedrule]
-         {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I_1},
-           \{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {
+           \{{b_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
          {s \OTarrow {v} s'}
 
 \end{mathpar}
  there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2^*$:
  \begin{mathpar}
     \inferrule*[myfraction=\reddottedrule]
-         {\{t_i\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{x}},
-           \{\xrightarrow{b_{j x}}_j\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {
+           \{{b_{j x}}\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
          {t \OTWeakarrow {v_x} t_x}
 \end{mathpar}
  such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
@@ -1893,9 +1753,8 @@ satisfiability of the predicate relating the first state to the last one.
        	\begin{mathpar}
        	
        	\inferrule*[myfraction=\reddottedrule]
-       	{\{s_i\xrightarrow{a_i}_i {s}'_i\}^{i\in I_1}, % , s^1_i,s^{1'}_i\in
-       		%States(I_1)
-       		\{\xrightarrow{b_j}_j\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
+       	{
+       		\{{b_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
        	{s \OTarrow {v} {s}'}
        	
        	\end{mathpar}
@@ -1906,8 +1765,8 @@ satisfiability of the predicate relating the first state to the last one.
        	
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\inferrule*[myfraction=\reddottedrule]
-       	{\{t_{p i}\xrightarrow{a_{p i x}}_i t_{p i x}\}^{i\in I_{p x}},
-       		\{\xrightarrow{b_{j p x}}_j\}^{j\in J_{px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
+       	{
+       		\{{b_{j p x}}\}^{j\in J_{px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
        	{t_p \OTarrow {v_{px}} t_{p x}}
        	%         \right)
        	\end{mathpar}
@@ -1932,8 +1791,8 @@ For any open transition $OT_{px}$, since
        	
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\inferrule*[myfraction=\reddottedrule]
-       	{\{u_i\xrightarrow{a_{i p x y}}_i u_{i p x y}\}^{i\in I_{p x y}},
-       		\{\xrightarrow{b_{j p x y}}_j\}^{j\in J_{pxy}}, 
+       	{
+       		\{{b_{j p x y}}\}^{j\in J_{pxy}}, 
        		\Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
        	{u \OTarrow {v_{pxy}} u_{pxy}}
        	%         \right)
@@ -2089,8 +1948,8 @@ predicates:
 	\[ P[Q]_{j_0}  
 		\models
 		{\inferrule*[myfraction=\reddottedrule]
-			{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I},
-				\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred,  
+			{
+				\{{b_j}\}^{j\in J}, \Pred,  
 				\Post}
 			{\ostate{s_i^{i\in L}} \OTarrow {v}
 				\ostate{s_i'^{\, i\in L}}}
@@ -2103,8 +1962,8 @@ predicates:
 		%\[
 		\begin{mathpar}
 		P\models{\inferrule*[myfraction=\reddottedrule]
-			{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\setminus L_Q},
-				\{\xrightarrow{b_j}_j\}^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
+			{
+				\{{b_j}\}^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
 				\Pred\,',  
 				\Post\,'}
 			{\ostate{s_i^{i\in L\setminus L_Q}} \OTarrow {v}
@@ -2113,8 +1972,8 @@ predicates:
 	\vspace{-2.2ex}\\\text{and~~}
 		%\[
 		Q\models{\inferrule*[myfraction=\reddottedrule]
-			{\{s_i\xrightarrow{a_i}_i s_i'\}^{\,i\in I\cap L_Q},
-				\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+			{
+				\{\xrightarrow{b_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
 				\Post\,''}
 			{\ostate{s_i^{i\in L_Q}} \OTarrow {v_Q}
 				\ostate{s_i'^{\,i\in L_Q}}}
@@ -2127,45 +1986,42 @@ predicates:
 \end{lemma}
 
    \begin{small}\begin{proof}
-       Consider each premise of the open transition (as constructed by rule TR2 in 
-       Definition~\ref{def:operationalSemantics}). 
+Consider rule TR2 in 
+       Definition~\ref{def:operationalSemantics}. 
 	\begin{description}
 		\item[{\bf Tr2:}]
 	\end{description}
-	
 	\noindent
     $\inferrule
-    {k\!\in\! K \\SV_k \!=\! \SV{\alpha_m^{m \in I\uplus J}}{\alpha'}{e_b} \\
-    	Leaves(\mylangle \pNet_i^{i\in I'}, \overline{\Sort}, \symb{SV}_k^{k\in 
-    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \\    	
-    	\forall m\!\!\in\!\! I. 	
-    {\left(\begin{array}{l}
-	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
-    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
-    	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+    {
+	\forall m\!\!\in\!\! I_1. {\pNet_m \models\inferrule*[myfraction=\reddottedrule]
+    	{
+    	\{{b_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
     	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
-    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
-		{ \pNet_m 
+    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
+  \qquad
+\forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\inferrule*[myfraction=\reddottedrule]
-    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\emptyset, \Pred_m, \Post_m}
     	{\ostate{s_m} \OTarrow {v_m}
-    		\ostate{s_m'}} \land I_m=\{m\} \land J_m=\emptyset}
-\end{array}\right)}\\
-    	%\land
-    	%Leaves(\pNet_m) = \overline{\pLTS}^{L_k})  	
-     J' = \biguplus_{m\in I}\!\! J_m \uplus J 	\\
-    	\Pred = \bigwedge_{m\in I}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J},v)\\ 
-    		I' = \biguplus_{m\in I}\!\! I_m
+    		\ostate{s_m'}} }\\\\
+\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
+k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} \\
+\\     	
+     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
+    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
+    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in (I_1\uplus I_2)},b_j^{j\in J},v)\\ 
+    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
     {\tt fresh}(\alpha_m,\alpha',b_j,v) 
     }
-    {\mylangle \pNet_i^{i\in I'}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
     	\models
     	{\inferrule*[myfraction=\reddottedrule]
-    		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
-    		\{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+    		{
+    		\{{b_j}\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
     		\Post_m}
     		{\ostate{s_i^{i\in L}} \OTarrow {v}
     			\ostate{(s_i^\prime)^{i\in L}}}
@@ -2174,6 +2030,7 @@ predicates:
     $
 	\medskip
 
+Where $j_0\in I_1$ or $j_0\in I_2$
 We know each premise is true for $P[Q]_{j_0}$ and try to prove the equivalent premise for 
 $P$. 
 First, $K$ and the synchronisation vector $SV_k$ are unchanged\footnotemark (however 
@@ -2182,30 +2039,31 @@ the set of subnets to the set of holes).
 %Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus J_k})$.
 We have $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
 
-Now focus on OTs of the subnets. For each $m\in I\cup \{j_0\}$ we have one of the two 
+Now focus on OTs of the subnets. For each $m\in I_1\uplus I_2$ we have one of the two 
 following OT\footnotemark[\thefootnote]:\\[-2ex]
 \[
 \pNet_m \models\inferrule*[myfraction=\reddottedrule]
-    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
-    	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+    	{
+    	\{{b_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
     	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
     		\ostate{(s_i^\prime)^{i\in L_m}}}\]
 Or
 \[{ \pNet_m 
     	 \models
     	\inferrule*[myfraction=\reddottedrule]
-    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\emptyset, \Pred_m, \Post_m}
     	{\ostate{s_m} \OTarrow {v_m}
-    		\ostate{s_m'}} \land I_m=\{m\} \land J_m=\emptyset}\]
+    		\ostate{s_m'}}}\]
 
 	
 Only elements of $I$ are useful to assert the premise for reduction of $P$; the last 
-one ensures (note that $Q$ is at place $j_0$, and by definition of the open transition 
+one ensures the open transition for the pNet $Q$ (note that $Q$ is at place $j_0$, and by 
+definition of the open transition 
 for $P[Q]_{j_0}$, $I'_{j_0}=I\cap L_Q$, 
 $L_{j_0}=L_Q$, and $J_{j_0}=	J\cap\Holes(Q)$):\\[-2ex]
 	\[Q\models{\inferrule*[myfraction=\reddottedrule]
-		{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
-			\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
+		{
+			\{{b_j}\}^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
 			\Post\,''}
 		{\ostate{s_i^{i\in L_Q}} \OTarrow {v_{j_0}}
 			\ostate{(s_i')^{\, i\in L_Q}}}
@@ -2215,16 +2073,15 @@ $L_{j_0}=L_Q$, and $J_{j_0}=	J\cap\Holes(Q)$):\\[-2ex]
 This already ensures the second part of the conclusion of the lemma, i.e. the OT for $Q$ 
 if we 
 choose\footnotemark[\thefootnote]  $v_Q=v_{j_0}$ ($\Pred\,''= \Pred_{j_0}$). Considering 
-the OT of $P$ let $I'= 
-\biguplus I_m=I\setminus L_Q$, $J'=\biguplus J_m\uplus J
-\uplus\{j_0\}=J\setminus\Holes(Q)\uplus \{j_0\}$;  the predicate is 
+the OT of $P$ we have  $I'_P=I'\setminus L_Q$, and $J'_P=J'\setminus\Holes(Q)\uplus 
+\{j_0\}$;  the predicate is 
 $\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Pred_{\symb{sv}}(SV_k,v_m^{m\in 
 I},b_j^{j\in J\cup \{j_0\}},v)$
 where\footnotemark[\thefootnote] $\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},b_j^{j\in J\cup 
 \{j_0\}},v)\Leftrightarrow 
 \forall i\in I_k.\, \alpha_i=a_i\land \forall j \in J\cup \{j_0\}.\, \alpha_j=b_j \land 
 v=\alpha'
-\land g$. Modulo renaming of fresh variables, this is identical to the predicate that 
+\land e_b$. Modulo renaming of fresh variables, this is identical to the predicate that 
 occurs in 
 the source open transition except $\alpha_{j_0}=v_{j_0}$ has been replaced by  
 $\alpha_{j_0}=b_{j_0}$.
@@ -2266,18 +2123,18 @@ $P[Q]_{j_0}$, assembling their predicates.
 \begin{mathpar}
 %\[
 P\models{\inferrule*[myfraction=\reddottedrule]
-	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I},
-		\{\xrightarrow{b_j}_j\}^{j\in J}, \\\\
+	{
+		\{{b_j}\}^{j\in J}, 
 		\Pred,  
 		\Post}
 	{\ostate{s_i^{i\in L}} \OTarrow {v}
 		\ostate{s_i'^{\, i\in L}}}
 }%\]
-\text{~and~}
+\text{~~and~~}
 %\[
 Q\models{\inferrule*[myfraction=\reddottedrule]
-	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I_Q},
-		\{\xrightarrow{b_j}_j\}^{j\in J_Q},\\\\
+	{
+		\{{b_j}\}^{j\in J_Q},
 		 \Pred\,',  
 		\Post\,'}
 	{\ostate{s_i^{i\in L_Q}} \OTarrow {v_Q}
@@ -2288,8 +2145,8 @@ Then, we have\\[-2ex]
 	\[ P[Q]_{j_0}  
 	\models
 	{\inferrule*[myfraction=\reddottedrule]
-		{\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I \uplus I_Q},
-			\{\xrightarrow{b_j}_j\}^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+		{
+			\{{b_j}\}^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
 			\Pred\subst{b_{j_0}\leftarrow v_Q}\land\Pred\,',  
 			\Post\uplus \Post\,'}
 		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {v}
@@ -2301,7 +2158,7 @@ Then, we have\\[-2ex]
 
 \begin{proof} 
 
-       Consider each premise of the open transition (constructed by Tr2 in 
+       Consider each premise of the open transition (constructed by \textbf{Tr2} in 
 Definition~\ref{def:operationalSemantics}). 
 We know each premise is true for $P$ and try to prove the equivalent premise for 
 $P[Q]_{j_0}$ (using the open transition of $Q$). 
@@ -2309,31 +2166,50 @@ $K$ and the synchronisation vector are unchanged ($j_0$ is now in the set of sub
 $SV_k=\SV{\alpha_j^{j\in I\uplus\{j_0\}\uplus 
 	J}}{\alpha'}{e_b}$. $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. $I$ and $J$ 
 	are the 
-    set of leaves and holes of $P$, $I'$ and $J'$ are the sets of moving leaves and holes 
+    set of leaves and holes of $P$, $I_1\uplus I_2$ and $J'$ are the sets of moving 
+    leaves and holes 
     in the reduction of $P$. All sub-pNets of 
     must
     be 
-reduced:\\[-2ex]%\footnote{again we skip arguments related to renaming of fresh 
+reduced, we need:\\[-2ex]%\footnote{again we skip arguments related to renaming of fresh 
 %variables}:
-\[\forall m\!\!\in\!\! I\cup \{j_0\}. 	
-    {\left(\begin{array}{l}
-	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
-    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
-    	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+\[
+    	\forall m\!\!\in\!\! I_1\uplus\{j_0\}. {\pNet_m 
+    	\models\inferrule*[myfraction=\reddottedrule]
+    	{
+    	\{{b_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
     	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
-    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
-		{ \pNet_m 
+    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
+  \]\[
+\forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\inferrule*[myfraction=\reddottedrule]
-    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+    	{\emptyset, \Pred_m, \Post_m}
     	{\ostate{s_m} \OTarrow {v_m}
-    		\ostate{s_m'}} \land I_m=\{m\} \land J_m=\emptyset}
-\end{array}\right)}\]
+    		\ostate{s_m'}} }\]
+%\forall m\!\!\in\!\! I\cup \{j_0\}. 	
+%    {\left(\begin{array}{l}
+%	{\pNet_m \models\inferrule*[myfraction=\reddottedrule]
+%    	{\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m},
+%    	\{\xrightarrow{b_{j}}_j\}^{j\in J_m}, \Pred_m, \Post_m}
+%    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+%    		\ostate{(s_i^\prime)^{i\in L_m}}}\lor }\\
+%		{ \pNet_m 
+%    	 \models
+%    	\inferrule*[myfraction=\reddottedrule]
+%    	{\{s_m \xrightarrow{v_m} s_m'\},\emptyset, \Pred_m, \Post_m}
+%    	{\ostate{s_m} \OTarrow {v_m}
+%    		\ostate{s_m'}} \land I_m=\{m\} \land J_m=\emptyset}
+%\end{array}\right)}\]
 the sub-pNet at position $j_0$ is the one filled by $Q$ which offers an open transition 
-by hypothesis.
-Let $I''=\biguplus_{m\in I} I_m \uplus I_Q = I' \uplus I_Q$ and $J''= \biguplus_{m\in I} 
-J_m \uplus J_Q \uplus J = J'\setminus\{j_0\}\uplus J_Q$. The predicate for the open 
-transition is: $\Pred\,''=\bigwedge_{m\in I}\Pred_m \land \Pred\,'
+by hypothesis, the other open transitions are immediate consequence of the open 
+transition that can be performed by $P$ (premises of \textbf{Tr2}).
+The set of moving leaves is the union of the moving leaves in the open transition for $P$ 
+and the ones for $Q$: 
+$I'_{PQ}= I'_P \uplus I'_Q$, similarly the moving holes are the union of the moving 
+holes, minus $j_0$: $J'_{PQ}=  J\setminus\{j_0\}\uplus J_Q$. The 
+predicate for the open 
+transition is: $\Pred\,''=\bigwedge_{m\in I _1\uplus I_2}\Pred_m \land \Pred\,'
 \land \Pred(SV_k,a_i^{i\in I_k}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)$. By definition 
 $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)\Leftrightarrow
 	\forall i\in I.\, a_i=\alpha_i\land \forall j \in J.\, b_j=\alpha_j \land 
@@ -2381,9 +2257,8 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)\Leftrightarrow
  %	Definition~\ref{def-FH-bisim}. $OT$ is of the form 
  \\[-2ex]     
  \[P[Q]_{j_0}\models\inferrule*[myfraction=\reddottedrule]
- {\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I}, % , s^1_i,s^{1'}_i\in 
- 	%States(I_1)
- 	\{\xrightarrow{b_j}_j\}^{j\in J},\Pred_{OT},\Post_{OT}}
+ {
+ 	\{{b_j}\}^{j\in J},\Pred_{OT},\Post_{OT}}
  { \ostate{s_{i}^{i \in L_P\uplus L}}\OTarrow {v} \ostate{{s'}_{i}^{~i \in 
  			L_P\uplus 
  			L}}}\]
@@ -2391,16 +2266,16 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)\Leftrightarrow
  Lemma~\ref{lem-decompose} we have :\\[-2ex]
  	\begin{mathpar}
  P\models{\inferrule*[myfraction=\reddottedrule]
- 	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\setminus L},
- 		\{\xrightarrow{b_j}_j\}^{j\in J'}, 
+ 	{
+ 		\{{b_j}\}^{j\in J'}, 
  		\Pred\,',  
  		\Post\,'}
  	{\ostate{s_{i}^{i\in L_P}} \OTarrow {v}
  		\ostate{s_{i}'^{\,i\in L_P}}}
  }\\
  Q\models{\inferrule*[myfraction=\reddottedrule]
- 	{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L},
- 		\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+ 	{
+ 		\{\xrightarrow{b_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
  		\Post\,''}
  	{\ostate{s_{i}^{i\in L}} \OTarrow {v_Q}
  		\ostate{s_{i}'^{\,i\in L}}}
@@ -2414,8 +2289,8 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)\Leftrightarrow
  of 	open transitions of the automaton of $Q'$ such that\\[-2ex] 
  \begin{mathpar}
  Q'\models\inferrule*[myfraction=\reddottedrule]
- {\{t_{i}\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{x}},
- 	\{\xrightarrow{b_{j x}}_j\}^{j\in J\cap\Holes(Q)}, 
+ {
+ 	\{\xrightarrow{b_{j x}}\}^{j\in J\cap\Holes(Q)}, 
  	\Pred_{OT_x},\Post_{OT_x}}
  {\ostate{t_{i}^{i\in L'}} \OTarrow {v_x} \ostate{t_{i x}^{i\in L'}}}
  \end{mathpar}
@@ -2438,9 +2313,8 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),b_j^{j\in J},v)\Leftrightarrow
  \[ P[Q']_{j_0}  
  \models
  {\inferrule*[myfraction=\reddottedrule]
- 	{\{t_{i}\xrightarrow{a_{i x}}_i {t}_{i x}\}^{i\in I_x \uplus 
- 			(I\cap L_P)},
- 		\{\xrightarrow{b_{j x}}_j\}^{j\in J}, \\
+ 	{
+ 		\{{b_{j x}}\}^{j\in J}, 
  		\Pred\,'\subst{b_{j_0 x}\leftarrow v_x}\land\Pred_{OT_x},  
  		\Post\,'\uplus \Post_{OT_x} }
  	{\ostate{t_{i }^{i\in L'\uplus L_Q}} \OTarrow {v_x}
@@ -2541,9 +2415,8 @@ Consider an
 %	Definition~\ref{def-FH-bisim}. $OT$ is of the form 
 \\[-2ex]     
 	\[P[Q]_{j_0}\models\inferrule*[myfraction=\reddottedrule]
-	{\{s_i\xrightarrow{a_i}_i s'_i\}^{i\in I}, % , s^1_i,s^{1'}_i\in 
-		%States(I_1)
-		\{\xrightarrow{b_j}_j\}^{j\in J},\Pred_{OT},\Post_{OT}}
+	{
+		\{{b_j}\}^{j\in J},\Pred_{OT},\Post_{OT}}
 	{ \ostate{s_{i}^{i \in L\uplus L_Q}}\OTarrow {v} \ostate{{s'}_{i}^{~i \in 
 	L\uplus 
 	L_Q}}}\]
@@ -2551,16 +2424,16 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 	Lemma~\ref{lem-decompose} we have :\\[-2ex]
 			\begin{mathpar}
 				P\models{\inferrule*[myfraction=\reddottedrule]
-				{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\setminus L_Q},
-					\{\xrightarrow{b_j}_j\}^{j\in J'}, 
+				{
+					\{{b_j}\}^{j\in J'}, 
 					\Pred\,',  
 					\Post\,'}
 				{\ostate{s_{1}^{i\in L}} \OTarrow {v}
 					\ostate{s_{i}'^{~ i\in L}}}
 			}\\
 			Q\models{\inferrule*[myfraction=\reddottedrule]
-				{\{s_i\xrightarrow{a_i}_i s_i'\}^{i\in I\cap L_Q},
-					\{\xrightarrow{b_j}_j\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+				{
+					\{{b_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
 					\Post\,''}
 				{\ostate{s_{i}^{i\in L_Q}} \OTarrow {v_Q}
 					\ostate{s_{i}'^{~ i\in L_Q}}}
@@ -2575,8 +2448,8 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			\begin{mathpar}
 			%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
 			P'\models\inferrule*[myfraction=\reddottedrule]
-			{\{t_{i}\xrightarrow{a_{i x}}_i t_{i x}\}^{i\in I_{x}},
-				\{\xrightarrow{b_{j x}}_j\}^{j\in J'}, 
+			{
+				\{{b_{j x}}\}^{j\in J'}, 
 				\Pred_{OT_x},\Post_{OT_x}}
 			{\ostate{t_{i}^{i\in L'}} \OTarrow {v_x} \ostate{t_{i x}^{i\in L'}}}
 			%         \right)
@@ -2600,9 +2473,8 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 				\[ P'[Q]_{j_0}   
 				\models
 				{\inferrule*[myfraction=\reddottedrule]
-					{\{t_{i}\xrightarrow{a_{i x}}_i {t}_{i x}\}^{i\in I_x \uplus 
-					(I\cap L_Q)},
-						\{\xrightarrow{b_{j x}}_j\}^{j\in J}, \\
+					{
+						\{{b_{j x}}\}^{j\in J}, 
 						\Pred_{OT_x}\subst{b_{j_0 x}\leftarrow v_Q}\land\Pred\,'',  
 						\Post_{OT_x}\uplus \Post\,''}
 					{\ostate{t_{ i }^{i\in L'\uplus L_Q}} \OTarrow {v_x}
