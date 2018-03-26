@@ -653,8 +653,8 @@ interaction.
   \label{defn:im:sem}
   The \emph{composition} of a finite set of components $\cB = (Q_i,
   q^0_i, V_i, \val{0}{i}, P_i, \export[i], \goesto{})^{i \in I}$ with
-  the interaction model $\Gamma$ over $(V_i, P_i, \export[i])^{i \in
-    I}$ is the component $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P,
+  the interaction model $\Gamma$ over $(V, P, \export)$ (as in \defn{im})
+  is the component $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P,
     \export, \goesto{})$, where
 %
   $Q = \prod_{i \in I} Q_i$;
@@ -692,11 +692,11 @@ interaction.
       \\\\
       \textstyle
 %
-      G = g \land \bigwedge_{i \in \supp{a}} g_i
+      g' = g \land \bigwedge_{i \in \supp{a}} g_i
       \and
-      E = e; e_i^{i \in \supp{a}}
+      e' = e; e_i^{i \in \supp{a}}
     }{
-      (q_i)^{i \in I} \goesto{a, G, E} (q_i')^{i \in I}
+      (q_i)^{i \in I} \goesto{a, g', e'} (q_i')^{i \in I}
     }\,.
   \end{gather}
   \todoSBin{Add the intuitive explanation}
@@ -713,7 +713,12 @@ always be clear from the context.
 \begin{definition}[Priority model]
   \label{defn:priority}
   A \emph{priority model} over a component interface $(V, P,
-  \export)$ is a strict partial order on interactions: $\pi
+  \export)$\footnote{%
+%
+    Notice that the export function $\export$ has no impact on the
+    priority model definition.
+%
+  } is a strict partial order on interactions: $\pi
   \subseteq \bigl(2^P \times \guards{V} \times \exprs{V} \bigr)^2$.
 
   We denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
@@ -754,6 +759,11 @@ In this paper, we will only consider the so-called \emph{maximal
 \secn{conclusion}, we discuss the possibility of generalising the
 obtained results to other priority models.
 
+\begin{note}
+  Below, we will assume that the maximal progress priority is
+  implicitly applied after each composition with an interaction model.
+\end{note}
+
 %****************************************************************
 \subsection{Graphical representation of composed systems}
 \label{secn:connectors}
@@ -768,14 +778,20 @@ obtained results to other priority models.
   where $\cC$ is a finite set of \emph{coordinating components}
   with pairwise disjoint sets of ports and variables, such that
   $\bigcup_{C \in \cC} P_C \subseteq P_A$ and
-  $\bigcup_{C \in \cC} V_C \subseteq V_A$, and
+  $\bigcup_{C \in \cC} V_C \subseteq V_A$;
+%
+  $\export[A] : P_A \rightarrow 2^{V_A}$ is an export function, such
+  that $\export[A](p) = \export[C](p)$, for any $C \in \cC$ and $p \in
+  P_C$ and $\export[A](p) \subseteq V_A \setminus \bigcup_{C \in \cC}
+  V_C$ for any $p \in P_A \setminus \bigcup_{C \in \cC} P_C$; and
+%
   $\Gamma \subseteq 2^{P_A} \times \guards{V_A} \times \exprs{V_A}$
   is an interaction model over \hl{$(V_A, P_A, \export[A])$}.
 \end{definition}
 
 \begin{definition}[Application of an architecture]
   \label{defn:arch:application}
-  Let $A = (\cC, V_A, P_A, \Gamma)$ be an architecture and let $\cB$
+  Let $A = (\cC, V_A, P_A, \export[A], \Gamma)$ be an architecture and let $\cB$
   be a set of components, such that
 %
   \begin{align}
@@ -788,11 +804,8 @@ obtained results to other priority models.
     P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B\,,
   \end{align}
 %
-  and
-  %% , denoting, for any $(a, g, e) \in \Gamma$, $V_a \bydef{=}
-  %% \bigcup_{B \in \supp{a}} \export[B](a \cap P_B)$, we have
-  $g \in \guards{V_a}$ and
-  $e \in \exprs{V_a}$ (see \defn{im} for the notation $V_a$).
+  \hl{and $\export[A](p) = V_A \cap \export[B](p)$, for any $B \in \cB$
+  and $p \in P_A \cap P_B$.}
 %
   The \emph{application of the architecture $A$ to the set of
   components $\cB$} is the component $ A(\cB) \bydef{=}
@@ -815,7 +828,7 @@ obtained results to other priority models.
 \todoSBin{Define equivalence $\arequiv$?}
 
 An architecture $A$ enforces coordination constraints on the
-components in $\cB$.  The interface \hl{$(V_A, P_A)$} of an
+components in $\cB$.  The interface \hl{$(V_A, P_A, \export[A])$} of an
 architecture $A$ contains all ports of the coordinating
 components $\cC$ and some additional ports, which must belong to
 the components in $\cB$.  In the application $A(\cB)$, the ports
