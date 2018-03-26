@@ -153,9 +153,12 @@
 \newcommand{\actions}[1]{\ensuremath{\cA_{#1}}}
 \newcommand{\guards}[1]{\ensuremath{\ordbool_{#1}}}
 \newcommand{\exprs}[1]{\ensuremath{\sE_{#1}}}
+\newcommand{\boolexprs}[1]{\ensuremath{\sB_{#1}}}
 \newcommand{\assigns}[1]{\ensuremath{\sA_{#1}}}
 \newcommand{\valuations}[1]{\ensuremath{\data^{#1}}}
 \newcommand{\val}[3][]{\ensuremath{#1{\sigma}^{#2}_{#3}}}
+
+\newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
 
 \newcommand{\primeit}[1]{#1'}
 \newcommand{\doubleprimeit}[1]{#1''}
@@ -411,13 +414,17 @@ synchronisation mechanisms.
     {\ttfamily\textbackslash actions\{\#1\}} &
     {\ttfamily\textbackslash cA\_\{\#1\}}
     \\
-    \guards{\#1} &
-    {\ttfamily\textbackslash guards\{\#1\}} &
-    {\ttfamily\textbackslash sB\^{}\{<\}\{\#1\}}
-    \\
     \exprs{\#1} &       
     {\ttfamily\textbackslash exprs\{\#1\}} &
     {\ttfamily\textbackslash sE\_\{\#1\}}
+    \\
+    \boolexprs{\#1} &       
+    {\ttfamily\textbackslash boolexprs\{\#1\}} &
+    {\ttfamily\textbackslash sB\_\{\#1\}}
+    \\
+    \guards{\#1} &
+    {\ttfamily\textbackslash guards\{\#1\}} &
+    {\ttfamily\textbackslash sB\^{}\{<\}\_\{\#1\}}
     \\
     \assigns{\#1} &
     {\ttfamily\textbackslash assigns\{\#1\}} &
@@ -442,7 +449,7 @@ Formally, we assume the existence of a term algebra $\Talg$,
 where $\signature$ is the signature of the data and action constructors,
 and $\variables$ a set of \emph{variables}. Within $\Talg$, we distinguish a set of
 \emph{data expressions} $\exprs{\variables}$ \replaceSB{, including}{and} a set of \emph{Boolean
-expressions} \todoLH{$\mathcal{B} \to g$}
+expressions} \todoLH{$\mathcal{B} \to g$}\todoSB{change to $\boolexprs{\variables}$?}
 $\guards{\variables}$ ($\guards{\variables}\subseteq\exprs{\variables}$).
 On top of $\exprs{\variables}$ we build the \emph{action algebra}
 $\actions{\variables}$, with $\actions{\variables}\subseteq\Talg$ \replaceSB{,}{and}
@@ -548,13 +555,13 @@ the definitions of components and interaction models?
     Q \times 2^P \times \guards{V} \times \exprs{V} \times Q$
 %
     is a \emph{transition relation}, with transitions
-    labelled by triples consisting of an \emph{interaction}
+    labelled by \emph{interactions}, \ie triples consisting of a non-empty set of ports
     $\emptyset \neq a \subseteq P$, a monotonic Boolean \emph{guard} $g \in
     \guards{V}$ and a monotonic \emph{update expression} \todoSB{$e \rightarrow u$}\hl{$e \in
     \exprs{V}$}.
   \end{itemize}
 %
-  We call \noteSB{Maybe rather $(P, \export)$}\hl{the pair of sets $(V,P)$} the \emph{interface} of the
+  We call the triple $(V,P, \export)$ the \emph{interface} of the
   component.\,\footnote{%
 %
   In practice, component variables are split in two sub-sets:
@@ -566,8 +573,8 @@ the definitions of components and interaction models?
   }
 %
   Notations $q \goesto{a} q'$ and $q \goesto{a}$ are as usual;
-  for a component $B$, we denote $Q_B$, $q^0_B$, $P_B$, $V_B$ and
-  $\val{0}{B}$ the corresponding constituents of $B$.  We will
+  for a component $B$, we denote $Q_B$, $q^0_B$, $V_B$, $\val{0}{B}$, $P_B$,
+  and $\export[B]$ the corresponding constituents of $B$.  We will
   skip the index on the transition relations $\goesto{}$, since it
   is always clear from the context.
 \end{definition}
@@ -575,7 +582,7 @@ the definitions of components and interaction models?
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
   The \emph{open semantics} of a component $B = (Q, q^0, V,
-  \val{0}{}, P, \export, \goesto{})$ is given by the LTS $\semopen{B} = (S,
+  \val{0}{}, P, \export, \goesto{})$ is given by the LTS denoted $\semopen{B} = (S,
   s^0, \goesto{})$, where $S = Q \times \valuations{V}$, $s^0 =
   (q^0, \val{0}{})$ and $\goesto{}$ is the minimal transition
   relation satisfying the rule
@@ -597,7 +604,7 @@ the definitions of components and interaction models?
   \end{equation}
   %
   \todoSB{Do we actually need this?}
-  \hl{The \emph{closed semantics} of $B$ is given by the LTS
+  \hl{The \emph{closed semantics} of $B$ is given by the LTS denoted
   $\semclosed{B} \bydef{=}\reachable{\semopen{B}}$, comprising
   only the reachable states of $\semopen{B}$.}
 \end{definition}
@@ -612,27 +619,26 @@ variables, which can be affected by such data transfer, to those
 that are exported through the ports participating in the
 interaction.
 
-\begin{definition}[Interaction model \& composition]
+\begin{definition}[Interaction model]
   \label{defn:im}
-  Consider a finite set of components $\cB = (Q_i, q^0_i, V_i,
-  \val{0}{i}, P_i, \export[i], \goesto{})^{i \in I}$, such that
-  all their respective components (\ie $Q_i$, $P_i$, and $V_i$)
-  are pairwise disjoint, \ie $\forall i \neq j,\ Q_i \cap Q_j =
-  P_i \cap P_j = V_i \cap V_j = \emptyset$.  Let $P = \bigcup_{i
-  \in I} P_i$ and $V = \bigcup_{i \in I} V_i$.
+  Consider a finite set of component interfaces $(V_i, P_i,
+  \export[i])^{i \in I}$, such that all $P_i$ and all $V_i$ are
+  pairwise disjoint, \ie $\forall i \neq j,\ P_i \cap P_j = V_i \cap
+  V_j = \emptyset$.  Let $P = \bigcup_{i \in I} P_i$, $V = \bigcup_{i
+    \in I} V_i$ and $\export : P \rightarrow 2^V$ such that, for any
+  $p \in P_i$, $\export(p) = \export[i](p)$.
 %
   For a set of ports $a \subseteq P$, we denote $\supp{a}
   \bydef{=} \setdef{i \in I}{a \cap P_i \neq \emptyset}$ the
-  \emph{support} of $a$,
-  \noteSB{Updated this}\hl{and $V_a \bydef{=} \bigcup_{i \in
-    \supp{a}} \export[i](a \cap P_i)$ the set of component
-  variables exported for $a$.}
+  \emph{support} of $a$.
+  %% \noteSB{Updated this}\hl{and $V_a \bydef{=} \bigcup_{i \in
+  %%   \supp{a}} \export[i](a \cap P_i)$ the set of component
+  %% variables exported through $a$.}
 
-  An \emph{interaction model over \hl{$(V,P)$}} is a set $\Gamma
+  An \emph{interaction model over \hl{$(V, P, \export)$}} is a set $\Gamma
   \subseteq 2^P \times \guards{V} \times \exprs{V}$, such that,
-  for any $(a, g, e) \in \Gamma$, the guard and update expression
-  associated to the \emph{interaction} $a$ satisfy, respectively,
-  $g \in \guards{V_a}$ and $e \in \exprs{V_a}$.\footnote{%
+  for any interaction $(a, g, e) \in \Gamma$, we have
+  $g \in \guards{\export(a)}$ and $e \in \exprs{\export(a)}}$.\footnote{%
 %
     Notice that this definition allows $(\emptyset, \true,
     \noop)$ and $(\emptyset, \false, \noop)$ to be included in
@@ -641,11 +647,15 @@ interaction.
   }
   %% We call the set of ports $P$ the \emph{domain} of the
   %% interaction model.
+\end{definition}
 
-  The \emph{composition of $\cB$ with the interaction model
-    $\Gamma$} is the component
-  $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P, \export, \goesto{})$,
-  where
+\begin{definition}[Composition]
+  \label{defn:im:sem}
+  The \emph{composition} of a finite set of components $\cB = (Q_i,
+  q^0_i, V_i, \val{0}{i}, P_i, \export[i], \goesto{})^{i \in I}$ with
+  the interaction model $\Gamma$ over $(V_i, P_i, \export[i])^{i \in
+    I}$ is the component $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P,
+    \export, \goesto{})$, where
 %
   $Q = \prod_{i \in I} Q_i$;
 %
@@ -653,9 +663,6 @@ interaction.
 %
   $\val{0}{}: V \rightarrow \data$ is such that, for any $v \in
   V_i$, $\val{0}{}(v) = \val{0}{i}(v)$;
-%
-  $\export : P \rightarrow 2^V$ is such that, for any $p \in
-  P_i$, $\export(p) = \export[i](p)$;
 %
   and $\goesto{}$ is the minimal transition relation satisfying
   the rule
@@ -671,7 +678,7 @@ interaction.
 %%     }\,,
 %% %
 %%     \\[0.5\baselineskip]
-    \label{eq:im:int}
+    \label{eq:im:sem}
 %
     \infer{    
       (a, g, e) \in \Gamma
@@ -692,15 +699,60 @@ interaction.
       (q_i)^{i \in I} \goesto{a, G, E} (q_i')^{i \in I}
     }\,.
   \end{gather}
+  \todoSBin{Add the intuitive explanation}
 \end{definition}
 
-Below, when speaking of a set of components $\cB$, we will always
-assume that it satisfies all the assumptions of \defn{im}.
+Below, when speaking of a set of components $\cB$ or interfaces, we will always
+assume that it satisfies the disjointness assumption of \defn{im}.
 %
-For an interaction $a$, we will abuse the notation by writing
+For a set of ports $a$, we will abuse the notation by writing
 $\supp{a}$ to also denote the set $\setdef{B \in \cB}{a \cap P_B
   \neq \emptyset}$.  The precise meaning of this notation will
 always be clear from the context.
+
+\begin{definition}[Priority model]
+  \label{defn:priority}
+  A \emph{priority model} over a component interface $(V, P,
+  \export{})$ is a strict partial order on interactions: $\pi
+  \subseteq \bigl(2^P \times \guards{V} \times \exprs{V} \bigr)^2.
+
+  We denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
+    \guards{V} \times \exprs{V})}{\alpha \prec_\pi \beta}$ the set of
+  interactions that have higher priority than $\alpha$.
+\end{definition}
+
+\begin{definition}[Application of priority]
+  \label{defn:priority:sem}
+  The application of a priority model $\pi$ over $(V, P, \export{})$
+  to a component $B = (Q, q^0, V, \val{0}{}, P, \export, \goesto{})$
+  is the component $\pi(B) = (Q, q^0, V, \val{0}{}, P, \export,
+  \goesto[\pi]{})$, where $\goesto[\pi]{}$ is the minimal transition
+  relation satisfying the rule
+%
+  \begin{equation}
+    \label{eq:priority:sem}
+%
+    \infer{    
+      q \goesto{a, g, e} q'
+      \and
+      \textstyle
+      g' = g \land \bigwedge_{(b, h, f) \in \filter[q]{\alpha}} \lnot h
+    }{
+      q \goesto{a, g', e} q'
+    }\,, 
+  \end{equation}
+%
+  where $\filter[q]{\alpha} \bydef{=} \filter{\alpha} \cap
+  \setdefb{\beta \in (2^P \times \guards{V} \times \exprs{V})}{q
+    \goesto{\beta}}$.
+  \todoSBin{Add the intuitive explanation}
+\end{definition}
+
+In this paper, we will only consider the so-called \emph{maximal
+  progress} priority, where $(a, g, e) \prec (b, h, f)$ iff $a
+\varsubsetneq b$ (\ie $a \subseteq b$ and $a \neq b$).  In
+\secn{conclusion}, we discuss the possibility of generalising the
+obtained results to other priority models.
 
 %****************************************************************
 \subsection{Graphical representation of composed systems}
