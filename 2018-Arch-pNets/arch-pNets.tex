@@ -980,8 +980,8 @@ sub-trees.
 \label{section:pNets}
 
 
-A pLTS is a labelled transition system with variables\replaceSB{; variables}{. Variables} can be
-manipulated, defined, or accessed \noteSB{What does this mean?}\hl{inside states}, actions, guards, and
+A pLTS is a labelled transition system with variables. Variables can be
+used to characterise a state, as part of actions, guards, and
 assignments. Without loss of generality and to simplify the formalisation, we suppose 
 here that 
 variables are local to each 
@@ -989,8 +989,8 @@ state: each state has its set of variables disjoint from the others. Transmittin
 variable values from one state to the other can be done by explicit assignment. 
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
-Note that we make no assumption on \addSB{the }finiteness of the set of states, nor
-on \addSB{the }finite branching of the transition relation.
+Note that we make no assumption on the finiteness of the set of states, nor
+on the finite branching of the transition relation.
 
 We first define the set of actions a pLTS can use, let $a$
 range over action labels\removeSB{, $\symb{op}$ are operators, and $x_i$ range over
@@ -1019,9 +1019,9 @@ A pLTS is a tuple
 $\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
-$S$ is a set of states\addSB{, $\vars(s)$ denotes the set of associated variables}.
+$S$ is a set of states, $\vars(s)$ denotes the set of associated variables;
 \item[$\bullet$]
-$s_0 \in S$ is the initial state.\noteSB{I usually put commas or semicolons in itemised lists}
+$s_0 \in S$ is the initial state;
 %\item[$\bullet$]
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
@@ -1029,17 +1029,18 @@ $s_0 \in S$ is the initial state.\noteSB{I usually put commas or semicolons in i
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
 % SB: I removed a new paragraph here, ok?
-$\langle \alpha,~g,~e\rangle$,
-where \noteSB{I suggest using $\actions{V}$ (\ie \texttt{\textbackslash actions\{V\}}), with $V = \bigcup_{s \in S} \vars(s)$.}\hl{$\alpha \in\AlgA$} is a parameterised action, $g$ is a guard, and \hl{the variables 
-$x_j\in \vars(s')$
-are assigned the updates in $e$. }\noteSB{I still have to update in my section, but it seems that my initial use of expressions conflicts with that in the SVs.  I suggest writing explicitly $(?x_i := e_i)^{i \in I}$ or $\overline{?x := e}$ (not sure these should be input vars, though).}
+$\langle \alpha,~g,~u\rangle$,
+where $\alpha$ is a parameterised action, $\alpha \in\actions{\variables}$; 
+$g\in\boolexprs{\variables}$ is a guard over variables of the source state and the 
+action, and $u\in\assigns{\variables}$
+assigns updated value for variables in the destination state. 
 If 
-$s \xrightarrow{\langle \alpha,~g,~e\rangle} s'\in \to $ then 
+$s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then 
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
 		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\vars(\codom(e))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		\vars(\dom(e))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		$\vars(\codom(u))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
+		\vars(\dom(u))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
 		
 \end{itemize}
 \end{definition}
@@ -1075,12 +1076,11 @@ $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] \noteSB{This is clear from $\pNet_i^{i\in I}$.}\hl{$I \in \I$ is the set over which sub-pNets are indexed.}
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets.
+\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
 %sub-pNets are indexed.
 
-\item[$\bullet$] \noteSB{$I_P$ is not defined and, probably, not necessary.}\hl{$J\!\in\!\I_\P$} is a set of indexes, called \emph{holes}.
+\item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 %\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
 %\emph{sort} of
@@ -1089,75 +1089,16 @@ $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\empt
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors (\hl{$K\in\I_\P$}). $\forall k\!\in\! K,
   \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$, where
-  $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
-  $\forall i\!\in\!
-  I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
-  J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
+  $\alpha'_k\in \actions{\variables}$, $I_k\subseteq I$, $J_k\subseteq J$, and 
+  $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-\replaceSB{$\Label(\symb{SV}_k) = \alpha'_k$}{$\alpha'_k$, also denoted $\Label(\symb{SV}_k)$}. \replaceSB{$g_k $ is a guard associated to the vector 
-$\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.}{The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.}
+$\alpha'_k$. The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in 
+I_k\uplus J_k}{\vars({\alpha_l})$, is a guard associated to the vector.}
 
 
 \end{itemize}
-\end{definition}
-
-The preceding definition relies on the auxiliary functions below:
-
-\begin{definition}[Sorts, Holes, Leaves of pNets]
+We define the set of holes and leaves of a pNet as follows:
   \begin{itemize}
-  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all straightforward, whereas the notation is complex.  Maybe reformulate in words and move the formal definitions in the appendix?}
- The sort of a pNet is its signature, i.e. the set of actions it can
-perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), we could eliminate the need to distinguish the input variables at all? That would simplify things.}\hl{In the definition of sorts, we do not need to distinguish
-input variables} (that specify the dataflow within LTSs), so for
-computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
-K}$ is the parallel substitution 
-operation.} to remove the
-\emph{input marker} of variables. Formally:
-\[
-\begin{array}{l}
-\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
-x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-    J}\rangle} s'\in \to \} \\
-\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
-\overline{\pNet}\!,
-\overline{\symb{SV}}\myrangle)
-=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
-\to\alpha'\in\set{\symb{SV}}\}
-\end{array}
-\]
-
-\item
-The set of holes of a pNet is defined inductively; the sets of holes
-in a pNet node and its subnets are all disjoint:
-  \[\begin{array}{l}
-\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
-\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
-=J\uplus{\displaystyle \bigcup_{i\in 
-I}\Holes(\pNet_i)}\\
-\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
-\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
-\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
-\end{array}\]
-\item
-The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
-inductively as:
-\[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\{\mylangle S,s_0, \to\myrangle\}\\
-\Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
-\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
-I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
-\end{array}\]
-\end{itemize}
-\end{definition}
-
-\noteLHin{Below a simpler def 11}
-\begin{definition}[Sorts, Holes, Leaves of pNets]
-  \begin{itemize}
-  \item 
- The sort of a pNet is its signature, i.e. the set of actions it can
-perform. A sort is a set of action signature, where each action signature is an action 
-label plus the arity of the action.
-
 \item
 The set of holes $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
 itself plus the indexes of all the holes of its subnets (we suppose those indexes 
@@ -1179,7 +1120,15 @@ The set of leaves of a pNet is the set of all pLTSs occurring in the structure, 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
 is said to be \emph{open}.
 \end{itemize}
+A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
+is said to be \emph{open}.
 \end{definition}
+
+
+
+
+
+
 \subsection{Operational Semantics for Open pNets}
 \label{section:op-semantics}
 
@@ -1363,7 +1312,7 @@ fresh one.
 	
 	The rule for a pLTS  checks that the guard 
 	is verified and transforms assignments into post-conditions:
-	
+	%%% compared to the other paper tguards and affectations should not be explicit
 	\begin{description}
 		\item[{\bf Tr1:}]
 		$\inferrule
@@ -1957,5 +1906,57 @@ fresh one.
   the proof.
 \end{proof}
 
+
+\section{pNets additional definitions}
+\begin{definition}[Sorts, Holes, Leaves of pNets]
+  \begin{itemize}
+  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all 
+  straightforward, whereas the notation is complex.  Maybe reformulate in words and move 
+  the formal definitions in the appendix?}
+ The sort of a pNet is its signature, i.e. the set of actions it can
+perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), 
+we could eliminate the need to distinguish the input variables at all? That would 
+simplify things.}\hl{In the definition of sorts, we do not need to distinguish
+input variables} (that specify the dataflow within LTSs), so for
+computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
+K}$ is the parallel substitution 
+operation.} to remove the
+\emph{input marker} of variables. Formally:
+\[
+\begin{array}{l}
+\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
+x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+    J}\rangle} s'\in \to \} \\
+\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
+\overline{\pNet}\!,
+\overline{\symb{SV}}\myrangle)
+=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
+\to\alpha'\in\set{\symb{SV}}\}
+\end{array}
+\]
+
+\item
+The set of holes of a pNet is defined inductively; the sets of holes
+in a pNet node and its subnets are all disjoint:
+  \[\begin{array}{l}
+\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
+\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
+=J\uplus{\displaystyle \bigcup_{i\in 
+I}\Holes(\pNet_i)}\\
+\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
+\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
+\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
+\end{array}\]
+\item
+The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
+inductively as:
+\[\begin{array}{l}
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\{\mylangle S,s_0, \to\myrangle\}\\
+\Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
+\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
+I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
+\end{array}\]
+\end{itemize}
+\end{definition}
 
 \end{document}
