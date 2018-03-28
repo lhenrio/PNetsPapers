@@ -882,7 +882,7 @@ In this section we present a simple algorithm to construct the open
 automaton representing the behaviour of an open pNet, and we prove that
 under reasonable conditions this automaton is finite.
 
-\TODO{Eric: refine the algorithm description}
+\TODO{Eric: refine the algorithm description - \ERIC{Done, can you check ?}}
 
 \begin{algorithm}[Behavioural semantics of open pNets: Sketch]
 This is a standard residual algorithm over a set of open-automaton
@@ -892,71 +892,58 @@ constructively ``proven'' by deduction trees.
 1) Start with a set of unexplored states containing the initial state
 of the automaton, and an empty set of explored states.
 
-2) While there are unexplored states:
+2) While there are unexplored states, pick one state from the
+unexplored set and add it to the explored set.
 
-2a) pick one state from the unexplored set and add it to the explored
-set. From this state
+2a- From this state
 build all possible deduction trees by application of the structural
-rules Tr1 and Tr2, using all \ERIC{applicable} combinations
+rules Tr1 and Tr2, using all applicable combinations
 of synchronisation vectors.
-
-2b) For each of the obtained deduction trees:\\
-- Extract the resulting open-transition, with its predicate and
-\Post\ assignments by exploring the structure of the pNet.  
-
-- The predicate is submitted to Z3 for checking satisfiability. If it
-is NOT stisfiable, the resulting OT is discarded. This will minimize
-the number of resulting transitions, and potentialy prune the search-space.
-
-- For each open-transition,  add the transition in the outgoing transitions of
-the current state, and add the
+In practice, the algorithm does not explicitely construct the
+deduction tree, but for each pNet node, builds all possible
+combinations of the OTs of its subnets, and filter these combinations
+by matching with all synchronisation vectors. 
+ 
+2b- For each OT built, add the transition in the
+outgoing transitions of the current state, and add the
 resulting state in the unexplored set if it is not already there.
 
-%3) this ends with the "while" from step 2, when we have no more
-%unexplored set.
+3) The predicate is submitted to Z3 for checking satisfiability. If it
+is NOT satisfiable, the resulting OT is discarded. This will minimize
+the number of resulting transitions, and by reachability analysis,
+reduce the resulting open automaton.
+
 \end{algorithm}
 
 Given an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton (see \ref{Forte}).
+(symbolic) transitions, has a finite automaton (see \ref{henrio:Forte2016}).
 
 \subsection{Post-processing: Elimination of intermediate variables}
 
-\ERIC{Optionally, simplify the predicate by eliminating the unnecessary intermediate variables, that were produced as fresh local variables of synchronisation vectors, and fresh result variables of intermediate OTs. In the resulting predicate the only significant variables are :\\
-- the input variables of pLTS transitions\\
+While building the open transitions, many new variable names are
+created, as fresh local variables of synchronisation vectors, and
+fresh result variables of intermediate OTs. While these are required
+for the semantic construction, they are not significant in the
+resulting open automaton. In fact they carry information on the
+internal structure of the pNet system, and this information should
+\_not\_ be visible when looking at the system as a black box, and in
+particular when comparing its behaviour with another system, e.g. by
+bisimulation. 
+
+In the resulting predicate the only significant variables are :\\
+- the input variables of pLTS transitions \TODO{heu, non, meme pas, si
+  ce sont des comm internes!}\\
 - the actions of holes\\
-- the result action at toplevel.}
+- the result action at toplevel.
 
-  \TODO{Eric: define ``elimination of intermediate variables ?'' it
-    transforms the predicates, it is not an
-    ``equivalence'' transformation, rather some sort of
-    abstraction... Does it change the satisfiability ?}
-
-%% \begin{theorem}[Finiteness of open-automata.]\\
-%% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%%   J}$, if the sets $L$ and $J$ are finite, if the synchronisation vectors of all pNets 
-%%   included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-%%   are finite, and if
-%% $\forall i \in L.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-%% has a finite number of state variables, then Algorithm 1 terminates
-%% and produces an open automaton 
-%% $\mathcal{T}$ with finitely many states and transitions.
+So we transform the predicates of the resulting OTs, eliminating all
+intermediate variables. \TODO{Explain why this should work !! Maybe
+  need to be more precise on unification in the matching...} 
 
 
-% Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in
-%     K}\myrangle$ with leaves $pLTS_i^{i\in L}$ and holes $Hole_j^{j\in
-%   J}$,
-% build its semantics as in algorithm 1.
-
-% We have:
-
-% $$ finite{(L)} \land finite{(J)} \land \forall i \in L finite{(\{s_i\})}
-%   \to finite{(\mathcal{T})}$$
-% \end{theorem}
-
-
-\TODO{Eric: full result of the tool execution on the running example}
+\TODO{Eric: full (???) result of the tool execution on the running example}
 
 
 \section{Bisimulation}
@@ -1227,41 +1214,51 @@ on sequences of invisible actions:
 - construction of the weak OT.
 
 The ``saturation'' step in the construction of the weak relation will
-pick all $\tau^*$ and $\tau^*;a$ sequences from the OA, and build a weak
+pick all $\tau^*$ and $\tau^*;a;\tau^*$ sequences from the OA, and build a weak
 OT from each sequence. Here is one example:
 
 \noindent
 $\ostate{1000}\OTarrow{m\_rec(m,x), \phi_1 = [x=s_1\_b \land
     m=s_1\_m]}\ostate{2100}$\\
-$\qquad\ostate{2100}$ variables: $\psi_1 = \{m_1\_m:=m; m_1\_x:=x; s_2\_b:=s_1\_b\}$;\\
+and $\qquad\ostate{2100}$ variable assignments are: $\psi_1 = \{m_1\_m:=m; m_1\_x:=x; s_2\_b:=s_1\_b\}$;\\
 \\
 $\ostate{2100}\OTarrow{\tau <m\_send(m_1\_m,m_1\_x), r\_rec(?m',?b)>,
   \phi_2 = [r_0\_b=b \land m'=m_1\_m \land b=m_1\_x]}\ostate{2001}$\\
-$\qquad\ostate{2001}$ variables: $\psi_2 = \{r_1\_b:=r_0\_b; r_1\_m:=m;
+and $\qquad\ostate{2001}$ assignments: $\psi_2 = \{r_1\_b:=r_0\_b; r_1\_m:=m;
 ; s_2\_b:=s_1\_b\}$;\\
 \\
 $\ostate{2001}\OTarrow{v,
   \phi_3 = [v=out(r_1\_m)]}\ostate{2002}$\\
-$\qquad\ostate{2002}$ variables: $\psi_3 = \{r_2\_b:=r_1\_b; s_2\_b:=s_1\_b\}$;\\
+and $\qquad\ostate{2002}$ variablesassignments: $\psi_3 = \{r_2\_b:=r_1\_b; s_2\_b:=s_1\_b\}$;\\
 
-Resulting Weak Transition:
+The resulting Weak Transition has a predicate $\phi =
+\phi_1\land\phi_2\psi_1\land\phi_3\psi_2\psi_1 = \phi=[x=s_1\_b \land m=s_1\_m
+  \land r_0\_b=b \land m'=m_1\_m \land b=m_1\_x
+  \land v=out(r_1\_m)]$
+and assignment
+$\psi= \{r_2\_b:=r_0\_b\}$.
 
-\noindent
-$\ostate{1000}\OTWeakarrow{v,
-  \phi = \phi_1\land\phi_2\psi_1\land\phi_3\psi_2\psi_1}\ostate{2002}$\\
-\\
-$\phi=[x=s_1\_b \land m=s_1\_m\\
-  \land r_0\_b=b \land m'=m_1\_m \land b=m_1\_x\\
-  \land v=out(r_1\_m)]\\
-and \\
-\psi= \{r_2\_b:=r_0\_b\}$
-
-Note that in $\phi$ the application of assignments
+We can see here that in $\phi$ the application of assignments
 $\psi_1,\psi_2,\psi_3$ have already ``eliminated'' the intermediate
 state variables
-$m_1\_m, b=m_1\_x, r_1\_m$, but not the intermediate input variables
+$m_1\_m, b=m_1\_x, r_1\_m$, and not the intermediate input variables
 $m,m',x,b$. But now $\phi$ includes enough information to eliminate them, giving
-a final $\phi'= [v=out(s_1\_m)\land r_0\_b=s_1\_b]$
+a final $\phi'= [v=out(s_1\_m)\land r_0\_b=s_1\_b]$, so the resulting
+WOT is:
+
+
+
+ \noindent
+ $$\ostate{1000}\OTWeakarrow{v,
+   [v=out(s_1\_m)\land r_0\_b=s_1\_b],\{r_2\_b:=r_0\_b\}} \ostate{2002}$$
+%% \\
+%% $\phi=[x=s_1\_b \land m=s_1\_m\\
+%%   \land r_0\_b=b \land m'=m_1\_m \land b=m_1\_x\\
+%%   \land v=out(r_1\_m)]\\
+%% and \\
+%% \psi= \{r_2\_b:=r_0\_b\}$
+
+%% Note that 
 
 
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
