@@ -71,7 +71,7 @@
 \newcommand{\ex}[1]{Ex.~\ref{ex:#1}}
 \newcommand{\exs}[2]{Ex.~\ref{ex:#1} and~\ref{ex:#2}}
 \newcommand{\secn}[1]{Sect.~\ref{secn:#1}}
-\newcommand{\rem}[1]{Rem.~\ref{rem:#1}}
+\newcommand{\rem}[1]{Note~\ref{rem:#1}}
 \newcommand{\lem}[1]{Lem.~\ref{lem:#1}}
 \newcommand{\cor}[1]{Cor.~\ref{cor:#1}}
 \newcommand{\thm}[1]{Th.~\ref{thm:#1}}
@@ -374,11 +374,11 @@ synchronisation mechanisms.
   lower case letters to denote sets might be problematic, since
   we (at least I) use them a lot to denote instances, as in
   \[q \goesto{a, g, e} q'\,.\]
-  In fact, I even use capital letters: in the definition of
-  interaction model composition, I use
-  \[\cdot \goesto{a, G, E} \cdot\]
-  in the conclusion of the rule.  However, for this latter I can
-  easily change the notation.
+  %% In fact, I even use capital letters: in the definition of
+  %% interaction model composition, I use
+  %% \[\cdot \goesto{a, G, E} \cdot\]
+  %% in the conclusion of the rule.  However, for this latter I can
+  %% easily change the notation.
 
   I have set up macros for, general and Boolean expressions,
   actions, variables \etc[,] which I have substituted everywhere,
@@ -432,8 +432,8 @@ synchronisation mechanisms.
     {\ttfamily\textbackslash valuations\{\#1\}} &
     {\ttfamily\textbackslash data\^{}\{\#1\}}
     \\[6pt]
-    \val{\#2}{\#3} &
-    {\ttfamily\textbackslash val\{\#2\}\{\#3\}} &
+    \val[]{\#2}{\#3} &
+    {\ttfamily\textbackslash val[]\{\#2\}\{\#3\}} &
     {\ttfamily\#1\{\textbackslash sigma\}\^{}\{\#2\}\_\{\#3\}}
     \\[6pt]
     \val[\tilde]{\#2}{\#3} &
@@ -570,7 +570,7 @@ the definitions of components and interaction models?
 %
   }
 %
-  Notations $q \goesto{a} q'$ and $q \goesto{a}$ are as usual;
+  Notations $q \goesto{a, g, e} q'$ and $q \goesto{a, g, e}$ are as usual;
   for a component $B$, we denote $Q_B$, $q^0_B$, $V_B$, $\val{0}{B}$, $P_B$,
   and $\export[B]$ the corresponding constituents of $B$.  We will
   skip the index on the transition relations $\goesto{}$, since it
@@ -719,7 +719,8 @@ always be clear from the context.
   } is a strict partial order on interactions: $\pi
   \subseteq \bigl(2^P \times \guards{V} \times \exprs{V} \bigr)^2$.
 
-  We denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
+  We write $\alpha \prec_\pi \beta$ for $(\alpha, \beta) \in \pi$ and 
+  denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
     \guards{V} \times \exprs{V})}{\alpha \prec_\pi \beta}$ the set of
   interactions that have higher priority than $\alpha$.
 \end{definition}
@@ -741,7 +742,7 @@ always be clear from the context.
       \textstyle
       g' = g \land \bigwedge_{(b, h, f) \in \filter[q]{\alpha}} \lnot h
     }{
-      q \goesto{a, g', e} q'
+      q \goesto[\pi]{a, g', e} q'
     }\,, 
   \end{equation}
 %
@@ -758,7 +759,8 @@ In this paper, we will only consider the so-called \emph{maximal
 obtained results to other priority models.
 
 \begin{note}
-  Below, we will assume that the maximal progress priority is
+  \label{rem:maxprogress}
+  Below, we will assume that the maximal progress priority $\mu$ is
   applied after each composition with an interaction model.
 \end{note}
 
@@ -809,6 +811,19 @@ obtained results to other priority models.
   components $\cB$} is the component $ A(\cB) \bydef{=}
   \mu\bigl((\IMextend{\Gamma}{P})(\cC \cup \cB)\bigr)$, where
 %
+  $\IMextend{\Gamma}{P}$ is the \emph{extension} of the interaction
+  model $\Gamma$ to the set of ports $P$, \ie the interaction model
+  over $(V, P, \export)$, with
+  \[
+  \export(p) = 
+  \begin{cases}
+    \export[C](p), & \text{for all } C \in \cC, p \in P_C,
+    \\
+    \export[B](p), & \text{for all } B \in \cB, p \in P_B,
+  \end{cases}
+  \]
+  defined by
+%
   \begin{equation}
     \label{eq:im:extension}
     \IMextend{\Gamma}{P} \bydef{=}
@@ -817,11 +832,10 @@ obtained results to other priority models.
     }{
       (a, g, e) \in \Gamma, a' \subseteq P \setminus P_A
     }
+    ;
   \end{equation}
 %
-  denotes the \emph{extension} of the interaction model $\Gamma$
-  to the set of ports $P$
-  and $\mu$ is the maximal progress priority model.
+  $\mu$ is the maximal progress priority model.
 \end{definition}
 
 \todoSBin{Define equivalence $\arequiv$?}
@@ -860,9 +874,9 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   \begin{equation}
     \label{eq:arch:composition}
     \Gamma = \setdefb{
-      (a, g_1 \land g_2, e_1 \expmix e_2) 
+      (a, g^1 \land g^2, e^1 \expmix e^2) 
     }{
-      (a \cap P_{A_i}, g_i, e_i) \in \Gamma_i,
+      (a \cap P_{A_i}, g^i, e^i) \in \Gamma_i,
       \text{ for } i = 1,2
     }
     \,.
@@ -874,9 +888,9 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   Architecture composition $\arcomp$ is commutative and
   associative; it is idempotent if all coordinating components
   are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
-  \emptyset, \{\emptyset\}\bigr)$ is its neutral element, \ie for
+  \emptyset, \emptyset, \{(\emptyset, \true, \noop)\}\bigr)$ is its neutral element, \ie for
   any architecture $A$, we have $A \oplus A_{id} \arequiv A$.
-  Furthermore, for any component $B$, we have $A_{id}(B) = B$.
+  Furthermore, for any component $B$, we have $A_{id}(B) = \mu(B)$.
 \end{proposition}
 %
 \begin{proof}[Sketch of the proof]
@@ -898,6 +912,9 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   definitions of architecture application and composition.
 \end{proof}
 
+The last statement of \prop{arcomp:nice} highlights a subtle point:
+$A_{id}$ is the neutral element of the $\arcomp$ operator\mdash it is
+not the identity operator on components.
 
 %****************************************************************
 \subsection{Preservation of safety properties}
@@ -951,10 +968,80 @@ architecture enforces some property $\Phi$, it is implicitly
 assumed that $\Phi$ is initial for the coordinated components.
 Below, we omit mentioning this explicitly.
 
+\begin{definition}[Upwards compatibility]
+  \label{defn:up:compat}
+  \todoSB{Summarise in English and move to the appendix}
+%
+  Consider two architectures $A_i = (\cC_i, V_{A_i}, P_{A_i},
+  \export[A_i], \Gamma_i)$, for $i = 1,2$.
+%
+  We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
+  any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
+  \cap P_{A_2} = a_2 \cap P_{A_1}$ (\ie they agree on the common ports
+  of the two architectures), we have 1)~for any interaction $(b_1,
+  h_1, f_1) \in \Gamma_1$, such that $a_1 \varsubsetneq b_1$, there
+  exists an interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \subseteq b_2$, $b_1 \cap P_{A_2} = b_2 \cap P_{A_1}$ and the 
+  implication  
+%
+  \begin{multline*}
+    \left(
+    \exists (q^1_C)^{C \in \supp{b_1} \cap \cC_1}:
+    \exists (q^2_C)^{C \in \supp{a_2} \cap \cC_2}:
+    \bigwedge_{
+      \begin{multlined}
+        \scriptstyle
+        C \in \supp{b_1} \cap \cC_1 \cap
+        \\
+        \scriptstyle
+        \supp{a_2} \cap \cC_2
+      \end{multlined}
+    }
+    q^1_C = q^2_C
+    \ \land
+    \right.
+    \\
+    \begin{aligned}
+      \exists \bigl(q^1_C \goesto{b_1 \cap P_C, g^{b_1}_C, f^{b_1}_C}\bigr)^{C \in \supp{b_1} \cap \cC_1}:
+      & \quad \left.
+      h_1 \land \bigwedge_{C \in \supp{b_1} \cap \cC_1} g^{b_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^1_C \goesto{a_1 \cap P_C, g^{a_1}_C, e^{b_1}_C}\bigr)^{C \in \supp{a_1} \cap \cC_1}:
+      & \quad \left.
+      g_1 \land \bigwedge_{C \in \supp{a_1} \cap \cC_1} g^{a_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^2_C \goesto{a_2 \cap P_C, g^{a_2}_C, e^{a_2}_C}\bigr)^{C \in \supp{a_2} \cap \cC_2}:
+      & \quad
+      \left.
+      g_2 \land \bigwedge_{C \in \supp{a_2} \cap \cC_2} g^{a_2}_C
+      \right) \implies 
+    \end{aligned}
+  \end{multline*}
+%
+  \begin{multline*}
+    \left(
+    \exists (q^2_C)^{C \in (\supp{b_2}\setminus\supp{a_2}) \cap \cC_2}:
+            {\color{white}\bigwedge_{C \in \cC_1}}\right. % Fake bigwedge to make the parenthesis the right size
+            \\
+            \left.
+            \exists \bigl(q^2_C \goesto{b_2 \cap P_C, g^{b_2}_C, f^{b_2}_C}\bigr)^{C \in \supp{b_2} \cap \cC_2}:
+            h_2 \land
+            \bigwedge_{C \in \supp{b_2} \cap \cC_2} g^{b_2}_C
+            \right)
+  \end{multline*}
+%  
+  holds for all valuations $\val{}{1} : V_{A_1} \rightarrow \data$
+  and $\val{}{2} : V_{A_2} \rightarrow \data$; and 2)~symmetrically
+  for any interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \varsubsetneq b_2$.
+\end{definition}
+
 \begin{theorem}[Preserving enforced properties]
   \label{thm:combining}
   Let $\cB$ be a set of components; let $A_i = (\cC_i, V_{A_i},
-  P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$, be two architectures
+  P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$, be two upwards compatible architectures
   enforcing on $\cB$ the properties $\Phi_1$ and $\Phi_2$
   respectively.  The composition $A_1 \arcomp A_2$ enforces on
   $\cB$ the property $\Phi_1 \land \Phi_2$.
@@ -1049,7 +1136,7 @@ $s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then
 Now we define
 pNet nodes, as constructors for hierarchical behavioural structures.
 A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of \replaceSB{Holes}{holes}, playing the role of process parameters.
+set of holes, playing the role of process parameters.
 
 A composite pNet consists of a set of sub-pNets exposing
 a set of actions, each of them synchronising actions in each of
@@ -1058,16 +1145,9 @@ internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
-not \replaceSB{need to distinguish  input 
-variables. Action terms for pNets are defined as follows:}{have input variables, \ie they 
-have the form $a(\Expr_j^{j \in J})$.}
-\removeSBin{
-%\[
-%\begin{array}[l]{rcl@{\quad}l}
-$  \alpha\in \AlgAS ::=a(\Expr_1,\ldots,\Expr_n)$
-%\end{array}
-%\]
-}
+not have input variables, \ie they 
+have the form $a(\Expr_j^{j \in J})$.
+
 
 \todoLH{Guard syntax???}
 \begin{definition}[pNets]\label{def-pnets}
@@ -1136,8 +1216,8 @@ is said to be \emph{open}.
 
 \noteLH{a pred is a g a post is a e}
 The semantics of open pNets will be defined  as an open automaton. An open
-automaton is an automaton where \noteSB{This might give a false impression that there is some kind of CCS-like ``duality'' between pLTSs and holes}\hl{each transition composes transitions of several LTSs with
-actions of some holes}, the transition occurs if some predicates hold, and can involve a 
+automaton is an automaton where each transition composes the actions of several holes, 
+the transition occurs if some predicates hold, and can involve a 
 set of state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
@@ -1519,7 +1599,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 
 \begin{lemma}
   \label{lem:onlyone}
-  Let $A = (\cC, V_A, P_A, \Gamma)$ be an architecture and denote
+  Let $A = (\cC, V_A, P_A, \export[A], \Gamma)$ be an architecture and denote
   by $\Gamma_\cC \bydef{=}
 %
   \setdef{
@@ -1529,7 +1609,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   }$, with $P_\cC = \bigcup_{C \in \cC} P_C$,
 %  
   the projection of $\Gamma$ onto the coordinating components of
-  $A$.  Consider the architecture $A' = (\{C'\}, V_A, P_A,
+  $A$.  Consider the architecture $A' = (\{C'\}, V_A, P_A, \export[A],
   \Gamma)$, where $C' = \Gamma_\cC(\cC)$.  For any set of
   components $\cB$, satisfying the conditions of
   \defn{arch:application}, we have
@@ -1537,22 +1617,23 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 \end{lemma}
 %
 \begin{proof}
-  First of all, notice that, by \defn{im},
-  $V_{C'} = \bigcup_{C \in \cC} V_C$ and $P_{C'} = P_\cC$.
+  First of all, notice that, by \defn{im:sem},
+  $V_{C'} = \bigcup_{C \in \cC} V_C$ and $P_{C'} = P_\cC = \bigcup_{C \in \cC} P_C$.
   The conditions of \defn{arch} are satisfied and $A'$ is indeed
   an architecture.  Furthermore, $\cB$ satisfies the conditions
   of \defn{arch:application} \wrt $A'$.  Hence, the component
   $A'(\cB)$ is well defined.
 
-  Clearly the state spaces, initial states and interfaces of both
-  components coincide.  Thus we only have to prove that so do the
+  Clearly the state spaces and initial states %% and interfaces
+  of both LTSs $\semopen{A(\cB)}$ and $\semopen{A'(\cB)}$
+  coincide.  Thus, we only have to prove that so do the
   transition relations.  Let us assume that
   $\cC = C_i^{i \in I}$ and $\cB = B_j^{j \in J}$.
   We will use $q_i, q_i'$ to denote the states of
   $C_i$ and $q_j, q_j'$ to denote the states of $B_j$,
   and similarly for the valuations of variables.
 
-  By \defn{comp:semantics}, a transition
+  By \defn{comp:semantics},
 %
   \begin{equation}
     \label{eq:lem1:trans:sem}
@@ -1568,7 +1649,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   \begin{equation}
     \label{eq:lem1:trans}
     q_i^{i \in I} q_j^{j \in J}
-    \goesto{a, G, E}
+    \goesto{a, g', e'}
     (q_i')^{i \in I} (q_j')^{j \in J}
     \,,
   \end{equation}
@@ -1577,59 +1658,80 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 %
   \begin{mathpar}
     \val{i \in I}{i} \val{j \in J}{j}
-    \models G
+    \models g'
     \,,
     \and
     (\val{\prime}{i})^{i \in I} (\val{\prime}{j})^{j \in J}
-    = \val[\tilde]{}{}[E]
+    = \val[\tilde]{}{}[e']
     \,,
     \and
     \valdiff{\val{i \in I}{i} \val{j \in J}{j}}{
-      \val[\tilde]{}{}} \subseteq \export(a)
-    \,.   
+      \val[\tilde]{}{}} \subseteq \export(a)       
   \end{mathpar}
+%
+  (with $\export$ defined as in \defn{arch:application}).
 
-  By \defn{im}, \eq{lem1:trans} is a transition in $A(\cB)$
+  By \defn{im:sem} and \defn{priority:sem}, \eq{lem1:trans} is a transition in $A(\cB)$
   iff $a \neq \emptyset$, $(a, g, e) \in \IMextend{\Gamma}{P}$,
   where $P = \bigcup_{B \in \cB \cup \cC} P_B$, and
   %
   \begin{enumerate}
-  \item for $i \in I$,
-    $q_i \goesto{a \cap P_{C_i}, g_{C_i}, e_{C_i}} q_i'$
-    is a transition in $C_i$, or
-    $a \cap P_{C_i} = \emptyset$ and $q_i = q_i'$,
-    $g_{C_i} = \true$ and $e_{C_i} = \noop$\,;
-  \item for $j \in J$,
-    $q_j \goesto{a \cap P_{B_j}, g_{B_j}, e_{B_j}} q_j'$
-    is a transition in $B_j$, or
-    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$,
-    $g_{B_j} = \true$ and $e_{B_j} = \noop$\,;
-  \item $G = g \land \bigwedge_{i \in I} g_{C_i} \land
-    \bigwedge_{j \in J} g_{B_j}$ and
-    $E = e; e_{C_i}^{i \in I}, e_{B_j}^{j \in J}$.
-  \end{enumerate}
-  %
+  \item\label{ab:start} for $i \in I$,\\
+    $a \cap P_{C_i} \neq \emptyset$ and
+    $q_i \goesto{a \cap P_{C_i},\, g_{C_i},\, e_{C_i}} q_i'$
+    is a transition in $C_i$, or\\
+    $a \cap P_{C_i} = \emptyset$ and $q_i = q_i'$
+    (for covenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in item~\ref{aux1} below);
+  \item for $j \in J$,\\
+    $a \cap P_{B_j} \neq \emptyset$ and
+    $q_j \goesto{a \cap P_{B_j},\, g_{B_j},\, e_{B_j}} q_j'$
+    is a transition in $B_j$, or\\
+    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$
+    (for covenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in item~\ref{aux1} below);
+  \item\label{ab:end}\label{aux1} $g' = g \land \bigwedge_{i \in I} g_{C_i} \land
+    \bigwedge_{j \in J} g_{B_j} \land \varphi_\mu$ and
+    $e' = e; e_{C_i}^{i \in I}, e_{B_j}^{j \in J}$, where    
+%
+    \begin{equation}
+      \label{eq:only1:maxprog:guard}
+      \varphi_\mu = \bigwedge_{
+        \begin{array}{c}
+          q_i^{i \in I} q_j^{j \in J} \goesto{b, h, f} \text{ in }
+          (\IMextend{\Gamma}{P})(\cC \cup \cB)
+          \\
+          a \varsubsetneq b
+        \end{array}
+      } \lnot h
+      \,.
+    \end{equation}
+%
+  \breakenumistart
 
   Similarly, \eq{lem1:trans} is a transition in
   $A'(\cB)$ iff $a \neq \emptyset$,
   $(a, g, e) \in \IMextend{\Gamma}{P}$ and
-  %
-  \begin{enumerate}
-  \item \label{only1:coord}
-    $(q_i)^{i \in I}
-    \goesto{a \cap P_{C'}, g_{C'}, e_{C'}}
-    (q_i')^{i \in I}$ is a transition in $C'$,
-    or $a \cap P_{C'} = \emptyset$ and $q_i = q_i'$,
-    for all $i \in [1,m]$,
-    $g_{C'} = \true$ and $e_{C'} = \noop$\,;
-  \item for $j \in J$,
+%
+  \breakenumiend
+% 
+  \item \label{a1b:start} \label{only1:coord}
+    $a \cap P_{C'} \neq \emptyset$ and 
+    $(q_i)^{i \in I} \goesto{a \cap P_{C'}, g_{C'}, e_{C'}} (q_i')^{i \in I}$
+    is a transition in $C'$, or\\
+    $a \cap P_{C'} = \emptyset$ and $q_i = q_i'$,
+    for all $i \in [1,m]$
+    (for covenience, we put $g_{C'} = \true$ and $e_{C'} = \noop$ in
+    item~\ref{aux2} below);
+  \item for $j \in J$,\\
+    $a \cap P_{B_j} \neq \emptyset$ and
     $q_j \goesto{a \cap P_{B_j}, g_{B_j}, e_{B_j}} q_j'$
-    is a transition in $B_j$, or
-    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$,
-    $g_{B_j} = \true$, and $e_{B_j} = \noop$;
-  \item $G = g \land g_{C'} \land
-    \bigwedge_{j \in J} g_{B_j}$ and
-    $E = e; e_{C'}, e_{B_j}^{j \in J}$.
+    is a transition in $B_j$, or\\
+    $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$
+    (for covenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in
+    item~\ref{aux2} below);
+  \item\label{aux2} $g' = g \land g_{C'} \land
+    \bigwedge_{j \in J} g_{B_j} \land \varphi_\mu'$ and
+    $e' = e; e_{C'}, e_{B_j}^{j \in J}$ (with $\varphi_\mu'$ defined as
+    in \eq{only1:maxprog:guard}, but substituting $\{C'\}$ instead of $\cC$).
 %
   \breakenumistart
   Notice that, for any $i \in I$, since
@@ -1641,12 +1743,14 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   $(a \cap P_{C'}, \true, \noop) \in \Gamma_\cC$ and
   \breakenumiend
 % 
-  \item for $i \in I$,
+  \item for $i \in I$,\\
+    $a \cap P_{C_i} \neq \emptyset$ and
     $q_i \goesto{a \cap P_{C_i}, g_{C_i}, e_{C_i}} q_i'$
-    is a transition in $C_i$, or $a \cap P_{C_i} = \emptyset$
-    and $q_i = q_i'$,
-    $g_{C_i} = \true$ and $e_{C_i} = \noop$,
-  \item $g_{C'} = \bigwedge_{i \in I} g_{C_i}$ and
+    is a transition in $C_i$, or\\
+    $a \cap P_{C_i} = \emptyset$ and $q_i = q_i'$,
+    (for covenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in
+    item~\ref{aux3} below);
+  \item \label{a1b:end} \label{aux3} $g_{C'} = \bigwedge_{i \in I} g_{C_i}$ and
     $e_{C'} = e_{C_i}^{i \in I}$.
   \end{enumerate}
 
@@ -1655,16 +1759,40 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   $(a \cap P_A, g, e) \in \Gamma$.
   Since $P_{C'} = P_\cC \subseteq P_A$, we have
   $a \cap P_{C'} = a \cap P_\cC = (a \cap P_A) \cap P_\cC$.
-  Hence, this is also equivalent to
-  $(a \cap P_{C'}, \true, \noop) \in \Gamma_\cC$,
-  which concludes the proof.
+  Hence, by the definition of $\Gamma_\cC$ in the lemma statement,
+  this is also equivalent to
+  $(a \cap P_{C'}, \true, \noop) \in \Gamma_\cC$.
+
+  Thus, conditions \ref{ab:start}\ndash\ref{ab:end} are satisfied iff
+  so are conditions \ref{a1b:start}\ndash\ref{a1b:end} (to see that
+  $\varphi_\mu$ is satisfied iff so is $\varphi_\mu'$, one has to
+  consider the same two sets of conditions, but this time without the
+  additional conjuncts $\varphi_\mu$ and $\varphi_\mu'$ in
+  items~\ref{aux1} and \ref{aux2}, since no priority model is applied
+  to obtain $C'$).  This proves that the transition relations of
+  $\semopen{A(\cB)}$ and $\semopen{A'(\cB)}$ coincide and, therefore,
+  $\semopen{A(\cB)} = \semopen{A'(\cB)}$.
 \end{proof}
+
+\begin{note}
+  \label{rem:upwards:compat}
+  Notice that, since, in the statement of \lem{onlyone}, 
+  %
+  \begin{enumerate}
+  \item the interaction models are the same for both $A$ and $A'$, and
+  \item $P_{C'} = P_\cC$,
+  \end{enumerate}
+  %
+  substituting $A'$ for $A$ preserves upwards compatibility, \ie for any
+  architecture $A''$, holds the following statement: $A$ and $A''$ are
+  upwards compatible if and only if so are $A'$ and $A''$.
+\end{note}
 
 \begin{lemma}
   \label{lem:onestep}
   Let $\cB$ be a set of components; let $A_i = (\{C_i\}, V_{A_i},
-  P_{A_i}, \Gamma_i)$, for $i = 1,2$, be two architectures
-  applicable to $\cB$, with one coordinator each, and denote
+  P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$, be two upwards compatible architectures
+  with one coordinator each, applicable to $\cB$.  Denote
   $P_i = P_{C_i} \cup \bigcup_{B \in \cB} P_B$.
   Finally, let
 %
@@ -1696,14 +1824,15 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   in $\semopen{A_i(\cB)}$, with
   $\val[\doubletilde]{}{}$ being the restriction of
   $\val[\tilde]{}{}$ to
-  $V_1 = V_{C_1} \cup \bigcup_{B \in \cB} V_B$ and
+  $V_i = V_{C_i} \cup \bigcup_{B \in \cB} V_B$ and
   $s' \order s''$.
 \end{lemma}
 %
 \begin{proof}
   By \defn{comp:semantics}, every semantic state consists of a
   component state and a valuation of component variables.  Thus,
-  we have
+  we can expand $s_1 s_2 s \goesto{a, \tilde{\val{}{}}} s_1' s_2' s'$
+  as
 %
   \[
   (q_1, \val{}{1}, q_2, \val{}{2}, q, \val{}{})
@@ -1714,32 +1843,62 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   \,.
   \]
 %
-  By \eq{comp:semantics} and \eq{im:int}, this implies
-  $(q_1, q_2, q) \goesto {a, G, E} (q_1', q_2', q')$, with
+  By \eq{im:sem} and \eq{priority:sem}, this implies
+  that
+  $(q_1, q_2, q) \goesto {a, g', e'} (q_1', q_2', q')$
+  is a transition in $(A_1 \arcomp A_2)(\cB)$, with
 %
-  $G = g \land g_1 \land g_2 \land g_b$
+  $g' = g \land g_1 \land g_2 \land g_\cB \land \varphi_\mu$
   and
-  $E = e; (e_1, e_2, e_b)$,
-  where
+  $e' = e; (e_1, e_2, e_\cB)$,
+  where $(a, g, e) \in \Gamma$ (see \eq{arch:composition} for the
+  definition of $\Gamma$);
+%  
+  $g_1$, $g_2$ and $e_1$, $e_2$ are, respectively, the guards and
+  update expressions of the underlying transitions in the coordinating
+  components $C_1$ and $C_2$;
 %    
   \begin{mathpar}
-    g_b = \bigwedge_{B \in \supp{a} \cap \cB} g_B
+    g_\cB = \bigwedge_{B \in \supp{a} \cap \cB} g_B
     \,,
     \and
-    e_b = e_B^{B \in \supp{a} \cap \cB}
+    e_\cB = e_B^{B \in \supp{a} \cap \cB}
+    \,,
   \end{mathpar}
 %
-  and such that $(a, g, e) \in \Gamma$ (see
-  \eq{arch:composition}) and
+  are the compositions of, respectively, the guards and update
+  expressions of the operand components;
+%    
+  \begin{equation}
+    \label{eq:onestep:maxprog:guard}
+    \varphi_\mu = \bigwedge_{
+      \begin{array}{c}
+        (q_1, q_2, q) \goesto{b, h', f'} \text{ in }
+        \bigl(\IMextend{\Gamma}{(P_1 \cup P_2)}\bigr)
+        \bigl(\{C_1, C_2\} \cup \cB\bigr)
+        \\
+        a \varsubsetneq b
+      \end{array}
+    } \lnot h'
+  \end{equation}
+%
+  is the conjunct encoding the maximal progress priority
+  \eq{priority:sem}.  As above for $g'$, for each $(b, h', f')$ in
+  \eq{onestep:maxprog:guard}, $h'$ can be decomposed as $h' = h \land
+  h_1 \land h_2 \land h_\cB$ (without the maximal progress conjunct,
+  since no priority is applied in $\bigl(\IMextend{\Gamma}{(P_1 \cup
+    P_2)}\bigr)\bigl(\{C_1, C_2\} \cup \cB\bigr)$).
+  
+  By \eq{comp:semantics}, we also have
 %
   \begin{align}
     \label{eq:guard}
-    (\val{}{1}, \val{}{2}, \val{}{}) &\models G
+    (\val{}{1}, \val{}{2}, \val{}{}) &\models g'
     \,,
     \\
     \label{eq:substitution}
     (\val[\primeit]{}{1}, \val[\primeit]{}{2}, \val[\primeit]{}{})
-    &= \val[\tilde]{}{}[E]
+    &= \val[\tilde]{}{}[e']
     \,,
     \\
     \label{eq:transient}
@@ -1749,30 +1908,51 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   \end{align}
 %
   If $a \cap P_1 = \emptyset$, then $\supp{a} = \{C_2\}$ and, by
-  \eq{transient} and \defn{im}, $s_1 = s_1'$ and $s = s'$
+  \eq{transient} and \defn{im:sem}, $s_1 = s_1'$ and $s = s'$
   (recall, \defn{im}, that, for $(a,g,e) \in \Gamma$, we have $e
   \in \exprs{V_a}$).  Hereafter, assume $a \cap P_1 \neq
   \emptyset$.
 
-  Denoting $P_b = \bigcup_{B \in \supp{a} \cap \cB} P_B$, we
-  have, by \eq{im:int},
+  By \eq{arch:composition}, for $i=1,2$, there exist $(a \cap P_{A_i},
+  g^i, e^i) \in \Gamma_i$, such that $g = g^1 \land g^2$ and $e = e^1
+  \land e^2$.
+  %% Similarly, for each $(b, h', f')$ in \eq{onestep:maxprog:guard},
+  %% there exist $(b \cap P_{A_i}, h^i, f^i) \in \Gamma_i$, such that
+  %% $h = h^1 \land h^2$ and $f = f^1 \land f^2$.
+%
+  We want to show that the interaction $(a \cap P_1, g^1, e^1)$ is
+  enabled in the state $(q_1, \val{}{1}, q, \val{}{})$ of
+  $\semopen{A_1(\cB)}$.  To this end, we proceed in two steps:
+%
+  \begin{enumerate}
+  \item \label{onestep:proof:im} We show that $(a \cap P_1, g^1,
+    e^1)$ is enabled in the state $(q_1, \val{}{i}, q, \val{}{})$ of
+    $\semopen{(\IMextend{\Gamma_1}{P_1})(\cB)}$.
+  \item \label{onestep:proof:maxp} We show that $(a \cap P_1, g^1,
+    e^1)$ is not inhibited in $\semopen{A_1(\cB)} =
+    \semopen{\mu\bigl((\IMextend{\Gamma_1}{P_1})(\cB)\bigr)}$ by the
+    maximal progress priority.
+  \end{enumerate}
+
+  \paragraph*{Step \ref{onestep:proof:im}}
+  %% Denoting $P_\cB = \bigcup_{B \in \supp{a} \cap \cB} P_B$, 
+  By \eq{im:sem}, we have
 %
   \begin{mathpar}
     q_1 \goesto{a \cap P_{C_1}, g_1, e_1} q_1'
     \and
     \text{and}
     \and
-    q \goesto{a \cap P_b, g_b, e_b} q'
+    q_B \goesto{a \cap P_B, g_B, e_B} q_B',
+    \text{ for each }
+    B \in \cB
     \,.
   \end{mathpar}
- 
-  By \eq{arch:composition}, for $i=1,2$, there exist
-  $(a \cap P_{A_i}, g^i, e^i) \in \Gamma_i$,
-  such that $g = g^1 \land g^2$ and $e = e^1 \land e^2$.
-  By \eq{guard}, we have
-  $(\val{}{1}, \val{}{}) \models g^1 \land g_1 \land g_b$.
 
-  Denoting $\val[\doubletilde]{}{}$ the restriction of
+  By \eq{guard}, we have
+  $(\val{}{1}, \val{}{}) \models g^1 \land g_1 \land g_\cB$.
+
+  Denoting \todoSB{One tilde is enough}$\val[\doubletilde]{}{1}$ the restriction of
 %
   $\val[\tilde]{}{}$ to
   $V_1 = V_{C_1} \cup \bigcup_{B \in \cB} V_B$,
@@ -1781,21 +1961,74 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
   expressions,
 %
   $(\val[\primeit]{}{1}, \val[\primeit]{}{}) \order
-  \val[\doubletilde]{}{}[e^1; (e_1, e_b)]$.  Notice that all
+  \val[\doubletilde]{}{1}[e^1; (e_1, e_b)]$.  \todoSB{Remove this}\hl{Notice that all
   variables affected by both $e^1$ and $e^2$ must necessarily
-  belong to $\bigcup_{B \in \cB} V_B$.  Hence,
+  belong to $\bigcup_{B \in \cB} V_B$.}  Hence,
 %
-  $\val[\doubletilde]{}{}[e^1; (e_1, e_b)] =
+  $\val[\doubletilde]{}{1}[e^1; (e_1, e_b)] =
   (\val[\primeit]{}{1}, \val[\doubleprimeit]{}{})$ with 
   $\val[\primeit]{}{} \order \val[\doubleprimeit]{}{}$.
 
-  By \eq{comp:semantics} and \eq{im:int}, we have
-  \[
+  By \eq{comp:semantics} and \eq{im:sem}, we have
+  $
   (q_1, \val{}{1}, q, \val{}{})
-  \goesto{a \cap P_1, \val[\doubletilde]{}{}}
+  \goesto{a \cap P_1, \val[\doubletilde]{}{1}}
   (q_1', \val[\primeit]{}{1}, q, \val[\doubleprimeit]{}{})
-  \,.
-  \]
+  $ in $\semopen{(\IMextend{\Gamma_1}{P_1})(\cB)}$.
+
+  Symmetrically, we have 
+  $
+  (q_2, \val{}{2}, q, \val{}{})
+  \goesto{a \cap P_2, \val[\doubletilde]{}{2}}
+  (q_2', \val[\primeit]{}{2}, q, \val[\doubleprimeit]{}{})
+  $ in $\semopen{(\IMextend{\Gamma_2}{P_2})(\cB)}$.   
+   
+  \paragraph*{Step \ref{onestep:proof:maxp}}
+  Suppose that $a \cap P_1 \varsubsetneq b_1$, for some interaction
+  $(b_1, h^1, f^1) \in \IMextend{\Gamma_1}{P_1}$ enabled in $(q_1,
+  \val{}{1}, q, \val{}{})$.  Then, by upwards compatibility of $A_1$
+  and $A_2$, there exists $(b_2, h^2, f^2) \in
+  \IMextend{\Gamma_2}{P_2}$, enabled in $(q_2, \val{}{2}, q,
+  \val{}{})$, such that $a \cap P_2 \subseteq b_2$ and $b_2 \cap P_1 =
+  b_1 \cap P_2$.  By \eq{im:extension}, we have $(b_1 \cap P_{A_1},
+  h^1, e^1) \in \Gamma^1$.  Furthermore,
+%
+  \begin{multline*}
+    ((b_1 \cap P_{A_1}) \cup (b_2 \cap P_{A_2}))  \cap P_{A_1} =
+    (b_1 \cap P_{A_1}) \cup (b_2 \cap P_{A_1} \cap P_{A_2}) =\\
+    (b_1 \cap P_{A_1}) \cup ((b_2 \cap P_1) \cap P_{A_1} \cap P_{A_2}) =  
+    (b_1 \cap P_{A_1}) \cup ((b_1 \cap P_2) \cap P_{A_1} \cap P_{A_2}) =\\
+    (b_1 \cup (b_1 \cap P_2 \cap P_{A_2})) \cap P_{A_1} =
+    b_1 \cap P_{A_1} 
+  \end{multline*}
+%
+  Symmetrically, $(b_2 \cap P_{A_2}, h^2, e^2) \in \Gamma^2$ and
+  $((b_1 \cap P_{A_1}) \cup (b_2 \cap P_{A_2})) \cap P_{A_2} = b_2
+  \cap P_{A_2}$.  By \eq{arch:composition}, we then have $((b_1 \cap
+  P_{A_1}) \cup (b_2 \cap P_{A_2}), h^1 \land h^2, f^1 \expmix f^2)
+  \in \Gamma$ and, by \eq{im:extension}, $(b_1 \cup b_2, h^1 \land
+  h^2, f^1 \expmix f^2) \in \IMextend{\Gamma}{(P_1 \cup P_2)}$.
+%
+  Since both $(b_i, h^i, f^i) \in \IMextend{\Gamma_i}{P_i}$ are
+  enabled in the respective states $(q_i, \val{}{i}, q, \val{}{})$, we
+  conclude that $(b_1 \cup b_2, h^1 \land h^2, f^1 \expmix f^2)$ is
+  enabled in $(q_1, \val{}{1}, q_2, \val{}{2}, q, \val{}{})$.
+
+  Since $a \cap P_1 \varsubsetneq b_1$ and $a \cap P_2 \subseteq b_2$,
+  we have $a \varsubsetneq b_1 \cup b_2$.  Thus, $(b_1 \cup b_2, h^1
+  \land h^2, f^1 \expmix f^2)$ contribute to $\varphi_\mu$ in
+  \eq{onestep:maxprog:guard}.  Since $(b_1 \cup b_2, h^1 \land h^2,
+  f^1 \expmix f^2)$ is enabled in $(q_1, \val{}{1}, q_2, \val{}{2}, q,
+  \val{}{})$, we have $(\val{}{1}, \val{}{2}, \val{}{}) \models h^1
+  \land h^2$ and, therefore $(\val{}{1}, \val{}{2}, \val{}{})
+  \not\models \varphi_\mu$, which contradicts \eq{guard}, thereby
+  proving that $(a \cap P_1, g^1, e^1)$ is not inhibited in
+  $\semopen{A_1(\cB)} =
+  \semopen{\mu\bigl((\IMextend{\Gamma_1}{P_1})(\cB)\bigr)}$ by the
+  maximal progress priority.
+
+  The corresponding statement for $(a \cap P_2, g^2, e^2)$ is obtained
+  symmetrically.
 \end{proof}
 
 \begin{lemma}
@@ -1848,7 +2081,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 
   By monotonicity of guards, we deduce
   $\val[\primeit]{}{1} \models g$.
-  For any $v \in \export(a)$,
+  For any $v \not\in \export(a)$,
   $\val[\primeit]{}{1}(v) = \val{}{1}(v) = \val[\tilde]{}{}(v)$.
   Hence, 
   $\valdiff{\val[\primeit]{}{1}}{\val[\tilde]{}{}}
@@ -1865,11 +2098,15 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 \end{proof}
 
 \begin{proof}[Proof of \thm{combining}]
-  By \lem{onlyone}, we can assume that each of the two
+  By \lem{onlyone}, we can assume without loss of generality that each of the two
   architectures has only one coordinating component.  For $i =
   1,2$, we denote $\{C_i\} = \cC_i$, $P_i = P_{C_i}
   \cup\ \bigcup_{B \in \cB} P_B$ and $V_i = V_{C_i}
   \cup\ \bigcup_{B \in \cB} V_B$.
+%
+  By \rem{upwards:compat}, this does not affect their upwards
+  compatibility, hence neither does this affect the applicability of
+  \lem{onestep} below.
   
   The initiality of $\Phi_1 \land \Phi_2$, is trivial: both
   $\Phi_1$ and $\Phi_2$ are initial, hence $s^0 \models \Phi_1
