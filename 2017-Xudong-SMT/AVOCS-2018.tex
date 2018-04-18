@@ -350,8 +350,9 @@ Implementing this semantics raised several challenges, in order:
 
 In the long goal, we want to be able to check the equivalence between
 open systems encoded as pNets. The equivalence between pNets is
-"FH-bisimulation" taking the 
-predicate of the open transitions into account each time matching such
+"FH-bisimulation" \cite{henrio:Forte2016}, a dedicated version of
+symbolic bisimulation taking the  
+predicate of the open transitions into account when matching such
 open transitions. We foresee that the interplay with the SMT solver
 that we use here for satisfiability of open transitions will be
 similar with what we need to prove (symbolic) equivalence between open
@@ -436,7 +437,7 @@ of pNet.
 Section \ref{section:implementation} explains in details the algorithm
 used to compute this semantics, including the interaction with Z3, and
 shows the full result of the semantic computation on the running example.
-Finally we conclude and discuss perspectives.
+Finally we conclude and discuss perspectives in Section
 \ref{section:conclusion}. 
 
 
@@ -598,8 +599,8 @@ assignments.
 %
 Each state has its set of variables called \emph{state variables}, 
 which can only be modified by the assignment in transitions targeting this state. 
-A global state variable of a pLTS is a variable $x$ satisfying
-$\forall s\!\in\! S .\, x\!\in\! \vars(s)$. 
+A global state variable of a pLTS is a state variable defined in all states.
+% $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$. 
 %
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
@@ -706,7 +707,7 @@ expose a single resulting global action.
 %% be added to pNets by defining and checking their interfaces, called 
 %% sort~\cite{HMZ-FORTE2016}}
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
-K}\myrangle$
+K}\myrangle$, with $I, J, K$ potentialy infinite,
 where
 \begin{itemize}
 \item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
@@ -926,22 +927,24 @@ parametrised actions, but include no guard nor assignments.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} over a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in
+	An \emph{open transition} $OT$ over a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in
 	I}$ of LTSs, a
-	set $J$ of holes with sorts $Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is a structure of the form:	
+	set $J$ of holes, %with sorts $Sort_j^{j\in J}$
+        and a set of states $\mathcal{S}$ is a structure of the form:	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
 	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
 		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred\,, \Post}
 	{s \xrightarrow {v}s'}\,,
 	\end{mathpar}
-	where $s, s'\in\mathcal{S}$ and, for all
-        $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
-	LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, and $\xrightarrow{b_j}_j$
-        is a transition of the hole $j$, for any action $b_j$ in the
-        sort $Sort_j$. \Pred\ is a predicate
+	where $s, s'\in\mathcal{S}$, the $a_i, b_j, \alpha$ are
+        action expressions, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is
+        a transition of the 
+	LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, $b_j$
+        is an action of the hole $j$, and $\alpha$ is the resulting action
+        of $OT$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
-        $b_j$, $s$, $v$. \Post\ is a set of equations that  
+        $b_j$, $s$, $\alpha$. \Post\ is a set of equations that  
 	hold \emph{after the open transition}, represented as a
         substitution $\{x_k\gets e_k\}^{k\in K}$  
 	where $x_k$ are variables of $s'$ and $s'_i$, whereas $e_k$ are
@@ -1000,7 +1003,7 @@ $\mathit{InitState}(p) = \ostate{{{s_i}_0}^{i\in L}}$.
 
 \paragraph{Predicates.}
 Let
-$\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
+$\mylangle\overline{\pNet},J,\symb{SV}_k^{k\in K} \myrangle$
 be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We build a
 predicate $\MkPred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
@@ -1056,7 +1059,13 @@ the use-case is provided in appendice~\ref{appendix:fullOutput}.
 The semantics of pNet in term of open automata has been defined in
 \cite{henrio:Forte2016}, in the form of 2 structural rules, one for
 pLTSs, one for pNet nodes.  For convenience we include these rules in
-App.~\ref{appendix:semRules}. 
+App.~\ref{appendix:semRules}.
+
+In \cite{henrio:Forte2016} we also
+proved that a pNet with finitely many pLTSs, holes, and
+synchronisation vectors, and with finite pLTSs, has a finite
+semantics. But all the elements of such pNets and open automata being
+symbolic, they can represent many classes of unbounded systems. 
 
 
 \section{Generation of Open Automata}
@@ -1088,17 +1097,21 @@ global states is finite (see \cite{henrio:Forte2016}), this terminates.
 \State Initialize sets $U=\{\mathit{InitState}(P)\}$ and $E=\emptyset$,
 for unexplored and explored global states, respectively; $L=\emptyset$ for the resulting OTs;
 \While{!$\mathit{isEmpty}(U)$}
-	\State Choose $S$ in $U\setminus E$; add $S$ in $E$;
+	\State Choose $S$ in $U$; remove $S$ from $U$, add $S$ to $E$;
         %\qquad \hl{\textbackslash\textbackslash~SB: was `` Choose $S$ in $U$ ''}
-	\State $\mathit{OT} = \mathit{MakeTransitions}(P, S)$;
-        \State Store $\mathit{OT}$ in $L$; 
-	\For {each $\mathit{OT} \in L$}
-        \State Let $T$ be the target global state of $\mathit{OT}$
-	\IfThen{($T \not\in U$ \&\& $T \not\in E$)}{Add $T$ into $U$;}
+	\State $\mathit{OTs} = \mathit{MakeTransitions}(P, S)$;
+%%        \State Store $\mathit{OT}$ in $L$; 
+	\For {each $\mathit{OT} \in \mathit{OTs}$}
+        Check satisfiability of $\mathit{OT}$ using the SMT solver;
+        \IfThen {$SAT(\mathit{OT})$}
+                {\State \{Add $\mathit{OT}$ to $L$;
+                  \State Let $S'$ be the target global state of $\mathit{OT}$
+	          \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
+                  \}}
 	\EndFor
 \EndWhile
-\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
-\State \Return $\mathit{OA}=\mathit{Reachable}(\mathit{InitState}(P),L)$;
+%%\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
+\State \Return $\mathit{OA}=(\mathit{InitState}(P),L)$;
 
 \end{algorithmic}  
 \end{algorithm}
@@ -1120,8 +1133,9 @@ holes of the node, so \emph{MakeTransitions} is never called on a hole.
 At the root of the pNet, the predicate of each OT is translated
 into SMTlib assertions, and checked for satisfiability.
 %
-The final open automaton is computed as the set of global states,
-reachable after pruning the unsatisfiable OTs.
+The final open automaton includes all satisfiable OTs, and the set of
+reachable global states.  
+
 %
 %% Unsatisfiable
 %% OTs are pruned, and the final open automaton is computed as the set of
