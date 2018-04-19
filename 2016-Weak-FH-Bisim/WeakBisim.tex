@@ -108,12 +108,14 @@ funded by the Associated Team FM4CPS
 \section{Status and TODO list}
 TODOS et deadline
 
+\TODO{should we use iff/implies or LeftRightArrow/Rightarrow}
+
 Ludo
 \begin{itemize}
-\item rewrite Tr2 and open transition with actions
-\item $v'\to \alpha'$ dans pred sv et enlever l exists
-\item $\beta$ ou $b$
-\item propager Tr2 dans l annexe
+\item[x] rewrite Tr2 and open transition with actions
+\item[x] $v'\to \alpha'$ dans pred sv et enlever l exists
+\item[x] $\beta$ ou $b$
+\item[x] propager Tr2 dans l annexe
 \item add simple equivalence on OT
 \item[x] explain the 2 level logic
 \end{itemize}
@@ -458,10 +460,8 @@ I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i \text{ is a }\pLTS\}}
 \end{itemize}
 \end{definition}
   
-
-
-
-
+Synchronisation vectors are identified modulo renaming of variables that appear in their 
+action terms.
 
 A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
 is said to be \emph{open}.
@@ -548,7 +548,7 @@ set of state modifications.
 	a structure of the form:	
 	\begin{mathpar}
 	\openrule
-	{	\{\beta_j\}^{j\in J}, \Pred, \Post}
+	{	\beta_j^{j\in J}, \Pred, \Post}
 	{s \OTarrow {\alpha}s'}
 	\end{mathpar}
 	Where $s, s'\in\mathcal{S}$ and $\beta_j$
@@ -670,10 +670,10 @@ step.
  $  OT_2  = \openrule{
 %                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
    %                           \xrightarrow{in(?m,?b)}_{M1}
-      \emptyset; Pred=[m=s_1\_m, b=s_1\_sb, v=\tau];  Post=\{m_1\_m:=m, m_1\_b:=b\}
+      \emptyset; Pred=[m=s_1\_m, b=s_1\_sb];  Post=\{m_1\_m:=m, m_1\_b:=b\}
                       }
   %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{v} \ostate{s_2,m_1,m_0,r_0}}
+    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\tau} \ostate{s_2,m_1,m_0,r_0}}
     $
     
     \smallskip
@@ -694,10 +694,10 @@ with the $Protocol$) is:
  $  OT_1  = \openrule{
 %                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
 %                            \xrightarrow{in(?m,?b)}_{M1}
-      \{\xrightarrow{b_P}_P\}; Pred=[b_P=send(m)\land v=\underline{send(m)}]; Post=\{s1\_m:=m\}
+      (P\mapsto send(m)); Pred=[m=m']; Post=\{s1\_m:=m\}
                       }
   %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_0,m_0,m_0,r_0} \OTarrow{v} \ostate{s_1,m_0,m_0,r_0}}
+    {\ostate{s_0,m_0,m_0,r_0} \OTarrow{\underline{send(m')}} \ostate{s_1,m_0,m_0,r_0}}
     $
 
     \smallskip
@@ -714,9 +714,8 @@ Definition~\ref{def-states}. The open transitions first
 pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
 %structure does not appear in the open-automaton, only the
 %set of Holes and the set of Leaves.
-The semantics   regularly instantiates \emph{fresh} variables, and uses a
-\emph{clone} operator that clones a term replacing each variable with a
-fresh one.
+The semantics    instantiates \emph{fresh} variables, additionally, for an action 
+$\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 
 
 \begin{definition}[Operational semantics of open pNets]
@@ -774,7 +773,8 @@ fresh one.
 	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
 	\in M}}{\alpha'}{e_b}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
 	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
-	I_2$}.                                                                               
+	I_2$}.                                                                    
+	           
 	                                                       
 	\begin{description}
 		\item[{\bf Tr2:}]
@@ -787,35 +787,36 @@ fresh one.
     {
 \Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
     	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} \\
+k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
+\\
 \\     	
 	\forall m\!\!\in\!\! I_1. {\pNet_m 
 	\models\openrule
     	{
-    	\{{\beta_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
     		\ostate{(s_i^\prime)^{i\in L_m}}} }	
   \qquad
 \forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\openrule
     	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {v_m}
+    	{\ostate{s_m} \OTarrow {\alpha_m}
     		\ostate{s_m'}} }\\\\
      J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
     	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},v)\\ 
+    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
     		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
-    {\tt fresh}(\alpha_m,\alpha',\beta_j,v) 
+    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
     }
     {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
     	\models
     	{\openrule
     		{
-    		\{{\beta_j}\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
     		\Post_m}
-    		{\ostate{s_i^{i\in L}} \OTarrow {v}
+    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
     			\ostate{(s_i^\prime)^{i\in L}}}
     	}
     }
@@ -1050,8 +1051,8 @@ the following:
  \begin{mathpar}
      \openrule
          {
-           \{{\beta_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
-         {s \OTarrow {v} s'}
+           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
  there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2$:
@@ -1059,8 +1060,8 @@ the following:
 %    \left( fresh \ \overline{\alpha_i}, \overline{b_j}, v_x.\ \
     \openrule
          {
-           \{{\beta_{j x}}\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
-         {t \OTarrow {v_x} t_x}
+           \beta_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {t \OTarrow {\alpha_x} t_x}
 %         \right)
 \end{mathpar}
  such that  $\forall x, J_1=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
@@ -1069,7 +1070,7 @@ the following:
  $\Pred_{s,t} \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
    \left( \forall j. \beta_j=\beta_{jx}  \Rightarrow \Pred_{OT_x}
-     \land v\!=\!v_x \land  
+     \land \alpha\!=\!\alpha_x \land  
      \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
      %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x})
      %     \right)$.
@@ -1237,8 +1238,8 @@ on sequences of invisible actions:
  \begin{mathpar}
  \openrule
          {
-           \{{\beta_j}\}^{j\in J_1},\Pred,\Post}
-         {s \OTWeakarrow {v} s'}
+           \beta_j^{j\in J_1},\Pred,\Post}
+         {s \OTWeakarrow {\alpha} s'}
          \in \mathcal{T}^*
  \end{mathpar}
 
@@ -1322,23 +1323,23 @@ $t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we
  \begin{mathpar}
      \openrule
          {
-           \{{\beta_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
-         {s \OTarrow {v} s'}
+           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
  there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2^*$:
  \begin{mathpar}
     \openrule
          {
-           \{{\beta_{j x}}\}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
-         {t \OTWeakarrow {v_x} t_x}
+           \beta_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {t \OTWeakarrow {\alpha_x} t_x}
 \end{mathpar}
  such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
  and  \\
  $\Pred \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
    \left( \forall j. \beta_j=\beta_{jx}  \Rightarrow \Pred_{OT_x}
-     \land v\!=\!v_x \land  
+     \land \alpha\!=\!\alpha_x \land  
      \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
     
  \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
@@ -1874,8 +1875,8 @@ satisfiability of the predicate relating the first state to the last one.
        	
        	\openrule
        	{
-       		\{{\beta_j}\}^{j\in J_1},\Pred_{OT},\Post_{OT}}
-       	{s \OTarrow {v} {s}'}
+       		\beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+       	{s \OTarrow {\alpha} {s}'}
        	
        	\end{mathpar}
        	
@@ -1886,8 +1887,8 @@ satisfiability of the predicate relating the first state to the last one.
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\openrule
        	{
-       		\{{\beta_{j p x}}\}^{j\in J_{px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
-       	{t_p \OTarrow {v_{px}} t_{p x}}
+       		\beta_{j p x}^{j\in J_{px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
+       	{t_p \OTarrow {\alpha_{px}} t_{p x}}
        	%         \right)
        	\end{mathpar}
        	
@@ -1898,7 +1899,7 @@ satisfiability of the predicate relating the first state to the last one.
        	$\Pred_{s,p} \land \Pred_{OT}\\
        	\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        	\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow \Pred_{OT_{px}}
-       	\land v\!=\!v_{px} \land
+       	\land \alpha\!=\!\alpha_{px} \land
        	\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)$\\
        	
 
@@ -1912,9 +1913,9 @@ For any open transition $OT_{px}$, since
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\openrule
        	{
-       		\{{\beta_{j p x y}}\}^{j\in J_{pxy}}, 
+       		\beta_{j p x y}^{j\in J_{pxy}}, 
        		\Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
-       	{u \OTarrow {v_{pxy}} u_{pxy}}
+       	{u \OTarrow {\alpha_{pxy}} u_{pxy}}
        	%         \right)
        	
        	\end{mathpar}
@@ -1923,7 +1924,7 @@ For any open transition $OT_{px}$, since
        	$\Pred\,'_{p,u} \land \Pred_{OT_{p x}}\\
        	\hspace{1cm} \implies\!\!\! \bigvee_{y\in Y}
        	\left( \forall j. \beta_{jpx}=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
-       	\land v_{px}\!=\!v_{pxy} \land
+       	\land \alpha_{px}\!=\!\alpha_{pxy} \land
        	\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\right)$\\.
        	
        	This is verified for each $p\in P$. Overall,  we have a family of open 
@@ -1973,37 +1974,38 @@ variable in $\mathcal{T}_1$.
        		$\Pred_{s,u} \land \Pred_{OT}\\
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
        		\left( \forall j. \beta_j=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
-       		\land v\!=\!v_{pxy} \land
+       		\land \alpha\!=\!\alpha_{pxy} \land
        		\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
        	\end{small}
-\TODO{From we will add notation (1) and (2)}        	
+\TODO{From we will add notation (1) and (2)}   \LUDO{I do not remember what this TOD 
+means, Rabea?}      	
        	We have, for all $p$
        	\begin{small}
        		$\Pred_{s,p} \land \Pred_{OT}\land\Pred_{p,u}\\
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow \Pred_{OT_{px}}
-       		\land v\!=\!v_{px} \land
+       		\land \alpha\!=\!\alpha_{px} \land
        		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\land\Pred_{p,u}\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow 
        		(\Pred_{OT_{px}}\land\Pred_{p,u})
-       		\land v\!=\!v_{px} \land
+       		\land \alpha\!=\!\alpha_{px} \land
        		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\big( \forall j. \beta_j=\beta_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
        		\big( \forall j'. \beta_{j'px}=\beta_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
-       		\land v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+       		\land \alpha_{px}\!=\!\alpha_{pxy}\\\hspace{3em}~ \land
        		\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\big))
-       		\land v\!=\!v_{px} \land
+       		\land \alpha\!=\!\alpha_{px} \land
        		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
        		\big( \forall j, j'. \beta_j=\beta_{jpx} \land \beta_{j'px}=\beta_{j'pxy}
        		\Rightarrow \big( 
        		\Pred_{OT_{pxy}}
-       		\land v\!=v_{px}\!=\!v_{pxy}\\\hspace{3em}~ \land
+       		\land \alpha\!=\alpha_{px}\!=\!\alpha_{pxy}\\\hspace{3em}~ \land
        		\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}
        		\land
        		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\big)
@@ -2036,12 +2038,12 @@ $\Pred_{s,u} \land \Pred_{OT}\\
 \big( \forall j, j'. \beta_j=\beta_{jpx} \land \beta_{j'px}=\beta_{j'pxy}
 \Rightarrow \big( 
 \Pred_{OT_{pxy}}
-\land v\!=v_{px}\!=\!v_{pxy}\\~\hspace{3em}~ \land
+\land \alpha\!=\alpha_{px}\!=\!\alpha_{pxy}\\~\hspace{3em}~ \land
 \Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\big)\big)
 \\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
 \left( \forall j. \beta_j=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
-\land v\!=\!v_{pxy} \land
+\land \alpha\!=\!\alpha_{pxy} \land
 \Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
   \end{small}
        	
@@ -2070,9 +2072,9 @@ predicates:
 		\models
 		{\openrule
 			{
-				\{{\beta_j}\}^{j\in J}, \Pred,  
+				\beta_j^{j\in J}, \Pred,  
 				\Post}
-			{\ostate{s_i^{i\in L}} \OTarrow {v}
+			{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
 				\ostate{s_i'^{\, i\in L}}}
 		}
 	\]
@@ -2084,24 +2086,24 @@ predicates:
 		\begin{mathpar}
 		P\models{\openrule
 			{
-				\{{\beta_j}\}^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
+				\beta_j^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
 				\Pred\,',  
 				\Post\,'}
-			{\ostate{s_i^{i\in L\setminus L_Q}} \OTarrow {v}
+			{\ostate{s_i^{i\in L\setminus L_Q}} \OTarrow {\alpha}
 				\ostate{s_i'^{\,i\in L\setminus L_Q}}}
 		}%\]
 	\vspace{-2.2ex}\\\text{and~~}
 		%\[
 		Q\models{\openrule
 			{
-				\{\xrightarrow{\beta_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+				\beta_j^{j\in J\cap\Holes(Q)}, \Pred\,'',  
 				\Post\,''}
-			{\ostate{s_i^{i\in L_Q}} \OTarrow {v_Q}
+			{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
 				\ostate{s_i'^{\,i\in L_Q}}}
 		}%\]
 		\end{mathpar}
-		and  $\Pred\subst{v_Q\leftarrow \beta_{j_0}} =(\Pred\,'
-		\land \Pred\,'')$, $\Post=\Post\,'\uplus 
+		and  $\Pred \iff \Pred\,'
+		\land \Pred\,''\land \alpha_Q=\beta_{j_0}$, $\Post=\Post\,'\uplus 
 		\Post\,''$ where $\Post\,''$ is the restriction of $\Post$ over variables of 
 		$\Leaves(Q)$.
 \end{lemma}
@@ -2118,39 +2120,40 @@ Consider rule TR2 in
     {
 \Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
     	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} \\
+k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
+\\
 \\     	
 	\forall m\!\!\in\!\! I_1. {\pNet_m 
 	\models\openrule
     	{
-    	\{{\beta_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
     		\ostate{(s_i^\prime)^{i\in L_m}}} }	
   \qquad
 \forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\openrule
     	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {v_m}
+    	{\ostate{s_m} \OTarrow {\alpha_m}
     		\ostate{s_m'}} }\\\\
      J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
     	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,v_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},v)\\ 
+    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
     		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
-    {\tt fresh}(\alpha_m,\alpha',\beta_j,v) 
+    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
     }
     {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
     	\models
     	{\openrule
     		{
-    		\{{\beta_j}\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
     		\Post_m}
-    		{\ostate{s_i^{i\in L}} \OTarrow {v}
+    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
     			\ostate{(s_i^\prime)^{i\in L}}}
     	}
     }
-\end{mathpar}
+\end{mathpar} 
 
 Where $j_0\in I_1$ or $j_0\in I_2$
 We know each premise is true for $P[Q]_{j_0}$ and try to prove the equivalent premise for 
@@ -2166,15 +2169,15 @@ following OT\footnotemark[\thefootnote]:\\[-2ex]
 \[
 \pNet_m \models\openrule
     	{
-    	\{{\beta_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
     		\ostate{(s_i^\prime)^{i\in L_m}}}\]
 Or
 \[{ \pNet_m 
     	 \models
     	\openrule
     	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {v_m}
+    	{\ostate{s_m} \OTarrow {\alpha_m}
     		\ostate{s_m'}}}\]
 
 	
@@ -2185,32 +2188,36 @@ for $P[Q]_{j_0}$, $I'_{j_0}=I\cap L_Q$,
 $L_{j_0}=L_Q$, and $J_{j_0}=	J\cap\Holes(Q)$):\\[-2ex]
 	\[Q\models{\openrule
 		{
-			\{{\beta_j}\}^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
+			\beta_j^{j\in J\cap\Holes(Q)}, \Pred_{j_0},  
 			\Post\,''}
-		{\ostate{s_i^{i\in L_Q}} \OTarrow {v_{j_0}}
+		{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_{j_0}}
 			\ostate{(s_i')^{\, i\in L_Q}}}
 	}\]
 
 
 This already ensures the second part of the conclusion of the lemma, i.e. the OT for $Q$ 
 if we 
-choose\footnotemark[\thefootnote]  $v_Q=v_{j_0}$ ($\Pred\,''= \Pred_{j_0}$). Considering 
+choose\footnotemark[\thefootnote]  $\alpha_Q=\alpha_{j_0}$ and $\Pred\,''= \Pred_{j_0}$. 
+Considering 
 the OT of $P$ we have  $I'_P=I'\setminus L_Q$, and $J'_P=J'\setminus\Holes(Q)\uplus 
 \{j_0\}$;  the predicate is 
-$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Pred_{\symb{sv}}(SV_k,v_m^{m\in 
-I},\beta_j^{j\in J\cup \{j_0\}},v)$
-where\footnotemark[\thefootnote] $\Pred_{\symb{sv}}(SV_k,v_m^{m\in I},\beta_j^{j\in J\cup 
-\{j_0\}},v)\Leftrightarrow 
-\forall i\in I_k.\, \alpha_i=a_i\land \forall j \in J\cup \{j_0\}.\, \alpha_j=\beta_j 
+$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in 
+I},\beta_j^{j\in J\cup \{j_0\}},\alpha)$
+where\footnotemark[\thefootnote] $\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in I},\beta_j^{j\in 
+J\cup 
+\{j_0\}},\alpha)\Leftrightarrow 
+\forall i\in I_k.\, \alpha_i=\alpha'_i\land \forall j \in J\cup \{j_0\}.\, 
+\beta_j=\alpha'_j 
 \land 
-v=\alpha'
+\alpha=\alpha'
 \land e_b$. Modulo renaming of fresh variables, this is identical to the predicate that 
 occurs in 
-the source open transition except $\alpha_{j_0}=v_{j_0}$ has been replaced by  
-$\alpha_{j_0}=\beta_{j_0}$.
-Thus, $\Pred\subst{v_Q\leftarrow \beta_{j_0}}=(\Pred\,' 
-\land \Pred\,'')$. %\TODO{the argument on renaming has mostly been
-                 %removed is it still OK? yes.}. 
+the source open transition except $\alpha_{j_0}=\alpha'_{j_0}$ has been replaced by  
+$\beta_{j_0}=\alpha'_{j_0}$. As $\alpha_{j_0}=\alpha_Q$ and $\beta_{j_0}$ is free, we 
+have $\beta_{j_0}=\alpha'_{j_0}\land \beta_{j_0}=\alpha_Q \iff 
+\alpha_{j_0}=\alpha'_{j_0}$.
+Thus, $\Pred \iff (\Pred\,'
+		\land \Pred\,'')\land \alpha_Q=\beta_{j_0}$. 
 Finally, Post 
 %conditions are easily split\footnote{\TODO{moved. could
 %    even remove...?}Note that if the rules are not simplified, no
@@ -2248,20 +2255,20 @@ $P[Q]_{j_0}$, assembling their predicates.
 %\[
 P\models{\openrule
 	{
-		\{{\beta_j}\}^{j\in J}, 
+		\beta_j^{j\in J}, 
 		\Pred,  
 		\Post}
-	{\ostate{s_i^{i\in L}} \OTarrow {v}
+	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
 		\ostate{s_i'^{\, i\in L}}}
 }%\]
 \text{~~and~~}
 %\[
 Q\models{\openrule
 	{
-		\{{\beta_j}\}^{j\in J_Q},
+		\beta_j^{j\in J_Q},
 		 \Pred\,',  
 		\Post\,'}
-	{\ostate{s_i^{i\in L_Q}} \OTarrow {v_Q}
+	{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
 		\ostate{s_i'^{\, i\in L_Q}}}
 }%\]
 \end{mathpar}
@@ -2270,25 +2277,20 @@ Then, we have\\[-2ex]
 	\models
 	{\openrule
 		{
-			\{{\beta_j}\}^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
-			\Pred\land\Pred\,'\subst{\beta_{j_0}\leftarrow v_Q},  
+			\beta_j^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+			\Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0},  
 			\Post\uplus \Post\,'}
-		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {v}
+		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {\alpha}
 			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
 	}
 	\]
 \end{lemma}
 \TODO{important comment added:}
 Note that this does not mean that any two pNets can be composed and produce an open 
-transition. Indeed, the predicate $\Pred\,'\subst{\beta_{j_0}\leftarrow v_Q}$ might not 
-be satisfiable if the open transition of $Q$ cannot be matched with $\beta_{j_0}$.
-
-\LUDO{Question/comment: this formulation makes the proof easy and supposes that we use 
-enough 
-variables, which is in accordance with the implementation and the way we define SV, but I 
-believe that $\Pred\,'\land \beta_{j_0}= v_Q$ might be better because more flexible and 
-less dependant of the way OTs are defined}
-
+transition. Indeed, the predicate $\Pred\land\Pred\land \alpha_Q=\beta_{j_0}$ is not 
+be satisfiable if the action of $\alpha_Q$ cannot be matched with $\beta_{j_0}$.
+Note also that $\beta_{j_0}$ is now only used as an intermediate term inside formulas: it 
+does not appear neither as global action nor as an action of a hole.
 \begin{small}
 
 \begin{proof} 
@@ -2298,7 +2300,7 @@ Definition~\ref{def:operationalSemantics}).
 We know each premise is true for $P$ and try to prove the equivalent premise for 
 $P[Q]_{j_0}$ (using the open transition of $Q$). 
 $K$ and the synchronisation vector are unchanged ($j_0$ is now in the set of sub-pNets); 
-$SV_k=\SV{\alpha_j^{j\in I\uplus\{j_0\}\uplus 
+$SV_k=\SV{(\alpha'_j)^{j\in I\uplus\{j_0\}\uplus 
 	J}}{\alpha'}{e_b}$. $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. $I$ and $J$ 
 	are the 
     set of leaves and holes of $P$, $I_1\uplus I_2$ and $J'$ are the sets of moving 
@@ -2312,15 +2314,15 @@ reduced, we need:\\[-2ex]%\footnote{again we skip arguments related to renaming 
     	\forall m\!\!\in\!\! I_1\uplus\{j_0\}. {\pNet_m 
     	\models\openrule
     	{
-    	\{{\beta_{j}}\}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {v_m}
+    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
     		\ostate{(s_i^\prime)^{i\in L_m}}} }	
   \]\[
 \forall m\!\!\in\!\! I_2.		{ \pNet_m 
     	 \models
     	\openrule
     	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {v_m}
+    	{\ostate{s_m} \OTarrow {\alpha_m}
     		\ostate{s_m'}} }\]
 %\forall m\!\!\in\!\! I\cup \{j_0\}. 	
 %    {\left(\begin{array}{l}
@@ -2345,13 +2347,19 @@ $I'_{PQ}= I'_P \uplus I'_Q$, similarly the moving holes are the union of the mov
 holes, minus $j_0$: $J'_{PQ}=  J\setminus\{j_0\}\uplus J_Q$. The 
 predicate for the open 
 transition is: $\Pred\,''=\bigwedge_{m\in I _1\uplus I_2}\Pred_m \land \Pred\,'
-\land \Pred(SV_k,v_i^{i\in I_1\uplus I_2}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)$. By 
-definition 
-$\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarrow
-	\forall i\in I.\, a_i=\alpha_i\land \forall j \in J.\, \beta_j=\alpha_j \land 
-	\alpha'_k=v\land v_Q=\alpha_{j_0}\land e_b$, finally 
-	$\Pred\,''=\Pred\subst{\beta_{j_0}\leftarrow 
-	v_Q} \land \Pred\,'$. The post-condition gathers the post-conditions related to all 
+\land \Pred(SV_k,v_i^{i\in I_1\uplus I_2}\uplus(j_0\mapsto v_Q),\beta_j^{j\in 
+J},\alpha)$. 
+By definition 
+$\Pred(SV_k,\alpha_i^{i\in I}\uplus(j_0\mapsto \alpha_Q),\beta_j^{j\in 
+J},v)\Leftrightarrow
+	\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\alpha'_j \land 
+	\alpha=\alpha'\land \alpha_Q=\alpha_{j_0}\land e_b$,
+this is equivalent to $\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, 
+\beta_j=\alpha'_j \land 
+	\alpha=\alpha'\land \alpha_Q=\beta_{j_0}\land \beta_{j_0}=\alpha_{j_0}\land e_b$
+ and by definition of $\Pred$ (as obtained by \textbf{Tr2}),
+	$\Pred\,''\iff \Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0}$. The post-condition 
+	gathers the post-conditions related to all 
 	the leaves. Finally, the composed open transition can be
         built. \qed
         \end{proof}
@@ -2394,8 +2402,8 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  \\[-2ex]     
  \[P[Q]_{j_0}\models\openrule
  {
- 	\{{\beta_j}\}^{j\in J},\Pred_{OT},\Post_{OT}}
- { \ostate{s_{i}^{i \in L_P\uplus L}}\OTarrow {v} \ostate{{s'}_{i}^{~i \in 
+ 	\beta_j^{j\in J},\Pred_{OT},\Post_{OT}}
+ { \ostate{s_{i}^{i \in L_P\uplus L}}\OTarrow {\alpha} \ostate{{s'}_{i}^{~i \in 
  			L_P\uplus 
  			L}}}\]
  Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By 
@@ -2403,21 +2411,21 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  	\begin{mathpar}
  P\models{\openrule
  	{
- 		\{{\beta_j}\}^{j\in J'}, 
+ 		\beta_j^{j\in J'}, 
  		\Pred\,',  
  		\Post\,'}
- 	{\ostate{s_{i}^{i\in L_P}} \OTarrow {v}
+ 	{\ostate{s_{i}^{i\in L_P}} \OTarrow {\alpha}
  		\ostate{s_{i}'^{\,i\in L_P}}}
  }\\
  Q\models{\openrule
  	{
- 		\{\xrightarrow{\beta_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+ 		\beta_j^{j\in J\cap\Holes(Q)}, \Pred\,'',  
  		\Post\,''}
- 	{\ostate{s_{i}^{i\in L}} \OTarrow {v_Q}
+ 	{\ostate{s_{i}^{i\in L}} \OTarrow {\alpha_Q}
  		\ostate{s_{i}'^{\,i\in L}}}
  }\end{mathpar}
- and  $\Pred_{OT}\subst{v_Q\leftarrow \beta_{j_0}} =({\Pred\,'}
- \land {\Pred\,}'')$, $\Post_{OT}=\Post\,'\uplus 
+ and  $\Pred_{OT}\iff \Pred\,'
+ \land \Pred\,''\land \alpha_Q= \beta_{j_0}$, $\Post_{OT}=\Post\,'\uplus 
  \Post\,''$ ($\Post\,''$ is the restriction of $\Post$ over variables of 
  $\Leaves(Q)$). As $Q$ is FH-bisimilar to $Q'$ and $(\ostate{s_{i}^{i \in 
  		L}},\ostate{{t}_{i}^{i \in L'}}|\Pred_{s,t})\in\mathcal{R}$ there is a family 
@@ -2426,19 +2434,19 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  \begin{mathpar}
  Q'\models\openrule
  {
- 	\{\beta_{j x}\}^{j\in J\cap\Holes(Q)}, 
+ 	\beta_{j x}^{j\in J\cap\Holes(Q)}, 
  	\Pred_{OT_x},\Post_{OT_x}}
- {\ostate{t_{i}^{i\in L'}} \OTarrow {v_x} \ostate{t_{i x}^{i\in L'}}}
+ {\ostate{t_{i}^{i\in L'}} \OTarrow {\alpha_x} \ostate{t_{i x}^{i\in L'}}}
  \end{mathpar}
  and  $\forall x, (\ostate{s_{i}^{i\in L}},\ostate{t_{i x}^{i\in 
  		L'}}|\Pred_{s x})\in 
  \mathcal{R}$; 
  and  \\
- $\Pred \land \Pred\,''
+ $\Pred_{s,t} \land \Pred\,''
  \Rightarrow \bigvee_{x\in X}
  \left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
  \Pred_{OT_x}
- \land v_Q\!=\!v_x \land  
+ \land \alpha_Q\!=\!\alpha_x \land  
  \Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)$
 
  
@@ -2450,10 +2458,10 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  \models
  {\openrule
  	{
- 		\{{\beta_{j x}}\}^{j\in J}, 
- 		\Pred\,'\subst{\beta_{j_0 x}\leftarrow v_x}\land\Pred_{OT_x},  
+ 		\beta_{j x}^{j\in J}, 
+ 		\Pred\,'\land\Pred_{OT_x}\land \alpha_x=\beta_{j_0 x} ,  
  		\Post\,'\uplus \Post_{OT_x} }
- 	{\ostate{t_{i }^{i\in L'\uplus L_Q}} \OTarrow {v_x}
+ 	{\ostate{t_{i }^{i\in L'\uplus L_Q}} \OTarrow {\alpha_x}
  		\ostate{{t}_{i x}^{i\in L'\uplus L_Q}}}
  }
  \]
@@ -2467,45 +2475,41 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  $\forall x, (\ostate{{s'}_{i}^{~i\in L_P\uplus L}},\ostate{t_{i 
  		x}^{i\in L_P\uplus L'}}|\Pred_{s x})\in 
  \mathcal{R}'$ (by definition of
- $\mathcal{R}'$) and in four steps we get:
+ $\mathcal{R}'$) and in three steps we get:
  
  \noindent                        
  \begin{small} $\Pred_{s,t} \land \Pred_{OT} \implies
- 	\Pred_{s,t}\land(\Pred\,'\land \Pred\,'')\subst{\beta_{j_0}\leftarrow v_Q}\\ % 
+ 	\Pred_{s,t}\land\Pred\,'\land \Pred\,''\land\alpha_Q=\beta_{j_0}\\ % 
  	%reversed 
  	%substitution 
- 	\implies 
- 	(\Pred_{s,t}\land\Pred\,'')\land \Pred\,'\subst{\beta_{j_0}\leftarrow v_Q}\\ % 
- 	%$b_{j_0}$ 
- 	%only 
- 	%appears 
- 	%in $\Pred\,'$
  	\implies  \hspace{-2ex}
  	{\displaystyle\bigvee_{x\in X}
  	\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
  	\Pred_{OT_x}
- 	\land v_Q\!=\!v_x \land  
+ 	\land \alpha_Q\!=\!\alpha_x \land  
  	\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
  }
- \\~\qquad\qquad	\land \Pred\,'\subst{\beta_{j_0}\leftarrow v_Q} \\
+ \\~\qquad\qquad	\land \Pred\,'\land\alpha_Q=\beta_{j_0} \\
  	\implies
  	 \hspace{-2ex}
  	{\displaystyle\bigvee_{x\in X}
  		\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
- 		\Pred\,'\subst{\beta_{j_0}\leftarrow v_x}\land \Pred_{OT_x}
- 		\land v_Q\!=\!v_x \land  
+ 		\Pred\,'\land \Pred_{OT_x}
+ 		\land \alpha_Q\!=\!\alpha_x \land \alpha_Q\!=\!\beta_{j_0 x} \land  
  		\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
  	}
  	$\end{small}
- 
+ Note that, $\beta_{j_0}$ can be transformed into  $\beta_{j_0 x}$ because of the 
+ implication hypothesis.
  %\TODO{There was a confusion between the $\Rightarrow$ between the
  %  steps, and the $\implies$ inside the formulas...}
- 
- Explanations: first, we reversed the substitution; then we
- restricted the 
- substitution as $\beta_{j_0}$ only appears in $\Pred\,'$; then we
- applied the property of FH-bisimulation for $P$ and rearranged the
- terms using the fact that $v_Q=v_x$. The obtained formula reaches the goal except for 
+% 
+% Explanations: first, we reversed the substitution; then we
+% restricted the 
+% substitution as $\beta_{j_0}$ only appears in $\Pred\,'$; then we
+% applied the property of FH-bisimulation for $P$ and rearranged the
+% terms using the fact that $v_Q=v_x$.
+ The obtained formula reaches the goal except for 
  two points:\\[-4.3ex] 
  \begin{itemize}
  	\item We need $\forall j\!\in\! J$ instead of $\forall j\!\in\! J\cap\Holes(Q)$  but  
@@ -2520,6 +2524,13 @@ $\Pred(SV_k,a_i^{i\in I}\uplus(j_0\mapsto v_Q),\beta_j^{j\in J},v)\Leftrightarro
  	can conclude by observing that	$\Pred_{s x}$ does not use any variable of $P$ 
  	and thus $\subst{Post\,'}$ has no effect.
  \end{itemize}	
+Finally: 
+\[{\displaystyle\bigvee_{x\in X}
+ 		\left( \forall j\in J. \beta_j=\beta_{jx}  \Rightarrow 
+ 		\left(\Pred\,'\land \Pred_{OT_x}
+ 		 \land \alpha_Q\!=\!\beta_{j_0 x}\right) \land \alpha_Q\!=\!\alpha_x\land  
+ 		\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
+ 	}\]
  This proves the  condition of the FH-simulation, the other direction is 
  similar.\qed
  
@@ -2554,8 +2565,8 @@ Consider an
 \\[-2ex]     
 	\[P[Q]_{j_0}\models\openrule
 	{
-		\{{\beta_j}\}^{j\in J},\Pred_{OT},\Post_{OT}}
-	{ \ostate{s_{i}^{i \in L\uplus L_Q}}\OTarrow {v} \ostate{{s'}_{i}^{~i \in 
+		\beta_j^{j\in J},\Pred_{OT},\Post_{OT}}
+	{ \ostate{s_{i}^{i \in L\uplus L_Q}}\OTarrow {\alpha} \ostate{{s'}_{i}^{~i \in 
 	L\uplus 
 	L_Q}}}\]
 Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By 
@@ -2563,21 +2574,21 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			\begin{mathpar}
 				P\models{\openrule
 				{
-					\{{\beta_j}\}^{j\in J'}, 
+					\beta_j^{j\in J'}, 
 					\Pred\,',  
 					\Post\,'}
-				{\ostate{s_{1}^{i\in L}} \OTarrow {v}
+				{\ostate{s_{1}^{i\in L}} \OTarrow {\alpha}
 					\ostate{s_{i}'^{~ i\in L}}}
 			}\\
 			Q\models{\openrule
 				{
-					\{{\beta_j}\}^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+					\beta_j^{j\in J\cap\Holes(Q)}, \Pred\,'',  
 					\Post\,''}
-				{\ostate{s_{i}^{i\in L_Q}} \OTarrow {v_Q}
+				{\ostate{s_{i}^{i\in L_Q}} \OTarrow {\alpha_Q}
 					\ostate{s_{i}'^{~ i\in L_Q}}}
 			}\end{mathpar}
-			and  $\Pred_{OT}\subst{v_Q\leftarrow \beta_{j_0}} =({\Pred\,}'
-			\land {\Pred\,}'')$, $\Post_{OT}=\Post\,'\uplus 
+			and  $\Pred_{OT} \iff \Pred\,'
+		\land \Pred\,''\land \alpha_Q=\beta_{j_0}$, $\Post_{OT}=\Post\,'\uplus 
 			\Post\,''$ ($\Post\,''$ is the restriction of $\Post$ over variables of 
 			$\Leaves(Q)$). As $P$ is FH-bisimilar to $P'$ and $(\ostate{s_{i}^{i \in 
 			L}},\ostate{{t}_{i}^{i \in L'}}|\Pred_{s,t})\in\mathcal{R}$ there is a family 
@@ -2587,9 +2598,9 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
 			P'\models\openrule
 			{
-				\{{\beta_{j x}}\}^{j\in J'}, 
+				\beta_{j x}^{j\in J'}, 
 				\Pred_{OT_x},\Post_{OT_x}}
-			{\ostate{t_{i}^{i\in L'}} \OTarrow {v_x} \ostate{t_{i x}^{i\in L'}}}
+			{\ostate{t_{i}^{i\in L'}} \OTarrow {\alpha_x} \ostate{t_{i x}^{i\in L'}}}
 			%         \right)
 			\end{mathpar}
 			and  $\forall x, (\ostate{s_{i}^{i\in L}},\ostate{t_{i x}^{i\in 
@@ -2598,9 +2609,9 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			and  \\
 			$\Pred_{s,t} \land \Pred\,'
 		 \Rightarrow \bigvee_{x\in X}
-			\left( \forall j\in J'. b_j=b_{jx}  \Rightarrow 
+			\left( \forall j\in J'. \beta_j=\beta_{jx}  \Rightarrow 
 			\Pred_{OT_x}
-			\land v\!=\!v_x \land  
+			\land \alpha\!=\!\alpha_x \land  
 			\Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}\right)$
 			%     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x}) \right)$.
 			
@@ -2612,10 +2623,10 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 				\models
 				{\openrule
 					{
-						\{{b_{j x}}\}^{j\in J}, 
-						\Pred_{OT_x}\subst{b_{j_0 x}\leftarrow v_Q}\land\Pred\,'',  
+						\beta_{j x}^{j\in J}, 
+						\Pred_{OT_x} \land\Pred\,''\land\alpha_Q=\beta_{j_0 x},  
 						\Post_{OT_x}\uplus \Post\,''}
-					{\ostate{t_{ i }^{i\in L'\uplus L_Q}} \OTarrow {v_x}
+					{\ostate{t_{ i }^{i\in L'\uplus L_Q}} \OTarrow {\alpha_x}
 						\ostate{{t}_{ i x}^{i\in L'\uplus L_Q}}}
 				}
 				\]
@@ -2630,35 +2641,29 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 
 \noindent                        
 \begin{small} $\Pred_{s,t} \land \Pred_{OT} \implies
- \Pred_{s,t}\land(\Pred\,'\land \Pred\,'')\subst{b_{j_0}\leftarrow v_Q}\\ % reversed 
- %substitution 
- \implies 
- (\Pred\land\Pred\,')\subst{b_{j_0}\leftarrow v_Q}\land \Pred\,''\\ % $b_{j_0}$ only 
- %appears 
- %in $\Pred\,'$
+ \Pred_{s,t}\land\Pred\,'\land \Pred\,''\land \alpha_Q=\beta_{j_0}\\  
  \implies  \hspace{-2ex}
-{\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. b_j\!=\!b_{jx}  
+{\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. \beta_j\!=\!\beta_{jx}  
 \Rightarrow \!
-\Pred_{OT_x}\subst{b_{j_0}\!\!\leftarrow\!\! v_Q}
-\land v\!=\!v_x}} %\\ \hspace*{40mm} %
+\Pred_{OT_x}\land \alpha_Q=\beta_{j_0}
+\land \alpha\!=\!\alpha_x}} %\\ \hspace*{40mm} %
 \land \Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}) \land
 \Pred\,''\\ % 
 			%FH for P
  \implies  \hspace{-2ex}
- {\displaystyle{\bigvee_{x\in X}\!( \forall j\!\in\! J'. b_j\!=\!b_{jx} \Rightarrow 
-\Pred_{OT_x}\subst{b_{j_0}\!\!\leftarrow\!\! v_Q}\!\land\! \Pred\,''%\\ \hspace*{40mm}
-\!\land\! v\!=\!v_x \!\land\!  
-\Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}})}} 			
+	{\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. \beta_j\!=\!\beta_{jx}  
+\Rightarrow \!
+\left(\Pred_{OT_x}\land
+\Pred\,''
+\land \alpha_Q=\beta_{j_0 x}\right)
+\land \alpha\!=\!\alpha_x}} 
+\land \Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}) 	
 $\end{small}
 
 %\TODO{There was a confusion between the $\Rightarrow$ between the
 %  steps, and the $\implies$ inside the formulas...}
 
-Explanations: first, we reversed the substitution; then we
-restricted the 
-substitution as $b_{j_0}$ only appears in $\Pred\,'$; then we
-applied the property of FH-bisimulation for $P$ and rearranged the
-terms. The obtained formula reaches the goal except for two points:\\[-4.3ex] 
+ The obtained formula reaches the goal except for two points:\\[-4.3ex] 
 \begin{itemize}
 	\item We need $\forall j\!\in\! J$ instead of $\forall j\!\in\! J'$ with 
 	$J'\!=\!J\!\setminus\! \Holes(Q) \cup \{j_0\}$ but the formula under the quantifier 
