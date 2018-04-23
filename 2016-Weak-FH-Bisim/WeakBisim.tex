@@ -664,28 +664,6 @@ step.
 %%\TODO{rewrite example with new OTs}
 \begin{example}\emph{An open-transition.}
   \label{OT:ABP}
-  The \texttt{Protocol} pNet of Fig. \ref{schema:ABP-composed} has 4 controllers and no holes. One of its possible open-transition (the sender sending $(m,b)$ to the medium) is:
-
- \smallskip\noindent
- $  OT_2  = \openrule{
-%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
-   %                           \xrightarrow{in(?m,?b)}_{M1}
-      \emptyset; Pred=[m=s_1\_m, b=s_1\_sb];  Post=\{m_1\_m:=m, m_1\_b:=b\}
-                      }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\tau} \ostate{s_2,m_1,m_0,r_0}}
-    $
-    
-    \smallskip
-    Note that the global states shows how the sender and the
-    first medium have evolved during this transition, the sender
-    moving from $s_1$ to $s_2$, and the first (forward) medium from
-    $m_0$ to $m_1$.
-    The predicate $Pred$ involves the state variables $s_1\_m$ and
-    $s_1\_sb$ of the sender, while the assignment $Post$ sets the
-    state variables of the medium.
-
-    \smallskip
 At the upper level, the $ABP$ pNet has 2 holes and and $Protocol$ has
 a subnet. One of its possible transition (synchronizing the hole $P$
 with the $Protocol$) is:
@@ -705,6 +683,49 @@ with the $Protocol$) is:
     in $OT\_2$, as the holes have no states. The assignment
     $Post$ uses a variable from the action of hole $P$ to set the
     value of the sender state variable $s1\_m$.
+
+  The \texttt{Protocol} pNet of Fig. \ref{schema:ABP-composed} has 4 controllers and no holes. One of its possible open-transition (the sender sending $(m,b)$ to the medium) is:
+
+ \smallskip\noindent
+ $  OT_2  = \openrule{
+%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
+   %                           \xrightarrow{in(?m,?b)}_{M1}
+   \emptyset; Pred=[send(SV2\_m, SV2\_b)=send(s_1\_m, s_1\_sb);in(SV2\_m, SV2\_b)=in(?m,?b)];  \\ Post=\{m_1\_m:=?m, m_1\_b:=?b, s_2\_sb:=s_1\_sb\}
+                      }
+  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
+    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(SV2\_m, SV2\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    $
+
+    \ERIC{Apres resolution de l'unification:}
+    
+     $  OT_2  = \openrule{
+%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
+   %                           \xrightarrow{in(?m,?b)}_{M1}
+      \emptyset; Pred=[s_1\_m=SV2\_m, SV2\_m=?m, s_1\_sb=SV2\_b, SV2\_b=?b];  \\ Post=\{m_1\_m:=?m, m_1\_b:=?b, s_2\_sb:=s_1\_sb\}
+                      }
+  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
+    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    $
+
+    \ERIC{Apres application des substitutions et simplification du predicat:}
+
+     $  OT_2  = \openrule{
+      \emptyset; Pred=true;  \\ Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
+                      }
+    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    $
+
+    \smallskip
+    Note that the global states shows how the sender and the
+    first medium have evolved during this transition, the sender
+    moving from $s_1$ to $s_2$, and the first (forward) medium from
+    $m_0$ to $m_1$.
+    The predicate $Pred$ involves the state variables $s_1\_m$ and
+    $s_1\_sb$ of the sender, while the assignment $Post$ sets the
+    state variables of the medium.
+
+    \smallskip
+
 \end{example}
 
 We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
@@ -1258,10 +1279,49 @@ on sequences of invisible actions:
 
 The ``saturation'' step in the construction of the weak relation will
 pick all $\tau^*$ and $\tau^*;a;\tau^*$ sequences from the OA, and build a weak
-OT from each sequence. Here is one example:
+OT from each sequence. Here is one example of a short sequence,
+starting with the open transition $OT_2$ of page \pageref{OT:ABP},
+then transmitting the message to the receiver (if the sender and
+receiver control bits are equal), and to the environnement. The two
+firts OTs are internal, the last one is visible, so it constitute a
+$\tau;\tau;a$ weak transition.  
 
 \noindent
-$\ostate{1000}\OTarrow{m\_rec(m,x), \phi_1 = [x=s_1\_b \land
+     $  \openrule{
+      \emptyset; Pred=true; Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
+                      }
+    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    $
+
+\medskip\noindent
+     $  \openrule{
+      \emptyset; Pred=[r_0\_rb=?b' \land ?m'=m_1\_m \land ?b=m_1\_b \land SV3\_m=?m' \land SV3\_b=?b'];
+      \\ Post=\{r_1\_rb:=r_0\_rb; r_1\_m:=?m'; r_1\_b:=?b'      \}
+                      }
+    {\ostate{s_2,m_1,m_0,r_0} \OTarrow{\underline{recv(SV3\_m, SV3\_b)}} \ostate{s_2,m_0,m_0,r_1}}
+    $
+
+    \ERIC{Apres simplification:}
+\medskip\noindent
+     $  \openrule{
+      \emptyset; Pred=[r_0\_rb=m_1\_b];
+      \\ Post=\{r_1\_rb:=r_0\_rb; r_1\_m:=m_1\_m; r_1\_b:=m_1\_b      \}
+                      }
+    {\ostate{s_2,m_1,m_0,r_0} \OTarrow{\underline{recv(m_1\_m,m_1\_b)}} \ostate{s_2,m_0,m_0,r_1}}
+    $
+    \\
+
+\medskip\noindent
+     $  \openrule{
+  \emptyset; Pred=true; Post=r_2\_b:=r_1\_b; s_2\_b:=s_1\_b   \}
+                      }
+    {\ostate{s_2,m_0,m_0,r_1} \OTarrow{out(r_1\_m)} \ostate{s_2,m_0,m_0,r_2}}
+    $
+    \\
+
+    \bigskip
+    \ERIC{Anciennes versions:}
+$\ostate{1000}\OTarrow{\underline{send(m,b)}, \phi_1 = [x=s_1\_b \land
     m=s_1\_m]}\ostate{2100}$\\
 and $\qquad\ostate{2100}$ variable assignments are: $\psi_1 = \{m_1\_m:=m; m_1\_x:=x; s_2\_b:=s_1\_b\}$;\\
 \\
@@ -1289,11 +1349,11 @@ $m,m',x,b$. But now $\phi$ includes enough information to eliminate them, giving
 a final $\phi'= [v=out(s_1\_m)\land r_0\_b=s_1\_b]$, so the resulting
 WOT is:
 
-
-
  \noindent
- $$\ostate{1000}\OTWeakarrow{v,
-   [v=out(s_1\_m)\land r_0\_b=s_1\_b],\{r_2\_b:=r_0\_b\}} \ostate{2002}$$
+ $$ \openrule{
+   \emptyset; Pred=[r_0\_b=s_1\_b]; Post= \{r_2\_b:=r_0\_b  \}
+   }
+   {\ostate{s_1,m_0,m_0,r_0}\OTWeakarrow{out(s_1\_m)} \ostate{s_2,m_0,m_0,r_2}}$$
 %% \\
 %% $\phi=[x=s_1\_b \land m=s_1\_m\\
 %%   \land r_0\_b=b \land m'=m_1\_m \land b=m_1\_x\\
