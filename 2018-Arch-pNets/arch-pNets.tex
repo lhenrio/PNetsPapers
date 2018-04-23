@@ -272,6 +272,43 @@ Eric~Madelaine\inst{3}
 \section{Introduction}
 \label{secn:introduction}
 
+BIP (Behaviour-Interaction-Priority)~\cite{bip} is a framework for the
+component-based design of concurrent software and systems.  In
+particular, the BIP tool-set comprises compilers for generating C/C++
+code, executable by linking with one of the dedicated engines, which
+implement the BIP operational semantics~\cite{BliSif08-acp-tc}.
+This approach ensures that any property, shown to hold on a given BIP
+model, will also hold by construction on the generated code.
+
+In this context, the notion of \emph{architecture} was proposed
+in~\cite{AttieBBJS16-architectures-faoc} as a mechanism for ensuring
+correctness by construction during the design of BIP models.
+Architectures can be viewed as operators transforming BIP models.
+They formalise design patterns, which enforce global properties
+characterising the coordination among the components of the system.
+The architecture-based design process in BIP takes as input a set of
+components providing basic functionality of the system and a set of
+temporal properties that must be enforced in the final system.  For
+each property, a corresponding architecture is identified
+%% \footnote{%
+%% %
+%%   The current approach relies on taxonomies of predefined
+%%   architectures.  Future work may include automatic synthesis of
+%%   architectures from, \eg CTL~\cite{BaierKatoen2008} formulae.
+%% %
+%% }
+and applied to the model, thereby potentially introducing additional
+coordinator components and modifying the connectors that define
+synchronisation patterns among ports of components.
+In~\cite{AttieBBJS16-architectures-faoc}, it was shown that
+application of architectures is compositional \wrt safety properties,
+\ie when several architectures are applied, each enforcing a safety
+property, the resulting system satisfies their conjunction.
+
+The concepts and results of the paper are illustrated by a running
+example extending the Failure Monitor architecture from the CubETH
+nanosatellite on-board software case-study~\cite{CubETH-case-study}.
+
 %****************************************************************
 %****************************************************************
 
@@ -767,8 +804,87 @@ obtained results to other priority models.
 \end{note}
 
 %****************************************************************
-\subsection{Graphical representation of composed systems}
-\label{secn:connectors}
+\subsection{Running example: Failure Monitor architecture}
+\label{secn:failure-monitor}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v3}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{schema:ArchFailure:BIP}
+\end{figure}
+
+Figure~\ref{schema:ArchFailure:BIP} shows a refined version of the
+Failure Monitor architecture used in~\cite{CubETH-case-study}.
+Contrary to standard BIP models, architectures comprise one or several
+\emph{operand} components, whereof only the set of \emph{ports} is
+given.  Here, the operand component is $\NameOprnd$ and its interface
+consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
+The two \emph{coordinator} components\mdash $\NameCtrl$ and
+$\NameTimer$\mdash are standard BIP components insofar as they also
+have their \emph{behaviour} specified by finite automata extended with
+local data variables.  Transitions of these automata are labelled with
+the ports of the corresponding components, Boolean guards and update
+functions on local variables.  For instance the loop transition
+$\tstate{1} \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$
+in the $\NameTimer$ component is labeled by the port $\PortTick$, it
+can be fired only when the current value of the local variable $t$ is
+greater than $0$.  Upon firing, this transition decrements the value
+of $t$ by $1$.  When omitted, the default guard (\resp update
+function) is the constant predicate $\true$ (\resp the $\mathit{skip}$
+operator).  The constant $\mathrm{Max}$, in $\tstate{0}
+\goesto{\PortStart, \TimerInit[]} \tstate{1}$, is a parameter of the
+architecture.
+
+Connectors are hierarchical, tree-like structures with component ports
+at the leaves.  They define sets of \emph{interactions}, based on the
+attributes of the connected ports~\cite{BliSif08-acp-tc}, which may be
+either \emph{trigger} (triangles in Fig.~\ref{schema:ArchFailure:BIP})
+or \emph{synchron} (bullets in Fig.~\ref{schema:ArchFailure:BIP}).
+%
+If all sub-connectors of a connector are synchrons, then an
+interaction may be executed by the connector only if each subconnector
+can contribute.
+%
+If at least one of the sub-connectors is a trigger, then any
+interaction consisting of contributions of any set of sub-connectors,
+\emph{involving at least one of the triggers}, can be executed.
+%
+For instance, the two ports $\NameTimer.\PortStart$ and
+$\NameCtrl.\PortFail$ are always synchronised, since they belong to
+the same binary sub-connector, where they are both synchrons.  In
+particular, this means that whenever the transition $\cstate{0}
+\goesto{\PortFail} \cstate{1}$ is fired, so is the transition
+$\tstate{0} \goesto{\PortStart, \TimerInit[]} \tstate{1}$,
+initialising the timer.  The binary connector $\NameTimer.\PortStart
+\bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameCtrl.\PortFail$ is a
+sub-connector of a hierarchical connector, where the port
+$\NameOprnd.\PortFail$ is a trigger.  Thus, the above interaction can
+only happen together with $\NameOprnd.\PortFail$, forming a
+ternary interaction.  On the contrary, being a trigger, the port
+$\NameOprnd.\PortFail$ can fire alone, forming a singleton
+interaction.  The composition semantics of BIP systems consists in
+firing exactly one interaction, enabled through at least one of the
+top-level connectors, at each execution round.
+
+Finally, \emph{priorities}\mdash defined by a strict partial order on
+the set of possible interactions\mdash narrow the choice among the
+enabled interactions at any given round.  The default priority is the
+so-called \emph{maximal progress}, whereby among any two interactions
+$a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
+For example, the port $\NameOprnd.\PortFail$ will never fire alone in
+a global state, where both $\NameTimer.\PortStart$ and
+$\NameCtrl.\PortFail$ are enabled.
+%
+%% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
+%% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
+%% a failure, the operation performed by $\NameOprnd$ cannot finish
+%% unless it is explicitly resumed or the system is reset.
+
+Application of the Failure Monitor architecture ensures that, whenever
+a failure is registered in the operand component, the system will be
+reset, unless a resumption is registered within $\mathrm{Max}$ time
+units (more details in Sect.~\ref{section:resultOA}).
 
 %****************************************************************
 \subsection{Architectures}
@@ -1590,7 +1706,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{\alpha_m^{m \in I_1\uplus I_2\uplus J}}{\alpha'
 %****************************************************************
 
 \bibliographystyle{abbrv}
-\bibliography{biblio.bib}
+\bibliography{biblio}
 
 %****************************************************************
 %****************************************************************
