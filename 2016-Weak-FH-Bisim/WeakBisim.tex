@@ -560,7 +560,7 @@ set of state modifications.
 	equations 
 	that 
 	hold \emph{after the open transition}, they are represented as a substitution of the 
-	form $\subst{x_k\gets e_k}^{k\in K}$ 
+	form $({x_k\gets e_k})^{k\in K}$ 
 	where $x_k$ are variables of $s'$, and $e_k$ are expressions over the other 
 	variables of the open transition. Open transitions are identified modulo logical equivalence on their predicate.
 \end{definition}
@@ -1243,30 +1243,103 @@ actions of other systems in its environment.
 %% tool-assistance, both for the generation of the open-automata and for
 %% their comparison.
 
+
+\TODO{Id(s) is the identity function on variables of state s}
+\begin{definition}[Non-observability of silent actions]
+An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ we have
+\[ \openrule
+         {
+           (j\mapsto\tau),\symb{True},\symb{Id}(s)}
+         {s \OTarrow {\tau} s}
+         \in \mathcal{T}
+\]
+\end{definition}
+
+
+
+
+
 Classically, we start by defining a derived transition relation based
 on sequences of invisible actions:
 
 \def\InvAct{\mathcal{Inv}}
 
-\begin{definition}[Weak open transitions]
-  Let $A = <\overline{\LTS},J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton.
-  We define $\mathcal{T^*}$ the \emph{weak open transition relation}
-  with respect to a set of invisible actions $\InvAct$ as:
 
- \begin{mathpar}
+We let $\gamma$ range over lists of action terms and use $\dotcup$ as the union that appends lists of action terms \TODO{write this properly}. $[a]$ is a list with a single element.
+
+We define $\vis{\overline\beta}$ as the mapping $\overline\beta$  without  invisible actions but where each element is now a list (if length 1).\\ $\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}$ s.t. $I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}$.
+
+\begin{definition}[Weak open transitions]
+  Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. We derive the  weak invisible transition $\OTWeakarrow {\tau}$ from $\mathcal{T}$ as follows:
+\begin{mathpar}
  \openrule
          {
-           \beta_j^{j\in J_1},\Pred,\Post}
-         {s \OTWeakarrow {\alpha} s'}
-         \in \mathcal{T}^*
+           \emptyset,\symb{True},Id(s)}
+         {s \OTWeakarrow {\tau} s}
+ \end{mathpar}
+and
+\begin{mathpar}
+\inferrule{
+ \openrule
+         {
+           \overline{\beta},\Pred,\Post}
+         {s \OTarrow {\tau} s'}
+\\
+ \openrule
+         {
+           \overline{\gamma},\Pred',({x_k\gets e_k})^{k\in K}   }
+         {s' \OTWeakarrow {\tau} s''}
+}
+{ \openrule
+         {
+           \vis{\overline{\beta}}\dotcup\overline{\gamma},\Pred\land\Pred'\subst{\Post},
+				({x_k\gets (e_k\subst \Post)})^{k\in K} } 
+         {s \OTWeakarrow {\tau} s''}
+}
  \end{mathpar}
 
- iff there exists a sequence of open transitions
-         $OT_x^{x\in X} \subseteq \mathcal{T}$ such that:
-
- \TODO{Pas si simple !!!!!!!!!!!!!!!!!!!}
+And the general weak open transition $\OTWeakarrow {\alpha}$ as follows:
+\begin{mathpar}
+\inferrule{\openrule
+         {
+           \overline{\gamma_1},\Pred_1,\Post_1   }
+         {s \OTWeakarrow {\tau} s_1} 
+\\
+\openrule
+         {
+           \overline{\beta},\Pred_2,\Post_2  }
+         {s_1 \OTarrow {\alpha} s_2} 
+\\
+\openrule
+         {
+           \overline{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
+         {s_2 \OTWeakarrow {\tau} s'} 
+\\
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
+}
+{
+\openrule
+         {
+           \overline{\gamma_1}\dotcup \vis{\overline{\beta}}\dotcup\overline{\gamma_3},
+		\Pred,
+				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
+         {s \OTWeakarrow {\alpha} s'}
+}
+\end{mathpar}
  
 \end{definition}
+
+
+\subsection{Non-observability and open pNets}
+\begin{definition}[Non-observability of silent actions]~\\
+A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \overline{\symb{SV}}\myrangle$
+ \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\symb{True}}\in \overline{\symb{SV}}$ and $\forall i,j\in I\uplus J.\,i\neq j \Rightarrow \alpha_i\neq\tau$
+\end{definition}
+
+\begin{property}[pNets that cannot observe silent actions]
+The open semantics of a pNets that cannot observe silent actions is an open automaton that  cannot observe silent actions.
+\end{property}
+
 
 \subsection{Running example}
 - Detail of a $\tau^*$ sequence, \\
