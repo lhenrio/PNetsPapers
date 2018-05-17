@@ -541,7 +541,7 @@ set of state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
-\begin{definition}[Open transitions]
+\begin{definition}[Open transitions]\label{def:OT}
 	\label{def:OpenTransitions}
 	An \emph{open transition} over a
 	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
@@ -802,7 +802,7 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 	
 	\noindent
 \begin{mathpar}
-    \mprset {vskip=1ex}
+    \mprset {vskip=.8ex}
 \inferrule
     {
 \Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
@@ -1268,52 +1268,75 @@ on sequences of invisible actions:
 We let $\gamma$ range over lists of action terms and use $\dotcup$ as the union that appends lists of action terms \TODO{write this properly}. $[a]$ is a list with a single element.
 
 We define $\vis{\overline\beta}$ as the mapping $\overline\beta$  without  invisible actions but where each element is now a list (if length 1).\\ $\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}$ s.t. $I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}$.
+\def\WT{\mathcal{WT}}
+\begin{definition}[Weak open transition]\label{def:weakOT}
+A weak open transition over a
+	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
+	a structure of the form:	
+\begin{mathpar}
+ \openrule
+         {
+           \gamma_j^{j\in J},\symb{True},Id(s)}
+         {s \OTWeakarrow {\alpha} s}
+ \end{mathpar}
+	Where $s, s'\in\mathcal{S}$ and $\gamma_j$
+        is a list of transitions of the hole $j$, with each element of the list in $\Sort_j$. $\alpha$ is an action 
+        label denoting the resulting action
+        of this open transition. \Pred\ and \Post\ are defined similarly to Definition~\ref{def:OT}. We use $\WT$ to range over sets of weak open transitions.
 
-\begin{definition}[Weak open transitions]
-  Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. We derive the  weak invisible transition $\OTWeakarrow {\tau}$ from $\mathcal{T}$ as follows:
+A weak open automaton $<J,\mathcal{S},s_0,\WT>$ is similar to an open automaton  except that $\WT$ is a set of weak open transitions over $J$ and $\mathcal{S}$.
+\end{definition}
+
+\begin{definition}[Building a weak open automaton]\label{def:buildweakOT}
+  Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. 
+The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows
+
+\noindent{\bf Invisible $\tau$ transitions:}
 \begin{mathpar}
  \openrule
          {
            \emptyset,\symb{True},Id(s)}
-         {s \OTWeakarrow {\tau} s}
+         {s \OTWeakarrow {\tau} s} \in \WT
  \end{mathpar}
 and
 \begin{mathpar}
+  \mprset {vskip=.5ex}
 \inferrule{
  \openrule
          {
            \overline{\beta},\Pred,\Post}
-         {s \OTarrow {\tau} s'}
+         {s \OTarrow {\tau} s'} \in \mathcal{T}
 \\
  \openrule
          {
            \overline{\gamma},\Pred',({x_k\gets e_k})^{k\in K}   }
-         {s' \OTWeakarrow {\tau} s''}
+         {s' \OTWeakarrow {\tau} s''} \in \WT
 }
 { \openrule
          {
            \vis{\overline{\beta}}\dotcup\overline{\gamma},\Pred\land\Pred'\subst{\Post},
 				({x_k\gets (e_k\subst \Post)})^{k\in K} } 
-         {s \OTWeakarrow {\tau} s''}
+         {s \OTWeakarrow {\tau} s''} \in \WT
 }
  \end{mathpar}
 
-And the general weak open transition $\OTWeakarrow {\alpha}$ as follows:
+\noindent{\bf Other transitions:}
 \begin{mathpar}
-\inferrule{\openrule
+  \mprset {vskip=.5ex}
+\inferrule {\openrule
          {
            \overline{\gamma_1},\Pred_1,\Post_1   }
-         {s \OTWeakarrow {\tau} s_1} 
-\\
+         {s \OTWeakarrow {\tau} s_1} \in \WT
+\qquad\qquad
 \openrule
          {
            \overline{\beta},\Pred_2,\Post_2  }
-         {s_1 \OTarrow {\alpha} s_2} 
+         {s_1 \OTarrow {\alpha} s_2} \in \mathcal{T}
 \\
 \openrule
          {
            \overline{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
-         {s_2 \OTWeakarrow {\tau} s'} 
+         {s_2 \OTWeakarrow {\tau} s'} \in\WT
 \\
 \Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
 }
@@ -1323,7 +1346,7 @@ And the general weak open transition $\OTWeakarrow {\alpha}$ as follows:
            \overline{\gamma_1}\dotcup \vis{\overline{\beta}}\dotcup\overline{\gamma_3},
 		\Pred,
 				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
-         {s \OTWeakarrow {\alpha} s'}
+         {s \OTWeakarrow {\alpha} s'} \in\WT
 }
 \end{mathpar}
  
@@ -1437,13 +1460,18 @@ WOT is:
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
 
 \noindent
-Let $A_1$ and $A_2$ be open automata, and $\mathcal{R}$ a relation over
-$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition \ref{def-FH-bisim}.
+Let $A_1 = <J,\mathcal{S}_1, s_0,
+    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
+Let $<J,\mathcal{S}_1, s_0,
+    \WT_1>$ and $<J,\mathcal{S}_2,t_0,  \WT_2>$ be the
+weak open automata derived from $A_1$ and $A_2$ respectively.
+Let $\mathcal{R}$ a relation over
+$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition~\ref{def-FH-bisim}.
 
 Then 
    $\mathcal{R}$ is a weak FH-bisimulation iff for any  states
-$s\in\mathcal{S}_1$ and\\
-$t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we 
+$s\in\mathcal{S}_1$ and
+$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
    have the following:
 
 
@@ -1457,11 +1485,11 @@ $t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we
          {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
- there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2^*$:
+ there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
  \begin{mathpar}
     \openrule
          {
-           \beta_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+           \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
          {t \OTWeakarrow {\alpha_x} t_x}
 \end{mathpar}
  such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
