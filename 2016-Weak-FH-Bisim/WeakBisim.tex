@@ -279,11 +279,12 @@ expressions, to express various kinds of communication or
 synchronisation mechanisms.
 
 \def\Talg{\mathcal{T}_{\Sigma,\P}}
+\def\BoolExprs{\mathcal{B}_{\P}}
 Formally, we assume the existence of a term algebra $\Talg$,
 where $\Sigma$ is the signature of the data and action constructors,
 and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
 data expressions $\mathcal{E}_\P$, including a set of boolean
-expressions $\mathcal{B}_{\P}$ ($\mathcal{B}_{\P}\subseteq\mathcal{E}_\P$).
+expressions $\BoolExprs$ ($\BoolExprs\subseteq\mathcal{E}_\P$).
 On top of $\mathcal{E}_\P$ we build the action algebra
 $\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
 \mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
@@ -316,7 +317,7 @@ on finite branching of the transition relation.
 
 We first define the set of actions a pLTS can use, let $a$
 range over action labels, $\symb{op}$ are operators, and $x_i$ range over
-variable names. Action terms are:
+variable names. Action terms of \pLTS s are:
 \[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
   \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
@@ -355,8 +356,8 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
 		$\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		x_j\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
+		x_j\!\in\!\vars(s') \right)$. %,  and $s= s'\Rightarrow J=\emptyset$. 
 \end{itemize}
 \end{definition}
 
@@ -373,7 +374,7 @@ synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
 Actions involved at the pNet level (in the synchronisation vectors) do
 not need to distinguish  input 
-variables. Action terms for pNets are defined as follows:
+variables. Action terms used in synchronisation vectors of pNets are defined as follows:
 \[\begin{array}[l]{rcl@{\quad}l}
   \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
 \end{array}
@@ -405,7 +406,7 @@ hole $j$.
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
   J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\alpha'_k$. $e_k \in \AlgB$ is a guard associated to the vector 
+$\alpha'_k$. $e_k \in \AlgB$ is a guard associated to the vector such that
 $\vars(e_k)\subseteq \bigcup_{l\in I_k\uplus J_k}{\vars({\alpha_l})}$.
 
 
@@ -421,28 +422,27 @@ perform, where each action signature is an action
 label plus the arity of the action. In the definition of sorts, we do not need to 
 distinguish
 input variables and we remove the
-\emph{input marker} of variables.
+\emph{input marker} (?) of variables.
 \[
 \begin{array}{l}
 \Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
 x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
     J}\rangle} s'\in \to \} \\
-\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
-\overline{\pNet}\!,
+\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, 
+\overline{\Sort},
 \overline{\symb{SV}}\myrangle)
-=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
-\to\alpha'\in\set{\symb{SV}}\}
+=\{\alpha' |\, \SV{\overline{\alpha}}{\alpha'}{e_b}\in\set{\symb{SV}}\}
 \end{array}
 \]
 
 \item
-The set of holes $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
+The set of holes $\Holes(\pNet)$ of a pNet is the indexes of the holes of the pNet 
 itself plus the indexes of all the holes of its subnets.
 It is defined inductively (we suppose those indexes 
 disjoints):
   \[\begin{array}{l}
 \Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset\\
-\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
+\Holes(\mylangle \pNet_i^{i\in I}\!,\overline{\Sort}, \overline{\symb{SV}}\myrangle) 
 =J\uplus{\displaystyle \bigcup_{i\in 
 I}\Holes(\pNet_i)}\\
 \forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
@@ -452,7 +452,7 @@ I}\Holes(\pNet_i)}\\
 The set of leaves of a pNet is the set of all pLTSs occurring in the structure, as an 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
 \[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\{\mylangle S,s_0, \to\myrangle\}\\
+\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\%\{\mylangle S,s_0, \to\myrangle\}\\
 \Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
 \overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
 I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i \text{ is a }\pLTS\}}
@@ -541,7 +541,7 @@ set of state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
-\begin{definition}[Open transitions]
+\begin{definition}[Open transitions]\label{def:OT}
 	\label{def:OpenTransitions}
 	An \emph{open transition} over a
 	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
@@ -556,12 +556,12 @@ set of state modifications.
         label denoting the resulting action
         of this open transition. \Pred\ is a predicate 
 	over the different variables of the
-	terms, labels, and states $s_i$, $\beta_j$, $s$, $\alpha$. \Post\ is a set of 
+	terms, labels, and states $\beta_j$, $s$, $\alpha$. \Post\ is a set of 
 	equations 
 	that 
 	hold \emph{after the open transition}, they are represented as a substitution of the 
-	form $\subst{x_k\gets e_k}^{k\in K}$ 
-	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are expressions over the other 
+	form $({x_k\gets e_k})^{k\in K}$ 
+	where $x_k$ are variables of $s'$, and $e_k$ are expressions over the other 
 	variables of the open transition. Open transitions are identified modulo logical equivalence on their predicate.
 \end{definition}
 
@@ -569,9 +569,7 @@ set of state modifications.
 
 It is important to understand the difference between the red dotted rule and a normal 
 inference rule. They correspond to two different logical levels.
- The open transition is itself a logical implication, but using a simple logic (with the 
- expressive power that is given to the predicate and necessary include logical 
- propositions and equality). We differentiate classical (black) inference rules that use 
+ The open transition is itself a logical implication, but using a simple logic (this logic includes the boolean expressions $\BoolExprs$, boolean operators, and term equality). We differentiate classical (black) inference rules that use 
  an expressive logic and are paper rules from open transition rules that use a simpler 
  logic, 
  will be embedded into automata transitions, and could typically be handled in a 
@@ -587,7 +585,7 @@ inference rule. They correspond to two different logical levels.
 		among $\mathcal{S}$,
 		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
 		$t\in \mathcal{T}$ there exist  $J'$ with  $J'
-		\subseteq J$, such that $t$ is an open transition over  $J'$,
+		\subseteq J$, such that $t$ is an open transition over  $J'$
 		and  $\mathcal{S}$.
 		
 	\end{itemize}
@@ -602,8 +600,8 @@ inference rule. They correspond to two different logical levels.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define states of open pNets as tuples of states, where we denote tuples
-in structured states as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
+We define states of open pNets as tuples of states. We denote them
+ as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
 states from other tuples.
 \begin{definition}[States of open pNets]\label{def-states}
   A state of an open pNet is a tuple (not necessarily finite) of the
@@ -628,13 +626,14 @@ $InitState(\pNet) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 %% \end{example}
 
 \paragraph{Predicates:}
-Let
-$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
-be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
+%Let
+%$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
+%be a pNet. 
+Consider a synchronisation vector $\symb{SV}$. We 
 define a
-predicate $\Pred$ relating
+predicate $\Predsv$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\[\begin{array}{l}\Pred_{\symb{sv}} \Big(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
+\[\begin{array}{l}\Predsv \Big(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
 {\alpha'} 
 {e_b}, \alpha_i^{i\in I}, \beta_j^{j\in J}, \alpha\Big)\Leftrightarrow \\~\qquad\qquad%\bigg(
 %
@@ -649,7 +648,7 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 \]
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
-predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
+predicate $\Predsv$ is not satisfiable, then the transition associated with the 
 synchronisation will not occur in the considered state. 
 
 
@@ -665,8 +664,8 @@ step.
 \begin{example}\emph{An open-transition.}
   \label{OT:ABP}
 At the upper level, the $ABP$ pNet has 2 holes and and $Protocol$ has
-a subnet. One of its possible transition (synchronizing the hole $P$
-with the $Protocol$) is:
+a subnet. One of its possible open transition (synchronizing the hole $P$
+with the \emph{Protocol}) is:
 
  \smallskip\noindent
  $  OT_1  = \openrule{
@@ -680,11 +679,11 @@ with the $Protocol$) is:
 
     \smallskip
     The global states here have the same structure than
-    in $OT\_2$, as the holes have no states. The assignment
+    in $OT_2$, as the holes have no states. The assignment
     $Post$ uses a variable from the action of hole $P$ to set the
     value of the sender state variable $s1\_m$.
 
-  The \texttt{Protocol} pNet of Fig. \ref{schema:ABP-composed} has 4 controllers and no holes. One of its possible open-transition (the sender sending $(m,b)$ to the medium) is:
+  The \emph{Protocol} pNet of Fig. \ref{schema:ABP-composed} has 4 controllers and no holes. One of its possible open-transition (the sender sending $(m,b)$ to the medium) is:
 
  \smallskip\noindent
  $  OT_2  = \openrule{
@@ -735,7 +734,7 @@ Definition~\ref{def-states}. The open transitions first
 pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
 %structure does not appear in the open-automaton, only the
 %set of Holes and the set of Leaves.
-The semantics    instantiates \emph{fresh} variables, additionally, for an action 
+The semantics    instantiates fresh variables using the predicate $\fresh(x)$, additionally, for an action 
 $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 
 
@@ -761,7 +760,7 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 	is verified and transforms assignments into post-conditions:
 	
 	\begin{description}
-		\item[{\bf Tr1:}]
+		\item[{\TrUn:}]
 		$\inferrule
 		{ s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 					J}\rangle} s'\in \to  }
@@ -791,19 +790,19 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 	{\em action} for each Hole involved, and the predicate relating these
 	with the resulting action of the vector. The sub-pNets involved are split between two 
 	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
-	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
+	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{({\alpha'})_m^{m 
 	\in M}}{\alpha'}{e_b}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
 	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
 	I_2$}.                                                                    
 	           
 	                                                       
 	\begin{description}
-		\item[{\bf Tr2:}]
+		\item[{\TrDeux:}]
 	\end{description}
 	
 	\noindent
 \begin{mathpar}
-    \mprset {vskip=1ex}
+    \mprset {vskip=.8ex}
 \inferrule
     {
 \Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
@@ -825,8 +824,8 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
     	{\ostate{s_m} \OTarrow {\alpha_m}
     		\ostate{s_m'}} }\\\\
      J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
-    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
+    	\Pred = \bigwedge_{m\in I_1\uplus I_2}\!\! \Pred_m \land
+    	\Predsv(SV_k,\alpha_m^{m\in I_1\uplus I_2},\beta_j^{j\in J},\alpha)\\ 
     		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
     \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
@@ -865,9 +864,9 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
     open-transitions}
   In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
   open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:ABP-composed}).
-  The rule uses TR1 for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
+  The rule uses \TrUn\ for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
   
-\begin{figure}[tb]
+\begin{figure}[bh]
 \begin{mathpar}
   \small
   \inferrule
@@ -933,9 +932,9 @@ behaviours, for any possible values of the variables.
 The variables in each synchronisation vector are considered local:
 for a given pNet expression, we must have fresh local variables for
 each occurrence of a vector (= each time we instantiate rule
-Tr2). Similarly the state variables of each copy of a
+\TrDeux). Similarly the state variables of each copy of a
 given pLTS in the system, must be distinct, and those created for each
-application of Tr2 have to be fresh and all distinct. 
+application of \TrDeux\ have to be fresh and all distinct. 
 This will be implemented within the open-automaton generation algorithm,
 e.g. using name generation using a global counter as a suffix.
 
@@ -961,7 +960,7 @@ unexplored set and add it to the explored set.
 
 2a- From this state
 build all possible deduction trees by application of the structural
-rules Tr1 and Tr2, using all applicable combinations
+rules \TrUn\ and \TrDeux, using all applicable combinations
 of synchronisation vectors.
 In practice, the algorithm does not explicitely construct the
 deduction tree, but for each pNet node, builds all possible
@@ -1048,9 +1047,7 @@ More precisely, for any pair $(s,t)$, there is a
 \begin{minipage}{0.69\linewidth} 	Suppose that
    $A_1 = <J,\mathcal{S}_1, s_0,
    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0, \mathcal{T}_2>$
-   are open automata where the set
-   of holes are equal 
-   and of the same sort.  
+   are open automata with identical holes of the same sort.  
 
  Then 
 $\mathcal{R}$ is an FH-bisimulation iff for any  states
@@ -1115,8 +1112,8 @@ the predicate associated to the relation between the initial states is true.
 Classically, $\Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}$
 applies in parallel the  
 substitutions $\Post_{OT}$ and $\Post_{OT_x}$ (parallelism is crucial
-inside each $\Post$ set but $\Post_{OT}$ is independent from
-$\Post_{OT_x}$), applying the assignments of the involved rules.
+inside each $\Post$ set but not between  $\Post_{OT}$ and
+$\Post_{OT_x}$ that are independent), applying the assignments of the involved rules.
 
 
 
@@ -1246,30 +1243,126 @@ actions of other systems in its environment.
 %% tool-assistance, both for the generation of the open-automata and for
 %% their comparison.
 
+
+\TODO{Id(s) is the identity function on variables of state s}
+\begin{definition}[Non-observability of silent actions]
+An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ we have
+\[ \openrule
+         {
+           (j\mapsto\tau),\symb{True},\symb{Id}(s)}
+         {s \OTarrow {\tau} s}
+         \in \mathcal{T}
+\]
+\end{definition}
+
+
+
+
+
 Classically, we start by defining a derived transition relation based
 on sequences of invisible actions:
 
 \def\InvAct{\mathcal{Inv}}
 
-\begin{definition}[Weak open transitions]
-  Let $A = <\overline{\LTS},J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton.
-  We define $\mathcal{T^*}$ the \emph{weak open transition relation}
-  with respect to a set of invisible actions $\InvAct$ as:
 
- \begin{mathpar}
+We let $\gamma$ range over lists of action terms and use $\dotcup$ as the union that appends lists of action terms \TODO{write this properly}. $[a]$ is a list with a single element.
+
+We define $\vis{\overline\beta}$ as the mapping $\overline\beta$  without  invisible actions but where each element is now a list (if length 1).\\ $\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}$ s.t. $I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}$.
+\def\WT{\mathcal{WT}}
+\begin{definition}[Weak open transition]\label{def:weakOT}
+A weak open transition over a
+	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
+	a structure of the form:	
+\begin{mathpar}
  \openrule
          {
-           \beta_j^{j\in J_1},\Pred,\Post}
-         {s \OTWeakarrow {\alpha} s'}
-         \in \mathcal{T}^*
+           \gamma_j^{j\in J},\symb{True},Id(s)}
+         {s \OTWeakarrow {\alpha} s}
+ \end{mathpar}
+	Where $s, s'\in\mathcal{S}$ and $\gamma_j$
+        is a list of transitions of the hole $j$, with each element of the list in $\Sort_j$. $\alpha$ is an action 
+        label denoting the resulting action
+        of this open transition. \Pred\ and \Post\ are defined similarly to Definition~\ref{def:OT}. We use $\WT$ to range over sets of weak open transitions.
+
+A weak open automaton $<J,\mathcal{S},s_0,\WT>$ is similar to an open automaton  except that $\WT$ is a set of weak open transitions over $J$ and $\mathcal{S}$.
+\end{definition}
+
+\begin{definition}[Building a weak open automaton]\label{def:buildweakOT}
+  Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. 
+The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows
+
+\noindent{\bf Invisible $\tau$ transitions:}
+\begin{mathpar}
+ \openrule
+         {
+           \emptyset,\symb{True},Id(s)}
+         {s \OTWeakarrow {\tau} s} \in \WT
+ \end{mathpar}
+and
+\begin{mathpar}
+  \mprset {vskip=.5ex}
+\inferrule{
+ \openrule
+         {
+           \overline{\beta},\Pred,\Post}
+         {s \OTarrow {\tau} s'} \in \mathcal{T}
+\\
+ \openrule
+         {
+           \overline{\gamma},\Pred',({x_k\gets e_k})^{k\in K}   }
+         {s' \OTWeakarrow {\tau} s''} \in \WT
+}
+{ \openrule
+         {
+           \vis{\overline{\beta}}\dotcup\overline{\gamma},\Pred\land\Pred'\subst{\Post},
+				({x_k\gets (e_k\subst \Post)})^{k\in K} } 
+         {s \OTWeakarrow {\tau} s''} \in \WT
+}
  \end{mathpar}
 
- iff there exists a sequence of open transitions
-         $OT_x^{x\in X} \subseteq \mathcal{T}$ such that:
-
- \TODO{Pas si simple !!!!!!!!!!!!!!!!!!!}
+\noindent{\bf Other transitions:}
+\begin{mathpar}
+  \mprset {vskip=.5ex}
+\inferrule {\openrule
+         {
+           \overline{\gamma_1},\Pred_1,\Post_1   }
+         {s \OTWeakarrow {\tau} s_1} \in \WT
+\qquad\qquad
+\openrule
+         {
+           \overline{\beta},\Pred_2,\Post_2  }
+         {s_1 \OTarrow {\alpha} s_2} \in \mathcal{T}
+\\
+\openrule
+         {
+           \overline{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
+         {s_2 \OTWeakarrow {\tau} s'} \in\WT
+\\
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
+}
+{
+\openrule
+         {
+           \overline{\gamma_1}\dotcup \vis{\overline{\beta}}\dotcup\overline{\gamma_3},
+		\Pred,
+				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
+         {s \OTWeakarrow {\alpha} s'} \in\WT
+}
+\end{mathpar}
  
 \end{definition}
+
+
+\subsection{Non-observability and open pNets}
+\begin{definition}[Non-observability of silent actions]~\\
+A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \overline{\symb{SV}}\myrangle$
+ \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\symb{True}}\in \overline{\symb{SV}}$ and $\forall i,j\in I\uplus J.\,i\neq j \Rightarrow \alpha_i\neq\tau$
+\end{definition}
+
+\begin{property}[pNets that cannot observe silent actions]
+The open semantics of a pNets that cannot observe silent actions is an open automaton that  cannot observe silent actions.
+\end{property}
+
 
 \subsection{Running example}
 - Detail of a $\tau^*$ sequence, \\
@@ -1367,13 +1460,18 @@ WOT is:
 \begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
 
 \noindent
-Let $A_1$ and $A_2$ be open automata, and $\mathcal{R}$ a relation over
-$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition \ref{def-FH-bisim}.
+Let $A_1 = <J,\mathcal{S}_1, s_0,
+    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
+Let $<J,\mathcal{S}_1, s_0,
+    \WT_1>$ and $<J,\mathcal{S}_2,t_0,  \WT_2>$ be the
+weak open automata derived from $A_1$ and $A_2$ respectively.
+Let $\mathcal{R}$ a relation over
+$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition~\ref{def-FH-bisim}.
 
 Then 
    $\mathcal{R}$ is a weak FH-bisimulation iff for any  states
-$s\in\mathcal{S}_1$ and\\
-$t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we 
+$s\in\mathcal{S}_1$ and
+$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
    have the following:
 
 
@@ -1387,11 +1485,11 @@ $t\in\mathcal{S}_2$, $(s,t|\Pred)\in\mathcal{R}$, we
          {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
- there exist open transitions $OT_x^{x\in X} \subseteq \mathcal{T}_2^*$:
+ there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
  \begin{mathpar}
     \openrule
          {
-           \beta_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+           \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
          {t \OTWeakarrow {\alpha_x} t_x}
 \end{mathpar}
  such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
@@ -1448,7 +1546,7 @@ whether two open pNets are bisimilar.
 \ERIC{
 => Context VCE, ref to FASE paper\\
 => Current prototype: programatic creation of pNet objects, through the pNet API in VCE. On the middle term, this should be compiled from some language or graphical formalism.\\
-=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule Tr2, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
+=> Open transitions are computed as a direct implementation of the algorithm above. Steps 2a-2b are merged: at each pNet node, after application of rule \TrDeux, the resulting OT is built from the premisses, without explicitely constructing the deduction tree. \\
 => Variable names are generated for all ``fresh'' and ``clone'' operations, using structured variable names ensuring uniqueness of fresh names, but also reasonable readability of these names for debugging purposes.\\
 => Satisfiability check is done only at toplevel of the deduction tree construction. An alternative would be to submit the satisfiability check to the SMT solver at each level of the tree construction, potentialy reducing the overall number of combinations. But submission to the SMT engine is costly, and more complexity analysis is required before deciding if this would be worthwhile.\\
 => Simplification is mostly implemented. It is not strictly required for the Open Automaton construction, but it will be critical later for predicate comparison in the bisimulation algorithm.}
@@ -1932,23 +2030,20 @@ satisfiability of the predicate relating the first state to the last one.
        	following by definition of bisimulation:
        	For any open transition $OT$ in $\mathcal{T}_1$ originating from $s$.
        	\begin{mathpar}
-       	
        	\openrule
        	{
        		\beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
-       	{s \OTarrow {\alpha} {s}'}
-       	
+       	{s \OTarrow {\alpha} {s}'}     	
        	\end{mathpar}
        	
        	There exist open transitions $OT_{p x}^{x\in X} \subseteq \mathcal{T}_2$:
        	
-       	\begin{mathpar} \qquad (*)
-       	
+       	\begin{mathpar} 
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\openrule
        	{
        		\beta_{j p x}^{j\in J_{px}}, \Pred_{OT_{px}},\Post_{OT_{px}}}
-       	{t_p \OTarrow {\alpha_{px}} t_{p x}}
+       	{t_p \OTarrow {\alpha_{px}} t_{p x}}\qquad (*)
        	%         \right)
        	\end{mathpar}
        	
@@ -1968,16 +2063,14 @@ For any open transition $OT_{px}$, since
        	$(t_p,u|\Pred_{p,u})\in\mathcal{R}'$ there exist open transitions
        	$OT_{pxy}^{y\in Y} \subseteq \mathcal{T}_3$: 
        	
-       	\begin{mathpar} \qquad (**)
-       	
+       	\begin{mathpar}  	
        	%    \left( fresh \ \overline{a_i}, \overline{b_j}, v_x.\ \
        	\openrule
        	{
        		\beta_{j p x y}^{j\in J_{pxy}}, 
        		\Pred_{OT_{pxy}},\Post_{OT_{pxy}}}
-       	{u \OTarrow {\alpha_{pxy}} u_{pxy}}
-       	%         \right)
-       	
+       	{u \OTarrow {\alpha_{pxy}} u_{pxy}}\qquad (**)
+       	%         \right)    	
        	\end{mathpar}
        	such that  $\forall y, J_{px}=J_{pxy}, 
        	(t_{px},u_{pxy}|\Pred_{{pxy}})\in \mathcal{R}'$; and  \\
@@ -2037,9 +2130,7 @@ variable in $\mathcal{T}_1$.
        		\land \alpha\!=\!\alpha_{pxy} \land
        		\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
        	\end{small}
-\TODO{From we will add notation (1) and (2)}   \LUDO{I do not remember what this TOD 
-means, Rabea?}      	
-       	We have, for all $p$
+From (*) and (**) we have, for all $p$
        	\begin{small}
        		$\Pred_{s,p} \land \Pred_{OT}\land\Pred_{p,u}\\
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
@@ -2169,10 +2260,10 @@ predicates:
 \end{lemma}
 
    \begin{small}\begin{proof}
-Consider rule TR2 in 
+Consider rule \TrDeux\ in 
        Definition~\ref{def:operationalSemantics}. 	
 
-\noindent\textbf{Tr2:}\\
+\noindent\TrDeux:\\
 	\noindent
 \begin{mathpar}
     \mprset {vskip=1ex}
@@ -2198,7 +2289,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
     		\ostate{s_m'}} }\\\\
      J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
     	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
+    	\Predsv(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
     		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
     	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
     \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
@@ -2261,9 +2352,9 @@ choose\footnotemark[\thefootnote]  $\alpha_Q=\alpha_{j_0}$ and $\Pred\,''= \Pred
 Considering 
 the OT of $P$ we have  $I'_P=I'\setminus L_Q$, and $J'_P=J'\setminus\Holes(Q)\uplus 
 \{j_0\}$;  the predicate is 
-$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in 
+$\Pred\,'=\bigwedge_{m\in I_k}\Pred_m  \land \Predsv(SV_k,\alpha_m^{m\in 
 I},\beta_j^{j\in J\cup \{j_0\}},\alpha)$
-where\footnotemark[\thefootnote] $\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in I},\beta_j^{j\in 
+where\footnotemark[\thefootnote] $\Predsv(SV_k,\alpha_m^{m\in I},\beta_j^{j\in 
 J\cup 
 \{j_0\}},\alpha)\Leftrightarrow 
 \forall i\in I_k.\, \alpha_i=\alpha'_i\land \forall j \in J\cup \{j_0\}.\, 
@@ -2355,7 +2446,7 @@ does not appear neither as global action nor as an action of a hole.
 
 \begin{proof} 
 
-       Consider each premise of the open transition (constructed by \textbf{Tr2} in 
+       Consider each premise of the open transition (constructed by \TrDeux\ in 
 Definition~\ref{def:operationalSemantics}). 
 We know each premise is true for $P$ and try to prove the equivalent premise for 
 $P[Q]_{j_0}$ (using the open transition of $Q$). 
@@ -2400,7 +2491,7 @@ reduced, we need:\\[-2ex]%\footnote{again we skip arguments related to renaming 
 %\end{array}\right)}\]
 the sub-pNet at position $j_0$ is the one filled by $Q$ which offers an open transition 
 by hypothesis, the other open transitions are immediate consequence of the open 
-transition that can be performed by $P$ (premises of \textbf{Tr2}).
+transition that can be performed by $P$ (premises of \TrDeux).
 The set of moving leaves is the union of the moving leaves in the open transition for $P$ 
 and the ones for $Q$: 
 $I'_{PQ}= I'_P \uplus I'_Q$, similarly the moving holes are the union of the moving 
@@ -2417,7 +2508,7 @@ J},v)\Leftrightarrow
 this is equivalent to $\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, 
 \beta_j=\alpha'_j \land 
 	\alpha=\alpha'\land \alpha_Q=\beta_{j_0}\land \beta_{j_0}=\alpha_{j_0}\land e_b$
- and by definition of $\Pred$ (as obtained by \textbf{Tr2}),
+ and by definition of $\Pred$ (as obtained by \TrDeux),
 	$\Pred\,''\iff \Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0}$. The post-condition 
 	gathers the post-conditions related to all 
 	the leaves. Finally, the composed open transition can be
@@ -3056,8 +3147,8 @@ e.g. $\triangleleft 102 \triangleright$.
   \label{example:deduction-trees}
 
 To build a proof tree, we have to choose one synchronisation vector at
-each instantiation of rule Tr2, and one pLTS transition at each
-instantiation of rule Tr1. Each stage in the proof tree builds one
+each instantiation of rule \TrDeux, and one pLTS transition at each
+instantiation of rule \TrUn. Each stage in the proof tree builds one
 open-transition of the corresponding pNet node.  Let us explain in
 detail the first two steps of the
 scenario from Fig. \ref{fig:hb-scenario}:
@@ -3093,8 +3184,8 @@ UG\_2 : $< -, ium(t2), -, -, um(t2) > \longrightarrow \underline{um(t2)}$
 
 \smallskip\noindent
 where the first synch vector (for sub-group SG2) has length 2, and the
-second one (for the root pNet) has length 5. Using once the rule Tr1,
-and twice rule Tr2, we build a proof tree, in which the premisses
+second one (for the root pNet) has length 5. Using once the rule \TrUn,
+and twice rule \TrDeux, we build a proof tree, in which the premisses
 define the behaviour of a gateway pLTS (here
 $0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2$, in which $tgt2_2$ stands for
 the variable $tgt$ of state 2 in gw2), or of a process at a hole
@@ -3186,8 +3277,8 @@ transition; the one we are interested here for our scenario is the
 case where the target address is below $gw1$, corresponding to the
 predicate [$a$=$bm(tgt2_2)$ $\land$ isDirectRelative(2,$tgt2_2$)], and we
 construct the proof tree, reduced here to applications of rule
-Tr1 for transitions of the pLTSs gw1 and gw2, and a single application of rule
-Tr2 for the synch vector HB at index 2:
+\TrUn for transitions of the pLTSs gw1 and gw2, and a single application of rule
+\TrDeux for the synch vector HB at index 2:
 
 \medskip\noindent
 HB\_2 : $< im(t3), bm(t3), im(t3) -, - > \longrightarrow \underline{bm(t3)}$
@@ -3241,7 +3332,7 @@ $Pred2 = [Pred_{gw2} \land Pred_{HB\_2} ] $
 \medskip
 This can be simplified, eliminating the intermediate variable $t3$ of vector
 HB\_2, while keeping the state variables of $gw_1$ and $gw_2$, the
-intermediate $v$ created by Tr2, and the action variable of hole 
+intermediate $v$ created by \TrDeux, and the action variable of hole 
 $P3$. This yields finally predicate $Pred2$ :
 
 $Pred2 = [tgt1_1=tgt2_2 \land
@@ -4324,7 +4415,7 @@ processes and sub-groups, that have no states, we only show their name.
       \phi'\!=\!\phi\!+\!\{x'_i\!\to\!V_i|x'_i\!\in\!\iv(\alpha)\land V_i\!\in\!\mathcal{D}\} \\
       e_b\phi'\!=\!\symb{True} \\ \phi''\!=\!\phi'+\{x_j\!\to\! e_j\phi'|j\!\in\! J\}}
     {(s,\phi) \xrightarrow{\alpha\phi'} (s',\phi'') \in\llbracket\mylangle S,s_0,
-      \to\myrangle\rrbracket_\Phi}~~{\bf Tr1}
+      \to\myrangle\rrbracket_\Phi}~~{\TrUn}
 %         \end{mathpar}
 % \begin{mathpar}
 
