@@ -266,9 +266,9 @@ France}
 Open pNets are used to model the behaviour of open systems, both
 synchronous or asynchronous, expressed in various calculi or
 languages. They are endowed with a symbolic operational semantics in
-terms of so-called ``Open Automata''. This allows to check properties of
+terms of so-called ``Open Automata''. This allows us to check properties of
 such systems in a compositional manner. 
-We implement an algorithm computing this semantics,
+We implement an algorithm computing these semantics,
 building predicates expressing the synchronization conditions
 between the events of the pNet sub-systems. Checking such
 predicates requires symbolic reasoning over first order logics, but
@@ -306,7 +306,7 @@ value-passing processes or open process expressions.
 Parameterized Networks of Synchronized Automata (pNets) were proposed
 to give a behavioural specification formalism for distributed
 systems, synchronous, asynchronous, or heterogeneous. They are used in
-VerCors, a platform for designing and 
+VerCors~\cite{HKLM:Foclasa14}, a platform for designing and 
 verifying distributed systems, as the intermediate language for various
 high-level languages. The high-level languages in VerCors formalize
 each component of the distributed system and their composition.
@@ -324,15 +324,15 @@ The pNet model was developed in a series of
 papers~\cite{HMZ:PDP15,henrio:Forte2016} in which many examples have been
 introduced showing its ability to encode the operators from some
 other algebras or  program skeletons.
-The operational semantic of an (open) pNet is defined as an
+The operational semantics of an (open) pNet is defined as an
 Open Automaton in which Open Transitions contain logical predicates
 expressing the relations between the behaviour of the holes, and the
 global behaviour of the system. In the previous publication,
-only a sketch of a procedure allowing to compute this semantics was
+only a sketch of a procedure allowing to compute these semantics was
 presented, together with a proof of finiteness of the open automaton, under
 reasonable hypotheses on the pNet structure.
 
-Implementing this semantics raised several challenges, in order:
+Implementing these semantics raised several challenges, in order:
 \begin{itemize}
   \item to get a tool that could be applied to pNets representing
     various languages, in particular various actions algebras,
@@ -348,7 +348,7 @@ Implementing this semantics raised several challenges, in order:
     with the SMT solver.
 \end{itemize}
 
-In the long goal, we want to be able to check the equivalence between
+In the long term, we want to be able to check the equivalence between
 open systems encoded as pNets. The equivalence between pNets is
 "FH-bisimulation" \cite{henrio:Forte2016}, a dedicated version of
 symbolic bisimulation taking the  
@@ -361,11 +361,11 @@ transitions.
 \paragraph{Contribution}
 In the article we show how:
 \begin{itemize}
-\item We define the open automaton generation algorithm, and we
+\item We define the open automaton generation algorithm. We
   implemented a full working prototype, within the 
   VerCors platform. In the process, we improved the
   semantics rules from~\cite{henrio:Forte2016}, and add features in
-  the algorithm to deal the full 
+  the algorithm to deal with the full 
   model, including management of variables and assignments.
 \item We implement the interaction between our algorithm and the Z3
     SMT solver, for checking satisfiability of the transitions
@@ -416,7 +416,7 @@ already integrated several provers, like Z3, as modules for proving
 the proof obligations generated from a user model. 
 The prover we use, which also happens to be Z3, is developed by Microsoft Research
 based on the satisfiability modulo 
-theories (SMT), is mainly applied in extended static checking, test case
+theories framework (SMT), is mainly applied in extended static checking, test case
 generation, and predicate abstraction.
 In a similar way, there are several ATPs/ITPs we could consider to use for
 result pruning and bisimulation checking in our algorithm, as an
@@ -537,7 +537,7 @@ communications.
 
 \paragraph*{Algebra presentations.}
 In practice, the parameterization of the pNet model by some specific
-action algebra is realized by the definition of an many-sorted ``algebra
+action algebra is realized by the definition of a many-sorted ``algebra
 presentation''. It will be used to check the
 well-formedness of a pNet system, and to define the translation of the pNet
 semantics into the SMT engine input language (\cite{BarFT-RR-17}).
@@ -663,7 +663,7 @@ $\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
     expressions  $\AlgE_{\P}\cup\AlgA_{P}$ are assigned to $x_j$.
 If 
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-		J}\rangle} s'\in \to $ then 
+		J}\rangle} s'$ then 
                 $\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
 x_j\!\in\!\vars(s')$.
@@ -942,7 +942,7 @@ parametrised actions, but include no guard nor assignments.
 	\inferrule*[myfraction=\reddottedrule]
 	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
 		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred\,, \Post}
-	{s \xrightarrow {v}s'}\,,
+	{s \xrightarrow {\alpha}s'}\,,
 	\end{mathpar}
 	where $s, s'\in\mathcal{S}$, the $a_i, b_j, \alpha$ are
         action expressions, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is
@@ -1367,7 +1367,7 @@ Our implementation submits satisfiability requests to
 Z3 using its JAVA API. Here, for readability, we
 show the Z3 code using its SMT-LIB input language.
 Note that in the previous sections, the OTs were displayed in a
-  simplied, human readable form. The input and output of our tool, and
+  simplified, human readable form. The input and output of our tool, and
   also the generated SMTlib fragments, are
   slightly more difficult to read, in 
 particular because of structured names for the fresh variables generated
@@ -1381,10 +1381,12 @@ It contains the declaration
 of the BIP action algebra sorts 
 and constructors, then the declaration of variables, and finally the
 predicate to be checked, encoded as a set of assertions.
-Here we display also the proof generated by Z3;
+Here we display also the diagnosis (``sat'' or ``unsat'') generated by Z3;
 %% \noteSB{I am not sure I understand the entire message of this phrase}\hl{though in practice our tool only needs the brute information ``sat''
 %% or ``unsat''.
-The result "unsat" in the output is just what we expected.
+%% The result "unsat" in the output is just what we expected.
+%% If the result is ``sat'', and more details are needed, Z3 can exhibit a
+%% model (i.e. an instanciation of the variables) showing the satisfiability.
 % as appears in the ``unsat'' proof generated by Z3 in which ``\{= ?x66 ?x70\}'' is shown to be false (see Fig. \ref{schema:smt-lib})
 
 \begin{figure}[t]
@@ -1627,9 +1629,9 @@ will be the basis for comparison of open transitions.
 \emph{Scaling up.} One important motivation of this work is to
 attack the complexity of verification of realistic systems by a
 compositional and parametric approach. Still one may wonder if the price
-for analysing our our symbolic transitions will not make the approach
-inapplicable. Here we tried a
-slighly bigger example, assembling 2 Failure controlers. In
+for analysing our symbolic transitions will not make the approach too expensive
+in term of computing time. We tried a
+slighly bigger example, assembling 2 Failure controllers. In
 appendix~\ref{appendix:scalingup}, we show that Z3 can check the
 satisfiablility of a 90K open transitions in a couple of minutes.
 
@@ -2645,7 +2647,7 @@ The computation was carried out on an Intel Core i7 at 2.5GHz with 16GB of RAM.
 Analysing this result, we found some extra states that did not exist
 when running only the subnets.
 Comparing this with the previous result on on a single subnet, we
-found that this was caused by a input mistake in a synchronisation vector.
+found that this was caused by an input mistake in a synchronisation vector.
 
 After correction the algorithm produced 233280 OTs, whereof 281 are
 satisfiable. The resulting automaton has 17 reachable states. Of
