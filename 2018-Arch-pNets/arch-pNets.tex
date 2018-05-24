@@ -66,6 +66,7 @@
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
 \newcommand{\defntwo}[2]{Defs~\ref{defn:#1} and \ref{defn:#2}}
 \newcommand{\fig}[1]{Fig.~\ref{fig:#1}}
+\newcommand{\Fig}[1]{Figure~\ref{fig:#1}}
 \newcommand{\figs}[2]{Fig.~\ref{fig:#1} and~\ref{fig:#2}}
 \newcommand{\tab}[1]{Tab.~\ref{tab:#1}}
 \newcommand{\eq}[1]{(\ref{eq:#1})}
@@ -563,7 +564,7 @@ communications.
 %****************************************************************
 
 \subsection{Components and composition}
-\label{sec:components}
+\label{secn:components}
 
 \noteSBin{%
 To guarantee preservation of properties guards and expressions
@@ -616,6 +617,50 @@ the definitions of components and interaction models?
   is always clear from the context.
 \end{definition}
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v3}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{fig:schema:ArchFailure:BIP}
+\end{figure}
+
+In this paper, we will use a running example, which is a refined
+version of the Failure Monitor architecture
+from~\cite{CubETH-case-study}.  Although \fig{schema:ArchFailure:BIP}
+shows the full definition of this architecture, we will explain its
+various elements progressively, as we define the corresponding
+notions.
+
+The model in \fig{schema:ArchFailure:BIP} has three components.  The
+component $\NameOprnd$ is an \emph{operand} of the architecture, \ie
+it only has its interface defined: $(\emptyset, \{\PortFinish,
+\PortResume, \PortFail\}, \export[\emptyset])$, with
+$\export[\emptyset](p) = \emptyset$, for all $p \in \{\PortFinish,
+\PortResume, \PortFail\}$.  The other two components, $\NameCtrl$ and
+$\NameTimer$, are \emph{coordinators}\mdash they are specified
+completely, including the states and transitions defining their
+\emph{behaviour}.  Transitions are labelled with the ports of the
+corresponding components, Boolean guards and update functions on local
+variables.  For instance the loop transition $\tstate{1}
+\goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$ in the
+$\NameTimer$ component is labeled by the port $\PortTick$, it can be
+fired only when the current value of the local variable $t$ is less
+than $z.u$, where $z = [l, u]$ is a local variable representing an
+interval.  Upon firing, this transition decrements the value of $t$ by
+$1$.  The guard and update function of the transition $\tstate{1}
+\goesto{\PortResume} \tstate{0}$ are omitted.  The default values are
+the constant predicate $\true$ and the $\mathit{skip}$ operator
+respectively.  The initial valuations $\val{0}{\NameTimer} = \{z
+\mapsto [0,0], t \mapsto 0\}$ and $\val{0}{\NameCtrl} =
+\{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
+initialising transitions $\goesto{\TimerInitZone[]} \tstate{0}$ and
+$\goesto{\IntervalInit[]} \cstate{0}$ respectively.  The constants
+$\mathrm{Min}$ and $\mathrm{Max}$ are the parameters of the
+architecture.
+%\noteLH{It looks like Max is in zone, I do not understand}
+
+\todoSBin{Speak of guard monotonicity}
+
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
   The \emph{open semantics} of a component $B = (Q, q^0, V,
@@ -663,11 +708,8 @@ interaction.
   pairwise disjoint, \ie $\forall i \neq j,\ P_i \cap P_j = V_i \cap
   V_j = \emptyset$.  Let $P = \bigcup_{i \in I} P_i$, $V = \bigcup_{i
     \in I} V_i$ and $\export : P \rightarrow 2^V$ such that, for any
-  $p \in P_i$, $\export(p) = \export[i](p)$. \noteLH{supp should go outside the definition}
+  $p \in P_i$, $\export(p) = \export[i](p)$. 
 %
-  For a set of ports $a \subseteq P$, we denote $\supp{a}
-  \bydef{=} \setdef{i \in I}{a \cap P_i \neq \emptyset}$ the
-  \emph{support} of $a$.
   %% \noteSB{Updated this}\hl{and $V_a \bydef{=} \bigcup_{i \in
   %%   \supp{a}} \export[i](a \cap P_i)$ the set of component
   %% variables exported through $a$.}
@@ -685,6 +727,18 @@ interaction.
   %% We call the set of ports $P$ the \emph{domain} of the
   %% interaction model.
 \end{definition}
+
+%% \noteLH{supp should go outside the definition}
+When speaking of a set of components or interfaces , we will always
+assume that it satisfies the disjointness assumption of \defn{im}.
+%
+We call the \emph{support} of a set of ports $a \subseteq P$, denoted
+$\supp{a}$, either the set $\setdef{i \in I}{a \cap P_i \neq
+  \emptyset}$ (for $P = \bigcup_{i=1}^n P_i$) or the set $\setdef{B
+  \in \cB}{a \cap P_B \neq \emptyset}$ (for $P = \bigcup_{B \in \cB}
+P_B$).  The precise meaning of this notation will always be clear from
+the context.  Intuitively, for an interaction $(a, g, e)$, $\supp{a}$
+denotes the set of the participating components.
 
 \begin{definition}[Composition]
   \label{defn:im:sem}
@@ -739,13 +793,46 @@ interaction.
   \todoSBin{Add the intuitive explanation}
 \end{definition}
 
-Below, when speaking of a set of components $\cB$ or interfaces, we will always
-assume that it satisfies the disjointness assumption of \defn{im}.
+Specifying interaction models as sets of sets of ports is not
+practical due to their potentially exponential size.  An algebra of
+connectors was introduced in \cite{BliSif08-acp-tc} in order to
+structure interactions in BIP models.
+
+Connectors are hierarchical, tree-like structures with component ports
+at the leaves.  They define sets of interactions, based on the
+attributes of the connected ports, which may be either \emph{trigger}
+(triangles in \fig{schema:ArchFailure:BIP}) or \emph{synchron}
+(bullets in \fig{schema:ArchFailure:BIP}).
 %
-For a set of ports $a$, we will abuse the notation by writing
-$\supp{a}$ to also denote the set $\setdef{B \in \cB}{a \cap P_B
-  \neq \emptyset}$.  The precise meaning of this notation will
-always be clear from the context.
+If all sub-connectors of a connector are synchrons, then an
+interaction may be executed by the connector only if each subconnector
+can contribute.
+%
+If at least one of the sub-connectors is a trigger, then any
+interaction consisting of contributions of any set of sub-connectors,
+\emph{involving at least one of the triggers}, can be executed.
+The composition semantics of BIP systems consists in
+firing exactly one interaction, enabled through at least one of the
+top-level connectors, at each execution round.
+
+For instance, in \fig{schema:ArchFailure:BIP}, the two ports
+$\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are always
+synchronised, since they belong to the same binary sub-connector,
+where they are both synchrons.  In particular, this means that
+whenever the transition $\cstate{0} \goesto{\PortFail} \cstate{1}$ is
+fired, so is the transition $\tstate{0} \goesto{\PortStart,
+  \TimerInit[]} \tstate{1}$, initialising the timer.  The binary
+connector $\NameTimer.\PortStart \bullet\!\!\!-\!\!\!-\!\!\!\bullet
+\NameCtrl.\PortFail$ is a sub-connector of a hierarchical connector,
+where the port $\NameOprnd.\PortFail$ is a trigger.  Thus, the above
+interaction can only happen together with $\NameOprnd.\PortFail$,
+forming a ternary interaction.  On the contrary, being a trigger, the
+port $\NameOprnd.\PortFail$ can fire alone, forming a singleton
+interaction.
+
+\todoSBin{Speak of data transfer}
+
+\todoSBin{Provide the interaction model}
 
 \begin{definition}[Priority model]
   \label{defn:priority}
@@ -797,99 +884,49 @@ In this paper, we will only consider the so-called \emph{maximal
 \secn{conclusion}, we discuss the possibility of generalising the
 obtained results to other priority models.
 
+%% Finally, \emph{priorities}\mdash defined by a strict partial order on
+%% the set of possible interactions\mdash narrow the choice among the
+%% enabled interactions at any given round.  The default priority is the
+%% so-called \emph{maximal progress}, whereby among any two interactions
+%% $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
+Going back to our running example in \fig{schema:ArchFailure:BIP}, the
+port $\NameOprnd.\PortFail$ will never fire alone in a global state,
+where both $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are
+enabled.
+
+%% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
+%% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
+%% a failure, the operation performed by $\NameOprnd$ cannot finish
+%% unless it is explicitly resumed or the system is reset.
+
 \begin{note}
   \label{rem:maxprogress}
   Below, we will assume that the maximal progress priority $\mu$ is
   applied after each composition with an interaction model.
 \end{note}
 
+
+%% %****************************************************************
+%% \subsection{Running example: Failure Monitor architecture}
+%% \label{secn:failure-monitor}
+
+%\noteLH{Ludo ou simon: essayer de remonter la description generique en debut de section}
+
 %****************************************************************
-\subsection{Running example: Failure Monitor architecture}
-\label{secn:failure-monitor}
+\subsection{Architectures}
+\label{secn:archi}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v3}
-  \caption{The BIP specification of the Failure Monitor architecture}
-  \label{schema:ArchFailure:BIP}
-\end{figure}
+\todoSBin{Sort out the following two paragraphs}
 
-Figure~\ref{schema:ArchFailure:BIP} shows a refined version of the
-Failure Monitor architecture used in~\cite{CubETH-case-study}.
 Contrary to standard BIP models, architectures comprise one or several
 \emph{operand} components, whereof only the set of \emph{ports} is
 given.  Here, the operand component is $\NameOprnd$ and its interface
 consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
-The two \emph{coordinator} components\mdash $\NameCtrl$ and
-$\NameTimer$\mdash are standard BIP components insofar as they also
-have their \emph{behaviour} specified by finite automata extended with
-local data variables.  Transitions of these automata are labelled with
-the ports of the corresponding components, Boolean guards and update
-functions on local variables.  For instance the loop transition
-$\tstate{1} \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$
-in the $\NameTimer$ component is labeled by the port $\PortTick$, it
-can be fired only when the current value of the local variable $t$ is
-greater than $0$.  Upon firing, this transition decrements the value
-of $t$ by $1$.  When omitted, the default guard (\resp update
-function) is the constant predicate $\true$ (\resp the $\mathit{skip}$
-operator).  The constant $\mathrm{Max}$, in $\tstate{0}
-\goesto{\PortStart, \TimerInit[]} \tstate{1}$, is a parameter of the
-architecture.\noteLH{It looks like Max is in zone, I do not understand}
-
-\noteLH{Ludo ou simon: essayer de remonter la description generique en debut de section}
-Connectors are hierarchical, tree-like structures with component ports
-at the leaves.  They define sets of \emph{interactions}, based on the
-attributes of the connected ports~\cite{BliSif08-acp-tc}, which may be
-either \emph{trigger} (triangles in Fig.~\ref{schema:ArchFailure:BIP})
-or \emph{synchron} (bullets in Fig.~\ref{schema:ArchFailure:BIP}).
-%
-If all sub-connectors of a connector are synchrons, then an
-interaction may be executed by the connector only if each subconnector
-can contribute.
-%
-If at least one of the sub-connectors is a trigger, then any
-interaction consisting of contributions of any set of sub-connectors,
-\emph{involving at least one of the triggers}, can be executed.
-%
-For instance, the two ports $\NameTimer.\PortStart$ and
-$\NameCtrl.\PortFail$ are always synchronised, since they belong to
-the same binary sub-connector, where they are both synchrons.  In
-particular, this means that whenever the transition $\cstate{0}
-\goesto{\PortFail} \cstate{1}$ is fired, so is the transition
-$\tstate{0} \goesto{\PortStart, \TimerInit[]} \tstate{1}$,
-initialising the timer.  The binary connector $\NameTimer.\PortStart
-\bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameCtrl.\PortFail$ is a
-sub-connector of a hierarchical connector, where the port
-$\NameOprnd.\PortFail$ is a trigger.  Thus, the above interaction can
-only happen together with $\NameOprnd.\PortFail$, forming a
-ternary interaction.  On the contrary, being a trigger, the port
-$\NameOprnd.\PortFail$ can fire alone, forming a singleton
-interaction.  The composition semantics of BIP systems consists in
-firing exactly one interaction, enabled through at least one of the
-top-level connectors, at each execution round.
-
-Finally, \emph{priorities}\mdash defined by a strict partial order on
-the set of possible interactions\mdash narrow the choice among the
-enabled interactions at any given round.  The default priority is the
-so-called \emph{maximal progress}, whereby among any two interactions
-$a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
-For example, the port $\NameOprnd.\PortFail$ will never fire alone in
-a global state, where both $\NameTimer.\PortStart$ and
-$\NameCtrl.\PortFail$ are enabled.
-%
-%% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
-%% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
-%% a failure, the operation performed by $\NameOprnd$ cannot finish
-%% unless it is explicitly resumed or the system is reset.
 
 Application of the Failure Monitor architecture ensures that, whenever
 a failure is registered in the operand component, the system will be
 reset, unless a resumption is registered within $\mathrm{Max}$ time
 units (more details in Sect.~\ref{section:resultOA}).
-
-%****************************************************************
-\subsection{Architectures}
-\label{secn:archi}
 
 \noteLHin{should we say that always epsilon C is the epsilon of C?}
 
