@@ -1245,16 +1245,32 @@ actions of other systems in its environment.
 
 \TODO{Id(s) is the identity function on variables of state s}
 \begin{definition}[Non-observability of silent actions]
-An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ we have
+An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ and $s$ in $\mathcal{S}$ we have
 \[ \openrule
          {
            (j\mapsto\tau),\symb{True},\symb{Id}(s)}
          {s \OTarrow {\tau} s}
          \in \mathcal{T}
 \]
+and for all $\alpha$, $j$, $s$, $\Post$ and $s'$ we have
+\[ \openrule
+         {
+           (j\mapsto\tau),\Pred,\Post}
+         {s \OTarrow {\alpha} s'}
+         \in \mathcal{T} \implies \alpha=\tau\land s=s'\land \Post=\symb{Id}(s)
+\]
 \end{definition}
 
+We then have the following property that justifies the fact that we can abstract away tau transitions from holes.
 
+\begin{property}
+There is an open transition from state $s$ to state $s'$ if and only if there is a sequence of open transitions from $s$ to $s'$ where all open transitions except one are of the form:\[ \openrule
+         {
+           (j\mapsto\tau),\symb{True},\symb{Id}(s)}
+         {s \OTarrow {\tau} s}
+\]
+\end{property}
+\TODO{the formal view is not much interesting}
 
 
 
@@ -1356,8 +1372,42 @@ is a weak FH-bisimualtion. Then $\mathcal{R}$ is an equivalence, that is, $\math
 reflexive, symmetric and transitive.
 \end{theorem}
 
-\TODO{We will discuss this corollary and the title.}
 
+\begin{property}[Weak open transition transitivity]
+Let $A$ be an open automaton, and $<J,\mathcal{S},s_0,\WT>$ a weak open automaton derived from $A$.
+Suppose we have the following weak open transitions in $\WT$:
+\[\openrule
+         {
+           \overline{\gamma_1},\Pred_1,\Post_1   }
+         {s \OTWeakarrow {\tau} s_1}
+\qquad 
+\openrule
+         {
+           \overline{\gamma_2},\Pred_2,\Post_2   }
+         {s_1 \OTWeakarrow {\alpha} s_2}
+\qquad
+\openrule
+         {
+           \overline{\gamma_3},\Pred_3,\Post_3   }
+         {s_2 \OTWeakarrow {\tau} s_3}
+\]
+Then there is ag weak  open transition of the following form in $\WT$:
+\[\openrule
+         {
+           \overline{\gamma},\Pred,\Post   }
+         {s \OTWeakarrow {\alpha} s_3}
+\]
+Suppose additionally $\Post_3=({x_k\gets e_k})^{k\in K}$, we have the following
+\[
+\begin{array}{rcl}
+\gamma&=& \gamma_1\dotcup\gamma_2\dotcup\gamma_3\\
+\Pred&=&\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}\\
+\Post &=& ({x_k\gets ((e_k\subst{\Post_2})\subst{\Post_1})})^{k\in K}
+\end{array}\]
+\end{property}
+
+\TODO{We will discuss this corollary and the title.}
+\TODO{Move the following propertiesafter the definition of Weak bisim!}
 \begin{corollary}[Weak Composability]
 	Consider two weak FH-bisimilar pNets with an arbitrary number of holes, when replacing, 
 	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
