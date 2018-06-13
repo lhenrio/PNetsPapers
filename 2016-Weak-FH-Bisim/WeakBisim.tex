@@ -1242,36 +1242,30 @@ actions of other systems in its environment.
 %% tool-assistance, both for the generation of the open-automata and for
 %% their comparison.
 
-
+INtiuition: tau is non observable if the automaton allows any tau transition from holes, and the global transition resulting from a tau in a hole is a tau transition not changing the action state.
 \TODO{Id(s) is the identity function on variables of state s}
 \begin{definition}[Non-observability of silent actions]
 An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ and $s$ in $\mathcal{S}$ we have
+\begin{enumerate}
+\item
 \[ \openrule
          {
            (j\mapsto\tau),\symb{True},\symb{Id}(s)}
          {s \OTarrow {\tau} s}
          \in \mathcal{T}
 \]
-and for all $\alpha$, $j$, $s$, $\Post$ and $s'$ we have
+and 
+\item for all $\alpha$, $j$, $s$, $\Post$ and $s'$ such that
 \[ \openrule
          {
            (j\mapsto\tau),\Pred,\Post}
          {s \OTarrow {\alpha} s'}
-         \in \mathcal{T} \implies \alpha=\tau\land s=s'\land \Post=\symb{Id}(s)
+         \in \mathcal{T} \] we have \[ \alpha=\tau\land s=s'\land \Post=\symb{Id}(s)
 \]
+\end{enumerate}
 \end{definition}
 
-We then have the following property that justifies the fact that we can abstract away tau transitions from holes.
-
-\begin{property}
-There is an open transition from state $s$ to state $s'$ if and only if there is a sequence of open transitions from $s$ to $s'$ where all open transitions except one are of the form:\[ \openrule
-         {
-           (j\mapsto\tau),\symb{True},\symb{Id}(s)}
-         {s \OTarrow {\tau} s}
-\]
-\end{property}
-\TODO{the formal view is not much interesting}
-
+We then can add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away $\tau$ transitions from holes in the definition of a weak open transition.
 
 
 Classically, we start by defining a derived transition relation based
@@ -1308,7 +1302,7 @@ A weak open automaton $<J,\mathcal{S},s_0,\WT>$ is similar to an open automaton 
   Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. 
 The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows
 
-\noindent{\bf Invisible $\tau$ transitions:}
+%\noindent{\bf Invisible $\tau$ transitions:}
 \begin{mathpar}
  \openrule
          {
@@ -1322,34 +1316,45 @@ and
  \openrule
          {
            \overline{\beta},\Pred,\Post}
-         {s \OTarrow {\tau} s'} \in \mathcal{T}
-\\
- \openrule
-         {
-           \overline{\gamma},\Pred\,',({x_k\gets e_k})^{k\in K}   }
-         {s' \OTWeakarrow {\tau} s''} \in \WT
+         {s \OTarrow {\alpha} s'} \in \mathcal{T}
 }
 { \openrule
          {
-           \vis{\overline{\beta}}\dotcup\overline{\gamma},\Pred\land\Pred\,'\subst{\Post\,},
-				({x_k\gets (e_k\subst{\Post\,})})^{k\in K} } 
-         {s \OTWeakarrow {\tau} s''} \in \WT
+           \vis{\overline{\beta}}\!,\Pred,\Post
+				 } {s \OTWeakarrow {\alpha} s''} \in \WT
 }
+%\inferrule{
+% \openrule
+%         {
+%           \overline{\beta},\Pred,\Post}
+%         {s \OTarrow {\tau} s'} \in \mathcal{T}
+%\\
+% \openrule
+%         {
+%           \overline{\gamma},\Pred\,',({x_k\gets e_k})^{k\in K}   }
+%         {s' \OTWeakarrow {\tau} s''} \in \WT
+%}
+%{ \openrule
+%         {
+%           \vis{\overline{\beta}}\dotcup\overline{\gamma},\Pred\land\Pred\,'\subst{\Post\,},
+%				({x_k\gets (e_k\subst{\Post\,})})^{k\in K} } 
+%         {s \OTWeakarrow {\tau} s''} \in \WT
+%}
  \end{mathpar}
-
-\noindent{\bf Other transitions:}
+and
+%\noindent{\bf Other transitions:}
 \begin{mathpar}
   \mprset {vskip=.5ex}
 \inferrule {\openrule
          {
            \overline{\gamma_1},\Pred_1,\Post_1   }
          {s \OTWeakarrow {\tau} s_1} \in \WT
-\qquad\qquad
+\qquad
 \openrule
          {
-           \overline{\beta},\Pred_2,\Post_2  }
-         {s_1 \OTarrow {\alpha} s_2} \in \mathcal{T}
-\\
+           \overline{\gamma_2},\Pred_2,\Post_2  }
+         {s_1 \OTWeakarrow {\alpha} s_2} \in \WT
+\qquad
 \openrule
          {
            \overline{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
@@ -1360,7 +1365,7 @@ and
 {
 \openrule
          {
-           \overline{\gamma_1}\dotcup \vis{\overline{\beta}}\dotcup\overline{\gamma_3},
+           \overline{\gamma_1}\dotcup \overline{\gamma_2}\dotcup\overline{\gamma_3},
 		\Pred,
 				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
          {s \OTWeakarrow {\alpha} s'} \in\WT
@@ -1369,28 +1374,8 @@ and
  
 \end{definition}
 
-\begin{theorem}[Weak FH-Bisimulation is an equivalence]\label{thm-weak-equiv} Suppose $\mathcal{R}$ 
-is a weak FH-bisimualtion. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
-reflexive, symmetric and transitive.
-\end{theorem}
 
-\RAB{Weak bisimularity can be checked by reducing it to strong bisimularity. For this, we need to added in Definition \ref{def:buildweakOT} the following rule: }
-
-\begin{mathpar}
-  \mprset {vskip=.5ex}
-\inferrule{
- \openrule
-         {
-           \overline{\beta},\Pred,\Post}
-         {s \OTarrow {\tau} s'} \in \mathcal{T}
-}
-{ \openrule
-         {
-           \vis{\overline{\beta}}\!,\Pred,\Post
-				 } {s \OTWeakarrow {\tau} s''} \in \WT
-}
- \end{mathpar}
-\RAB{Given an open automaton  $A$, we can built a weak open automaton, denoted $A^{\omega}$, from rules given in Definition \ref{def:buildweakOT}. So weak bisimularity on $A$ coincides with strong bisimularity on $A^{\omega}$, than we can prove weak bisimularity with strong bisimularity on $A^{\omega}$.}
+\TODO{the formal view is not much interesting}
 
 \begin{property}[Weak open transition transitivity]
 Let $A$ be an open automaton, and $<J,\mathcal{S},s_0,\WT>$ a weak open automaton derived from $A$.
@@ -1425,16 +1410,72 @@ Suppose additionally $\Post_3=({x_k\gets e_k})^{k\in K}$, we have the following
 \end{array}\]
 \end{property}
 
-\TODO{We will discuss this corollary and the title.}
-\TODO{Move after the definition of Weak bisim!}
-\begin{corollary}[Weak Composability]
-	Consider two weak FH-bisimilar pNets with an arbitrary number of holes, when replacing, 
-	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
-	obtain two weak FH-bisimilar pNets.
-\end{corollary}
+\subsection{Weak FH-bisimulation}
 
 
-\subsection{Non-observability and open pNets}
+\begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
+
+\noindent
+Let $A_1 = <J,\mathcal{S}_1, s_0,
+    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
+Let $<J,\mathcal{S}_1, s_0,
+    \WT_1>$ and $<J,\mathcal{S}_2,t_0,  \WT_2>$ be the
+weak open automata derived from $A_1$ and $A_2$ respectively.
+Let $\mathcal{R}$ a relation over
+$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition~\ref{def-FH-bisim}.
+
+Then 
+   $\mathcal{R}$ is a weak FH-bisimulation iff for any  states
+$s\in\mathcal{S}_1$ and
+$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
+   have the following:
+
+
+
+ \begin{itemize}
+ \item  For any open transition $OT$ in $\mathcal{T}_1$:
+ \begin{mathpar}
+     \openrule
+         {
+           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s \OTarrow {\alpha} s'}
+
+\end{mathpar}
+ there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
+ \begin{mathpar}
+    \openrule
+         {
+           \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {t \OTWeakarrow {\alpha_x} t_x}
+\end{mathpar}
+ such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
+ and  \\
+ $\Pred \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
+   \left( \forall j. \vis{\beta_j}=\gamma_{jx}  \Rightarrow \Pred_{OT_x}
+     \land \alpha\!=\!\alpha_x \land  
+     \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
+    
+ \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
+      covered by a set of weak transitions from $s$ in $\WT_1$.
+ \end{itemize}
+
+Two pNets are Weak FH-bisimilar if there exist a relation between their associated 
+automata that is a Weak FH-bisimulation and their initial states are in the relation, i.e. 
+the predicate associated to the relation between the initial states is true.
+ \end{definition}
+
+Weak bisimulation can be alternatively defined as a strong bisimulation on the weak open automata, however this would still need a specific definition of strong bisimulation for weau open automata. \TODO{polish}
+
+\begin{theorem}[Weak FH-Bisimulation is an equivalence]\label{thm-weak-equiv} Suppose $\mathcal{R}$ 
+is a weak FH-bisimualtion. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
+reflexive, symmetric and transitive.
+\end{theorem}
+
+
+
+
+\subsection{Weak bisimulation for open pNets}
 \begin{definition}[Non-observability of silent actions]~\\
 A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \overline{\symb{SV}}\myrangle$
  \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\symb{True}}\in \overline{\symb{SV}}$ and $\forall i,j\in I\uplus J.\,i\neq j \Rightarrow \alpha_i\neq\tau$
@@ -1444,6 +1485,49 @@ A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \overline{\symb{SV}}\myra
 The open semantics of a pNets that cannot observe silent actions is an open automaton that  cannot observe silent actions.
 \end{property}
 
+
+\begin{property}[Decomposition of weak open transitions] \TODO{TODO}
+Let $A$ be the open automaton that is the semantics of a \pNet $P$, and $<J,\mathcal{S},s_0,\WT>$ a weak open automaton derived from $A$.
+Suppose we have the following weak open transitions in $\WT$:
+\[\openrule
+         {
+           \overline{\gamma_1},\Pred_1,\Post_1   }
+         {s \OTWeakarrow {\tau} s_1}
+\qquad 
+\openrule
+         {
+           \overline{\gamma_2},\Pred_2,\Post_2   }
+         {s_1 \OTWeakarrow {\alpha} s_2}
+\qquad
+\openrule
+         {
+           \overline{\gamma_3},\Pred_3,\Post_3   }
+         {s_2 \OTWeakarrow {\tau} s_3}
+\]
+Then there is ag weak  open transition of the following form in $\WT$:
+\[\openrule
+         {
+           \overline{\gamma},\Pred,\Post   }
+         {s \OTWeakarrow {\alpha} s_3}
+\]
+Suppose additionally $\Post_3=({x_k\gets e_k})^{k\in K}$, we have the following
+\[
+\begin{array}{rcl}
+\gamma&=& \gamma_1\dotcup\gamma_2\dotcup\gamma_3\\
+\Pred&=&\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}\\
+\Post &=& ({x_k\gets ((e_k\subst{\Post_2})\subst{\Post_1})})^{k\in K}
+\end{array}\]
+\end{property}
+
+
+
+
+\TODO{We will discuss this corollary and the title.}
+\begin{corollary}[Weak Composability]
+	Consider two weak FH-bisimilar pNets with an arbitrary number of holes, when replacing, 
+	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
+	obtain two weak FH-bisimilar pNets.
+\end{corollary}
 
 \subsection{Running example}
 - Detail of a $\tau^*$ sequence, \\
@@ -1537,58 +1621,6 @@ WOT is:
 
 %% Note that 
 
-
-\begin{definition}[Weak FH-bisimulation]\label{def-Weak-bisim} 
-
-\noindent
-Let $A_1 = <J,\mathcal{S}_1, s_0,
-    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
-Let $<J,\mathcal{S}_1, s_0,
-    \WT_1>$ and $<J,\mathcal{S}_2,t_0,  \WT_2>$ be the
-weak open automata derived from $A_1$ and $A_2$ respectively.
-Let $\mathcal{R}$ a relation over
-$\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition~\ref{def-FH-bisim}.
-
-Then 
-   $\mathcal{R}$ is a weak FH-bisimulation iff for any  states
-$s\in\mathcal{S}_1$ and
-$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
-   have the following:
-
-
-
- \begin{itemize}
- \item  For any open transition $OT$ in $\mathcal{T}_1$:
- \begin{mathpar}
-     \openrule
-         {
-           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
-         {s \OTarrow {\alpha} s'}
-
-\end{mathpar}
- there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
- \begin{mathpar}
-    \openrule
-         {
-           \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
-         {t \OTWeakarrow {\alpha_x} t_x}
-\end{mathpar}
- such that  $\forall x, J_1=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
- and  \\
- $\Pred \land \Pred_{OT}\\
-\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-   \left( \forall j. \vis{\beta_j}=\gamma_{jx}  \Rightarrow \Pred_{OT_x}
-     \land \alpha\!=\!\alpha_x \land  
-     \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)$
-    
- \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
-      covered by a set of weak transitions from $s$ in $\WT_1$.
- \end{itemize}
-
-Two pNets are Weak FH-bisimilar if there exist a relation between their associated 
-automata that is a Weak FH-bisimulation and their initial states are in the relation, i.e. 
-the predicate associated to the relation between the initial states is true.
- \end{definition}
 
 \TODO{Here we should include:
   \\  - A sufficient condition for an open PNet to preserve Weak-FH,
