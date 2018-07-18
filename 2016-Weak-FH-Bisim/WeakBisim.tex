@@ -176,21 +176,21 @@ value-passing processes or open process expressions.
 \paragraph{Structure.}
 
 
-\section{Notations}
-
+\section{Background and notations}
+This section introduces the notations we will use in this article, and  recalls the definition of pNets~\cite{henrio:Forte2016} with an informal semantics  of the pNet constructs.
 \subsubsection{Syntax and Notations}
-\TODO{copy pasted -- rearrange + move?}
 
 In the following definitions, we extensively use indexed structures
-(maps) over some countable indexed sets. The indices will usually be
-integers, bounded or not. Such an indexed family is denoted as
+(maps) over some countable indexed sets.   The indices will usually be
+integers, bounded or not. We use indexed sets in pNets because we want to consider a set of processes, and provide an additional structure that explains how to synchronise them. Basically this could be done by tuples (but not by sets), however indexed sets are more general, can be infinite, and give a compact representation (the position is easier to express).
+
+An indexed family is denoted as
 follows: $a_i^{i\in I}$ is a family of elements $a_i$ indexed over the
 set $I$. Such a family
 is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$, and we will also use mapping 
 notations to manipulate indexed sets.
 To specify the set over which the structure is indexed, 
-indexed structures are always denoted with an exponent of the form $i\in I$
-(arithmetic only appears in the indexes if necessary).
+indexed structures are always denoted with an exponent of the form $i\in I$.
 Consequently, $a_i^{i\in I}$ defines first $I$ the set over which the
 family is indexed, and then $a_i$ the elements of the family.
 
@@ -223,26 +223,6 @@ $\subst{y\gets x}$, the operation replaces in a term all occurrences
 of the term $y$ by the term $x$ (note that the absence of binders makes this operation 
 trivial).
 
-\section{Parameterised Networks (pNets): definition}
-\label{section:pnets}
-
-This section introduces pNets and the notations we will use in
-this paper. Then it gives the formal definition of pNet structures,
-together with an operational semantics for open pNets.
-
-pNets are tree-like structures, where the leaves are either
-\emph{parameterised labelled transition systems (pLTSs)}, expressing the
-behaviour of basic processes, or \emph{holes}, used as placeholders
-for unknown processes, of which we only specify the set of possible
-actions, this set is named the \emph{sort}.
-Nodes of the tree (pNet nodes) are synchronising artifacts, using a
-set of \emph{synchronisation vectors} that express the possible
-synchronisation between the parameterised actions of a subset of the
-sub-trees.
-
-%\LUDO{introduce magic op}
-%$\CreateISet{a}{i}$ creates a single entry indexed set $(i\mapsto a)$ \emph{but only if 
-%$a$ is not already an indexed set.}
 
 %\smallskip\noindent
 \paragraph*{Notations.}
@@ -297,19 +277,60 @@ On top of $\mathcal{E}_\P$ we build the action algebra
 $\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
 \mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
 naturally action terms will use data expressions as subterms.
-To be able to reason about the data flow between pLTSs, we
-distinguish \emph{input variables} of the form $?x$ within terms; the function
+
+We distinguish two kinds of parameterised actions: one that distinguishes input variables and one that does not. Let $a$
+range over action labels, $\symb{op}$ be operators, and $x_i$ range over
+variable names.
+
+We first define the set of actions that distinguish input variables, they will be used in the definition of \pLTS\ below:
+\[
+\begin{array}[l]{rcl@{\quad}p{5.5cm}}
+  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
+  p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
+  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
+\end{array}
+\]
+The \emph{input variables} in an action term are those marked with a
+$\symb{?}$.
+We additionally suppose that each input variable does not
+appear somewhere else in the same action term:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+
+We first define the set of actions that do not distinguish input variables, they will be used in synchronisation vectors of pNets below:
+\[\begin{array}[l]{rcl@{\quad}l}
+  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
+\end{array}
+\]
+
+The function
 $\vars(t)$ identifies the set of variables in a term
 $t\in\AlgT$, and $iv(t)$ returns its input variables.
 Action algebras can encode naturally usual point-to-point message passing calculi (using 
 $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
-for more general mechanisms, like gate negociation in Lotos, or broadcast
+for more general synchronisation mechanisms, like gate negociation in Lotos, or broadcast
 communications. 
 
 
+\subsection{Parameterised Networks (pNets): definition}
+\label{section:pnets}
 
-\subsection{The (open) pNets Core Model}
-\label{section:pNets}
+This section introduces pNets and the notations we will use in
+this paper. Then it gives the formal definition of pNet structures,
+together with an operational semantics for open pNets.
+
+pNets are tree-like structures, where the leaves are either
+\emph{parameterised labelled transition systems (pLTSs)}, expressing the
+behaviour of basic processes, or \emph{holes}, used as placeholders
+for unknown processes, of which we only specify the set of possible
+actions, this set is named the \emph{sort}.
+Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+set of \emph{synchronisation vectors} that express the possible
+synchronisation between the parameterised actions of a subset of the
+sub-trees.
+
+%\LUDO{introduce magic op}
+%$\CreateISet{a}{i}$ creates a single entry indexed set $(i\mapsto a)$ \emph{but only if 
+%$a$ is not already an indexed set.}
 
 
 A pLTS is a labelled transition system with variables; variables can be
@@ -322,22 +343,6 @@ variable values from one state to the other can be done by explicit assignment.
 %suppose that transitions looping to the same state does not do assignments.
 Note that we make no assumption on finiteness of the set of states nor
 on finite branching of the transition relation.
-
-We first define the set of actions a pLTS can use, let $a$
-range over action labels, $\symb{op}$ are operators, and $x_i$ range over
-variable names. Action terms of \pLTS s are:
-\[
-\begin{array}[l]{rcl@{\quad}p{5.5cm}}
-  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
-  p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
-  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
-\end{array}
-\]
-The input variables in an action term are those marked with a
-$\symb{?}$.
-We additionally suppose that each input variable does not
-appear somewhere else in the same action term:
-$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
 
 \begin{definition}[pLTS]
 \label{pLTS}
@@ -380,13 +385,7 @@ the sub-pNets. The synchronisation between global actions and
 internal actions is given by  \emph{synchronisation vectors}: a
 synchronisation vector synchronises one or several internal actions, and
 exposes a single resulting global action.
-Actions involved at the pNet level (in the synchronisation vectors) do
-not need to distinguish  input 
-variables. Action terms used in synchronisation vectors of pNets are defined as follows:
-\[\begin{array}[l]{rcl@{\quad}l}
-  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
-\end{array}
-\]
+
 
 We now define the structure of pNets, the following definition relies on the definition 
 of holes, leaves and sorts provided below in Definition~\ref{def-sortholeleave}.
