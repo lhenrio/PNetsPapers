@@ -178,7 +178,77 @@ value-passing processes or open process expressions.
 
 \section{Background and notations}
 This section introduces the notations we will use in this article, and  recalls the definition of pNets~\cite{henrio:Forte2016} with an informal semantics  of the pNet constructs.
-\subsubsection{Syntax and Notations}
+In general $x_i,y_i$ range over variables.
+\subsubsection*{Term algebra.}
+Our models rely on a notion of parameterised actions, that are
+symbolic expressions using data types and variables. As our model aims
+at encoding the low-level behaviour of possibly very different
+programming languages, we do not want to impose one specific algebra
+for denoting actions, nor any specific communication mechanism. So we
+leave unspecified the constructors of the algebra that will allow building
+expressions and actions. Moreover, we use a generic {\em action interaction}
+mechanism, based on (some sort of) unification between two or more action
+expressions, to express various kinds of communication or
+synchronisation mechanisms.
+
+\def\Talg{\mathcal{T}_{\Sigma}}
+\def\BoolExprs{\mathcal{B}}
+\def\Exprs{\mathcal{E}} \TODO{use Exprs}
+
+Formally, we assume the existence of a term algebra $\Talg$,
+where $\Sigma$ is the signature of the data and action constructors,
+and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
+ expressions $\Exprs$, including a set of boolean
+expressions $\BoolExprs$ ($\BoolExprs\subseteq\Exprs$). We let $e_i$ range over expressions ($e_i\in\Exprs$).
+On top of $\mathcal{E}_\P$ we build the action algebra
+$\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
+\mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
+naturally action terms will use data expressions as subterms.
+
+We distinguish two kinds of parameterised actions: one that distinguishes input variables and one that does not. Let $a$
+range over action labels, $\symb{op}$ be operators, and $x_i$ range over
+variable names.
+
+We first define the set of actions that distinguish input variables, they will be used in the definition of \pLTS\ below:
+\[
+\begin{array}[l]{rcl@{\quad}p{5.5cm}}
+  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
+  p_i&::=& ?x~|~e_i&\text{parameters (input variable or expression)}\\
+  e_i&::=& \symb{Value}~|~x~|~\symb{op}(\symb{e}_1,..,\symb{e}_n)&\text{Expressions}
+\end{array}
+\]
+The \emph{input variables} in an action term are those marked with a
+$\symb{?}$.
+We additionally suppose that each input variable does not
+appear somewhere else in the same action term:
+$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
+
+The set of actions that do not distinguish input variables is denoted $\AlgAS$, it will be used in synchronisation vectors of pNets below:
+\[\begin{array}[l]{rcl@{\quad}l}
+  \alpha\in \AlgAS &::=&a(e_1,\ldots,e_n)
+\end{array}
+\]
+
+The function
+$\vars(t)$ identifies the set of variables in a term
+$t\in\AlgT$, and $iv(t)$ returns its input variables.
+Action algebras can encode naturally usual point-to-point message passing calculi (using 
+$a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
+for more general synchronisation mechanisms, like gate negociation in Lotos, or broadcast
+communications. 
+
+\smallskip
+
+We denote $y\gets x$ a substitution. The application of the substitution is denoted
+$\subst{y\gets x}$, the operation replaces in a term all occurrences 
+of the term $y$ by the term $x$ (note that the absence of binders makes this operation 
+trivial). 
+We use sets of equations of the form $x_i=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$.
+
+
+\subsubsection*{Notations: indexed sets and substitution}
+
+
 
 In the following definitions, we extensively use indexed structures
 (maps) over some countable indexed sets.   The indices will usually be
@@ -204,7 +274,7 @@ When this is not ambiguous, we shall use abusive vocabulary and
 notations for sets, and typically write ``indexed set over I'' when  
 formally we should speak of multisets, and ``$x\in
 A_i^{i\in I}$'' to mean $\exists i\in I.\, x=A_i$.
-An empty family is denoted $[]$. % (it can be defined as $a_i^{i\in\emptyset}$).
+%An empty family is denoted $[]$. % (it can be defined as $a_i^{i\in\emptyset}$).
 To simplify equations, an indexed set can be denoted $\set{M}$
 instead of $M_l^{l\in L}$ when $L$ is irrelevant.
 
@@ -214,109 +284,46 @@ two sets provided they are indexed on disjoint families.
 The elements
 of the union of two indexed sets are then accessed by using an index of one of the two
 joined families.
-We suppose here that disjoint unions are always well defined; this
-requires to choose disjoint  
-indices in the definition of the component system (e.g. name of
-methods of different interfaces).
-We denote $y\gets x$ a substitution. The application of the substitution is denoted
-$\subst{y\gets x}$, the operation replaces in a term all occurrences 
-of the term $y$ by the term $x$ (note that the absence of binders makes this operation 
-trivial).
+%We suppose here that disjoint unions are always well defined; this
+%requires to choose disjoint  
+%indices in the definition of the component system (e.g. name of
+%methods of different interfaces).
+$\setminus$ is the standard subtraction operation on sets.
+
+%%\smallskip\noindent
+%\paragraph*{Indexed sets.}
+%We extensively use indexed structures
+%over some countable indexed sets, which are equivalent to mappings over
+%the countable set. % . The indexes will usually be
+%% integers, bounded or not. Such an indexed family is
+%%denoted
+%%follows:
+%$a_i^{i\in I}$
+%%, or equivalently  $(i\mapsto a_i)^{i\in I}$
+%denotes a family of elements $a_i$ indexed over the
+%set $I$. % Such a family
+%% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
+%% To specify the set over which the structure is indexed,
+%% indexed structures are always denoted with an exponent of the form $i\in I$
+%% (arithmetic only appears in the indexes if necessary).
+%$a_i^{i\in I}$ defines both $I$ the set over which the family is
+%indexed (called \emph{range}), and $a_i$ the elements of the family.
+%E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
+%$3$ ; abbreviated $(3\mapsto a)$ in the following.
+%When this is not
+%ambiguous, we shall use notations for sets, and typically write
+%``indexed set over I'' when formally we should speak of multisets, and
+%write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
+%family is denoted $\emptyset$. We
+%denote classically with an overline -- $\overline{a}$  -- a family when the indexing set 
+%is
+%not meaningful.  $\uplus$ is the disjoint union on
+%indexed sets.
 
 
-%\smallskip\noindent
-\paragraph*{Notations.}
-We extensively use indexed structures
-over some countable indexed sets, which are equivalent to mappings over
-the countable set. % . The indexes will usually be
-% integers, bounded or not. Such an indexed family is
-%denoted
-%follows:
-$a_i^{i\in I}$
-%, or equivalently  $(i\mapsto a_i)^{i\in I}$
-denotes a family of elements $a_i$ indexed over the
-set $I$. % Such a family
-% is equivalent to the mapping $(i\mapsto a_i)^{i\in I}$.
-% To specify the set over which the structure is indexed,
-% indexed structures are always denoted with an exponent of the form $i\in I$
-% (arithmetic only appears in the indexes if necessary).
-$a_i^{i\in I}$ defines both $I$ the set over which the family is
-indexed (called \emph{range}), and $a_i$ the elements of the family.
-E.g., $a^{i\in\{3\}}$ is the mapping with a single entry $a$ at index
-$3$ ; abbreviated $(3\mapsto a)$ in the following.
-When this is not
-ambiguous, we shall use notations for sets, and typically write
-``indexed set over I'' when formally we should speak of multisets, and
-write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
-family is denoted $\emptyset$. We
-denote classically with an overline -- $\overline{a}$  -- a family when the indexing set 
-is
-not meaningful.  $\uplus$ is the disjoint union on
-indexed sets.
 
-\paragraph*{Term algebra.}
-Our models rely on a notion of parameterised actions, that are
-symbolic expressions using data types and variables. As our model aims
-at encoding the low-level behaviour of possibly very different
-programming languages, we do not want to impose one specific algebra
-for denoting actions, nor any specific communication mechanism. So we
-leave unspecified the constructors of the algebra that will allow building
-expressions and actions. Moreover, we use a generic {\em action interaction}
-mechanism, based on (some sort of) unification between two or more action
-expressions, to express various kinds of communication or
-synchronisation mechanisms.
-
-\def\Talg{\mathcal{T}_{\Sigma,\P}}
-\def\BoolExprs{\mathcal{B}_{\P}}
-Formally, we assume the existence of a term algebra $\Talg$,
-where $\Sigma$ is the signature of the data and action constructors,
-and $\P$ a set of variables. Within $\Talg$, we distinguish a set of
-data expressions $\mathcal{E}_\P$, including a set of boolean
-expressions $\BoolExprs$ ($\BoolExprs\subseteq\mathcal{E}_\P$).
-On top of $\mathcal{E}_\P$ we build the action algebra
-$\mathcal{A}_\P$, with $\mathcal{A}_P\subseteq\mathcal{T}_\P,
-\mathcal{E}_P\cap\mathcal{A}_P=\emptyset$;
-naturally action terms will use data expressions as subterms.
-
-We distinguish two kinds of parameterised actions: one that distinguishes input variables and one that does not. Let $a$
-range over action labels, $\symb{op}$ be operators, and $x_i$ range over
-variable names.
-
-We first define the set of actions that distinguish input variables, they will be used in the definition of \pLTS\ below:
-\[
-\begin{array}[l]{rcl@{\quad}p{5.5cm}}
-  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
-  p_i&::=& ?x~|~\symb{Expr}&\text{parameters (input variable or expression)}\\
-  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,..,\symb{Expr}_n)&\text{Expressions}
-\end{array}
-\]
-The \emph{input variables} in an action term are those marked with a
-$\symb{?}$.
-We additionally suppose that each input variable does not
-appear somewhere else in the same action term:
-$p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$
-
-We first define the set of actions that do not distinguish input variables, they will be used in synchronisation vectors of pNets below:
-\[\begin{array}[l]{rcl@{\quad}l}
-  \alpha\in \AlgAS &::=&a(Expr_1,\ldots,Expr_n)
-\end{array}
-\]
-
-The function
-$\vars(t)$ identifies the set of variables in a term
-$t\in\AlgT$, and $iv(t)$ returns its input variables.
-Action algebras can encode naturally usual point-to-point message passing calculi (using 
-$a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
-for more general synchronisation mechanisms, like gate negociation in Lotos, or broadcast
-communications. 
-
-
-\subsection{Parameterised Networks (pNets): definition}
+\subsection{Parameterised Networks (pNets)}
 \label{section:pnets}
-
-This section introduces pNets and the notations we will use in
-this paper. Then it gives the formal definition of pNet structures,
-together with an operational semantics for open pNets.
 
 pNets are tree-like structures, where the leaves are either
 \emph{parameterised labelled transition systems (pLTSs)}, expressing the
@@ -361,7 +368,7 @@ $s_0 \in S$ is the initial state.
 $L$ is the set of labels of the form
 $\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
 where $\alpha \in\AlgA$ is a parameterised action, $e_b \in
-\AlgB$ is a guard, and the variables $x_j\in P$
+\AlgB$ is a guard, and the variables $x_j\in P$ \TODO{P?}
 are assigned the expressions $e_j\in \AlgE$.
 If 
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
