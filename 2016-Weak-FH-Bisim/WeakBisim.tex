@@ -33,6 +33,7 @@
 \newcommand{\LUDO}[1]{\textcolor{darkgreen}{#1}}
 \newcommand{\RAB}[1]{\textcolor{magenta}{#1}}
 \newcommand{\coloncolon}{{:\hspace{-.2ex}:}}
+\newcommand{\bigcupdot}{\charfusion[\mathop]{\bigcup}{\cdot}}
 \makeatletter
 \newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
 \newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
@@ -1132,8 +1133,7 @@ $\Post_{OT_x}$ that are independent), applying the assignments of the involved r
 If we assume that everything is finite (states and transitions in the
 open automata, and the predicates in $\mathcal{R}$, then it is easy to
 prove that it is decidable whether a relation is a 
-FH-bisimulation, provided the logic of the predicates is decidable (see
-\cite{henrio:Forte2016}).
+FH-bisimulation, provided the logic of the predicates is decidable (see \cite{henrio:Forte2016}).
 
 
 
@@ -1157,8 +1157,7 @@ prove properties directly on open structures, that will be preserved
 by any correct instantiation of the holes. In this section we define a
 composition operator for open pNets, and we prove that it preserves
 FH-bisimulation. More precisely, one can define two preservation
-properties, namely 1) when one hole of a pNet is filled by two bisimilar
-other (open) pNets; and 2) when the same hole in two bisimilar pNets are
+properties, namely 1) when one hole of a pNet is filled by two bisimilar other (open) pNets; and 2) when the same hole in two bisimilar pNets are
 filled by the same pNet, in other words, composing a pNet with two
 bisimilar contexts. The general case will be obtained by
 transitivity of the bisimulation relation. We concentrate here on the
@@ -1342,7 +1341,7 @@ and
 { \openrule
          {
            \vis{\overline{\beta}}\!,\Pred,\Post
-				 } {s \OTWeakarrow {\alpha} s''} \in \WT
+				 } {s \OTWeakarrow {\alpha} s'} \in \WT
 }
 %\inferrule{
 % \openrule
@@ -3037,8 +3036,88 @@ We can rewrite $s \OTWeakarrow {} s'$ as follows $s \OTarrow {} s_1 \OTarrow {} 
 \end{proof}   
 \end{lemma}
 
-\TODO{I am not sure that we have the same states between open auto and weak auto}
+\TODO{I am not sure that we have the same states between open auto 
+and weak auto}
 
+
+\begin{lemma} Let $A = <J,\mathcal{S}, s_0,
+    \mathcal{T}>$ be open automata and $<J,\mathcal{S}, s_0,
+    \WT>$ be the
+weak open automata derived from $A$. 
+  
+
+\begin{mathpar}
+  \mprset {vskip=.5ex}
+\inferrule {\openrule
+         {
+           \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T}
+\qquad
+\openrule
+         {
+           \overline{\beta^2_i},\Pred^2_i,\Post^2_i  }
+         {s^2_i \OTarrow {\alpha} s^2_{i+1}} \in \mathcal{T}
+\qquad
+\openrule
+         {
+           \overline{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+\\
+s=s^1_i \wedge s^1_n=s^2_0 \wedge s^2_n = s^3_0 \wedge s^3_n=s'
+\\\\
+\overline{\gamma}=\biguplus_{i=0}^n \vis{\overline{\beta^1_i}} \dotcup  \biguplus_{i=0}^n \vis{\overline{\beta^2_i}} \dotcup \biguplus_{i=0}^n \vis{\overline{\beta^3_i}}
+\\
+\Pred=\bigwedge_{i}^n\Pred^1_i\land\bigwedge_{i}^n\Pred^2_i\subst{\Post_1}\land (\bigwedge_{i}^n\Pred^3_i\subst{\Post^2_i})\subst{\Post^1_i}
+}
+{
+\openrule
+         {
+           \overline{\gamma},
+		\Pred,
+				({x^3_k\gets (e^3_k\subst {\Post^2_i})\subst{\Post^1_i}})^{k\in K} } 
+         {s \OTWeakarrow {\alpha} s'} \in\WT
+}
+\end{mathpar}
+\end{lemma}
+
+\begin{proof} 
+We proceed by induction on the depth of the derivation tree with with we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}).
+The base cases  are:
+\begin{itemize}
+\item $n=0$, then we have by rule (1)
+\begin{mathpar}
+     \openrule
+         {
+           \emptyset,\symb{True},\symb{Id}(s)}
+         {s \OTWeakarrow {\tau} s}
+         \in \WT 
+
+\end{mathpar}  
+\item $n=1$, then by rule (2) we have:
+\begin{mathpar}
+ % \mprset {vskip=.5ex}
+\inferrule{
+ \openrule
+         {
+           \overline{\beta},\Pred,\Post}
+         {s \OTarrow {\alpha} s'} \in \mathcal{T}
+}
+{ \openrule
+         {
+           \vis{\overline{\beta}}\!,\Pred,\Post
+				 } {s \OTWeakarrow {\alpha} s'} \in \WT
+}
+\end{mathpar}
+\end{itemize}
+For the inductive step, first we have by induction hypothesis that
+\begin{mathpar}
+{ \openrule
+         {
+           \overline{\gamma}\!,\Pred,\Post
+				 } {s \OTWeakarrow {\alpha} s'} \in \WT
+}
+\end{mathpar}
+\end{proof}
 Using this lemma, it is straightforward to see that....  
 \begin{lemma}
 Let $A_1 = <J,\mathcal{S}_1, s_0,
@@ -3074,6 +3153,9 @@ there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
  
 \end{itemize}
 \end{lemma}
+
+
+
 
 
 \TODO{moved from body}
