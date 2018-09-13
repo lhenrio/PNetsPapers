@@ -27,7 +27,8 @@
 \usepackage{graphicx}  % figures
 \usepackage{tabularx}
 \usepackage{subfigure}
-\usepackage{graphicx}
+\usepackage{figlatex}
+\usepackage{graphics}
 \usepackage{caption}
 %\usepackage{subcaption}
 \usepackage{multirow}
@@ -44,8 +45,7 @@
 \usepackage{amssymb}
 \usepackage{latexsym}
 \setcounter{tocdepth}{3}
-\usepackage{graphicx}
-
+\usepackage{mathpartir}
 
 
 %---Algorithm
@@ -65,7 +65,6 @@
 \usetikzlibrary{positioning,shapes.geometric}
 
 \usepackage{palatino}
-\usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
 \usepackage{xcolor}
 \usetikzlibrary{shapes,arrows,chains}
@@ -150,11 +149,37 @@ The verification of concurrent systems, especially concurrent systems with data,
 % no \IEEEPARstart
 
 \section{Use-case: The BIP Failure-Timer architecture}
+
+
+
 \TODO{Describe here the full Failure-Timer architecture, as taken from the Avocs paper, including an informal presentation of the original BIP system, its full translation into a pNet system (pLTSs and pNet nodes), and the generated Open Automaton}
 \NOTE{All figures are already available from the Avocs paper sources.}
 
-\section{Describing pLTS}
+The BIP architecture includes two kinds of components, coordinator component and operand component. The operand component just has some ports used to communicate with other component. While the coordinator components don't only have some ports, but they include a parameterised labelling transition system (pLTS) in them. In a pLTS, some nodes and edges between these nodes are built to describe the coordinator component. In a pLTS, a node denotes the state of the component, while a edge means the transition from one state to another. Specifically, a port in a coordinator component is used to label a transition, and the number of transitions is the same as that of ports. 
 
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\columnwidth]{figures/BIPspec-ArchFailureTimerMax-v3.pdf}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{schema:ArchFailure:BIP}
+\end{figure}
+
+Fig.~\ref{schema:ArchFailure:BIP} shows the BIP specification of the Failure-Timer architecture from~\cite{xudong2017smt}.  $Timer$ and $Controller$ are the coordinator components, and $B$ is an operand component. $Timer$ has four ports, like $start$, $tick$, $resume$ and $timeout$, and these ports are labelling the transitions between the two states $t_{0}$, and $t_{1}$. And $Ctrl$ has four ports, like $fail$, $reset$, $resume$ and $timeout$, and these ports are labelling the transitions between the three states $s_{0}$, $s_{1}$ and $s_{2}$. The operand component $B$ has three ports $resume$, $fail$ and $finish$.
+
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\columnwidth]{figures/FailureTimerOA.pdf}
+  \caption{The Open Automaton of the Failure Monitor architecture}
+  \label{schema:ArchFailure:OA}
+\end{figure}
+
+
+In~\cite{xudong2017smt}, an approach is present to unfold the open pNet to open automata. Fig.~\ref{schema:ArchFailure:OA} shows the open automaton unfolded from the Failure-Timer architecture in Fig~\ref{schema:ArchFailure:BIP}. The state is the composition of the states of each pLTS in the coordinator component, while the transition is labelled with a composition of the corresponding action in each component. For example, in the BIP specification, $Timer.start$ synchronises with $Ctrl.fail$, because there is a connector between the two ports. When occurrence of the transition $s_{0}\xrightarrow{fail}s_{1}$ will trigger the execution of the transition $t_{0}\xrightarrow{start, t:=0}t_{1}$. At the same time, the port $Ctrl.fail$ will synchronise with $B.fail$. The connected ports in Failure-Timer architecture form a synchronisation vector. The synchronisation will return to a special action, which can be used to label a transition.
+
+
+\section{Describing pLTS}
 
 \subsection{pLTS}
 
@@ -164,29 +189,15 @@ In a pLTS, each state is composed of a set of $\mathit{state\ variables}$, and a
 We define pLTS as a triple: $pLTS\triangleq\ll S, s_{0}, \rightarrow \gg$ where:
 \begin{itemize}
 	\item $S$ is a set of states, and $s_{0}\in S$ is the initial state.
-	\item $\rightarrow \subseteq S\times L\times S$ is the transition relation, with $L$ the set of labels of form $<\alpha, e_{b}, (x_{j} := e_{j})^{(j\in J)}>$, where $\alpha\in A_{V}$ is a parameterised action, $e_{b}\in B_{V}$ is a guard, and expression $E_{P}\cup A_{P}$ are assigned to $x_{j}$. If $s\xrightarrow{<\alpha, e_{b}, (x_{j}:=e_{j})^{j\in J}>}s' \in \rightarrow$, then $vars(e_{b})\subseteq vars(s)\cup vars(\alpha)$, and $\forall j\in J. vars(e_{j})\subseteq vars(s)\wedge x_{j}\in vars(s')$.
+	\item $\rightarrow \subseteq S\times L\times S$ is the transition relation, with $L$ the set of labels of form $\langle\alpha, e_{b}, (x_{j} := e_{j})^{(j\in J)}\rangle$, where $\alpha\in A_{V}$ is a parameterised action, $e_{b}\in B_{V}$ is a guard, and expression $E_{P}\cup A_{P}$ are assigned to $x_{j}$. If $s\xrightarrow{\langle\alpha, e_{b}, (x_{j}:=e_{j})^{j\in J}\rangle}s' \in \rightarrow$, then $vars(e_{b})\subseteq vars(s)\cup vars(\alpha)$, and $\forall j\in J. vars(e_{j})\subseteq vars(s)\wedge x_{j}\in vars(s')$.
 \end{itemize}
 
-
-\begin{figure}
-	\centering
-	\begin{tikzpicture}[->, shorten >=2pt, >=stealth, node distance=3cm,
-	noname/.style={ellipse, minimum width=5em, minimum height=3em,draw}]
-	\node[noname] (1)                                             {$s_{0}$};
-	\node[noname] (2) [right=of 1]                                {$s_{1}$};
-	
-	\path 	(1) edge [bend left]                  node[above] {$[true],\langle start?M\rangle,\{t:=M\}$} (2)
-	(2) edge [bend left]                  node[below] {$[t=0], \langle timeout\rangle$} (1)
-	(2) edge 			               node[above] {$\langle resume\rangle$} (1);
-	\path[->] (2) edge [in=-10,out=20,loop] coordinate[pos=0.52] (midp) node[right] {$[t>0], \langle tick\rangle, \{t:=t-1\}$} (2);
-	
-	\end{tikzpicture}
-	\caption{The pLTS of the Timer component}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\columnwidth]{figures/TimerpLTS.eps}
+  \caption{The pLTS of the Timer component}
+  \label{schema:Timer:pLTS}
 \end{figure}
-
-\subsubsection{Semantics of pLTS}
-
-
 
 
 
@@ -202,7 +213,7 @@ A major difference of pLTS from other concurrent systems is the parameterised ac
 	\label{mcl}
 	\begin{tabular}{>{\bfseries}c| c } 
 		\hline 		
-	Action formula 	&     $\alpha ::= \{\{c(arg_{1}, ..., arg_{n}), \tau\}\mid arg_{i}=?x\ |\ !e\  \}$                  \\
+	Action formula 	&     $\alpha ::= \{c(arg_{1}, ..., arg_{n})\mid arg_{i}=?x\mid\ !e\mid \tau\}$                  \\
 	& $|\ \neg\alpha \ |\ \alpha_{1}\vee\alpha_{2}\ |\ \alpha_{1}\wedge\alpha_{2}$   \\ 	\hline 
 		
 	State formula 	&  $\varphi ::= p \mid X \mid \neg\varphi \mid \varphi_{1}\wedge\varphi_{2}\ |\ \varphi_{1}\vee\varphi_{2} \ |\ [\alpha]\varphi \ |\ \langle\alpha\rangle\varphi$ \\ 
@@ -210,17 +221,21 @@ A major difference of pLTS from other concurrent systems is the parameterised ac
 	\end{tabular} 
 \end{table} 
  
- where, $c$ is an action name expressing the communication port. $arg_{i}$ is a list of arguments, and each $arg_{i}$ is either a send expression $!e$, or a receive variable $?x$. An action $\alpha$ is a parameterised action $c(arg_{i})$ or a silent action $\tau$. $p$ is an atomic proposition and $X$ is a set of variables. $\neg$, $\vee$ and $\wedge$ are respectively negation, disjunction and conjunction operator on action formula and state formula. $[\alpha]\varphi$ expresses "whenever an action $\alpha$ happens, we will do $\varphi$", and $\langle\alpha\rangle$ expresses "an action $\alpha$ takes effective, we will do $\varphi$". $x_{i}\in X$ is a free variable bound in state formula $\varphi$. $\mu$ and $\nu$ are respectively the minimum fixed point and the maximum fixed point.\TODO{Tengfei: Must more explaination}
+ where, $c$ is an action name expressing the communication port. $arg_{i}$ is a list of arguments, and each $arg_{i}$ is either a send expression $!e$, a receive variable $?x$ or a silent action $\tau$. An action $\alpha$ is a parameterised action $c(arg_{i})$. $p$ is an atomic proposition and $X$ is a set of variables. $\neg$, $\vee$ and $\wedge$ are respectively negation, disjunction and conjunction operator on action formula and state formula. $[\alpha]\varphi$ expresses "whenever an action $\alpha$ happens, we will do $\varphi$", and $\langle\alpha\rangle$ expresses "an action $\alpha$ takes effective, we will do $\varphi$". $x_{i}\in X$ is a free variable bound in state formula $\varphi$. $\mu$ and $\nu$ are respectively the minimum fixed point and the maximum fixed point.\TODO{Tengfei: Must more explaination}\NOTE{Done}
 
- 
- 
-We employ the case study from timer component\cite{mavridou2016architectrue}. A liveness property defines that good thing finally happens. In this case study, intuitively the timer finally returns to the initial state after some execution steps. The property can be expressed by pM$\mu$ formula:
+
+We employ the case study from timer component~\cite{mavridou2016architectrue}. A liveness property defines that good thing finally happens. In this case study, intuitively the timer finally returns to the initial state after some execution steps. The property can be expressed by a pM$\mu$ formula:
 
 \begin{equation}\label{formula1}
 	\langle start?M\rangle\mu X(M/t)(\langle timeout\rangle true \vee \langle tick\rangle X(t-1/t))
 \end{equation}
 
-At first, we can do $\langle start?M\rangle$ and then it enters a loop. After that, either we can do a $timeout$, and then it is done and the result is true. Or we can do a $tick$ and then we continue the loop with decrementing the value $t$ by one. 
+
+\ERIC{this description is too operational (like a state machine), I would like a more logical description of the formula. One way is to use the vocabulary of ``Specification patterns'', like ``it is possible'', ``it is mandatory'', ``do something until some condition'', etc}
+
+At first, the timer starts with receiving a value $M$, and then it is mandatory to enters a loop with an assignment $t := M$.  In the loop $\mu$, it is possible for the timer to return true until the time is out $\langle timeout\rangle$, and it is done. Or it will continue the loop with decreasing the value $t$ by one when the timer ticks again $\langle tick\rangle$.
+
+
 
 
 \subsection{pMG}
@@ -276,16 +291,14 @@ where:
 
 Fig.~\ref{architectrue} presents the architecture of model checking. The core of the figure is the model checking algorithm, which will be present in Sec.~\ref{algorithm}. The algorithm takes a pLTS model and a pM$\mu$ formula as the input. First, we describe the property of a concurrent system with pM$\mu$ formula and transfer the pM$\mu$ formula to a pMG. And then, the pMG will be verified with the pLTS model by the algorithm. After that, the result will return true or false.
 
-\TODO{Tengfei: Be more precise}
+\TODO{Tengfei: Be more precise}\NOTE{Done}
 
 
 \begin{figure}
-    \centering\includegraphics[width=5.5in]{figures/architectrue.jpeg} 
+    \centering\includegraphics[width=5.5in]{figures/architecture.pdf}
     \caption{Architecture of symbolic model checking}
     \label{architectrue}
 \end{figure}
-
-
 
 
 
@@ -319,8 +332,7 @@ Given a pM$\mu$ formula $\Phi$, $\Phi_{i}$ is a subformula of $\Phi$ and $\Gamma
 	where $\bar{\sigma} X_{1}.\Phi_{1}, ... , \bar{\sigma} X_{n}.\Phi_{n}$ are subpromula of $\Phi$.
 \end{itemize}
 
-A formula is said to be alternation-free, when the alternation depth is one, without mutually recursive greatest and least fixed-point operators. A formula expressed with pM$\mu$ is alternation-free. But the formula with first-order $\mu$-calculus have to deal with alternation depth.\TODO{definition of alternation depth]}
-\NOTE{A formula expressed with pM$\mu$ is alternation-free. !!!NO}
+A formula is said to be alternation-free, when the alternation depth is one, without mutually recursive greatest and least fixed-point operators. In the Timer example, the alternation depth is 1. \TODO{definition of alternation depth]}
 
  {\color{red}{The order of action and conditional expression???}}
 Another difference is the order of action and conditional expression. In pLTS, the order is $<\alpha, e_{b}, (x_{j}:=e_{j})^{j\in J}>$,  and $vars(e_{b})\subseteq vars(s)\cup vars(\alpha)$, and $\forall j\in J. vars(e_{j})\subseteq vars(s)\wedge x_{j}\in vars(s')$. 
@@ -451,11 +463,124 @@ In the initial state, there is no variable for the pLTS. After the action $start
 
 \section{Checking open automata}
 
-\subsection{The difference between pLTS and open automata}
 
-\subsection{}
+\subsection{Open Automata}
 
-\subsection{}
+The semantics of open pNets will be defined  as an open automaton. An open
+automaton is an automaton where each transition composes transitions of several LTSs with action of some holes, the transition occurs if some predicates hold, and can involve a set of state modifications.
+
+\begin{definition}[Open transitions]
+	\label{def:OpenTransitions}
+	An \emph{open transition} over a set  $(S_i,s_{0 i}, \rightarrow_i)^{i\in
+	I}$ of LTSs, a
+	set $J$ of holes with sorts $Sort_j^{j\in J}$, and a set of states $\mathcal{S}$ is a structure of the form:	
+	\begin{mathpar}
+	\inferrule*[myfraction=\reddottedrule]
+	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
+		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred, \Post}
+	{s \xrightarrow {v}s'}
+	\end{mathpar}
+	Where $s, s'\in\mathcal{S}$ and for all
+        $i\in I$, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the
+	LTS $(S_i,s_{0 i}, \rightarrow_i)$, and $\xrightarrow{b_j}_j$
+        is a transition of the hole $j$, for any action $b_j$ in the
+        sort $Sort_j$. \Pred\ is a predicate
+	over the different variables of the
+	terms, labels, and states $s_i$, $b_j$, $s$, $v$. \Post\ is a set of equations that 
+	hold \emph{after the open transition}, they are represented as a substitution of the 
+	form $\{x_k\gets e_k\}^{k\in K}$ 
+	where $x_k$ are variables of $s'$, $s'_i$, and $e_k$ are expressions over the other 
+	variables of the open transition.
+\end{definition}
+
+
+\begin{definition}[Open automaton]
+	\label{def:open-automaton}
+	An \emph{open automaton} is a structure\\ $A =
+	<LTS_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}>$ where:
+	\begin{itemize}
+		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
+		\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
+		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
+		among $\mathcal{S}$,
+		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
+		$t\in \mathcal{T}$ there exist $I'$, $J'$ with $I'\subseteq I$, $J'
+		\subseteq J$, such that $t$ is an open transition over $LTS_i^{i\in I'}$, $J'$,
+		and  $\mathcal{S}$.
+		
+	\end{itemize}
+\end{definition}
+	
+
+\begin{definition}[States of open pNets]\label{def-states}
+  A state of an open pNet is a tuple (not necessarily finite) of the
+  states of its leaves (in which we denote tuples
+  in structured states as $\triangleleft\ldots\triangleright$ for better readability).
+
+  For any pNet p, let $\overline{Leaves} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
+  then $States(p) = \{\triangleleft s_i^{i\in L}
+  \triangleright| \forall i\in L. s_i \in S_i\}$.
+A pLTS being its own single leave:
+  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
+
+The initial state is defined as:
+$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
+\end{definition}
+
+
+\paragraph{Predicates:}
+Let $\mylangle\overline{\pNet},\overline{S},\symb{SV}_k^{k\in K} \myrangle$
+be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We define a
+predicate $\Pred$ relating the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
+\[\Pred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+\begin{array}{l}
+\exists {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+\\~~\land
+\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\end{array}\]
+In any other case (if the action families do not match or if there is no valuation of variables such that the above formula can be ensured) the predicate is undefined.
+
+This definition is not constructive but it is easy to build the predicate constructively by brute-force unification of the sub-pNets actions with the corresponding vector actions, possibly followed by a simplification step.
+
+ 
+
+ \subsection{The difference between pLTS and open automaton}
+ pLTS is a labelling transition system with parameterised action. An open pNet is a composition of some pLTSs and some holes, and a set of synchronization vector composites the action of an open pNet. A BIP architecture of an open pNet includes coordinator components and some operand components. An open automaton is formed by the unfolding of an open pNet through the rules in~\cite{xudong2017smt}. 
+ 
+ In order to check the model of open automata, the algorithm in the appendix have to be modified. There are two different things in the structure of open automaton and pLTS.
+ \subsubsection{Hole}
+ A hole in pNet is defined without states, but it involves in a transition, which is defined as $\{\xrightarrow{b_j}_j\}^{j\in J}$. The action $b_{j}$ is the action of a hole with an index $j$. The difference of holes from pLTS is whether a component involves in a set of states. However, each action in the hole belongs to a set of the parameterised action.
+ 
+ 
+ 
+ \subsubsection{Predicate}
+ A transition in a pLTS is consisted of a tuple with labelling $guard$, $parameterised\; action$, $assignment$ between two states. Formally, a transition is defined as $s\xrightarrow{\langle\alpha, e_{b}, (x_{j}:=e_{j})^{j\in J}\rangle}s'$. While an open transition in an open automaton is defined with labelling $Pred$ and $Post$ between a composition of states in pLTSs and holes. In the open transition, $Pred$ is a predicate over the different variables of the terms, labels, and states. Specifically, a predicate consists of a set of parameterised actions in pLTSs and actions in holes. In a pNet, some ports from each component have an immediate relationship, and these ports are connected each other. Also, one of these ports is treated as a action to trigger a transition in the pLTS or in a hole. A predicate is a synchronization vector from the action in each pLTS and each hole.
+ 
+\subsection{opM$\mu$}
+In order to check open automata, a new property language is present. The property language is called open parameterised modal $\mu$-calculus (opM$\mu$). We give the formal definition in Tab.~\ref{opmu}:
+
+\begin{table}
+	%	\multirow{2}{*}{Algorithme}
+	\setlength\tabcolsep{18pt}% default value is 6pt 
+	\centering 
+	\caption{Syntax of the opM$\mu$} \label{opmu}
+	\begin{tabular}{>{\bfseries}c| c } 
+		\hline 		
+	Action formula 	&     $\alpha ::= \{c(arg_{1}, ..., arg_{n})\mid arg_{i}=?x\mid\ !e\mid \tau\}$                  \\
+	& $|\ \neg\alpha \ |\ \alpha_{1}\vee\alpha_{2}\ |\ \alpha_{1}\wedge\alpha_{2}$   \\ 	\hline 
+	
+	Predicate 	&     $Pred ::= \{c_i(arg_{1}, ..., arg_{n})\mid arg_{j}=?x\mid\ !e\mid \tau\}$                  \\
+	& $|\ \neg\alpha \ |\ \alpha_{1}\vee\alpha_{2}\ |\ \alpha_{1}\wedge\alpha_{2}$   \\ 	\hline 
+		
+		
+	State formula 	&  $\varphi ::= p \mid X \mid \neg\varphi \mid \varphi_{1}\wedge\varphi_{2}\ |\ \varphi_{1}\vee\varphi_{2} \ |\ [\alpha]\varphi \ |\ \langle\alpha\rangle\varphi$ \\ 
+	& $\exists x_{i}\varphi\ |\ \forall x_{i}\varphi\ |\ \mu X(e_{i}/x_{i})\varphi\ |\ \nu X(e_{i}/x_{i})\varphi$	\\ \hline 
+	\end{tabular} 
+\end{table} 
+
+
+\subsection{The modified algorithm}
 
 
 
@@ -565,7 +690,7 @@ In the initial state, there is no variable for the pLTS. After the action $start
 		\EndIf
 	\end{algorithmic} 
 	\caption{$close(s)$}
-	\label{alg:algorithm1}
+	\label{alg:algorithm2}
 \end{algorithm}	
 
 
@@ -583,7 +708,7 @@ In the initial state, there is no variable for the pLTS. After the action $start
 		
 	\end{algorithmic} 
 	\caption{check(s)}
-	\label{alg:algorithm2}
+	\label{alg:algorithm3}
 \end{algorithm}
 
 
@@ -591,6 +716,7 @@ In the initial state, there is no variable for the pLTS. After the action $start
 
 
 \begin{thebibliography}{4}
+	\bibitem{xudong2017smt}Xudong Qin, Simon Bliudze, Eric Madelaine, Min Zhang. Using SMT engine to generate Symbolic Automata -Extended version. [Research Report] RR-9177, Inria
 	
 	\bibitem{radu2008mcl}Mateescu, Radu, and Damien Thivolle. "A model checking language for concurrent value-passing systems." International Symposium on Formal Methods. Springer, Berlin, Heidelberg, 2008.
 	
