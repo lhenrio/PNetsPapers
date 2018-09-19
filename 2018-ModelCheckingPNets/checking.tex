@@ -790,19 +790,74 @@ In order to check open automata, a new property language is present. The propert
 
 An opM$\mu$ is defines as a property language that is used to describe the concurrent systems. $\alpha$ is an action formula from pLTS. $\beta$ is a Hole action formula. $\beta$ can be a $c(arg_i)$ with three kinds of parameter $?x, !e, \tau$,  or the composition of several $\beta$ formula with negation, disjunction and conjunction. $\gamma$ is an action formula from open transition, and it is defined as an action name or the negation of $gamma$, or the disjunction and conjunction of two $\gamma$ formula. A predicate, which is the disjunction of $\alpha$, $\beta$ and $\gamma$, labels an open transition. In the state formula, $[\beta]\varphi$, $\langle\beta\rangle\varphi$, $[\gamma]\varphi$ and $\langle\gamma\rangle\varphi$ are added into the list.
 
-An example of opM$\mu$ is the formula for open automaton in Sec.~\ref{Sec2:usecase}.  The formula can be expressed as follows:
+An example of opM$\mu$ is employed to the formula for open automaton in Sec.~\ref{Sec2:usecase}.  The formula can be expressed as follows:
 \begin{equation}\label{formula3}
-	\nu X(\langle fail?M\rangle\mu Y(M/t)(\langle resume\rangle X \vee \langle tick\rangle Y(t-1/t)\vee \langle ask\wedge reset\rangle true))
+	\langle fail?M\rangle \mu X(t).\langle finish\rangle true \vee (\langle reset\vee resume\rangle true \vee \langle tick\rangle X(t-1))
 \end{equation}
-First, a $fail$ occurs with receiving a value $M$, and then a $tick$ happens with decreasing $t$ by one. Or the system returns true after an $ask$ and the subsequent $reset$ occur. Otherwise, the system restarts after a $resume$ happens.
+
+If a $fail$ occurs with receiving a value $M$, and then a $finish$ happens only after a $resume$ or $reset$ occurs after $M$ times $tick happens$ with decreasing $t$ by one. The formula can be employed to express that an action $finish$ always eventually happens until the $reset$ or $resume$ occurs after the loop $tick$ happens.
+
+If we describe the Formula.~\ref{formula3} with a graphical pMG, it can be shown as Fig.~\ref{pmg3}:
+
+
+\begin{figure}
+\centering
+	\begin{tikzpicture}[->, shorten >=2pt, >=stealth, node distance=1.2cm,
+	noname/.style={ellipse, minimum width=1.5em, minimum height=1.5em, draw}]
+	\node[noname] (1)                                            				 	{$t_{1}$};
+	\node[noname] (2) [right=of 1]                               				 	{$t_{2}$};
+	\node[noname] (3) [right=of 2]                              				 	{$t_{3}$};
+	\node[noname] (4) [node distance=0.5cm and 2cm, above right=of 3]    {$t_{4}$};
+	\node[noname] (5) [right=of 4]                                					{$t_{5}$};
+	\node[noname] (6) [node distance=0.5cm and 1.8cm, below right=of 3]     {$t_{6}$};
+	\node[noname] (7) [node distance=0.4cm and 1.8cm, above right=of 6]     {$t_{7}$};
+	\node[noname] (8) [right=of 7]     {$t_{8}$};
+	\node[noname] (9) [node distance=0.4cm and 1.8cm, below right=of 6]     {$t_{9}$};
+
+	
+	\path 	(1) edge                   	node[above] {} (2)
+	(2) edge                   	node[above] {} (3)
+	(3) edge 			node[above] {} (4)
+	(3) edge 			node[above] {} (6)
+	(9) edge[bend left]    node[below] {} (3)
+	(4) edge    		node[below] {} (5)
+	(6) edge    		node[below] {} (7)
+	(7) edge    		node[below] {} (8)
+	(6) edge    		node[below] {} (9);
+
+
+	\end{tikzpicture}
+	\caption{The associated pMG of Formula~\ref{formula3}}\label{pmg3}
+\end{figure}
+
+where:
+\begin{itemize}
+	\item $L_{N}(t_{1}) = (\{\}, \langle start?M\rangle, 1)$
+	\item $L_{N}(t_{2}) = (\{t\}, t := M, 1)$
+	\item $L_{N}(t_{3}) = (\{t\}, \vee, 1)$
+	\item $L_{N}(t_{4}) = (\{t\}, \langle finish\rangle, 1)$
+	\item $L_{N}(t_{5}) = (\{\}, true, 1)$
+	\item $L_{N}(t_{6}) = (\{t\}, \vee, 1)$
+	\item $L_{N}(t_{7}) = (\{t\}, \langle resume \vee reset\rangle, 1)$
+	\item $L_{N}(t_{8}) = (\{\}, true, 1)$
+	\item $L_{N}(t_{9}) = (\{t\}, \langle tick\rangle, 1)$
+\end{itemize}
+
+\NOTE{Explain the graph}
+
+
 
 \subsection{The modified algorithm}
 
+An open automaton is unfolded by a pNet with some pLTSs and holes. An open transition is defined by a hole action, a predicate, a postcondition, and a transition labelled by a synchronisation vector between a composition of states from different pLTSs. 
+
+What we have to deal with in the algorithm is the $hole$ and $predicate$. 
 
 
 \section{Related work}
 
 \section{ Conclusion}
+
 
 
 \section*{Appendix}
