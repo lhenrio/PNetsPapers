@@ -533,7 +533,7 @@ pNets are synchronisation entities: a pNet composes several subnets and  synchro
 \begin{definition}[pNet composition]
 	An open pNet: $\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
 	\overline{\symb{SV}}\myrangle$
- can be (partially) filled by providing  a pNets $\pNetQ$ of the
+ can be (partially) filled by providing  a pNet $\pNetQ$ of the
 	right sort to fill one of  its holes.	
 	Suppose $j_0\in J$:
 	%% \[\mylangle \pNet_i^{i\in I},S_j^{j\in J}, \symb{SV}_k^{k\in
@@ -810,10 +810,10 @@ $\mathcal{R}$ is a FH-bisimulation.
 \section{Semantics of Open pNets}
 \label{section:op-semantics}
 
-This section defines the semantics of an open \pNet as a translation into an open automaton. 
+This section defines the semantics of an open pNet as a translation into an open automaton. 
 In this translation, the states of the open automata will be obtained from the states of the \pLTS s at the leaves of the composition. The predicates on the transition will be obtained both from the predicates on the \pLTS s transitions and from the
 \TODO{Ce paragraph a eu un probleme, je ne sais pas quand.... Vous avez une vieille version sous la main ?}
-This allows us to derive a bismulation theory for open \pNet s. As \pNet s are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of bisimilar pNets are themselves bisimilar.
+This allows us to derive a bismulation theory for open pNets. As pNets are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of bisimilar pNets are themselves bisimilar.
 
 
 %
@@ -1155,7 +1155,7 @@ behaviours, for any possible values of the variables.
 \paragraph{Variable management.}
 The variables in each synchronisation vector are considered local:
 for a given pNet expression, we must have fresh local variables for
-each occurrence of a vector (= each time we instantiate rule
+each occurrence of a vector (i.e. each time we instantiate rule
 \TrDeux). Similarly the state variables of each copy of a
 given pLTS in the system, must be distinct, and those created for each
 application of \TrDeux\ have to be fresh and all distinct. 
@@ -2916,7 +2916,7 @@ weak open automata derived from $A_1$.
          {s \OTWeakarrow {\alpha} s'}
 
 \end{mathpar}  
-
+\TODO{!!! FAUX -- to REMOVE}
 there exists  open transitions $\symb{OT} \in \mathcal{T}$:
 
 \begin{mathpar}
@@ -2962,8 +2962,8 @@ weak open automata derived from $A$.  For any weak open transition $\symb{WOT} \
            \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
          {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
 \Bigg)        
-       \Longleftrightarrow\\  \Bigg( 
- \Big(\alpha = \tau \wedge  \vis{\overline{\beta^2}}=\emptyset \wedge \Pred\,^2 =\symb{True} \wedge \Post^2 =\symb{Id(s)}\Big) \Bigg) \bigvee  {
+       \bigvee\\   
+ \Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\Big)  \Longleftrightarrow  {
 \openrule
          {
            \overline{\gamma},
@@ -2984,7 +2984,8 @@ s=s^1_0 \wedge s^1_n=s^2 \wedge s'^2 = s^3_0 \wedge s^3_m=s', \quad
 
 \end{lemma}
 
-\begin{proof} ($\Rightarrow$) We proceed by induction on the number of transitions $l$ with which we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}), in particular we have  $l=n+m+1$.
+\begin{proof} ($\Rightarrow$) We proceed by induction on  $l=n+m+1$, which is in fact
+the number of transitions with which we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}).
 \begin{itemize}
 \item The base case $l=1$, so $n=0$ and $m=0$, then obtain
 \begin{mathpar}
@@ -3012,7 +3013,60 @@ by rule (2) we directly conclude
 				 } {s \OTWeakarrow {\alpha} s'} \in \WT
 }
 \end{mathpar} 
-\item For the inductive step, first we have by induction hypothesis that the formula holds for some length $l$.   Induction step is to infer that formula holds for transitions of length $l + 1$. In particular, for $n+1$ or $m+1$, by adding the transition:
+\item For the inductive step, first we have by induction hypothesis that the formula holds for some length $l$.   Induction step is to infer that formula holds for transitions of length $l + 1$. As the condition holds for $l$, it means that there is $n$  $m$, $n'$,$m'$ such that $l=n+m+1$, and $l+1=n'+m'+1$ and either $n'=n+1$ or $m'=m+1$ (exclusively).
+We consider the case $n'=n+1$, $m'=m+1$ is similar. Side conditions are omitted for readability. We first focus on the left part of the disjunction
+Suppose
+$
+\Bigg(\forall i \in [0\ldots n+1].\openrule
+    {
+       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
+\quad
+\openrule
+         {
+           \overline{\beta^2},\Pred\,^2,\Post^2 }
+         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+\quad \wedge\\
+\forall i \in [0\ldots m].\openrule
+         {
+           \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+\Bigg) $
+
+By recurrence hypothesis the theorem is true for any set of transitions of length $l$. In particular, we have
+
+\begin{mathpar}
+%\mprset {vskip=.5ex}
+%\inferrule 
+\Bigg(\forall i \in [0\ldots n].\openrule
+    {
+       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
+\quad
+\openrule
+         {
+           \overline{\beta^2},\Pred\,^2,\Post^2 }
+         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+\quad \wedge\\
+\forall i \in [0\ldots m].\openrule
+         {
+           \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+\Bigg)        
+       \bigvee\\   
+ \Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\Big)  \implies  {
+\openrule
+         {
+           \overline{\gamma},
+		\Pred, \Post
+				 } {s \OTWeakarrow {\alpha} s'} \in\WT
+}
+\end{mathpar}
+
+
+We need to prove the same implication with 
+
+ by adding the transition:
 \begin{mathpar}
  % \mprset {vskip=.5ex}
 %\inferrule{
@@ -3039,24 +3093,30 @@ First by using rule (2) we can directly conclude :
 }
 \end{mathpar} 
 
-Second by using rule (3) \TODO{To complete}
+By rule (1) we have
+${ \openrule
+         {
+          \emptyset,True,Id(s')
+				 } {s' \OTWeakarrow {\tau} s'} \in \WT
+}$
+Finally by using rule (3) we compose the three rules:
+
+\TODO{todo}
+
+
+The right part of the disjunction, i.e.
+\begin{mathpar}
+\Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\Big)
+\end{mathpar}
+is handled trivially by rule (WT1) 
 
 \end{itemize}
-\noindent ($\Leftarrow$) We proceed also  by induction on the number of transitions $l$ with which we  build  a weak transition.
+\TODO{add rule numbers WT1 WT2 WT3, and refer to them}
+
+\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition.
 
 \begin{itemize}
-\item Basis: suppose that $\OTWeakarrow {\alpha}$ cannot be subdivided. So for a given weak transition:
-
-\begin{mathpar}
-{ \openrule
-         {
-           \overline{\gamma}\!,\Pred,\Post
-				 } {s \OTWeakarrow {\alpha} s'} \in \WT
-}
-\end{mathpar}
-We have two cases:
-\begin{itemize}
-\item either $\alpha = \tau$, $s=s'$, $\overline{\beta}=\emptyset$, $\Pred = \symb{True}$ and $\Post=\symb{Id}(s)$. So by rule (2) we have: 
+\item case rule (WT1):
 \begin{mathpar}
 { \openrule
          {
@@ -3064,13 +3124,39 @@ We have two cases:
 				 } {s \OTarrow {\tau} s} \in \mathcal{T}
 }
 \end{mathpar}
-\item Otherwise, by rule (2) we conclude that we have: 
+In this case we can directly conclude by the right part of the disjunction.
+
+\item case rule (WT2). \TODO{write inference}
 \begin{mathpar}
 \openrule
          {
            \overline{\beta},\Pred,\Post}
          {s \OTarrow {\alpha} s'} \in \mathcal{T}
 \end{mathpar}
+
+This proves the implication with $n=0$ and $m=0$.
+
+
+\item case rule (WT3).
+\TODO{put WT3 here}
+
+%
+%
+%Basis: suppose that $\OTWeakarrow {\alpha}$ cannot be subdivided. So for a given weak transition:
+%
+%\begin{mathpar}
+%{ \openrule
+%         {
+%           \overline{\gamma}\!,\Pred,\Post
+%				 } {s \OTWeakarrow {\alpha} s'} \in \WT
+%}
+%\end{mathpar}
+%We have two cases:
+%\begin{itemize}
+\item either $\alpha = \tau$, $s=s'$, $\overline{\beta}=\emptyset$, $\Pred = \symb{True}$ and $\Post=\symb{Id}(s)$. So by rule (2) we have: 
+
+\item Otherwise, by rule (2) we conclude that we have: 
+
 where $\overline{\gamma} = \vis{\overline{\beta}}$
 \end{itemize}
 \item Step: by using rule (3) we can rewrite a weak transition:
@@ -3227,7 +3313,7 @@ s_1=s^1_0 \wedge s^1_{n_1+n_2}=s^2 \wedge s'^2 = s^3_0 \wedge s^3_{m_1+m_2}=s'\\
 
 
 
-\end{itemize}
+
 \end{proof}
 -----------------------------------------------------
 
