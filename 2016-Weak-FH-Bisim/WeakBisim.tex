@@ -811,12 +811,14 @@ $\mathcal{R}$ is a FH-bisimulation.
 \label{section:op-semantics}
 
 This section defines the semantics of an open pNet as a translation into an open automaton. 
-In this translation, the states of the open automata will be obtained from the states of the \pLTS s at the leaves of the composition. The predicates on the transition will be obtained both from the predicates on the \pLTS s transitions and from the
-\TODO{Ce paragraph a eu un probleme, je ne sais pas quand.... Vous avez une vieille version sous la main ?}
-This allows us to derive a bismulation theory for open pNets. As pNets are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of bisimilar pNets are themselves bisimilar.
+In this translation, the states of the open automata are obtained from the states of the pLTSs at the leaves of the composition. The predicates on the transition is obtained both from the predicates on the pLTSs transitions and from the synchronisation vectors involved in the transition.
 
 
-%
+The definition of bisimulation for open automata allows us to derive a bismulation theory for open pNets. As pNets are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of strongly bisimilar pNets are themselves bisimilar.
+
+\subsection{Deriving an open automaton from an open pNet}
+To derive an open automaton from a pNet, we need to describe the set of states of the automaton, and then we will detail the construction rule for transitions of the automaton, this will rely on the derivation of predicate unifying synchronisation vectors and the actions of the pNets involved in a given synchronisation.
+
 %Then the semantics of a pNet is characterized by a set of {\em open
 %transitions}, where the hypotheses on process parameters are
 %replaced by 1) transitions of the pLTSs at the leaves, and 2) formal
@@ -824,7 +826,7 @@ This allows us to derive a bismulation theory for open pNets. As pNets are compo
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define states of open pNets as tuples of states. We denote them
+We define first states of open pNets as tuples of states. We denote them
  as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
 states from other tuples.
 \begin{definition}[States of open pNets]\label{def-states}
@@ -873,16 +875,13 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
 predicate $\Predsv$ is not satisfiable, then the transition associated with the 
-synchronisation will not occur in the considered state. 
+synchronisation will not occur in the considered state, or will occur with a \False\ precondition which is equivalent.
+If the action families do not match or if there is no valuation of
+variables such that the above formula can be ensured the predicate is undefined.
+
+The definition of this predicate is not constructive but it is easy to build the predicate constructively by brute-force unification of the sub-pNets actions with the corresponding vector actions, possibly followed by a simplification step.
 
 
-In any other case (if the action families do not match or if there is no valuation of
-variables such that the above formula can be ensured) the predicate is undefined.
-
-This definition is not constructive but it is easy to build the predicate constructively
-by brute-force unification of the sub-pNets
-actions with the corresponding vector actions, possibly followed by a simplification
-step.
 
 %%\TODO{rewrite example with new OTs}
 \begin{example}\emph{An open-transition.}
@@ -951,8 +950,7 @@ with the \emph{Protocol}) is:
 
 \end{example}
 
-We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
-the leaves of the pNet structure, and the states are given by 
+We build the semantics of open pNets as an open automaton over the states  given by 
 Definition~\ref{def-states}. The open transitions first
  project the global state into states of the leaves, then apply
 pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
@@ -1070,7 +1068,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 	%%    \TODO{I have tentatively added the sort constraint on hole actions, that was
 	%%not included in the first version... I'm unsure whether this is the best place to
 	%%include it, because it may change the decidability conditions on predicates}
-
+\end{definition}
         	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
 	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
@@ -1080,9 +1078,12 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
 
-\end{definition}
+
+Note that  the construction is symbolic, and each open-transition deduced expresses a whole family of
+behaviours, for any possible values of the variables.
 %
 
+\LUDO{Je sais pas de quoi parle le prochain todo :-( l'exemple?}
 \TODO{Ceci n'est pas nouveau, n'est-ce pas, est-ce utile pour le lecteur ici ? Ou est-ce qu'on bouge tous ces ``details techniques'' dans une annexe ? Si oui, je refais avec un morceau de ABP}
 \begin{example} \emph{Using the operational rules to compute
     open-transitions}
@@ -1147,10 +1148,6 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 
 \end{example}
 
-Note that while the scenario above is expressed as a single
-instantiation of the possible behaviours, the constructions below are
-kept symbolic, and each open-transition deduced expresses a whole family of
-behaviours, for any possible values of the variables.
 
 \paragraph{Variable management.}
 The variables in each synchronisation vector are considered local:
@@ -1235,7 +1232,7 @@ holes, and each pLTS at leaves having a finite number of states and
 \subsection{Bisimulation for open pNets and Composability}
 \label{section:bisimulation-PN}
 As  our symbolic operational semantics provides an open automaton, we can apply the notion of
-	strong (symbolic) bisimulation on automata to open pNet s:
+	strong (symbolic) bisimulation on automata to open pNets:
 \begin{definition}[FH-bisimulation for open pNets]\label{def:bisim-pnets}
 Two pNets are FH-bisimilar if there exist a relation between their associated 
 automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
@@ -1246,7 +1243,7 @@ FH-bisimulation. More precisely, one can define two preservation
 properties, namely 1) when one hole of a pNet is filled by two bisimilar other (open) pNets; and 2) when the same hole in two bisimilar pNets are
 filled by the same pNet, in other words, composing a pNet with two
 bisimilar contexts. The general case will be obtained by
-transitivity of the bisimulation relation. 
+transitivity of the bisimulation relation (Theorem~\ref{thm-equiv}). 
 
 \begin{theorem}[Congruence]\label{thm-congr-eq}
 	Consider an open pNet:
@@ -1279,10 +1276,7 @@ composability and FH-bisimilarity.
 	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
 	obtain two FH-bisimilar pNets.
 \end{theorem}
-%
-%In the following we use $\approx$ to denote equality modulo alpha conversion of free 
-%variables. In practice, $x\approx y$ can be obtained if: $x=clone(a) \land y=clone(a)$.
-
+This theorem is quite powerful somehow states that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016}, or to study interaction protocols \TODO{ref vers ABP?}
 
 \section{Weak bisimulation}\label{sec:weak}
 
