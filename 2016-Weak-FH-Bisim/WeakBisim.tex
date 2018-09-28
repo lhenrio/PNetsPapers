@@ -67,7 +67,7 @@
 \title{More equivalences for Open pNets\thanks{This work was partially 
 funded by the Associated Team FM4CPS
   between INRIA and ECNU, Shanghai}}
-\author{ Ludovic Henrio\inst{1}  \ \ \  Eric Madelaine\inst{1,2} \ \ \ Rab\'ea}
+\author{Ludovic Henrio\inst{1}  \ \ \  Eric Madelaine\inst{1,2} \ \ \ Rab\'ea}
 \institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
 	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
 }
@@ -107,6 +107,19 @@ funded by the Associated Team FM4CPS
 
 
 \section*{Status and TODO list}
+
+Notes de reunion 24 Sept
+
+- on remet l exemple de enable, etendu pour weak (Eric)
+
+- reste nos 5 thm a prouver: transitivite, decomposition/ recomposition, congruence x 2
+
+- etat de l art: il faudrait des refs sur bisim en gemneral, probablement avec pas mal de pi calcul (Eric?), des refs sur pourquoi pnets et des refs sur utilite de la weak bisim en verif
+
+
+
+- target SIAvocs ou SCP ou JLamp
+
 Conventions
 [14/9/2018] 
 
@@ -215,12 +228,14 @@ To summarise, the contribution of this paper are the following
 \end{itemize}
 
 
-\paragraph{Related works}
-
-\TODO{TODO ... or rather a dedicated section}
 
 \paragraph{Structure}
 This article is organised as follows. Section~\ref{sec:notations} provides the definition of pNets and introduces the notations used in this paper. Section~\ref{sec:OT} defines open automata, i.e. automata with parameters and transitions conditioned by the behaviour of ``holes''; a strong bisimulation equivalence for open automata is also presented in this section. Section~\ref{section:op-semantics} gives the semantics of open pNets expressed as weak automata, and states compositional properties on the strong bisimulation for open pNets. Finally, Section~\ref{sec:weak} defines a weak bisimulation equivalence on open automata and derives weak bisimilarity for pNets, together with properties on compositionality of weak bisimulaiton for open pNets. Finally, Section~\ref{section:conclusion} concludes the paper.
+
+
+\section{Related works}
+
+\TODO{TODO ... }
 
 \section{Background and notations}\label{sec:notations}
 This section introduces the notations we will use in this article, and  recalls the definition of pNets~\cite{henrio:Forte2016} with an informal semantics  of the pNet constructs.
@@ -243,6 +258,7 @@ synchronisation mechanisms.
 %\def\BoolExprs{\mathcal{B}}
 %\def\Exprs{\mathcal{E}} \TODO{use Exprs}
 %\def\Actionalg{\mathcal{A}}
+\TODO{Attention: la notation of term algebra is the same for set of transition.}
 
 Formally, we assume the existence of a term algebra $\AlgT$,
 where $\Sigma$ is the signature of the data and action constructors. Within $\AlgT$, we distinguish a set of
@@ -533,7 +549,7 @@ pNets are synchronisation entities: a pNet composes several subnets and  synchro
 \begin{definition}[pNet composition]
 	An open pNet: $\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
 	\overline{\symb{SV}}\myrangle$
- can be (partially) filled by providing  a pNets $\pNetQ$ of the
+ can be (partially) filled by providing  a pNet $\pNetQ$ of the
 	right sort to fill one of  its holes.	
 	Suppose $j_0\in J$:
 	%% \[\mylangle \pNet_i^{i\in I},S_j^{j\in J}, \symb{SV}_k^{k\in
@@ -699,7 +715,7 @@ More precisely, for any pair $(s,t)$, there is a
    single
       $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
       if $\Pred_{s,t}$       is 
-      true, i.e. the states are related when the variables in $s$ and $t$ verify the 
+      t\\True, i.e. the states are related when the variables in $s$ and $t$ verify the 
       predicate $\Pred_{s,t}$.
  FH-bisimulation is defined formally: 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} 
@@ -729,7 +745,7 @@ the following:
  \begin{mathpar}
      \openrule
          {
-           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+           \beta_j^{j\in J'},\Pred_{OT},\Post_{OT}}
          {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
@@ -742,7 +758,7 @@ the following:
          {t \OTarrow {\alpha_x} t_x}
 %         \right)
 \end{mathpar}
- such that  $\forall x, J_1=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
+ such that  $\forall x, J'=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
  \mathcal{R}$; 
  and  \\
  $\Pred_{s,t} \land \Pred_{OT}\\
@@ -810,13 +826,15 @@ $\mathcal{R}$ is a FH-bisimulation.
 \section{Semantics of Open pNets}
 \label{section:op-semantics}
 
-This section defines the semantics of an open \pNet as a translation into an open automaton. 
-In this translation, the states of the open automata will be obtained from the states of the \pLTS s at the leaves of the composition. The predicates on the transition will be obtained both from the predicates on the \pLTS s transitions and from the
-\TODO{Ce paragraph a eu un probleme, je ne sais pas quand.... Vous avez une vieille version sous la main ?}
-This allows us to derive a bismulation theory for open \pNet s. As \pNet s are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of bisimilar pNets are themselves bisimilar.
+This section defines the semantics of an open pNet as a translation into an open automaton. 
+In this translation, the states of the open automata are obtained from the states of the pLTSs at the leaves of the composition. The predicates on the transition is obtained both from the predicates on the pLTSs transitions and from the synchronisation vectors involved in the transition.
 
 
-%
+The definition of bisimulation for open automata allows us to derive a bismulation theory for open pNets. As pNets are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of strongly bisimilar pNets are themselves bisimilar.
+
+\subsection{Deriving an open automaton from an open pNet}
+To derive an open automaton from a pNet, we need to describe the set of states of the automaton, and then we will detail the construction rule for transitions of the automaton, this will rely on the derivation of predicate unifying synchronisation vectors and the actions of the pNets involved in a given synchronisation.
+
 %Then the semantics of a pNet is characterized by a set of {\em open
 %transitions}, where the hypotheses on process parameters are
 %replaced by 1) transitions of the pLTSs at the leaves, and 2) formal
@@ -824,7 +842,7 @@ This allows us to derive a bismulation theory for open \pNet s. As \pNet s are c
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define states of open pNets as tuples of states. We denote them
+We define first states of open pNets as tuples of states. We denote them
  as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
 states from other tuples.
 \begin{definition}[States of open pNets]\label{def-states}
@@ -873,16 +891,13 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 
 Somehow, this predicate entails a verification of satisfiability in the sense that if the 
 predicate $\Predsv$ is not satisfiable, then the transition associated with the 
-synchronisation will not occur in the considered state. 
+synchronisation will not occur in the considered state, or will occur with a \False\ precondition which is equivalent.
+If the action families do not match or if there is no valuation of
+variables such that the above formula can be ensured the predicate is undefined.
+
+The definition of this predicate is not constructive but it is easy to build the predicate constructively by brute-force unification of the sub-pNets actions with the corresponding vector actions, possibly followed by a simplification step.
 
 
-In any other case (if the action families do not match or if there is no valuation of
-variables such that the above formula can be ensured) the predicate is undefined.
-
-This definition is not constructive but it is easy to build the predicate constructively
-by brute-force unification of the sub-pNets
-actions with the corresponding vector actions, possibly followed by a simplification
-step.
 
 %%\TODO{rewrite example with new OTs}
 \begin{example}\emph{An open-transition.}
@@ -933,7 +948,7 @@ with the \emph{Protocol}) is:
     \ERIC{Apres application des substitutions et simplification du predicat:}
 
      $  OT_2  = \openrule{
-      \emptyset; Pred=true;  \\ Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
+      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
                       }
     {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
     $
@@ -951,8 +966,7 @@ with the \emph{Protocol}) is:
 
 \end{example}
 
-We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
-the leaves of the pNet structure, and the states are given by 
+We build the semantics of open pNets as an open automaton over the states  given by 
 Definition~\ref{def-states}. The open transitions first
  project the global state into states of the leaves, then apply
 pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
@@ -1070,7 +1084,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 	%%    \TODO{I have tentatively added the sort constraint on hole actions, that was
 	%%not included in the first version... I'm unsure whether this is the best place to
 	%%include it, because it may change the decidability conditions on predicates}
-
+\end{definition}
         	A key to understand this rule is that the open transitions are
 	expressed in terms of the leaves and holes of the pNet structure,
 	i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
@@ -1080,9 +1094,12 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 	leaves of the pNet, not only those involved in the chosen
 	synchronisation vector.
 
-\end{definition}
+
+Note that  the construction is symbolic, and each open-transition deduced expresses a whole family of
+behaviours, for any possible values of the variables.
 %
 
+\LUDO{Je sais pas de quoi parle le prochain todo :-( l'exemple?}
 \TODO{Ceci n'est pas nouveau, n'est-ce pas, est-ce utile pour le lecteur ici ? Ou est-ce qu'on bouge tous ces ``details techniques'' dans une annexe ? Si oui, je refais avec un morceau de ABP}
 \begin{example} \emph{Using the operational rules to compute
     open-transitions}
@@ -1147,15 +1164,11 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 
 \end{example}
 
-Note that while the scenario above is expressed as a single
-instantiation of the possible behaviours, the constructions below are
-kept symbolic, and each open-transition deduced expresses a whole family of
-behaviours, for any possible values of the variables.
 
 \paragraph{Variable management.}
 The variables in each synchronisation vector are considered local:
 for a given pNet expression, we must have fresh local variables for
-each occurrence of a vector (= each time we instantiate rule
+each occurrence of a vector (i.e. each time we instantiate rule
 \TrDeux). Similarly the state variables of each copy of a
 given pLTS in the system, must be distinct, and those created for each
 application of \TrDeux\ have to be fresh and all distinct. 
@@ -1235,18 +1248,18 @@ holes, and each pLTS at leaves having a finite number of states and
 \subsection{Bisimulation for open pNets and Composability}
 \label{section:bisimulation-PN}
 As  our symbolic operational semantics provides an open automaton, we can apply the notion of
-	strong (symbolic) bisimulation on automata to open pNet s:
+	strong (symbolic) bisimulation on automata to open pNets:
 \begin{definition}[FH-bisimulation for open pNets]\label{def:bisim-pnets}
 Two pNets are FH-bisimilar if there exist a relation between their associated 
 automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
-the predicate associated to the relation between the initial states is true.
+the predicate associated to the relation between the initial states is \True.
 \end{definition}
 We can now prove that pNet composition  preserves
 FH-bisimulation. More precisely, one can define two preservation
 properties, namely 1) when one hole of a pNet is filled by two bisimilar other (open) pNets; and 2) when the same hole in two bisimilar pNets are
 filled by the same pNet, in other words, composing a pNet with two
 bisimilar contexts. The general case will be obtained by
-transitivity of the bisimulation relation. 
+transitivity of the bisimulation relation (Theorem~\ref{thm-equiv}). 
 
 \begin{theorem}[Congruence]\label{thm-congr-eq}
 	Consider an open pNet:
@@ -1279,10 +1292,7 @@ composability and FH-bisimilarity.
 	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
 	obtain two FH-bisimilar pNets.
 \end{theorem}
-%
-%In the following we use $\approx$ to denote equality modulo alpha conversion of free 
-%variables. In practice, $x\approx y$ can be obtained if: $x=clone(a) \land y=clone(a)$.
-
+This theorem is quite powerful somehow states that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016}, or to study interaction protocols \TODO{ref vers ABP?}
 
 \section{Weak bisimulation}\label{sec:weak}
 
@@ -1295,7 +1305,7 @@ As the notions of invisible action varies in different contexts,
 e.g. $tau$ in CCS, and $i$ in Lotos, we will rely here on some set of
 \emph{internal actions} depending on a specific action
 algebra. Naturally, an internal action cannot be synchronised with
-actions of other systems in its environment. 
+actions of other systems in its environment. We show here that under such assumption of non-observability of internal actions, we can define a weak bisimulation relation that is compositional, in the sense of open pNet composition. In this section we will first define a notion of weak transition similar to open transition. In fact a weak open transition is made of several open transitions labelled as internal transitions, plus potentially one non-internal open transition. This allows us to define weak open automata, and a weak bisimulation relation based on these weak open automata. Finally, we apply this weak bisimulation to open pNets, obtain a weak bisimilarity relationship for open pNets, and prove that this relation has compositional properties.
 
 %% \TODO{we should understand if it make sense to distinguish invisible
 %%   from synchronised actions: in the Forte paper we wrote ``using  as 
@@ -1319,7 +1329,7 @@ An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe sil
 \item
 \[ \openrule
          {
-           (j\mapsto\tau),\symb{True},\symb{Id}(s)}
+           (j\mapsto\tau),\True,\Id(s)}
          {s \OTarrow {\tau} s}
          \in \mathcal{T}
 \]
@@ -1329,7 +1339,7 @@ and
          {
            (j\mapsto\tau),\Pred,\Post}
          {s \OTarrow {\alpha} s'}
-         \in \mathcal{T} \] we have \[ \alpha=\tau\land s=s'\land \Post=\symb{Id}(s)
+         \in \mathcal{T} \] we have \[ \alpha=\tau\land s=s'\land \Pred=\True\land\Post=\Id(s)
 \]
 \end{enumerate}
 \end{definition}
@@ -1376,14 +1386,14 @@ We define $\vis{\overline\beta}$ as the mapping $\overline\beta$  without  invis
 
 \begin{definition}[Building a weak open automaton]\label{def:buildweakOT}
   Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. 
-The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows
+The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows: 
 
 %\noindent{\bf Invisible $\tau$ transitions:}
 \begin{mathpar}
  \openrule
          {
-           \emptyset,\symb{True},Id(s)}
-         {s \OTWeakarrow {\tau} s} \in \WT
+           \emptyset,\symb{True},\Id(s)}
+         {s \OTWeakarrow {\tau} s} \in \WT  \qquad \WTUn
  \end{mathpar}
 and
 \begin{mathpar}
@@ -1393,12 +1403,12 @@ and
          {
            \overline{\beta},\Pred,\Post}
          {s \OTarrow {\alpha} s'} \in \mathcal{T}
-}
+} 
 { \openrule
          {
            \vis{\overline{\beta}}\!,\Pred,\Post
 				 } {s \OTWeakarrow {\alpha} s'} \in \WT
-}
+}\qquad \WTDeux
 %\inferrule{
 % \openrule
 %         {
@@ -1417,7 +1427,7 @@ and
 %         {s \OTWeakarrow {\tau} s''} \in \WT
 %}
  \end{mathpar}
-and
+ and
 %\noindent{\bf Other transitions:}
 \begin{mathpar}
   \mprset {vskip=.5ex}
@@ -1445,7 +1455,7 @@ and
 		\Pred,
 				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
          {s \OTWeakarrow {\alpha} s'} \in\WT
-}
+} \WTTrois
 \end{mathpar}
  
 \end{definition}
@@ -1517,7 +1527,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
  \begin{mathpar}
      \openrule
          {
-           \beta_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+           \beta_j^{j\in J'},\Pred_{OT},\Post_{OT}}
          {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
@@ -1528,7 +1538,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
            \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
          {t \OTWeakarrow {\alpha_x} t_x}
 \end{mathpar}
- such that  $\forall x, \{j\in J_1|\beta_j\neq\tau\}=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
+ such that  $\forall x, \{j\in J'|\beta_j\neq\tau\}=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
  and  \\
  $\Pred \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
@@ -1540,9 +1550,9 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
       covered by a set of weak transitions from $s$ in $\WT_1$.
  \end{itemize}
 
-Two pNets are Weak FH-bisimilar if there exist a relation between their associated 
+Two pNets are weak FH-bisimilar if there exist a relation between their associated 
 automata that is a Weak FH-bisimulation and their initial states are in the relation, i.e. 
-the predicate associated to the relation between the initial states is true.
+the predicate associated to the relation between the initial states is \True.
  \end{definition}
 
 Weak bisimulation can be alternatively defined as a strong bisimulation on the weak open automata, however this would still need a specific definition of strong bisimulation for weak open automata. \TODO{polish}
@@ -1560,7 +1570,7 @@ proof in appendix
 \subsection{Weak bisimulation for open pNets}
 \begin{definition}[Non-observability of silent actions for pNets]~\\
 A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \overline{\symb{SV}}\myrangle$
- \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\symb{True}}\in \overline{\symb{SV}}$ and $\forall SV_k\in \overline{\symb{SV}}, \forall i,j\in I_k\uplus J_k.\,i\neq j \Rightarrow \alpha'_k\neq\tau$
+ \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\True}\in \overline{\symb{SV}}$ and $\forall SV_k\in \overline{\symb{SV}}, \forall i,j\in I_k\uplus J_k.\,i\neq j \Rightarrow \alpha'_k\neq\tau$
 \end{definition}
 
 \begin{property}[pNets that cannot observe silent actions]
@@ -1658,7 +1668,7 @@ $\tau;\tau;a$ weak transition.
 
 \noindent
      $  \openrule{
-      \emptyset; Pred=true; Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
+      \emptyset; Pred=\True; Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
                       }
     {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
     $
@@ -1683,7 +1693,7 @@ $\tau;\tau;a$ weak transition.
 
 \medskip\noindent
      $  \openrule{
-  \emptyset; Pred=true; Post=r_2\_b:=r_1\_b; s_2\_b:=s_1\_b   \}
+  \emptyset; Pred=\True; Post=r_2\_b:=r_1\_b; s_2\_b:=s_1\_b   \}
                       }
     {\ostate{s_2,m_0,m_0,r_1} \OTarrow{out(r_1\_m)} \ostate{s_2,m_0,m_0,r_2}}
     $
@@ -2373,7 +2383,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 \end{mathpar} 
 
 Where $j_0\in I_1$ or $j_0\in I_2$
-We know each premise is true for $P[Q]_{j_0}$ and try to prove the equivalent premise for 
+We know each premise is \True for $P[Q]_{j_0}$ and try to prove the equivalent premise for 
 $P$. 
 First, $K$ and the synchronisation vector $SV_k$ are unchanged\footnotemark (however 
 $j_0$ passes from 
@@ -2514,7 +2524,7 @@ does not appear neither as global action nor as an action of a hole.
 
        Consider each premise of the open transition (constructed by \TrDeux\ in 
 Definition~\ref{def:operationalSemantics}). 
-We know each premise is true for $P$ and try to prove the equivalent premise for 
+We know each premise is \True for $P$ and try to prove the equivalent premise for 
 $P[Q]_{j_0}$ (using the open transition of $Q$). 
 $K$ and the synchronisation vector are unchanged ($j_0$ is now in the set of sub-pNets); 
 $SV_k=\SV{(\alpha'_j)^{j\in I\uplus\{j_0\}\uplus 
@@ -2901,49 +2911,14 @@ similar.\qed
 
 \subsection{Weak bisimulation is an equivalence}
 
+\TODO{Lemma revu mais convaincant...}
 
-\begin{lemma} Let $A_1 = <J,\mathcal{S}_1, s_0,
-    \mathcal{T}_1>$ be open automata and $<J,\mathcal{S}_1, s_0,
-    \WT_1>$ be the
-weak open automata derived from $A_1$. 
-  
-\begin{itemize}
- \item  For any weak open transition $\symb{WOT} \in \WT$:
- \begin{mathpar}
-     \openrule
-         {
-           \gamma_j^{j\in J},\Pred_{OT},\Post_{OT}}
-         {s \OTWeakarrow {\alpha} s'}
-
-\end{mathpar}  
-
-there exists  open transitions $\symb{OT} \in \mathcal{T}$:
-
-\begin{mathpar}
-     \openrule
-         {
-           \beta_j^{j\in J},\Pred_{OT},\Post_{OT}}
-         {s \OTarrow {\alpha} s'}
-
-\end{mathpar}
- or $s=s'$ and $\alpha = \tau$
-\end{itemize}
- 
-\begin{proof} 
-We can rewrite $s \OTWeakarrow {} s'$ as follows $s \OTarrow {} s_1 \OTarrow {} \ldots \OTarrow {} s_n  \OTarrow {} s'$, we proceed by induction on the length of the inference of  ${s \OTWeakarrow {\alpha} s'}$ (introduced in Definition \ref{def:buildweakOT}). First, if  $\overline{\gamma}=\emptyset$ then using rule (1) we can directly conclude  $s=s'$ and $\alpha =\tau$. Otherwise, using  rule (2)  we have  s $\OTarrow {\alpha} s'$ and forall $j$, $\gamma_j=\vis{\beta_j}$. Second, using rule (3)  we have ${s \OTWeakarrow {\alpha} s'}$ implies ${s \OTWeakarrow {\tau} s_1} \OTWeakarrow {\alpha} s_2  \OTWeakarrow {\tau} s'$ and forall $j$, $\gamma_j = \gamma_{1j}\,\dotcup\,\gamma_{2j}\,\dotcup\,\gamma_{3j}$, and by induction hypothesis this means that there exist $s, s'$  such that $ s \OTarrow {\alpha} s'$ and $j$, $\gamma_{2j}=\vis{\beta_j}$.
-\end{proof}   
-\end{lemma}
-
-\TODO{I am not sure that we have the same states between open auto 
-and weak auto}
-
-
-
--\begin{lemma} Let $A = <J,\mathcal{S}, s_0,
+\begin{lemma} Let $A = <J,\mathcal{S}, s_0,
     \mathcal{T}>$ be open automata and $<J,\mathcal{S}, s_0,
     \WT>$ be the
-weak open automata derived from $A$.  For any weak open transition $\symb{WOT} \in \WT$, there exists an open transitions $\symb{OT} \in \mathcal{T}$ such that:
-  
+weak open automata derived from $A$.  \\
+%For any weak open transition $\symb{WOT} \in \WT$, there exists an open transitions $\symb{OT} \in \mathcal{T}$ such that:\\
+There exist  sets of $\beta^1_i$, $\beta^2_i$, and $\beta^3_i$, $\Pred^1_i$, $\Pred^3_i$, $\Post^1_i$, and  $\Pred^2$, $\Post^2$ s.t.:
 \begin{mathpar}
 %\mprset {vskip=.5ex}
 %\inferrule 
@@ -2962,29 +2937,34 @@ weak open automata derived from $A$.  For any weak open transition $\symb{WOT} \
            \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
          {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
 \Bigg)        
-       \Longleftrightarrow\\  \Bigg( 
- \Big(\alpha = \tau \wedge  \vis{\overline{\beta^2}}=\emptyset \wedge \Pred\,^2 =\symb{True} \wedge \Post^2 =\symb{Id(s)}\Big) \Bigg) \bigvee  {
+       \bigvee\\   
+ \Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)
+ \end{mathpar}
+If only if there exist a set of $\beta$, $\Pred$, $\Post$ s.t.
+ \begin{mathpar}
+%   \Longleftrightarrow  {
 \openrule
          {
            \overline{\gamma},
 		\Pred, \Post
 				 } {s \OTWeakarrow {\alpha} s'} \in\WT
-}
+%}
 \end{mathpar}
 where\\
-\begin{mathpar} 
-s=s^1_0 \wedge s^1_n=s^2 \wedge s'^2 = s^3_0 \wedge s^3_m=s', \quad
-\overline{\gamma}=\biguplus_{i=0}^n \vis{\overline{\beta^1_i}} \dotcup  \vis{\overline{\beta^2}} \dotcup \biguplus_{i=0}^m \vis{\overline{\beta^3_i}}
+$
+s=s^1_0 \wedge s^1_n=s^2 \wedge s'^2 = s^3_0 \wedge s^3_m=s',
+\displaystyle{\overline{\gamma}=\mybigdotcup_{i=0}^n \vis{\overline{\beta^1_i}} \dotcup  \vis{\overline{\beta^2}} \dotcup \mybigdotcup_{i=0}^m \vis{\overline{\beta^3_i}}}
 \\
 \Pred=\bigwedge_{i=0}^n\Pred^1_i\land\Pred\,^2\subst{\Post_1}\land (\bigwedge_{i=0}^m\Pred_i^3\subst{\Post^2})\subst{\Post^1_i}\\
 \Post=({x^3_k\gets (e^3_k\subst {\Post^2})\subst{\Post^1_i}})^{k\in K}
-\end{mathpar}
+$
 
 
 
 \end{lemma}
 
-\begin{proof} ($\Rightarrow$) We proceed by induction on the number of transitions $l$ with which we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}), in particular we have  $l=n+m+1$.
+\begin{proof} ($\Rightarrow$) We proceed by induction on  $l=n+m+1$, which is in fact
+the number of transitions with which we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}).
 \begin{itemize}
 \item The base case $l=1$, so $n=0$ and $m=0$, then obtain
 \begin{mathpar}
@@ -2997,7 +2977,7 @@ s=s^1_0 \wedge s^1_n=s^2 \wedge s'^2 = s^3_0 \wedge s^3_m=s', \quad
 %}
 %}
 \end{mathpar} 
-by rule (2) we directly conclude 
+by rule (\WTDeux) we directly conclude 
  \begin{mathpar}
  % \mprset {vskip=.5ex}
 %\inferrule{
@@ -3006,13 +2986,68 @@ by rule (2) we directly conclude
 %           \overline{\beta},\Pred,\Post}
 %         {s \OTarrow {\alpha} s'} \in \mathcal{T}
 %}
+
+\openrule
+         {
+           \overline{\beta},\Pred,\Post}
+         {s \OTarrow {\alpha} s'} \in \mathcal{T} \implies 
 { \openrule
          {
            \vis{\overline{\beta}}\!,\Pred,\Post
 				 } {s \OTWeakarrow {\alpha} s'} \in \WT
 }
 \end{mathpar} 
-\item For the inductive step, first we have by induction hypothesis that the formula holds for some length $l$.   Induction step is to infer that formula holds for transitions of length $l + 1$. In particular, for $n+1$ or $m+1$, by adding the transition:
+\item For the inductive step, first we have by induction hypothesis that the formula holds for some length $l$.   Induction step is to infer that formula holds for transitions of length $l + 1$. As the condition holds for $l$, it means that there is $n$  $m$, $n'$,$m'$ such that $l=n+m+1$, and $l+1=n'+m'+1$ and either $n'=n+1$ or $m'=m+1$ (exclusively).
+We consider the case $n'=n+1$, and $m'=m+1$ are similar. Side conditions are omitted for readability. We first focus on the left part of the disjunction. Suppose we have:
+\begin{mathpar}
+\Bigg(\forall i \in [0\ldots n+1].\openrule
+    {
+       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
+\quad
+\openrule
+         {
+           \overline{\beta^2},\Pred\,^2,\Post^2 }
+         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+\quad \wedge\\
+\forall i \in [0\ldots m].\openrule
+         {
+           \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+\Bigg) 
+\end{mathpar}
+
+By recurrence hypothesis the theorem is \True~ for any set of transitions of length $l$. In particular, we have
+
+\begin{mathpar}
+%\mprset {vskip=.5ex}
+%\inferrule 
+\Bigg(\forall i \in [0\ldots n].\openrule
+    {
+       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
+\quad
+\openrule
+         {
+           \overline{\beta^2},\Pred\,^2,\Post^2 }
+         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+\quad \wedge\\
+\forall i \in [0\ldots m].\openrule
+         {
+           \overline{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+\Bigg)        
+       \bigvee\\   
+ \Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)  \implies  {
+\openrule
+         {
+           \overline{\gamma},
+		\Pred, \Post
+				 } {s' \OTWeakarrow {\alpha} s''} \in\WT
+}
+\end{mathpar}
+
+We need to prove the same implication with  by adding the transition:
 \begin{mathpar}
  % \mprset {vskip=.5ex}
 %\inferrule{
@@ -3022,16 +3057,14 @@ by rule (2) we directly conclude
          {s \OTarrow {\tau} s'} \in \mathcal{T}
 %}
 \end{mathpar}
-
-First by using rule (2) we can directly conclude :
+It will remain so. First by using rule (\WTDeux) we can directly conclude :
 \begin{mathpar}
- % \mprset {vskip=.5ex}
-%\inferrule{
-% \openrule
-%         {
-%           \overline{\beta},\Pred,\Post}
-%         {s \OTarrow {\tau} s'} \in \mathcal{T}
-%}
+
+ \openrule
+         {
+           \overline{\beta},\Pred,\Post}
+         {s \OTarrow {\tau} s'} \in \mathcal{T}
+\implies 
 { \openrule
          {
            \vis{\overline{\beta}}\!,\Pred,\Post
@@ -3039,81 +3072,127 @@ First by using rule (2) we can directly conclude :
 }
 \end{mathpar} 
 
-Second by using rule (3) \TODO{To complete}
+On the other hand, by rule (\WTUn) we have
+\begin{mathpar}
+ \openrule
+         {
+          \emptyset,\True,\Id(s')
+				 } {s'' \OTWeakarrow {\tau} s''} \in \WT
+\end{mathpar}
+
+Finally by using rule (\WTTrois) we compose the three weak transitions:
+
+
+\begin{mathpar}
+  \mprset {vskip=.5ex}
+\inferrule {\openrule
+         {
+           \vis{\overline{\beta}},\Pred,\Post   }
+         {s \OTWeakarrow {\tau} s'} \in \WT
+\qquad
+\openrule
+         {
+           \overline{\gamma},
+		\Pred, \Post
+				 } {s' \OTWeakarrow {\alpha} s''} \in\WT
+\qquad
+\openrule
+         {
+          \emptyset,\True,\Id(s')
+				 } {s'' \OTWeakarrow {\tau} s''} \in \WT
+\\
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
+}
+{
+\openrule
+         {
+          \vis{\overline{\beta}} \dotcup \overline{\gamma},
+		\Pred,
+				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
+         {s \OTWeakarrow {\alpha} s''} \in\WT
+} \WTTrois
+\end{mathpar}
+
+The right part of the disjunction, i.e.
+\begin{mathpar}
+\Big(\alpha = \tau \wedge  \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)
+\end{mathpar}
+is handled trivially by rule (\WTUn) 
 
 \end{itemize}
-\noindent ($\Leftarrow$) We proceed also  by induction on the number of transitions $l$ with which we  build  a weak transition.
+
+\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition.
 
 \begin{itemize}
-\item Basis: suppose that $\OTWeakarrow {\alpha}$ cannot be subdivided. So for a given weak transition:
-
+\item Case rule (\WTUn):
+\begin{mathpar}
+{\openrule
+         {
+           \emptyset,\True,\Id(s)
+				 } {s \OTWeakarrow {\tau} s} \in \WT
+}
+\end{mathpar}
+In this case we can directly conclude by the right part of the disjunction.
 \begin{mathpar}
 { \openrule
          {
-           \overline{\gamma}\!,\Pred,\Post
-				 } {s \OTWeakarrow {\alpha} s'} \in \WT
-}
+           \emptyset,\True,\Id(s)
+				 } {s \OTWeakarrow {\tau} s} \in \WT
+}\! \implies\! \Big(\alpha = \tau \wedge \overline{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)
 \end{mathpar}
-We have two cases:
-\begin{itemize}
-\item either $\alpha = \tau$, $s=s'$, $\overline{\beta}=\emptyset$, $\Pred = \symb{True}$ and $\Post=\symb{Id}(s)$. So by rule (2) we have: 
-\begin{mathpar}
-{ \openrule
-         {
-           \emptyset,\symb{True},\symb{Id}(s)
-				 } {s \OTarrow {\tau} s} \in \mathcal{T}
-}
-\end{mathpar}
-\item Otherwise, by rule (2) we conclude that we have: 
+
+\item Case rule (\WTDeux):
 \begin{mathpar}
 \openrule
+         {
+           \overline{\gamma},\Pred,\Post}
+         {s \OTWeakarrow {\alpha} s'} \in \WT \implies
+         \openrule
          {
            \overline{\beta},\Pred,\Post}
-         {s \OTarrow {\alpha} s'} \in \mathcal{T}
+         {s \OTWeakarrow {\alpha} s'} \in \mathcal{T}         
 \end{mathpar}
-where $\overline{\gamma} = \vis{\overline{\beta}}$
-\end{itemize}
-\item Step: by using rule (3) we can rewrite a weak transition:
+where $\overline{\gamma} = \vis{\overline{\beta}}$.
+These two cases prove the implication with $n=0$ and $m=0$.
 
+
+\item Case rule (\WTTrois):
 \begin{mathpar}
-{ \openrule
-         {
-           \overline{\gamma}\!,\Pred,\Post
-				 } {s \OTWeakarrow {\alpha} s'} \in \WT
-}
-\end{mathpar}
-
-as  
-
-\begin{mathpar}
-\inferrule{
-\openrule
+  \mprset {vskip=.5ex}
+\inferrule {\openrule
          {
            \overline{\gamma_1},\Pred_1,\Post_1   }
-         {s \OTWeakarrow {\tau} s_1} \in\! \WT
-\quad
+         {s \OTWeakarrow {\tau} s_1} \in \WT
+\qquad
 \openrule
          {
            \overline{\gamma_2},\Pred_2,\Post_2  }
-         {s_1 \OTWeakarrow {\alpha} s_2} \in\! \WT
-\quad
+         {s_1 \OTWeakarrow {\alpha} s_2} \in \WT
+\qquad
 \openrule
          {
-           \overline{\gamma_3},\Pred_3,\Post_3 }
-         {s_2 \OTWeakarrow {\tau} s'} \in\!\WT
-%\\
-%\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
-}{}
+           \overline{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
+         {s_2 \OTWeakarrow {\tau} s'} \in\WT
+\\
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
+}
+{
+\openrule
+         {
+           \overline{\gamma_1}\dotcup \overline{\gamma_2}\dotcup\overline{\gamma_3},
+		\Pred,
+				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
+         {s \OTWeakarrow {\alpha} s'} \in\WT
+}
 \end{mathpar}
 
-such that \\
-$\overline{\gamma}=\overline{\gamma_1} \dotcup \overline{\gamma_2} \dotcup \overline{\gamma_3}$, 
-$\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}$, and $\Post=$ \TODO{Voir comment l'exprimer}\\
-
+%where 
+%$\overline{\gamma}=\overline{\gamma_1} \dotcup \overline{\gamma_2} \dotcup \overline{\gamma_3}$,
+%$\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}$, and $\Post= ({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K}$
 
 \begin{enumerate}
 
-\item By induction hypothesis and simplification we have: 
+\item By induction hypothesis this means each tau weak open transition can be written as a series of $n_1$ tau transitions such $n_1=n+m+1$, hence by simplification we have: 
 \begin{mathpar}
 %\inferrule{
 \bigg( \openrule
@@ -3126,15 +3205,14 @@ $\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\P
        \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
          {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T}         \bigg)
 \end{mathpar}
-where 
-\begin{mathpar} 
-s=s^1_0 \wedge\, s^1_{n_1}=s_1 \quad
-\overline{\gamma_1}=\biguplus_{i=0}^{n_1} \vis{\overline{\beta^1_i}} 
-\quad
-\Pred_1=\bigwedge_{i=0}^{n_1}\Pred^1_i\quad \Post_1= \biguplus_{i=0}^{n_1} \Post_i^1
-\end{mathpar}
+where \\
+$ 
+s=s^1_0 \wedge s^1_{n_1}\!=s_1,
+\displaystyle{\overline{\gamma_1}=\mybigdotcup_{i=0}^{n_1} \vis{\overline{\beta^1_i}}}, 
+\Pred_1\!=\!\bigwedge_{i=0}^{n_1}\Pred^1_i, \Post_1= \biguplus_{i=0}^{n_1} \Post_i^1\\
+$
 
-\item and
+\item Similarly, a series of $m_1=n+m+1$  open transitions can be simplified: 
 \begin{mathpar}
 %\inferrule{
 \bigg( \openrule
@@ -3145,17 +3223,17 @@ s=s^1_0 \wedge\, s^1_{n_1}=s_1 \quad
 \Rightarrow
 \bigg( \forall i \in [0\ldots m_1].\openrule
     {
-       \overline{\beta^3_i},\Pred^3_i,\Post^3_i   }
-         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}         \bigg)
+       \overline{\beta^2_i},\Pred^2_i,\Post^2_i   }
+         {s^2_i \OTarrow {\tau} s^2_{i+1}} \in \mathcal{T}         \bigg)
 \end{mathpar}
-where
-\begin{mathpar} 
-s_2=s^3_0 \wedge s^1_{m_1}=s'\quad
-\overline{\gamma_3}=\biguplus_{i=0}^{m_1} \vis{\overline{\beta^3_i}}\quad
-\Pred_3\!=\!\bigwedge_{i=0}^{m_1}\Pred^3_i \quad \Post_3= \biguplus_{i=0}^{m_1} \Post_i^3
-\end{mathpar}
+where\\
+$
+s_2=s^2_0 \wedge s^2_{m_1}=s',
+\displaystyle{\overline{\gamma_2}=\mybigdotcup_{i=0}^{m_1} \vis{\overline{\beta^2_i}}},
+\Pred_3\!=\!\bigwedge_{i=0}^{m_1}\Pred^2_i,\Post_2\!=\! \biguplus_{i=0}^{m_1} \Post_i^2\\
+$
 
-\item and 
+\item On the other hand, by induction hypothesis we have:
 \begin{mathpar}
 \bigg(\openrule
          {
@@ -3164,33 +3242,32 @@ s_2=s^3_0 \wedge s^1_{m_1}=s'\quad
 \Rightarrow
 \Bigg(\forall i \in [0\ldots n_2].\openrule
     {
-       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
-         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T}  \wedge
+       \overline{\beta^3_i},\Pred^3_i,\Post^3_i   }
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}  \wedge
 
 \openrule
          {
-           \overline{\beta^2},\Pred^2,\Post^2 }
-         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+           \overline{\beta^4},\Pred^4,\Post^4 }
+         {s^4 \OTarrow {\alpha} s'^4} \in \mathcal{T}
  \wedge
 \forall i \in [0\ldots m_2].\openrule
          {
-           \overline{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
-         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
+           \overline{\beta^5_i},\Pred^5_i,({x^5_k\gets e^5_k})^{k\in K}    }
+         {s^5_i \OTarrow {\tau} s^5_{i+1}} \in \mathcal{T}
 \Bigg)         
 \end{mathpar}
 where\\
-\begin{mathpar} 
-s_1=s^1_0 \wedge s^1_n=s^2_0 \wedge s'^2 = s^3_0 \wedge s^3_{m_2}=s_2,
-\overline{\gamma_2}=\biguplus_{i=0}^{n_2} \vis{\overline{\beta^1_i}} \dotcup  \vis{\overline{\beta^2}} \dotcup \biguplus_{i=0}^{m_2} \vis{\overline{\beta^3_i}}
+$
+s_1=s^3_0 \wedge s^3_{n_2}=s^4 \wedge s'^4 = s^5_0 \wedge s^5_{m_2}=s_2,
+\displaystyle{\overline{\gamma_2}=\mybigdotcup_{i=0}^{n_2} \vis{\overline{\beta^3_i}} \dotcup  \vis{\overline{\beta^4}}  \mybigdotcup_{i=0}^{m_2} \vis{\overline{\beta^5_i}}}
 \\
-\Pred_2=\bigwedge_{i=0}^{n_2}\Pred^1_i\land\Pred\,^2\subst{ \biguplus_{i=0}^{n_2}\Post^1_i}\land \Big(\bigwedge_{i=0}^{m_2}\Pred\,^3_i\subst{\Post^2}\Big)\subst{\biguplus_{i=0}^{n_1}\Post^1_i}
+\Pred_2=\bigwedge_{i=0}^{n_2}\Pred^3_i\land\Pred\,^4\subst{ \biguplus_{i=0}^{n_2}\Post^3_i}\land \Big(\bigwedge_{i=0}^{m_2}\Pred\,^5_i\subst{\Post^4}\Big)\subst{\biguplus_{i=0}^{n_1}\Post^1_i}
 \\
-\Post_2= ({x^3_k\gets (e^3_k\subst {\Post^2})\subst{\biguplus_{i=0}^{n_2} \Post^1_i}})^{k\in K}
-\end{mathpar}
+\Post_2= ({x^5_k\gets (e^5_k\subst {\Post^4})\subst{\biguplus_{i=0}^{n_2} \Post^3_i}})^{k\in K}
+$
 \end{enumerate}
-
-
-Therefore, we can conclude that:
+~~\\
+Therefore, we can deduce that:
 \begin{mathpar}
 \bigg( { \openrule
          {
@@ -3200,38 +3277,93 @@ Therefore, we can conclude that:
  \Rightarrow
 \Bigg(\forall i\in [0\ldots(n_1\!+\!n_2)].\openrule
     {
-       \overline{\beta^1_i},\Pred^1_i,\Post^1_i   }
-         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in\mathcal{T} \wedge
+       \overline{\beta^6_i},\Pred^6_i,\Post^6_i   }
+         {s^6_i \OTarrow {\tau} s^6_{i+1}} \in\mathcal{T} \wedge
          
 \openrule
          {
-           \overline{\beta^2},\Pred^2,\Post^2 }
-         {s^2 \OTarrow {\alpha} s'^2} \in \mathcal{T}
+           \overline{\beta^7},\Pred^7,\Post^7 }
+         {s^7 \OTarrow {\alpha} s'^7} \in \mathcal{T}
 \wedge
 \forall i \in [0\ldots(m_1\!+\!m_2)].\openrule
-         {\overline{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
-         {s^3_i\OTarrow {\tau} s^3_{i+1}}\in\mathcal{T}\Bigg)  
+         {\overline{\beta^8_i},\Pred^8_i,({x^8_k\gets e^8_k})^{k\in K}    }
+         {s^8_i\OTarrow {\tau} s^8_{i+1}}\in\mathcal{T}\Bigg)  
 \end{mathpar}
 
-where\\
-\begin{mathpar} 
-s_1=s^1_0 \wedge s^1_{n_1+n_2}=s^2 \wedge s'^2 = s^3_0 \wedge s^3_{m_1+m_2}=s'\\
-\overline{\gamma}=\biguplus_{i=0}^{n_1+n_2} \vis{\overline{\beta^1_i}} 
-\dotcup  \vis{\overline{\beta^2}} \dotcup \biguplus_{i=0}^{m_1+m_2} \vis{\overline{\beta^3_i}}
+such that\\
+$
+s_i^6= \left\{
+ \begin{array}{ll}
+s_i^1 & \mbox{if }i<n_1\\
+s_{i-n_1}^3 & \mbox{if }i\geq n_1\\
+\end{array}
+\right. \, \wedge \,
+s_i^8= \left\{
+ \begin{array}{ll}
+s_i^2 & \mbox{if }i<m_1\\
+s_{i-m_1}^5 & \mbox{if }i\geq m_1\\
+\end{array}
+\right. \\
+s\!=\!s^6_0 \wedge s^6_{n_1+n_2}\!=s^7 \wedge s'^7 = s^8_0 \wedge s^8_{m_1+m_2}\!=\!s'\\
+~~\\
+\displaystyle{\overline{\gamma}=\mybigdotcup_{i=0}^{n_1+n_2}\!\! \vis{\overline{\beta^6_i}}
+\dotcup\vis{\overline{\beta^7}}\dotcup\!\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\overline{\beta^8_i}}
+}\\
+\displaystyle{\Pred=\bigwedge_{i=0}^{n_2}\Pred^6_i\land\Pred^7\subst{ \biguplus_{i=0}^{n_2}\Post^6_i}\land \Big(\bigwedge_{i=0}^{m_2}\Pred^6_i\subst{\Post^7}\Big)\subst{\biguplus_{i=0}^{n_1}\Post^6_i}}
 \\
-\Pred=\bigwedge_{i=0}^{n_2}\Pred^1_i\land\Pred\,^2\subst{ \biguplus_{i=0}^{n_2}\Post^1_i}\land \Big(\bigwedge_{i=0}^{m_2}\Pred\,^3_i\subst{\Post^2}\Big)\subst{\biguplus_{i=0}^{n_1}\Post^1_i}
-\\
-\Post= ({x^3_k\gets (e^3_k\subst {\Post^2})\subst{\biguplus_{i=0}^{n_2} \Post^1_i}})^{k\in K}
-\end{mathpar}
-
-
-
-
+\displaystyle{\Post= ({x^8_k\gets (e^8_k\subst {\Post^7})\subst{\biguplus_{i=0}^{n_2} \Post^6_i}})^{k\in K}}
+$
 \end{itemize}
+
+
+
 \end{proof}
 -----------------------------------------------------
 
 Using this lemma, it is straightforward to see that....  
+
+\begin{corollary} The definition of weak bisimulation given in  Definition \ref{def-Weak-bisim} is equivalent to the following weak FH-bisimulation: Let $A_1 = <J,\mathcal{S}_1, s_0,
+    \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
+Let $<J,\mathcal{S}_1, s_0,
+    \WT_1>$ and $<J,\mathcal{S}_2,t_0,  \WT_2>$ be the
+weak open automata derived from $A_1$ and $A_2$ respectively.
+For any  states
+$s\in\mathcal{S}_1$ and
+$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
+   have:
+
+
+
+ \begin{itemize}
+ \item  For any open transition $\symb{WOT}$ in $\WT_1$:
+ \begin{mathpar}
+     \openrule
+         {
+           \gamma_j^{j\in J_1},\Pred_{OT},\Post_{OT}}
+         {s \OTWeakarrow {\alpha} s'}
+
+\end{mathpar}
+ there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
+ \begin{mathpar}
+    \openrule
+         {
+           \gamma_{j x}^{j\in J_{x}}, \Pred_{OT_x},\Post_{OT_x}}
+         {t \OTWeakarrow {\alpha_x} t_x}
+\end{mathpar}
+ such that  $\forall x, \{j\in J_1|\gamma_j\neq\emptyset\}=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
+ and  \\
+$\Pred \land \Pred_{OT}\\
+\displaystyle{\implies\!\!\! \bigvee_{x\in X}
+   \left( \forall j\in J_x.\gamma_j=\gamma_{jx}  \Rightarrow \Pred_{OT_x}
+     \land \alpha\!=\!\alpha_x \land  
+     \Pred_{s',t_x}\subst{\Post_{OT}}\subst{\Post_{OT_x}}\right)}$
+    
+ \item  and symmetrically any open transition from $\symb{WOT}$ in $\WT_2$ can be 
+      covered by a set of weak transitions from $s$ in $\WT_1$.
+ \end{itemize}
+
+\end{corollary}
+
 \begin{lemma}
 Let $A_1 = <J,\mathcal{S}_1, s_0,
     \mathcal{T}_1>$ and $A_2 = <J,\mathcal{S}_2,t_0,  \mathcal{T}_2>$ be open automata.
@@ -3382,7 +3514,7 @@ For any open transition $OT_{px}$, since
        	(t_{px},u_{pxy}|\Pred_{{px,pxy}})\in \mathcal{R}'$; and  \\
        	$\Pred_{p,u} \land \Pred_{OT_{px}}\\
        	\hspace{1cm} \implies\!\!\! \bigvee_{y\in Y}
-       	\left( \forall j. \gamma_{jpx}=\gamma_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+       	\left( \forall j. \vis{\beta_{jpx}}=\gamma_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
        	\land \alpha_{px}\!=\!\alpha_{pxy} \land
        	\Pred_{{px,pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\right)$.\\
        	
@@ -3961,7 +4093,7 @@ e.g. $\ostate{000}$.
 \begin{mathpar}
   \inferrule
       {\inferrule*
-        {0 \xrightarrow{ium(?tgt2_2), True, \emptyset}_{gw2} 2}
+        {0 \xrightarrow{ium(?tgt2_2), \True, \emptyset}_{gw2} 2}
         {\sm{gw2} \models
              \openrule {0 \xrightarrow{ium(?tgt2_2)}_{gw2} 2}
                        {\ostate{0} \xrightarrow{ium(?tgt2_2)} \ostate{2} }
@@ -4059,7 +4191,7 @@ variable $tgt1_1$ in gw1.
         {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1}
         { \sm{gw1} \models
           \openrule
-              {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad \sm{True}}
+              {0 \xrightarrow{im(?tgt1_1)}_{gw1} 1 \quad \True}
               {\ostate{0} \OTarrow{im(?tgt1_1)} \ostate{1}}
         }
         \\
@@ -5174,7 +5306,7 @@ processes and sub-groups, that have no states, we only show their name.
 \begin{mathpar}
     \inferrule{\phi,\phi',\phi''\!\in\!\Phi\\s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle} s'\in \to\\\\
       \phi'\!=\!\phi\!+\!\{x'_i\!\to\!V_i|x'_i\!\in\!\iv(\alpha)\land V_i\!\in\!\mathcal{D}\} \\
-      e_b\phi'\!=\!\symb{True} \\ \phi''\!=\!\phi'+\{x_j\!\to\! e_j\phi'|j\!\in\! J\}}
+      e_b\phi'\!=\!\True \\ \phi''\!=\!\phi'+\{x_j\!\to\! e_j\phi'|j\!\in\! J\}}
     {(s,\phi) \xrightarrow{\alpha\phi'} (s',\phi'') \in\llbracket\mylangle S,s_0,
       \to\myrangle\rrbracket_\Phi}~~{\TrUn}
 %         \end{mathpar}
