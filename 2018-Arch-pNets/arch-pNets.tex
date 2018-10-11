@@ -148,23 +148,28 @@
 \newcommand{\false}{\ensuremath{\mathtt{f\!f}}}
 \newcommand{\noop} {\ensuremath{\emptyset}} % \mathsf{skip}
 
-\newcommand{\ordbool}{\ensuremath{\sB^{<}}}
+%% \newcommand{\order}{\leqslant}
+\newcommand{\order}{<}
+\newcommand{\ordbool}{\ensuremath{\sB^{\order}}}
 \newcommand{\data}{\ensuremath{\sD}}
 \newcommand{\signature}{\ensuremath{\Sigma}}
 \newcommand{\variables}{\ensuremath{\cV}}
 \newcommand{\Talg}{\ensuremath{\cT_{\signature,\variables}}}
 \newcommand{\actions}[1]{\ensuremath{\cA_{#1}}}
-\newcommand{\guards}[1]{\ensuremath{\ordbool_{#1}}}
 \newcommand{\exprs}[1]{\ensuremath{\sE_{#1}}}
+\newcommand{\monexprs}[1]{\ensuremath{\sE^{\order}_{#1}}}
 \newcommand{\boolexprs}[1]{\ensuremath{\sB_{#1}}}
+\newcommand{\guards}[1]{\ensuremath{\ordbool_{#1}}}
 \newcommand{\assigns}[1]{\ensuremath{\sA_{#1}}}
+\newcommand{\updates}[1]{\ensuremath{\sA^{\order}_{#1}}}
 \newcommand{\valuations}[1]{\ensuremath{\data^{#1}}}
 \newcommand{\val}[3][]{\ensuremath{#1{\sigma}^{#2}_{#3}}}
+\newcommand{\emptyassign}{\noop}
 
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
 
 \newcommand{\primeit}[1]{#1'}
-\newcommand{\doubleprimeit}[1]{#1''}
+\newcommand{\secondit}[1]{#1''}
 
 
 \newcommand{\export}[1][]{\ensuremath{\varepsilon_{#1}}}
@@ -178,7 +183,6 @@
 \newcommand{\arequiv}{\equiv}
 \newcommand{\Arcomp}{\Bigoplus}
 \newcommand{\expmix}{\wedge}
-\newcommand{\order}{\leqslant}
 
 \makeatletter
 \newcommand{\doubletilde}[1]{{%
@@ -456,6 +460,10 @@ synchronisation mechanisms.
     {\ttfamily\textbackslash exprs\{\#1\}} &
     {\ttfamily\textbackslash sE\_\{\#1\}}
     \\
+    \monexprs{\#1} &       
+    {\ttfamily\textbackslash monexprs\{\#1\}} &
+    {\ttfamily\textbackslash sE\^{}\{<\}\_\{\#1\}}
+    \\
     \boolexprs{\#1} &       
     {\ttfamily\textbackslash boolexprs\{\#1\}} &
     {\ttfamily\textbackslash sB\_\{\#1\}}
@@ -468,6 +476,10 @@ synchronisation mechanisms.
     {\ttfamily\textbackslash assigns\{\#1\}} &
     {\ttfamily\textbackslash sA\_\{\#1\}}
     \\
+    \updates{\#1} &
+    {\ttfamily\textbackslash updates\{\#1\}} &
+    {\ttfamily\textbackslash sA\^{}\{<\}\_\{\#1\}}
+    \\
     \valuations{\#1} &
     {\ttfamily\textbackslash valuations\{\#1\}} &
     {\ttfamily\textbackslash data\^{}\{\#1\}}
@@ -478,7 +490,13 @@ synchronisation mechanisms.
     \\[6pt]
     \val[\tilde]{\#2}{\#3} &
     {\ttfamily\textbackslash val[\textbackslash tilde]\{\#2\}\{\#3\}} &
-    {\ttfamily\#1\{\textbackslash sigma\}\^{}\{\#2\}\_\{\#3\}}
+    (optional argument usage examples)
+    \\[6pt]
+    \val[\primeit]{\#2}{\#3} &
+    {\ttfamily\textbackslash val[\textbackslash primeit]\{\#2\}\{\#3\}} &
+    \\[6pt]
+    \val[\secondit]{\#2}{\#3} &
+    {\ttfamily\textbackslash val[\textbackslash secondit]\{\#2\}\{\#3\}} &
   \end{tabular}
 \noteSBin{commands above (tabular generates an error inside a
   note)}
@@ -487,8 +505,8 @@ Formally, we assume the existence of a term algebra $\Talg$,
 where $\signature$ is the signature of the data and action constructors,
 and $\variables$ a set of \emph{variables}. Within $\Talg$, we distinguish a set of
 \emph{data expressions} $\exprs{\variables}$ \replaceSB{, including}{and} a set of \emph{Boolean
-expressions} \todoLH{$\mathcal{B} \to g$}\todoSB{change to $\boolexprs{\variables}$?}
-$\guards{\variables}$ ($\guards{\variables}\subseteq\exprs{\variables}$).
+expressions} \todoLH{$\mathcal{B} \to g$}
+$\boolexprs{\variables}\subseteq\exprs{\variables}$.
 On top of $\exprs{\variables}$ we build the \emph{action algebra}
 $\actions{\variables}$, with $\actions{\variables}\subseteq\Talg$ \replaceSB{,}{and}
 $\exprs{\variables}\cap\actions{\variables} = \emptyset$;
@@ -502,7 +520,9 @@ naturally action terms will use data expressions as subterms.
   I \text{ is a finite index set}
 }
 \]
-to denote the set of \emph{variable assignments}.}
+to denote the set of \emph{variable assignments}.}  We use the symbol
+$\emptyassign$ to denote the empty assignment, \ie an assignment with
+$I = \emptyset$.
 
 To be able to reason about the data flow between pLTSs, we
 distinguish \emph{input variables} of the form $?x$ within terms; the function
@@ -513,47 +533,68 @@ $a(?x_1,\dots,?x_n)$ for inputs, $a(v_1,\dots,v_n)$ for outputs), but it also al
 for more general mechanisms, like gate negotiation in Lotos, or broadcast
 communications.
 
-\addSB{%
-%
-  Finally, we assume the existence of a universal data domain
-  given as a partially-ordered set $(\data, \order)$, potentially
-  encompassing several copies of any given data type with
-  different orders.  For example, we assume that $(\data,
-  \order)$ comprises both the unordered set of Booleans $\sB =
-  (\{\true, \false\}, \emptyset)$ and the naturally ordered one
-  $\sB^< = (\{\true, \false\}, \{\false < \true\})$, and
-  similarly for integer and real numbers; as well as the set of
-  intervals ordered by inclusion.
+Finally, we assume the existence of a universal data domain
+given as a partially-ordered set $(\data, \order)$, potentially
+encompassing several copies of any given data type with
+different orders.  For example, we assume that $(\data,
+\order)$ comprises both the unordered set of Booleans $\sB =
+(\{\true, \false\}, \emptyset)$ and the naturally ordered one
+$\sB^< = (\{\true, \false\}, \{\false < \true\})$, and
+similarly for integer and real numbers; as well as the set of
+intervals ordered by inclusion.
 
-  For a set of variables $V \subseteq \variables$, we denote
-  $\valuations{V} \bydef{=} \{\val{}{}: V \rightarrow \data\}$
-  the set of \emph{valuations} of the variables in $V$.
-  Valuations extend canonically to expressions.  Thus
-  $\val{}{}(x)$ and $\val{}{}(e)$ denote, respectively, the
-  values of the variable $x$ and the expression $e$ under the
-  valuation $\val{}{}$.  For a valuation $\val{}{} \in
-  \valuations{V}$ and an assignment $(x_i := e_i)^{i \in I} \in
-  \assigns{V}$, we denote $\val{}{}[(x_i := e_i)^{i \in I}]$ the
-  valuation defined by
-  \[
-  \val{}{}\bigl[(x_i := e_i)^{i \in I}\bigr](x) \bydef{=}
-  \begin{cases}
-    \val{}{}(x), & \text{if } x \not\in x_i^{i \in I}\,,\\
-    \val{}{}(e_i), & \text{if } x = x_i, \text{for some } i \in I\,.
-  \end{cases}
-  \]
-  For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
-  \data$, we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
-  \setdefb{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
-  variables that are assigned different values by the two
-  valuations.  As usual, we write $\val{1}{} \order \val{2}{}$
-  iff $\val{1}{}(x) \order \val{2}{}(x)$, for all $x \in V$.  An
-  expression $e \in \exprs{V}$ is called \emph{monotonic} if, for
-  any two valuations $\val{1}{}, \val{2}{} \in \valuations{V}$,
-  $\val{1}{} \order \val{2}{}$ implies $\val{1}{}(e) \order
-  \val{2}{}(e)$.
+For a set of variables $V \subseteq \variables$, we denote
+$\valuations{V} \bydef{=} \{\val{}{}: V \rightarrow \data\}$
+the set of \emph{valuations} of the variables in $V$.
+Valuations extend canonically to expressions.  Thus
+$\val{}{}(x)$ and $\val{}{}(e)$ denote, respectively, the
+values of the variable $x$ and the expression $e$ under the
+valuation $\val{}{}$.
+%
+\addSB{
+%
+It is important to observe that in practice, and in the examples of
+this paper, all the variables are sorted, meaning that their values
+can only range over given subsets of $\data$, such as $\sB$ or
+$\sB^<$.  Hence, applied to expressions, valuations should be
+interpreted as partial functions $\exprs{V} \rightharpoonup
+\data$\footnote{
+%
+  
 %
 }
+%
+}
+
+For a valuation $\val{}{} \in
+\valuations{V}$ and an assignment $(x_i := e_i)^{i \in I} \in
+\assigns{V}$, we denote $\val{}{}[(x_i := e_i)^{i \in I}]$ the
+valuation defined by
+\[
+\val{}{}\bigl[(x_i := e_i)^{i \in I}\bigr](x) \bydef{=}
+\begin{cases}
+  \val{}{}(x), & \text{if } x \not\in x_i^{i \in I}\,,\\
+  \val{}{}(e_i), & \text{if } x = x_i, \text{for some } i \in I\,.
+\end{cases}
+\]
+For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
+\data$, we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
+\setdefb{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
+variables that are assigned different values by the two
+valuations.  As usual, we write $\val{1}{} \order \val{2}{}$
+iff $\val{1}{}(x) \order \val{2}{}(x)$, for all $x \in V$.  An
+expression $e \in \exprs{V}$ is called \emph{monotonic} if, for
+any two valuations $\val{1}{}, \val{2}{} \in \valuations{V}$,
+$\val{1}{} \order \val{2}{}$ implies $\val{1}{}(e) \order
+\val{2}{}(e)$.
+%
+Similarly, an assignment $(x_i := e_i)^{i \in I} \in \assigns{V}$ is
+called monotonic if all expressions $e_i^{i \in I}$ are monotonic.
+We will denote $\guards{V} \subset \boolexprs{V}$, $\monexprs{V}
+\subset \exprs{V}$ and $\updates{V} \subset \assigns{V}$ the sets of
+monotonic Boolean and generic expressions and assignments,
+respectively.
+%
 
 %****************************************************************
 %****************************************************************
@@ -587,30 +628,30 @@ the definitions of components and interaction models?
   \item $\val{0}{} : V \rightarrow \data$ is an \emph{initial
     valuation} of the component variables, 
   \item $P$ is a set of \emph{ports}, with
-    \noteSB{Added this}\hl{$\export : P \rightarrow 2^V$ 
-    the \emph{set of variables exported by each port},}
+    $\export : P \rightarrow 2^V$ 
+    the \emph{set of variables exported by each port},
   \item $\goesto{}\, \subseteq
-    Q \times 2^P \times \guards{V} \times \exprs{V} \times Q$
+    Q \times 2^P \times \guards{V} \times \updates{V} \times Q$
 %
     is a \emph{transition relation}, with transitions
     labelled by \emph{interactions}, \ie triples consisting of a non-empty set of ports
     $\emptyset \neq a \subseteq P$, a monotonic Boolean \emph{guard} $g \in
-    \guards{V}$ and a monotonic \emph{update expression} \todoSB{$e \rightarrow u$}\hl{$e \in
-    \exprs{V}$}.
+    \guards{V}$ and a monotonic \emph{update assignment} \hl{$u \in
+    \updates{V}$}.
   \end{itemize}
 %
   We call the triple $(V,P, \export)$ the \emph{interface} of the
   component.\,\footnote{%
 %
-  In practice, component variables are split in two sub-sets:
-  local and exported variables.  Only exported variables belong
-  to the component interface and can be used for the interactions
-  with other components (see \defn{im}).  However, in the context
-  of this paper we can simplify by omitting this separation.
+  In practice, only exported variables, \ie those in the set
+  $\bigcup_{p \in P}\export(p)$, belong to the component interface and
+  can be used for the interactions with other components (see
+  \defn{im}).  However, in the context of this paper we can simplify
+  by omitting this separation.
 %
   }
 %
-  Notations $q \goesto{a, g, e} q'$ and $q \goesto{a, g, e}$ are as usual;
+  Notations $q \goesto{a, g, u} q'$ and $q \goesto{a, g, u}$ are as usual;
   for a component $B$, we denote $Q_B$, $q^0_B$, $V_B$, $\val{0}{B}$, $P_B$,
   and $\export[B]$ the corresponding constituents of $B$.  We will
   skip the index on the transition relations $\goesto{}$, since it
@@ -619,7 +660,7 @@ the definitions of components and interaction models?
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v3}
+  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v4}
   \caption{The BIP specification of the Failure Monitor architecture}
   \label{fig:schema:ArchFailure:BIP}
 \end{figure}
@@ -640,21 +681,22 @@ $\export[\emptyset](p) = \emptyset$, for all $p \in \{\PortFinish,
 $\NameTimer$, are \emph{coordinators}\mdash they are specified
 completely, including the states and transitions defining their
 \emph{behaviour}.  Transitions are labelled with the ports of the
-corresponding components, Boolean guards and update functions on local
-variables.  For instance the loop transition $\tstate{1}
+corresponding components, Boolean guards and update assignments on local
+variables.  For instance, the loop transition $\tstate{1}
 \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$ in the
 $\NameTimer$ component is labeled by the port $\PortTick$, it can be
 fired only when the current value of the local variable $t$ is less
 than $z.u$, where $z = [l, u]$ is a local variable representing an
-interval.  Upon firing, this transition decrements the value of $t$ by
-$1$.  The guard and update function of the transition $\tstate{1}
+interval.  Upon firing, this transition increments the value of $t$ by
+$1$.  The guard and update assignment of the transition $\tstate{1}
 \goesto{\PortResume} \tstate{0}$ are omitted.  The default values are
-the constant predicate $\true$ and the $\mathit{skip}$ operator
-respectively.  The initial valuations $\val{0}{\NameTimer} = \{z
-\mapsto [0,0], t \mapsto 0\}$ and $\val{0}{\NameCtrl} =
+the constant predicate $\true$ and the empty assignment {\emptyassign}
+%$\mathit{skip}$ operator
+respectively.  The initial states \tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{z
+\mapsto \topinterval, t \mapsto 0\}$ and $\val{0}{\NameCtrl} =
 \{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
-initialising transitions $\goesto{\TimerInitZone[]} \tstate{0}$ and
-$\goesto{\IntervalInit[]} \cstate{0}$ respectively.  The constants
+incoming arrows $\goesto{\TimerInit[]} \tstate{0}$ and
+$\goesto{\IntervalInit[]} \cstate{0}$, respectively.  The constants
 $\mathrm{Min}$ and $\mathrm{Max}$ are the parameters of the
 architecture.
 %\noteLH{It looks like Max is in zone, I do not understand}
@@ -672,11 +714,11 @@ architecture.
   \begin{equation}
     \label{eq:comp:semantics}
     \infer{
-      q \goesto{a, g, e} q'
+      q \goesto{a, g, u} q'
       \and
       \val{}{} \models g
       \and
-      \val[\primeit]{}{} = \tilde{\val{}{}}[e]
+      \val[\primeit]{}{} = \tilde{\val{}{}}[u]
       \and
       \valdiff{\val{}{}}{\tilde{\val{}{}}} \subseteq \export(a)
     }{
@@ -714,10 +756,10 @@ interaction.
   %%   \supp{a}} \export[i](a \cap P_i)$ the set of component
   %% variables exported through $a$.}
 
-  An \emph{interaction model over \hl{$(V, P, \export)$}} is a set $\Gamma
-  \subseteq 2^P \times \guards{V} \times \exprs{V}$, such that,
-  for any interaction $(a, g, e) \in \Gamma$, we have
-  $g \in \guards{\export(a)}$ and $e \in \exprs{\export(a)}$.\footnote{%
+  An \emph{interaction model over $(V, P, \export)$} is a set $\Gamma
+  \subseteq 2^P \times \guards{V} \times \updates{V}$, such that,
+  for any interaction $(a, g, u) \in \Gamma$, we have
+  $g \in \guards{\export(a)}$ and $e \in \updates{\export(a)}$.\footnote{%
 %
     Notice that this definition allows $(\emptyset, \true,
     \noop)$ and $(\emptyset, \false, \noop)$ to be included in
@@ -729,7 +771,7 @@ interaction.
 \end{definition}
 
 %% \noteLH{supp should go outside the definition}
-When speaking of a set of components or interfaces , we will always
+When speaking of a set of components or interfaces, we will always
 assume that it satisfies the disjointness assumption of \defn{im}.
 %
 We call the \emph{support} of a set of ports $a \subseteq P$, denoted
@@ -737,7 +779,7 @@ $\supp{a}$, either the set $\setdef{i \in I}{a \cap P_i \neq
   \emptyset}$ (for $P = \bigcup_{i=1}^n P_i$) or the set $\setdef{B
   \in \cB}{a \cap P_B \neq \emptyset}$ (for $P = \bigcup_{B \in \cB}
 P_B$).  The precise meaning of this notation will always be clear from
-the context.  Intuitively, for an interaction $(a, g, e)$, $\supp{a}$
+the context.  Intuitively, for an interaction $(a, g, u)$, $\supp{a}$
 denotes the set of the participating components.
 
 \begin{definition}[Composition]
@@ -772,11 +814,11 @@ denotes the set of the participating components.
     \label{eq:im:sem}
 %
     \infer{    
-      (a, g, e) \in \Gamma
+      (a, g, u) \in \Gamma
       \and
       a \neq \emptyset
       \and
-      \forall i \in \supp{a}, q_i \goesto{a \cap P_i, g_i, e_i} q_i'
+      \forall i \in \supp{a}, q_i \goesto{a \cap P_i, g_i, u_i} q_i'
       \and
       \forall i \not\in \supp{a}, q_i = q_i'
 %
@@ -785,9 +827,9 @@ denotes the set of the participating components.
 %
       g' = g \land \bigwedge_{i \in \supp{a}} g_i
       \and
-      e' = e; e_i^{i \in \supp{a}}
+      u' = u; u_i^{i \in \supp{a}}
     }{
-      (q_i)^{i \in I} \goesto{a, g', e'} (q_i')^{i \in I}
+      (q_i)^{i \in I} \goesto{a, g', u'} (q_i')^{i \in I}
     }\,.
   \end{gather}
   \todoSBin{Add the intuitive explanation}
@@ -817,7 +859,7 @@ top-level connectors, at each execution round.
 
 For instance, in \fig{schema:ArchFailure:BIP}, the two ports
 $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are always
-synchronised, since they belong to the same binary sub-connector,
+synchronised, since they belong to exactly one binary sub-connector,
 where they are both synchrons.  In particular, this means that
 whenever the transition $\cstate{0} \goesto{\PortFail} \cstate{1}$ is
 fired, so is the transition $\tstate{0} \goesto{\PortStart,
@@ -843,11 +885,11 @@ interaction.
     priority model definition.
 %
   } is a strict partial order on interactions: $\pi
-  \subseteq \bigl(2^P \times \guards{V} \times \exprs{V} \bigr)^2$.
+  \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
 
   We write $\alpha \prec_\pi \beta$ for $(\alpha, \beta) \in \pi$ and 
   denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
-    \guards{V} \times \exprs{V})}{\alpha \prec_\pi \beta}$ the set of
+    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$ the set of
   interactions that have higher priority than $\alpha$.
 \end{definition}
 
@@ -862,24 +904,26 @@ interaction.
   \begin{equation}
     \label{eq:priority:sem}
 %
-    \infer{    
-      q \goesto{a, g, e} q'
+    \infer{
+      \alpha = (a, g, u)
+      \and
+      q \goesto{a, g, u} q'
       \and
       \textstyle
-      g' = g \land \bigwedge_{(b, h, f) \in \filter[q]{\alpha}} \lnot h
+      g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
     }{
-      q \goesto[\pi]{a, g', e} q'
+      q \goesto[\pi]{a, g', u} q'
     }\,, 
   \end{equation}
 %
-  where $\filter[q]{\alpha} \bydef{=} \filter{\alpha} \cap
-  \setdefb{\beta \in (2^P \times \guards{V} \times \exprs{V})}{q
-    \goesto{\beta}}$.
+  where $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
+  %% \setdefb{\beta \in (2^P \times \guards{V} \times \updates{V})}
+  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$.
   \todoSBin{Add the intuitive explanation}
 \end{definition}
 
 In this paper, we will only consider the so-called \emph{maximal
-  progress} priority $\mu$, where $(a, g, e) \prec_\mu (b, h, f)$ iff $a
+  progress} priority $\mu$, where $(a, g, u) \prec_\mu (b, h, w)$ iff $a
 \varsubsetneq b$ (\ie $a \subseteq b$ and $a \neq b$).  In
 \secn{conclusion}, we discuss the possibility of generalising the
 obtained results to other priority models.
@@ -889,7 +933,7 @@ obtained results to other priority models.
 %% enabled interactions at any given round.  The default priority is the
 %% so-called \emph{maximal progress}, whereby among any two interactions
 %% $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
-Going back to our running example in \fig{schema:ArchFailure:BIP}, the
+Going back to our running example in \fig{schema:ArchFailure:BIP}, under the maximal progress priority, the
 port $\NameOprnd.\PortFail$ will never fire alone in a global state,
 where both $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are
 enabled.
@@ -982,18 +1026,34 @@ units (more details in Sect.~\ref{section:resultOA}).
   \]
   defined by\noteLH{looks like this also depends on Pa}
 %
-  \begin{equation}
+  \noteSB{It does, indeed.  To be completely rigorous, I could replace
+    this with something like $\Gamma\uparrow_{P_A}^P$ but this is
+    quite heavy and the dependency is already implicit from the fact
+    that $\Gamma$ is defined on $P_A$}
+%
+  \noteSB{Which one of \eq{im:extension} and \eq{im:extension1} is
+    more intuitive?}
+%
+  \begin{align}
     \label{eq:im:extension}
-    \IMextend{\Gamma}{P} \bydef{=}
+    \IMextend{\Gamma}{P} &\bydef{=}
     \setdefb{
       (a \cup a', g, e)
     }{
       (a, g, e) \in \Gamma, a' \subseteq P \setminus P_A
     }
-    ;
-  \end{equation}
+    \\
+    \label{eq:im:extension1}
+    &= 
+    \setdefb{
+      (a, g, e)
+    }{
+      a \subseteq P,
+      (a \cap P_A, g, e) \in \Gamma
+    }
+  \end{align}
 %
-  $\mu$ is the maximal progress priority model.
+  and $\mu$ is the maximal progress priority model.
 \end{definition}
 
 \todoSBin{Define equivalence $\arequiv$?}
@@ -2117,21 +2177,21 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
   belong to $\bigcup_{B \in \cB} V_B$.}  Hence,
 %
   $\val[\doubletilde]{}{1}[e^1; (e_1, e_b)] =
-  (\val[\primeit]{}{1}, \val[\doubleprimeit]{}{})$ with 
-  $\val[\primeit]{}{} \order \val[\doubleprimeit]{}{}$.
+  (\val[\primeit]{}{1}, \val[\secondit]{}{})$ with 
+  $\val[\primeit]{}{} \order \val[\secondit]{}{}$.
 
   By \eq{comp:semantics} and \eq{im:sem}, we have
   $
   (q_1, \val{}{1}, q, \val{}{})
   \goesto{a \cap P_1, \val[\doubletilde]{}{1}}
-  (q_1', \val[\primeit]{}{1}, q, \val[\doubleprimeit]{}{})
+  (q_1', \val[\primeit]{}{1}, q, \val[\secondit]{}{})
   $ in $\semopen{(\IMextend{\Gamma_1}{P_1})(\cB)}$.
 
   Symmetrically, we have 
   $
   (q_2, \val{}{2}, q, \val{}{})
   \goesto{a \cap P_2, \val[\doubletilde]{}{2}}
-  (q_2', \val[\primeit]{}{2}, q, \val[\doubleprimeit]{}{})
+  (q_2', \val[\primeit]{}{2}, q, \val[\secondit]{}{})
   $ in $\semopen{(\IMextend{\Gamma_2}{P_2})(\cB)}$.   
    
   \paragraph*{Step \ref{onestep:proof:maxp}}

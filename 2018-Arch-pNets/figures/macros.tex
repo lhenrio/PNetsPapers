@@ -6,6 +6,11 @@
 \newcommand{\NameTimer}{\ensuremath{\mathit{Timer}}}
 \newcommand{\NameOprnd}{\ensuremath{B}}
 
+\newcommand{\figport}[1]{%
+  \setlength{\fboxsep}{1pt}%
+  \setlength{\fboxrule}{0.5pt}%
+  \fbox{#1}%
+}
 \newcommand{\PortFinish}{\ensuremath{\mathsf{finish}}}
 \newcommand{\PortFail}{\ensuremath{\mathsf{fail}}}
 \newcommand{\PortResume}{\ensuremath{\mathsf{resume}}}
@@ -13,14 +18,27 @@
 \newcommand{\PortTO}{\ensuremath{\mathsf{timeout}}}
 \newcommand{\PortStart}{\ensuremath{\mathsf{start}}}
 \newcommand{\PortTick}{\ensuremath{\mathsf{tick}}}
-\newcommand{\PortCancel}{\ensuremath{\mathsf{resume}}}
+\newcommand{\PortCancel}{\ensuremath{\mathsf{cancel}}}
 \newcommand{\PortAsk}{\ensuremath{\mathsf{ask}}}
 
-\newcommand{\TimerInit}[1][\!]{\ensuremath{t {#1}:={#1} 0}}
-\newcommand{\TimerInitZone}[1][\!]{\ensuremath{z {#1}:={#1} [0,0], t {#1}:={#1} 0}}
-\newcommand{\TimerUpd}[1][\!]{\ensuremath{t {#1}:={#1} t {#1}+{#1} 1}}
-\newcommand{\GuardTick}[1][\!]{\ensuremath{[t {#1}<{#1} z.u]}}
-\newcommand{\GuardTO}[1][\!]{\ensuremath{[t {#1}\in{#1} \mathit{z}]}}
+\newcommand{\topinterval}{\ensuremath{[\bot,\!\top]}}
+\newcommand{\TimerInitCount}[1][]{\ensuremath{t {:=} 0}}
+\newcommand{\TimerInitZone}[1][]{\ensuremath{z {:=} \topinterval}}
+\newcommand{\TimerInit}[1][]{\TimerInitCount, \TimerInitZone}
 
-\newcommand{\InitTransfer}[1][\!]{\ensuremath{\NameTimer.\mathit{z} {#1}:={#1} \NameCtrl.\mathit{zone}}}
-\newcommand{\IntervalInit}[1][\!]{\ensuremath{\mathit{zone} {#1}:={#1} [\mathrm{Min}, \mathrm{Max}]}}
+\newcommand{\TimerUpd}[1][]{\ensuremath{t {:=} t {+} 1}}
+\newcommand{\GuardTick}[1][]{\ensuremath{[t {<} z.u]}}
+\newcommand{\GuardTO}[1][]{\ensuremath{[t \in \mathit{z}]}}
+
+\newcommand{\InitTransfer}[1][]{\ensuremath{%
+    \begin{aligned}
+      &\NameTimer.\mathit{z} := \NameTimer.\mathit{z} \cap\\[-4pt]
+      &\quad\Big(    
+    \bigl(
+    \NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval
+    \bigr)\\[-5pt]
+    &\qquad + \NameTimer.\mathit{t}
+    \Big)%
+    \end{aligned}
+}}
+\newcommand{\IntervalInit}[1][]{\ensuremath{\mathit{zone} {:=} [\mathrm{Min}, \mathrm{Max}]}}
