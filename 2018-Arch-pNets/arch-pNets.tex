@@ -19,7 +19,6 @@
 \usepackage{mathpartir} % math paragraph + inference rules
 \usepackage{mathtools}  % for align, multline etc.
 \usepackage{caption}
-\usepackage{xifthen}
 \usepackage{stmaryrd} % double brackets (\llbracket, \rrbracket)
 
 %% \usepackage[justification=centering,belowskip=-10pt,aboveskip=0pt]{caption}
@@ -672,33 +671,68 @@ shows the full definition of this architecture, we will explain its
 various elements progressively, as we define the corresponding
 notions.
 
-The model in \fig{schema:ArchFailure:BIP} has three components.  The
-component $\NameOprnd$ is an \emph{operand} of the architecture, \ie
-it only has its interface defined: $(\emptyset, \{\PortFinish,
-\PortResume, \PortFail\}, \export[\emptyset])$, with
-$\export[\emptyset](p) = \emptyset$, for all $p \in \{\PortFinish,
-\PortResume, \PortFail\}$.  The other two components, $\NameCtrl$ and
-$\NameTimer$, are \emph{coordinators}\mdash they are specified
-completely, including the states and transitions defining their
-\emph{behaviour}.  Transitions are labelled with the ports of the
+The model in \fig{schema:ArchFailure:BIP} has two components:
+%% The
+%% component $\NameOprnd$ is an \emph{operand} of the architecture, \ie
+%% it only has its interface defined: $(\emptyset, \{\PortFinish,
+%% \PortResume, \PortFail\}, \export[\emptyset])$, with
+%% $\export[\emptyset](p) = \emptyset$, for all $p \in \{\PortFinish,
+%% \PortResume, \PortFail\}$.  
+%% The other two components,
+%
+$\NameCtrl$ and $\NameTimer$, with interfaces
+\[\bigl(
+\{\mathit{zone}\},
+\{\PortReset, \PortFail, \PortResume, \PortTO\},
+\export[\NameCtrl]
+\bigr)\]
+and
+\[\bigl(
+\{t, z\},
+\{\PortTick, \PortCancel, \PortTO\},
+\export[\NameTimer]
+\bigr)\]
+%
+respectively, where $\export[\NameCtrl](\PortFail) =
+\{\mathit{zone}\}$ and $\export[\NameCtrl](p) = \emptyset$, for all
+other ports $p$; $\export[\NameTimer](\PortTick) = \{t, z\}$ and
+$\export[\NameTimer](p) = \emptyset$, for all other ports $p$.
+Variable $t$ is implicitly assumed to be an integer.  Variables $z$
+and $\mathit{zone}$ are implicitly assumed to be integer intervals of
+the form $[l,u]$.  For both types, we also implicitly assume the
+natural ordering: increasing integers and interval inclusion.
+
+%% are \emph{coordinators}\mdash they are specified
+%% completely, including the states and transitions defining their
+%% \emph{behaviour}.
+Component \emph{behaviour} is defined by states ($\cstate{0},
+\cstate{1}, \cstate{2}$, for $\NameCtrl$, and $\tstate{0}$, for
+$\NameTimer$) and transitions.
+%
+Transitions are labelled with the ports of the
 corresponding components, Boolean guards and update assignments on local
-variables.  For instance, the loop transition $\tstate{1}
-\goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$ in the
+variables.  For instance, the loop transition $\tstate{0}
+\goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{0}$ in the
 $\NameTimer$ component is labeled by the port $\PortTick$, it can be
 fired only when the current value of the local variable $t$ is less
-than $z.u$, where $z = [l, u]$ is a local variable representing an
-interval.  Upon firing, this transition increments the value of $t$ by
-$1$.  The guard and update assignment of the transition $\tstate{1}
-\goesto{\PortResume} \tstate{0}$ are omitted.  The default values are
-the constant predicate $\true$ and the empty assignment {\emptyassign}
-%$\mathit{skip}$ operator
-respectively.  The initial states \tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{z
-\mapsto \topinterval, t \mapsto 0\}$ and $\val{0}{\NameCtrl} =
+than $z.u$.
+%% , where $z = [l, u]$ is a local variable representing an
+%% interval
+Upon firing, this transition increments the value of $t$ by $1$.  The
+guards and update assignments of the transitions of $\NameCtrl$ are
+omitted.  The default values are the constant predicate $\true$ and
+the empty assignment {\emptyassign}, respectively.  The initial states
+\tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{t
+\mapsto 0, z \mapsto \topinterval\}$ and $\val{0}{\NameCtrl} =
 \{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
 incoming arrows $\goesto{\TimerInit[]} \tstate{0}$ and
-$\goesto{\IntervalInit[]} \cstate{0}$, respectively.  The constants
-$\mathrm{Min}$ and $\mathrm{Max}$ are the parameters of the
-architecture.
+$\goesto{\IntervalInit[]} \cstate{0}$, respectively.\footnote{%
+%
+  We use $\topinterval$ to denote the top interval in the inclusion
+  order, \ie $(-\infty, +\infty)$.
+%
+} The constants $\mathrm{Min}$ and $\mathrm{Max}$ are the parameters
+of the architecture.
 %\noteLH{It looks like Max is in zone, I do not understand}
 
 \todoSBin{Speak of guard monotonicity}
