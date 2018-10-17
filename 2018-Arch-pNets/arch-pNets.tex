@@ -32,6 +32,25 @@
 \input{figures/macros.tex}         % Definitions of macros used in XFig figures
 
 \usepackage{soul}
+\soulregister\cite7
+\soulregister\ref7
+\soulregister\pageref7
+\soulregister{\em}{0}
+\soulregister{\mdash}{0}
+\soulregister{\st}{7}
+\soulregister{\bf}{0}
+\soulregister{\fig}{7}
+\soulregister{\ie}{0}
+\soulregister{\etc}{0}
+\soulregister{\eg}{0}
+\soulregister{\wrt}{0}
+\soulregister{\resp}{0}
+\soulregister{\cf}{0}
+
+\soulregister{\cstate}{7}
+\soulregister{\tstate}{7}
+\soulregister{\goesto}{7}
+
 \usepackage[colorinlistoftodos,bordercolor=white]{todonotes}
 %% \usepackage[disable,colorinlistoftodos,bordercolor=white]{todonotes}
 \usepackage{macrospNets}
@@ -61,6 +80,25 @@
 \newcommand{\removeSB}[1]{\remove[Removed by Simon]{#1}}
 \newcommand{\removeSBin}[1]{\removeIn[Removed by Simon]{#1}}
 \newcommand{\replaceSB}[2]{\replace[Replaced by Simon]{#1}{#2}}
+
+
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\newcommand{\tupleDeli}{(}
+\newcommand{\tupleDelii}{)}
+\newcommand{\setTupleDelims}[2][(]{
+  \renewcommand{\tupleDeli}{#1}%
+  \ifx#2\relax\else\renewcommand{\tupleDelii}{#2}\fi%
+}
+\newcommand{\tuple}[2][\ensuremath{,\allowbreak}]{%  
+  \def\nextitem{\def\nextitem{#1}}% Separator
+  \renewcommand*{\do}[1]{\nextitem ##1}% How to process each item
+  \tupleDeli\docsvlist{#2}\tupleDelii% Process list
+}
+
+\newcommand{\pNetTuple}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[\mylangle]{\myrangle}%
+  \tuple[#1]{#2}%
+}
 
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
 \newcommand{\defntwo}[2]{Defs~\ref{defn:#1} and \ref{defn:#2}}
@@ -137,15 +175,16 @@
 \newcommand{\rightsuchthat}{\ensuremath{\,\right|\,}}
 \newcommand{\leftsuchthat}{\ensuremath{\,\left|\,}}
 \newcommand{\setdef}[2]{\ensuremath{\{{#1}\,|\,{#2}\}}}
-\newcommand{\setdefb}[2]{\ensuremath{\bigl\{{#1}\,\bigl|\,{#2}\bigr.\bigr\}}}
+\newcommand{\bsetdef}[2]{\ensuremath{\bigl\{{#1}\,\bigl|\,{#2}\bigr.\bigr\}}}
 \newcommand{\Setdef}[2]{\ensuremath{\Big\{{#1}\,\Big|\,{#2}\Big\}}}
-\newcommand{\goesto}[2][]{\ensuremath{\xrightarrow[#1]{#2}}}
-\newcommand{\notgoesto}[2][]{\ensuremath{\not\xrightarrow[#1]{\ \,#2}}}
+\newcommand{\goesto}[2][]{\ensuremath{\xrightarrow[{#1}\relax]{#2}}}
+\newcommand{\notgoesto}[2][]{\ensuremath{\not\xrightarrow[{#1}\relax]{\ \,#2}}}
 \newcommand{\non}[1]{\ensuremath{\overline{#1}}}
 
 \newcommand{\true} {\ensuremath{\mathtt{t\!t}}}
 \newcommand{\false}{\ensuremath{\mathtt{f\!f}}}
 \newcommand{\noop} {\ensuremath{\emptyset}} % \mathsf{skip}
+\newcommand{\init} {\ensuremath{\mathsf{init}}}
 
 %% \newcommand{\order}{\leqslant}
 \newcommand{\order}{<}
@@ -163,13 +202,20 @@
 \newcommand{\updates}[1]{\ensuremath{\sA^{\order}_{#1}}}
 \newcommand{\valuations}[1]{\ensuremath{\data^{#1}}}
 \newcommand{\val}[3][]{\ensuremath{#1{\sigma}^{#2}_{#3}}}
-\newcommand{\emptyassign}{\noop}
 
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
 
 \newcommand{\primeit}[1]{#1'}
 \newcommand{\secondit}[1]{#1''}
 
+\newcommand{\twosynch}{%
+  \ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!-\!\!\!\bullet}}
+\newcommand{\synchtrig}{%
+  \ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}
+\newcommand{\trigsynch}{%
+  \ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\bullet}}
+\newcommand{\twotrig}{%
+  \ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}
 
 \newcommand{\export}[1][]{\ensuremath{\varepsilon_{#1}}}
 \newcommand{\valdiff}[2]{\ensuremath{#1 \triangle #2}}
@@ -182,6 +228,14 @@
 \newcommand{\arequiv}{\equiv}
 \newcommand{\Arcomp}{\Bigoplus}
 \newcommand{\expmix}{\wedge}
+
+\newcommand{\addspace}[1]{#1 }
+\newcommand{\nopri}[1][]{\ensuremath{\mathit{pNet}%
+    \ifx#1\relax\else(#1)\fi}}
+\newcommand{\maxprog}[1][]{\ensuremath{\mathit{pNet}_\mu%
+    \ifx#1\relax\else(#1)\fi}}
+
+\newcommand{\partition}{\cD}
 
 \makeatletter
 \newcommand{\doubletilde}[1]{{%
@@ -520,7 +574,7 @@ naturally action terms will use data expressions as subterms.
 }
 \]
 to denote the set of \emph{variable assignments}.}  We use the symbol
-$\emptyassign$ to denote the empty assignment, \ie an assignment with
+$\noop$ to denote the empty assignment, \ie an assignment with
 $I = \emptyset$.
 
 To be able to reason about the data flow between pLTSs, we
@@ -537,8 +591,8 @@ given as a partially-ordered set $(\data, \order)$, potentially
 encompassing several copies of any given data type with
 different orders.  For example, we assume that $(\data,
 \order)$ comprises both the unordered set of Booleans $\sB =
-(\{\true, \false\}, \emptyset)$ and the naturally ordered one
-$\sB^< = (\{\true, \false\}, \{\false < \true\})$, and
+\tuple{\{\true, \false\}, \emptyset}$ and the naturally ordered one
+$\sB^< = \tuple{\{\true, \false\}, \{\false < \true\}}$, and
 similarly for integer and real numbers; as well as the set of
 intervals ordered by inclusion.
 
@@ -578,7 +632,7 @@ valuation defined by
 \]
 For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
 \data$, we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
-\setdefb{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
+\bsetdef{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
 variables that are assigned different values by the two
 valuations.  As usual, we write $\val{1}{} \order \val{2}{}$
 iff $\val{1}{}(x) \order \val{2}{}(x)$, for all $x \in V$.  An
@@ -680,23 +734,37 @@ The model in \fig{schema:ArchFailure:BIP} has two components:
 %% \PortResume, \PortFail\}$.  
 %% The other two components,
 %
-$\NameCtrl$ and $\NameTimer$, with interfaces
-\[\bigl(
-\{\mathit{zone}\},
-\{\PortReset, \PortFail, \PortResume, \PortTO\},
-\export[\NameCtrl]
-\bigr)\]
-and
+$\NameTimer$ and $\NameCtrl$, with interfaces
 \[\bigl(
 \{t, z\},
 \{\PortTick, \PortCancel, \PortTO\},
 \export[\NameTimer]
-\bigr)\]
+\bigr)\,,
+\qquad
+\export[\NameTimer](p) =
+\begin{cases}
+  \{t, z\}, & \text{if } p = \PortTick,\\
+  \emptyset, & \text{otherwise}
+\end{cases}
+\]
+and
+\[\bigl(
+\{\mathit{zone}\},
+\{\PortReset, \PortFail, \PortResume, \PortTO\},
+\export[\NameCtrl]
+\bigr)\,,
+\quad
+\export[\NameCtrl](p) =
+\begin{cases}
+  \{\mathit{zone}\}, & \text{if } p = \PortFail,\\
+  \emptyset, & \text{otherwise}
+\end{cases}
+\]
 %
-respectively, where $\export[\NameCtrl](\PortFail) =
-\{\mathit{zone}\}$ and $\export[\NameCtrl](p) = \emptyset$, for all
-other ports $p$; $\export[\NameTimer](\PortTick) = \{t, z\}$ and
-$\export[\NameTimer](p) = \emptyset$, for all other ports $p$.
+respectively. %% , where $\export[\NameCtrl](\PortFail) =
+%% \{\mathit{zone}\}$ and $\export[\NameCtrl](p) = \emptyset$, for all
+%% other ports $p$; $\export[\NameTimer](\PortTick) = \{t, z\}$ and
+%% $\export[\NameTimer](p) = \emptyset$, for all other ports $p$.
 Variable $t$ is implicitly assumed to be an integer.  Variables $z$
 and $\mathit{zone}$ are implicitly assumed to be integer intervals of
 the form $[l,u]$.  For both types, we also implicitly assume the
@@ -705,8 +773,8 @@ natural ordering: increasing integers and interval inclusion.
 %% are \emph{coordinators}\mdash they are specified
 %% completely, including the states and transitions defining their
 %% \emph{behaviour}.
-Component \emph{behaviour} is defined by states ($\cstate{0},
-\cstate{1}, \cstate{2}$, for $\NameCtrl$, and $\tstate{0}$, for
+Component \emph{behaviour} is defined by states ($\{\cstate{0},
+\cstate{1}, \cstate{2}\}$, for $\NameCtrl$; $\{\tstate{0}\}$, for
 $\NameTimer$) and transitions.
 %
 Transitions are labelled with the ports of the
@@ -720,8 +788,8 @@ than $z.u$.
 %% interval
 Upon firing, this transition increments the value of $t$ by $1$.  The
 guards and update assignments of the transitions of $\NameCtrl$ are
-omitted.  The default values are the constant predicate $\true$ and
-the empty assignment {\emptyassign}, respectively.  The initial states
+omitted.  The default values are the constant predicate $\true$ (true) and
+the empty assignment {\noop}, respectively.  The initial states
 \tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{t
 \mapsto 0, z \mapsto \topinterval\}$ and $\val{0}{\NameCtrl} =
 \{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
@@ -739,10 +807,10 @@ of the architecture.
 
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
-  The \emph{open semantics} of a component $B = (Q, q^0, V,
-  \val{0}{}, P, \export, \goesto{})$ is given by the LTS denoted $\semopen{B} = (S,
-  s^0, \goesto{})$, where $S = Q \times \valuations{V}$, $s^0 =
-  (q^0, \val{0}{})$ and $\goesto{}$ is the minimal transition
+  The \emph{open semantics} of a component $B = \tuple{Q, q^0, V,
+  \val{0}{}, P, \export, \goesto{}}$ is given by the LTS denoted $\semopen{B} = \tuple{S,
+  s^0, \goesto{}}$, where $S = Q \times \valuations{V}$, $s^0 =
+  \tuple{q^0, \val{0}{}}$ and $\goesto{}$ is the minimal transition
   relation satisfying the rule
   %
   \begin{equation}
@@ -818,11 +886,11 @@ denotes the set of the participating components.
 
 \begin{definition}[Composition]
   \label{defn:im:sem}
-  The \emph{composition} of a finite set of components $\cB = (Q_i,
-  q^0_i, V_i, \val{0}{i}, P_i, \export[i], \goesto{})^{i \in I}$ with
-  the interaction model $\Gamma$ over $(V, P, \export)$ (as in \defn{im})
-  is the component $\Gamma(\cB) = (Q, q^0, V, \val{0}{}, P,
-    \export, \goesto{})$, where
+  The \emph{composition} of a finite set of components $\cB = \tuple{Q_i,
+  q^0_i, V_i, \val{0}{i}, P_i, \export[i], \goesto{}}^{i \in I}$ with
+  the interaction model $\Gamma$ over $\tuple{V, P, \export}$ (as in \defn{im})
+  is the component $\Gamma(\cB) = \tuple{Q, q^0, V, \val{0}{}, P,
+    \export, \goesto{}}$, where
 %
   $Q = \prod_{i \in I} Q_i$;
 %
@@ -891,20 +959,21 @@ The composition semantics of BIP systems consists in
 firing exactly one interaction, enabled through at least one of the
 top-level connectors, at each execution round.
 
-For instance, in \fig{schema:ArchFailure:BIP}, the two ports
+\todoSB{Update this}
+\hl{For instance, in \fig{schema:ArchFailure:BIP}, the two ports
 $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are always
 synchronised, since they belong to exactly one binary sub-connector,
 where they are both synchrons.  In particular, this means that
-whenever the transition $\cstate{0} \goesto{\PortFail} \cstate{1}$ is
-fired, so is the transition $\tstate{0} \goesto{\PortStart,
-  \TimerInit[]} \tstate{1}$, initialising the timer.  The binary
-connector $\NameTimer.\PortStart \bullet\!\!\!-\!\!\!-\!\!\!\bullet
+whenever the transition \cstate{0} \goesto{\PortFail} \cstate{1} is
+fired, so is the transition \tstate{0} \goesto{\PortStart,
+  \TimerInit[]} \tstate{1}, initialising the timer.  The binary
+connector $\NameTimer.\PortStart \twosynch
 \NameCtrl.\PortFail$ is a sub-connector of a hierarchical connector,
 where the port $\NameOprnd.\PortFail$ is a trigger.  Thus, the above
 interaction can only happen together with $\NameOprnd.\PortFail$,
 forming a ternary interaction.  On the contrary, being a trigger, the
 port $\NameOprnd.\PortFail$ can fire alone, forming a singleton
-interaction.
+interaction.}
 
 \todoSBin{Speak of data transfer}
 
@@ -922,7 +991,7 @@ interaction.
   \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
 
   We write $\alpha \prec_\pi \beta$ for $(\alpha, \beta) \in \pi$ and 
-  denote $\filter{\alpha} \bydef{=} \setdefb{\beta \in (2^P \times
+  denote $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
     \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$ the set of
   interactions that have higher priority than $\alpha$.
 \end{definition}
@@ -930,9 +999,9 @@ interaction.
 \begin{definition}[Application of priority]
   \label{defn:priority:sem}
   The application of a priority model $\pi$ over $(V, P, \export)$
-  to a component $B = (Q, q^0, V, \val{0}{}, P, \export, \goesto{})$
-  is the component $\pi(B) = (Q, q^0, V, \val{0}{}, P, \export,
-  \goesto[\pi]{})$, where $\goesto[\pi]{}$ is the minimal transition
+  to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
+  is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
+  \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
   relation satisfying the rule
 %
   \begin{equation}
@@ -951,7 +1020,7 @@ interaction.
   \end{equation}
 %
   where $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
-  %% \setdefb{\beta \in (2^P \times \guards{V} \times \updates{V})}
+  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
   \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$.
   \todoSBin{Add the intuitive explanation}
 \end{definition}
@@ -1010,24 +1079,36 @@ units (more details in Sect.~\ref{section:resultOA}).
 
 \begin{definition}[Architecture]
   \label{defn:arch}
-  An \emph{architecture} is a tuple $A = (\cC, V_A, P_A, \export[A], \Gamma)$,
-  where $\cC$ is a finite set of \emph{coordinating components}
+  An \emph{architecture} is a tuple $A = \tuple{\cC, V_A, P_A,
+    \export[A], \Gamma}$, where
+%  
+  \begin{itemize}
+\item
+  $\cC$ is a finite set of \emph{coordinating components}
   with pairwise disjoint sets of ports and variables, such that
   $\bigcup_{C \in \cC} P_C \subseteq P_A$ and
   $\bigcup_{C \in \cC} V_C \subseteq V_A$;
 %
+  ports in $P_A \setminus \bigcup_{C \in \cC} P_C$, which do not
+  belong to any of the coordinating components are called
+  \emph{dangling};
+
+\item
   $\export[A] : P_A \rightarrow 2^{V_A}$ is an export function, such
   that $\export[A](p) = \export[C](p)$, for any $C \in \cC$ and $p \in
   P_C$ and $\export[A](p) \subseteq V_A \setminus \bigcup_{C \in \cC}
-  V_C$ for any $p \in P_A \setminus \bigcup_{C \in \cC} P_C$; and
-%
+  V_C$ for any dangling port $p$; and
+
+\item
   $\Gamma \subseteq 2^{P_A} \times \guards{V_A} \times \exprs{V_A}$
-  is an interaction model over \hl{$(V_A, P_A, \export[A])$}.
+  is an interaction model over $(V_A, P_A, \export[A])$.
+  \end{itemize}
+
 \end{definition}
 
 \begin{definition}[Application of an architecture]
   \label{defn:arch:application}
-  Let $A = (\cC, V_A, P_A, \export[A], \Gamma)$ be an architecture and let $\cB$
+  Let $A = \tuple{\cC, V_A, P_A, \export[A], \Gamma}$ be an architecture and let $\cB$
   be a set of components, such that
 %
   \begin{align}
@@ -1071,7 +1152,7 @@ units (more details in Sect.~\ref{section:resultOA}).
   \begin{align}
     \label{eq:im:extension}
     \IMextend{\Gamma}{P} &\bydef{=}
-    \setdefb{
+    \bsetdef{
       (a \cup a', g, e)
     }{
       (a, g, e) \in \Gamma, a' \subseteq P \setminus P_A
@@ -1079,7 +1160,7 @@ units (more details in Sect.~\ref{section:resultOA}).
     \\
     \label{eq:im:extension1}
     &= 
-    \setdefb{
+    \bsetdef{
       (a, g, e)
     }{
       a \subseteq P,
@@ -1118,14 +1199,14 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 
 \begin{definition}[Composition of architectures]
   \label{defn:arch:composition}
-  Let $A_i = (\cC_i, V_{A_i}, P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$,
+  Let $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$,
   be two architectures.  The \emph{composition} of $A_1$ and
-  $A_2$ is the architecture $A_1 \arcomp A_2 = (\cC_1 \cup \cC_2,
-  V_{A_1} \cup V_{A_2}, P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma)$, where
+  $A_2$ is the architecture $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2,
+  V_{A_1} \cup V_{A_2}, P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$, where
 %
   \begin{equation}
     \label{eq:arch:composition}
-    \Gamma = \setdefb{
+    \Gamma = \bsetdef{
       (a, g^1 \land g^2, e^1 \expmix e^2) 
     }{
       (a \cap P_{A_i}, g^i, e^i) \in \Gamma_i,
@@ -1205,7 +1286,7 @@ formalized by the following definition.
 
 \begin{definition}[Enforcing properties]
   \label{defn:impose}
-  Let $A = (\cC, P_A, V_A, \export[A], \Gamma)$ be an architecture; let $\cB$
+  Let $A = \tuple{\cC, P_A, V_A, \export[A], \Gamma}$ be an architecture; let $\cB$
   be a set of components and $\Phi$ an initial property of
   their parallel composition $A_{id}(\cB)$ (see
   \prop{arcomp:nice}).  We say that \emph{$A$ enforces $\Phi$ on
@@ -1225,8 +1306,8 @@ Below, we omit mentioning this explicitly.
   \label{defn:up:compat}
   \todoSB{Summarise in English and move to the appendix}
 %
-  Consider two architectures $A_i = (\cC_i, V_{A_i}, P_{A_i},
-  \export[A_i], \Gamma_i)$, for $i = 1,2$.
+  Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
+  \export[A_i], \Gamma_i}$, for $i = 1,2$.
 %
   We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
   any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
@@ -1293,8 +1374,8 @@ Below, we omit mentioning this explicitly.
 
 \begin{theorem}[Preserving enforced properties]
   \label{thm:combining}
-  Let $\cB$ be a set of components; let $A_i = (\cC_i, V_{A_i},
-  P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$, be two upwards compatible architectures
+  Let $\cB$ be a set of components; let $A_i = \tuple{\cC_i, V_{A_i},
+  P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$, be two upwards compatible architectures
   enforcing on $\cB$ the properties $\Phi_1$ and $\Phi_2$
   respectively.  The composition $A_1 \arcomp A_2$ enforces on
   $\cB$ the property $\Phi_1 \land \Phi_2$.
@@ -1797,6 +1878,173 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 \section{Encoding of architectures into open pNets}
 \label{secn:encoding}
 
+We will define the encoding of BIP architectures into pNets by
+associating to each architecture \emph{and a partition of its dangling
+  ports} the corresponding pNet.  Notice that the addition of a
+partition of dangling ports is a matter of convenience, since one can
+use a trivial partition comprising only one complete set of dangling
+ports.
+
+Let $A = \tuple{\cC, V_A, P_A, \export[A], \Gamma}$ be an
+architecture.  For each $C \in \cC$, let $C = \tuple{Q_C, q^0_C, V_C,
+  \val{0}{C}, P_C, \export[C], \goesto{}}$.  Finally, let $\partition
+\subseteq 2^{P_A}$ be a partition of the set of dangling ports of $A$,
+\ie $\bigcup_{D \in \partition} D = P_A \setminus \bigcup_{C \in \cC}
+P_C$ and $D_1 \cap D_2 = \emptyset$, for any two distinct $D_1, D_2
+\in \partition$.  In particular, as mentioned above, one can consider
+the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
+  \in \cC} P_C\}$.
+
+Below, for the sake of clarity, we start by presenting in
+\secn{enc:nopri} the encoding of $A$ into pNets without accounting for
+any priority model (see \secn{components}).  Then, in
+\secn{enc:maxprog}, we slightly modify this encoding to include the
+implicitly assumed maximal progress priority.
+
+%****************************************************************
+\subsection{Encoding without the priority model}
+\label{secn:enc:nopri}
+
+Recall that $\Gamma$ is an interaction model over the interface
+$\tuple{V_A, P_A, \export[A]}$, \ie these interface elements are
+implicitly involved in the definition of $\Gamma$.
+
+\paragraph{Encoding the coordinators} We define the
+mapping $\nopri$ as $\nopri[A, \partition] \bydef{=}
+\pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$,
+where, for each $C \in \cC$, the encoding $\nopri[C]$ is a pLTS
+$\pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
+%
+\begin{itemize}
+\item $s_0 \not\in Q_C$ is fresh and $S = Q_C \cup \{s_0\}$,
+\item $\vars(s) = V_C$, for all $s \in Q_C$, and $\vars(s_0) =
+  \emptyset$,
+\item the transition relation $\goesto[{\nopri[C]}]{}$ is defined as
+  the union of three sets of transitions:
+%
+  \begin{multline}
+    \label{eq:nopri:trans}
+    \goesto[{\nopri[C]}]{} \bydef{=}
+    \bsetdef{\tuple{s, a(\true), g, u, s'}}{
+      \tuple{s, a, g, u, s'} \in \goesto{}}
+    \\    
+    \cup
+    \bsetdef{\tuple{s, a(\false), \true, \noop, s}}{
+      s \in Q_C, a \in P_C}
+    \\
+    \cup
+    \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}
+    \,,
+  \end{multline}
+%
+  where \noteSB{Can probably write directly $\overline{V_C := \val{0}{C}}$, in which case no need to intrudce $\mathit{init}$.}\hl{$\mathit{init} = \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$}.
+\end{itemize}
+
+\noteSBin{Eric uses some kind of initialisation predicate in
+  Fig.~\ref{schema:ArchFailure:BIP}.  I do not quite understand how
+  this works, so I used a new initial state with explicit
+  initialisation.}
+  
+Intuitively, we 1)~introduce a fresh initial state with an additional
+$\init$ transition that initialises all the variables to those defined
+by the initial valuation $\val{0}{C}$ of $C$ and 2)~associate an
+additional Boolean value to each port, with original transitions of
+$C$ marked by $\true$ and additional loop transitions marked by
+$\false$.
+
+\Fig{enc:nopri} shows the encoding of the Failure Monitor
+architecture, including the encodings of the two coordinators, \ie
+$\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
+encoding in the figure is slightly optimised: some of the ports do not
+have an associated Boolean value, nor the additional loop transitions.
+We will explicitate this optimisation once we have defined the
+encoding of the interaction model.
+
+\begin{figure*}[t]
+  \fbox{%
+  \includegraphics[width=\textwidth]{BIPspec-ArchFailureTimerMax-v4-no-pri}}
+  \caption{Encoding of the Failure Monitor architecture
+    (\fig{schema:ArchFailure:BIP}) as an open pNet (without the
+    priority model) \hl{\bf (Error in the picture: First two positions in the synchronisation vectors must be transposed)}}
+  \label{fig:enc:nopri}
+\end{figure*}
+
+\paragraph{Encoding the interaction model}
+First of all, recall that $\nopri[A, \partition ] \bydef{=}
+\pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$.
+Thus, the holes in the resulting pNet are indexed by the elements of
+partition \partition.  For the encoding of our running example, we
+take $\partition = \bigl\{\{\PortFail, \PortResume\},\{\PortAsk,
+\PortReset\}\bigr\}$.  This corresponds to the intuition that the
+dangling ports {\PortFail} and {\PortResume} correspond to the
+monitored events, whereas {\PortAsk} and {\PortReset} correspond to
+the actions provided by the ``environment'' (other components of the
+system) that are triggered in case of a persistent failure.  Similarly
+to the encoding of the corrdinators, in the synchronisation vectors of
+\nopri[\Gamma], we will associate Boolean values to the actions
+corresponding to these ports.
+
+The encoding of the interaction model is based on its representation
+as a set of connectors. \noteSB{A legitimate question is whether we
+  actually need to do this, instead of listing explicitly the
+  individual interactions, then associating a synchronisation vector
+  to each one of them?  One of the factors is the encoding
+  pNets$\rightarrow$SAT: is it better to have more or fewer SVs if the
+  price is additional Boolean variables?  The other factor might be
+  the facility of maximal progress encoding\mdash TBC.  Traceability.
+  Anything else?  }Indeed, as illustrated by the Failure Monitor
+architecture in \fig{schema:ArchFailure:BIP}, each connector can
+define several allowed interactions, depending on its hierarchical
+structure and port and node syncrhon/trigger typings.  For instance,
+the connector {\NameTimer.\PortTick \trigsynch (\PortFail \trigsynch
+  \NameCtrl.\PortFail)} defines three interactions (observe that
+$\topinterval + \NameTimer.t = \topinterval$ and $\NameTimer.z \cap
+\topinterval = \NameTimer.z$):\noteSB{Move this to \secn{components}?}
+%
+\begin{align*}
+  &\bigl(\{\NameTimer.\PortTick\},
+  &&\true, 
+  &&\NameTimer.z := \NameTimer.z\bigr)
+  \\
+  &\bigl(\{\NameTimer.\PortTick, \PortFail\},
+  &&\true,
+  &&\NameTimer.z := \NameTimer.z\bigr)
+  \\
+  &\bigl(\{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail\},
+  &&\true,
+  &&\NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
+\end{align*}
+
+In order to encode these using only one synchronisation vector, we use
+the additional Boolean values associated to each port by the encoding
+of coordinator components.  We observe that the three ports in this
+connector form a ``causality chain'': {\NameCtrl.\PortFail} can only
+participate in the interaction if the dangling port {\PortFail}
+participates, which in turn can only participate if
+{\NameTimer.\PortTick} does so.  These dependencies can be rewritten
+as Boolean implications $\NameCtrl.\PortFail \Rightarrow \PortFail$
+and $\PortFail \Rightarrow \NameTimer.\PortTick$.  However, notice
+that, within the scope of this connector, {\NameTimer.\PortTick}
+participates in all the interactions, meaning that the latter
+implication is a tautology and can be discarded.  Thus, we obtain the
+synchronisation vector SV0 shown in \fig{enc:nopri}, where $b_0$ and
+$b_1$ are the Boolean values associated to the actions encoding the
+ports {\PortFail} and {\NameCtrl.\PortFail}, $\alpha_0$ is a fresh
+action name.  The guard $b_1 \Rightarrow b_0$ encodes the causal
+relation among ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
+that, in our encoding, all three ports are present in the
+synchronisation vector.  Non-participation of a port corresponds to
+firing the loop transition marked by \false.  \Fig{enc:nopri} shows
+the four synchronisation vectors SV0\ndash SV3 corresponding to the
+connectors in \fig{schema:ArchFailure:BIP} and an additional vector
+SV4, synchronising the {\init} transitions of the two pLTSs.
+
+%****************************************************************
+\subsection{Encoding with the maximal progress priority model}
+\label{secn:enc:maxprog}
+
+
+
 %****************************************************************
 %****************************************************************
 
@@ -1844,7 +2092,7 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 
 \begin{lemma}
   \label{lem:onlyone}
-  Let $A = (\cC, V_A, P_A, \export[A], \Gamma)$ be an architecture and denote
+  Let $A = \tuple{\cC, V_A, P_A, \export[A], \Gamma}$ be an architecture and denote
   by $\Gamma_\cC \bydef{=}
 %
   \setdef{
@@ -1854,8 +2102,8 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
   }$, with $P_\cC = \bigcup_{C \in \cC} P_C$,
 %  
   the projection of $\Gamma$ onto the coordinating components of
-  $A$.  Consider the architecture $A' = (\{C'\}, V_A, P_A, \export[A],
-  \Gamma)$, where $C' = \Gamma_\cC(\cC)$.  For any set of
+  $A$.  Consider the architecture $A' = \tuple{\{C'\}, V_A, P_A, \export[A],
+  \Gamma}$, where $C' = \Gamma_\cC(\cC)$.  For any set of
   components $\cB$, satisfying the conditions of
   \defn{arch:application}, we have
   $\semopen{A(\cB)} = \semopen{A'(\cB)}$.
@@ -2035,8 +2283,8 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 
 \begin{lemma}
   \label{lem:onestep}
-  Let $\cB$ be a set of components; let $A_i = (\{C_i\}, V_{A_i},
-  P_{A_i}, \export[A_i], \Gamma_i)$, for $i = 1,2$, be two upwards compatible architectures
+  Let $\cB$ be a set of components; let $A_i = \tuple{\{C_i\}, V_{A_i},
+  P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$, be two upwards compatible architectures
   with one coordinator each, applicable to $\cB$.  Denote
   $P_i = P_{C_i} \cup \bigcup_{B \in \cB} P_B$.
   Finally, let
