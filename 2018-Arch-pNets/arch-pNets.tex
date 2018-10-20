@@ -111,6 +111,7 @@
 \newcommand{\ex}[1]{Ex.~\ref{ex:#1}}
 \newcommand{\exs}[2]{Ex.~\ref{ex:#1} and~\ref{ex:#2}}
 \newcommand{\secn}[1]{Sect.~\ref{secn:#1}}
+\newcommand{\app}[1]{App.~\ref{secn:#1}}
 \newcommand{\rem}[1]{Note~\ref{rem:#1}}
 \newcommand{\lem}[1]{Lem.~\ref{lem:#1}}
 \newcommand{\cor}[1]{Cor.~\ref{cor:#1}}
@@ -209,13 +210,13 @@
 \newcommand{\secondit}[1]{#1''}
 
 \newcommand{\twosynch}{%
-  \ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!-\!\!\!\bullet}}
+  \mbox{\ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!-\!\!\!\bullet}}}
 \newcommand{\synchtrig}{%
-  \ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}
+  \mbox{\ensuremath{\bullet\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}}
 \newcommand{\trigsynch}{%
-  \ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\bullet}}
+  \mbox{\ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\bullet}}}
 \newcommand{\twotrig}{%
-  \ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}
+  \mbox{\ensuremath{\blacktriangleright\!\!\!-\!\!\!-\!\!\!\blacktriangleleft}}}
 
 \newcommand{\export}[1][]{\ensuremath{\varepsilon_{#1}}}
 \newcommand{\valdiff}[2]{\ensuremath{#1 \triangle #2}}
@@ -228,6 +229,18 @@
 \newcommand{\arequiv}{\equiv}
 \newcommand{\Arcomp}{\Bigoplus}
 \newcommand{\expmix}{\wedge}
+
+\newcommand{\intsem}[1]{\ensuremath{\|{#1}\|}}
+\newcommand{\aisem}[1]{\ensuremath{|{#1}|}}
+
+\newtheorem*{syntax}{Syntax}
+\newtheorem*{semantics}{Semantics}
+
+\newcommand{\ai}{\ensuremath{\mathcal{AI}}}
+\newcommand{\ct}{\ensuremath{\mathcal{T}}}
+\newcommand{\cru}{\ensuremath{\mathcal{CR}}}
+\newcommand{\ac}{\ensuremath{\mathcal{AC}}}
+
 
 \newcommand{\addspace}[1]{#1 }
 \newcommand{\nopri}[1][]{\ensuremath{\mathit{pNet}%
@@ -1937,21 +1950,16 @@ $\pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
     \,,
   \end{multline}
 %
-  where \noteSB{Can probably write directly $\overline{V_C := \val{0}{C}}$, in which case no need to intrudce $\mathit{init}$.}\hl{$\mathit{init} = \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$}.
+  where $\mathit{init} = \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$.
 \end{itemize}
 
-\noteSBin{Eric uses some kind of initialisation predicate in
-  Fig.~\ref{schema:ArchFailure:BIP}.  I do not quite understand how
-  this works, so I used a new initial state with explicit
-  initialisation.}
-  
 Intuitively, we 1)~introduce a fresh initial state with an additional
 $\init$ transition that initialises all the variables to those defined
 by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
 additional Boolean value to each port, 3)~create pNet transitions that reflect the original transitions of
 $C$ with $\true$ as parameter and 4)~create additional loop transitions marked by
 $\false$.
-%
+
 The loop transitions marked by $\false$ will be used in the encoding
 of connectors.  Each BIP connector can define several interactions,
 \ie ports involved in a connector need not necessarily always
@@ -1966,8 +1974,8 @@ architecture, including the encodings of the two coordinators, \ie
 $\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
 encoding in the figure is slightly optimised: some of the ports do not
 have an associated Boolean value, nor the additional loop transitions.
-We will explicitate this optimisation once we have defined the
-encoding of the interaction model.
+\todoSB{Revise this if necessary}\hl{We will explicitate this optimisation once we have defined the
+encoding of the interaction model.}
 
 \begin{figure*}[t]
   \fbox{%
@@ -1982,7 +1990,7 @@ encoding of the interaction model.
 First of all, recall that $\nopri[A, \partition ] \bydef{=}
 \pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$.
 Thus, the holes in the resulting pNet are indexed by the elements of
-partition \partition.  For the encoding of our running example, we
+the partition \partition.  For the encoding of our running example, we
 take $\partition = \bigl\{\{\PortFail, \PortResume\},\{\PortAsk,
 \PortReset\}\bigr\}$.  This corresponds to the intuition that the
 dangling ports {\PortFail} and {\PortResume} will be provided by a 
@@ -2016,7 +2024,7 @@ trigger, whereas {\NameCtrl.\PortFail} is a synchron.  Therefore, this
 subconnector allows two interactions: one with {\PortFail} alone and
 another one involving both ports.  Similarly, at the top level,
 {\NameTimer.\PortTick} is a trigger, whereas the second-level
-subconnector is a synchron.  Hence, this connector allows an
+subconnector is a synchron.  Hence, the overall connector allows the
 interaction involving only one port {\NameTimer.\PortTick}\footnote{%
 %
   Such interactions are called \emph{singleton interactions}.
@@ -2029,17 +2037,18 @@ following three interactions (observe that $\topinterval +
 \NameTimer.z$):
 %
 \begin{align*}
-  &\bigl(\{\NameTimer.\PortTick\},
-  &&\true, 
-  &&\NameTimer.z := \NameTimer.z\bigr)
-  \\
-  &\bigl(\{\NameTimer.\PortTick, \PortFail\},
-  &&\true,
-  &&\NameTimer.z := \NameTimer.z\bigr)
-  \\
-  &\bigl(\{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail\},
-  &&\true,
-  &&\NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
+  \bigl(\{\NameTimer.\PortTick\}&,
+  \true, 
+  \NameTimer.z := \NameTimer.z\bigr)
+  \,,\\
+  \bigl(\{\PortFail, \NameTimer.\PortTick\}&,
+  \true,
+  \NameTimer.z := \NameTimer.z\bigr)
+  \,,\\
+  \bigl(\{\NameCtrl.\PortFail, \PortFail, \NameTimer.\PortTick \}&,
+  \true,
+  \NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
+  \,.\
 \end{align*}
 
 In order to encode these interactions using only one synchronisation vector, we use
@@ -2050,10 +2059,26 @@ participate in the interaction if the dangling port {\PortFail}
 participates, which in turn can only participate if
 {\NameTimer.\PortTick} does so.  These dependencies can be rewritten
 as Boolean implications $\NameCtrl.\PortFail \Rightarrow \PortFail$
-and $\PortFail \Rightarrow \NameTimer.\PortTick$.  However, notice
+and $\PortFail \Rightarrow \NameTimer.\PortTick$.
+%
+The conjunction of these two implications can be used as a guard for
+the synchronisation vector encoding connector {\NameTimer.\PortTick
+  \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)}.
+
+However, notice
 that, within the scope of this connector, {\NameTimer.\PortTick}
-participates in all the interactions, meaning that the latter
-implication is a tautology and can be discarded.  Thus, we obtain the
+participates in all the interactions.
+%
+Furthermore, {\NameTimer.\PortTick} is not involved in any other
+connector.  Therefore, the loop transition in \nopri[\NameTimer]
+labelled by $\PortTick(\false)$ can never be taken and, therefore can
+be removed from the encoding.  Furthermore, since only the transition
+labelled by $\PortTick(\true)$ is ever taken, 
+%
+the
+implication $\PortFail \Rightarrow \NameTimer.\PortTick$ is a tautology and can also be discarded.
+
+We obtain the
 synchronisation vector SV0 shown in \fig{enc:nopri}, where $b_0$ and
 $b_1$ are the Boolean values associated to the actions encoding the
 ports {\PortFail} and {\NameCtrl.\PortFail}, $\alpha_0$ is a fresh
@@ -2064,6 +2089,313 @@ synchronisation vector.  \Fig{enc:nopri} shows
 the four synchronisation vectors SV0\ndash SV3 corresponding to the
 connectors in \fig{schema:ArchFailure:BIP} and an additional vector
 SV4, synchronising the {\init} transitions of the two pLTSs.
+
+The general case encoding relies on the causal semantics of the
+algebra of BIP connectors \cite{BliSif10-causal-fmsd}.  Disregarding
+the variables and data transfer, the Algebra of Connectors $\ac(P)$
+\cite{BliSif07-acp-emsoft} provides a syntactic notation for the BIP
+connectors.  The causal semantics of the connectors, given in terms of
+the Algebra of Causal Interaction Trees $\ct(P)$, explicitates the
+causal dependencies discussed above, through an encoding mapping
+$\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
+\rightarrow \cru(P)$ encodes causal interaction trees into systems of
+causal rules, which are Boolean implications similar to the ones in
+the example above.  We briefly summarise the key definitions and
+results in \app{algebras}.
+
+\begin{table}[t]
+  \caption{Algebraic representations of the connectors in \fig{schema:ArchFailure:BIP} (see \app{algebras})}
+  \label{tab:connectors}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{@{}c|c|c@{}}
+    \hline {\bf Connector} & {\bf Causal Interaction Tree} & {\bf
+      System of Causal Rules}
+    \\\hline    
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+
+      \node(caa) {}; % node distance=5cm [right of=start]
+      \node[node distance=1cm] (cb) [below of=caa]{\PortFail};
+      \node[node distance=1.8cm] (cc) [right of=cb]{\NameCtrl.\PortFail};
+      \node[node distance=1.6cm] (ca) [left of=cb]{\NameTimer.\PortTick};
+
+      \draw [style=-*, thick, black] ($(caa.south)+(0,.1cm)$) -- ++(right:.5cm) -| (cc.north);
+      \draw [style=-triangle 45 reversed, thick, black]  ($(caa.south)+(0,.1cm)$) -| (cb.north);
+      \draw [style=-*, thick, black] ($(caa.south)+(0,.5cm)$) -- ++(right:.2cm) -| ($(caa.south)+(+.9,0cm)$);
+      \draw [style=-triangle 45 reversed, thick, black]  ($(caa.south)+(0,.5cm)$) -| (ca.north);
+    \end{tikzpicture}
+%
+    &
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth'
+        ,initial text=
+        ,every state/.style={draw=black,thick}
+        ,group/.style = {draw=black,thin,rectangle, minimum width=2.5cm}
+        ,port/.style = {font=\small, minimum size=5mm}
+        ,legend/.style = {font=\bf}
+      ]
+
+      \node(tick){\color{red}\NameTimer.\PortTick};
+      \node[node distance=1cm](x) [right of=tick]{};
+      \node(fail) [below of=x] {\PortFail};
+      \node[node distance=1cm](y) [right of=fail]{};      
+      \node(ctrlfail) [below of=y] {\NameCtrl.\PortFail};
+      
+      \draw[style=->] (tick) -> (fail);
+      \draw[style=->] (fail) -> (ctrlfail);
+    \end{tikzpicture}
+%
+    &
+%
+    $
+    \begin{aligned}[b]
+      \NameCtrl.\PortFail &\Rightarrow
+      \PortFail {\color{red}{}\land \NameTimer.\PortTick}
+      \\
+      {\color{red}\PortFail} &{\color{red}{}\Rightarrow \NameTimer.\PortTick}
+      \\
+      {\color{red}\NameTimer.\PortTick} &{\color{red}{}\Rightarrow \true}
+      \\
+      {\color{red}\true} &{\color{red}{}\Rightarrow \NameTimer.\PortTick}
+
+    \end{aligned}
+    $
+%
+    \\\hline
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+
+      \node[](baa) {}; % node distance=1.8cm [right of=start]
+      \node[node distance=1cm] (bb) [below of=baa]{\NameTimer.\PortCancel};
+      \node[node distance=1.8cm] (bc) [right of=bb]{\NameCtrl.\PortResume};
+      \node[node distance=1.6cm] (ba) [left of=bb]{\PortResume};
+
+
+      \draw [style=-*, thick, black] ($(baa.south)+(0,.1cm)$) -- ++(right:.5cm) -| (bc.north);
+      \draw [style=-*, thick, black]  ($(baa.south)+(0,.1cm)$) -| (bb.north);
+      \draw [style=-*, thick, black] ($(baa.south)+(0,.5cm)$) -- ++(right:.2cm) -| ($(baa.south)+(+.9,0cm)$);
+      \draw [style=-triangle 45 reversed, thick, black]  ($(baa.south)+(0,.5cm)$) -| (ba.north);
+    \end{tikzpicture}
+%
+    &
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth'
+        ,initial text=
+        ,every state/.style={draw=black,thick}
+        ,group/.style = {draw=black,thin,rectangle, minimum width=2.5cm}
+        ,port/.style = {font=\small, minimum size=5mm}
+        ,legend/.style = {font=\bf}
+      ]
+
+      \node(res){\color{red}\PortResume};
+      \node[node distance=1cm](rest) [below of=res] {\NameTimer.\PortCancel\ \NameCtrl.\PortResume};
+      \draw[style=->] (res) -> (rest);
+    \end{tikzpicture}
+%
+    &
+%
+    $
+    \begin{aligned}[b]
+      \NameCtrl.\PortResume &\Rightarrow
+      {\color{red}\PortResume \land{}} \NameTimer.\PortCancel
+      \\
+      \NameTimer.\PortCancel &\Rightarrow 
+      {\color{red}\PortResume \land{}} \NameCtrl.\PortResume
+      \\
+      {\color{red}\PortResume} &{\color{red}{}\Rightarrow \true}
+      \\
+      {\color{red}\true} &{\color{red}{}\Rightarrow \PortResume}
+    \end{aligned}
+    $
+%
+    \\\hline
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+
+      \node (start) {};
+      \node(h4)[left of=start]{}; %, node distance=1.5cm
+
+      \node[node distance=1cm] (ab) [below of=start] {\NameTimer.\PortTO};
+      \node[node distance=2.1cm] (ac) [right of=ab]{\NameCtrl.\PortTO};
+      \node[node distance=1.5cm] (aa) [left of=ab]{\PortAsk};
+
+      \draw [style=-*, thick, black] ($(h4.south)+(0,.1cm)$) -- ++(right:.5cm) -| (ac.north);
+      \draw [style=-*, thick, black]  ($(h4.south)+(0,.1cm)$) -| (ab.north);
+      \draw [style=-*, thick, black]  ($(h4.south)+(0,.1cm)$) -| (aa.north);
+    \end{tikzpicture}
+%
+    &
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+      \node (start) {\color{red}\PortAsk\ \NameTimer.\PortTO\ \NameCtrl.\PortTO};
+      \node()[below of=start]{};
+    \end{tikzpicture}
+%
+    &
+%
+    $
+    \begin{array}[b]{c@{}}
+      {\color{red}
+        \begin{aligned}
+          \NameCtrl.\PortTO &\Rightarrow
+          \PortAsk \land \NameTimer.\PortTO
+          \\
+          \NameTimer.\PortTO &\Rightarrow 
+          \PortAsk \land \NameCtrl.\PortTO
+        \end{aligned}}
+      \\[11pt]
+      {\color{red}
+        \begin{aligned}
+          \PortAsk &\Rightarrow
+          \NameTimer.\PortTO \land \NameCtrl.\PortTO
+          \\
+          \true &\Rightarrow
+          \PortAsk \land \NameTimer.\PortTO
+          \land \NameCtrl.\PortTO
+        \end{aligned}
+
+      }
+    \end{array}
+    $
+    %
+    \\\hline
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+
+      \node (start) {};
+      \node(h4)[left of=start]{}; %, node distance=1.5cm
+
+      \node[node distance=1cm] (ab) [below of=start] {\NameCtrl.\PortReset};
+      \node[node distance=1.5cm] (aa) [left of=ab]{\PortReset};
+
+      \draw [style=-*, thick, black]  ($(h4.south)+(0,.1cm)$) -| (ab.north);
+      \draw [style=-*, thick, black]  ($(h4.south)+(0,.1cm)$) -| (aa.north);
+    \end{tikzpicture}
+%
+    &
+%
+    \begin{tikzpicture}[shorten >=1pt,node distance=.7cm,>=stealth']
+      \node (start) {\color{red}\PortReset\ \NameCtrl.\PortReset};
+      \node()[below of=start]{};
+    \end{tikzpicture}
+%
+    &
+%
+    {\color{red}$
+    \begin{aligned}[b]
+      \NameCtrl.\PortReset &\Rightarrow \PortReset
+      \\
+      \PortReset &\Rightarrow \NameCtrl.\PortReset
+      \\
+      \true &\Rightarrow
+      \PortReset \land \NameCtrl.\PortReset
+    \end{aligned}
+    $}
+%
+    \\\hline
+  \end{tabular}}
+\end{table}
+
+First, consider a flat connector with $n$ trigger ports $p_1,\dots,
+p_n$ (with $n > 0$) and $m$ synchron ports $q_1,\dots, q_m$
+(\fig{connector}).  Similarly to the example above, for any of the
+ports $q_1,\dots, q_m$ to participate in an interaction defined by
+this connector, at least one of the ports $p_1,\dots, p_n$ must
+participate.  This causal dependency can be represented by the Boolean
+formula $q_1 \lor \dots \lor q_m \Rightarrow p_1 \lor \dots \lor p_n$.
+If there are no synchrons, \ie $m = 0$, this formula simplifies to
+$p_1 \lor \dots \lor p_n$.  However, if there are no triggers, \ie $n
+= 0$, the connector semantics is that \emph{all} synchron ports must
+participate for an interaction to take place, represented by the
+Boolean formula $(q_1 = q_2) \land \dots \land (q_1 = q_m)$.
+
+We now generalise this principle to hierarchical connectors, building
+the formula bottom-up.  In a flat connector above, we have implicitly
+associated a Boolean variable to each port.  In a hierarchical
+connector, we associate a fresh Boolean variable to each node.
+Similarly to the above example, consider a connector with $n > 0$
+trigger sub-connectors and $m$ synchron sub-connectors.  We associate
+to this connector a fresh Boolean variable $x$.  Assume that Boolean
+variables associated to trigger sub-connectors are $x_1,\dots,x_n$,
+whereas those associated to synchron sub-connectors are
+$y_1,\dots,y_m$.  The causal dependencies among the interactions
+defined by the sub-connectors can be encoded by the formula
+%
+\begin{equation}
+  \label{eq:trig:encoding}
+  (y_1 \lor \dots \lor y_m \Rightarrow x) \land (x = x_1 \lor \dots
+  \lor x_n).
+\end{equation}
+%
+If there are no trigger sub-connectors, \ie $n = 0$, we use the
+formula
+%
+\begin{equation}
+  \label{eq:synch:encoding}
+  x = \bigl((y_1 = y_2) \land \dots \land (y_1 = y_m)\bigr)
+\end{equation}
+%
+($x$ is equal to $\true$ if all $x_1, \dots, x_m$ are equal, it is
+equal to $\false$ otherwise).
+
+Notice that, in the flat connector example above, the formula was
+essentially the same, with $p_i$ instead of $x_i$ and $q_i$ instead of
+$y_i$, and without the additional variable $x$.  Indeed, $x$ is used
+to encode the causal dependencies between this connector and, if
+necessary, those in higher levels of the hierarchy.  The Boolean
+encoding of the causal dependencies among the ports of the entire
+connector is obtained by taking the conjunction of formulas obtained
+for each sub-connector.
+
+Consider again the connector {\NameTimer.\PortTick \trigsynch
+  (\PortFail \trigsynch \NameCtrl.\PortFail)}.  Associating the
+varaibles $b_0$, $b_1$ and $b_2$ to ports {\PortFail},
+{\NameCtrl.\PortFail} and {\NameTimer.\PortTick}, respectively, and
+variables $y_1$ and $y_2$ to the top- ({\NameTimer.\PortTick
+  \trigsynch $\cdot$}) and second-level (\PortFail \trigsynch \NameCtrl.\PortFail) connectors in the hierarchy,
+we obtain the following formula
+%
+\begin{equation}
+  \label{eq:tff:example}
+  (b_1 \Rightarrow y_2) \land (y_2 = b_0) \land (y_2 \Rightarrow y_1)
+  \land (y_1 = b_2)
+  \,.
+\end{equation}
+%
+Observe now that the top-level connector, by its very nature, does not
+have any higher level connectors and therefore we can eliminate the
+corresponding Boolean variable.  This simplifies \eq{tff:example}, to
+%
+\begin{equation}
+  \label{eq:tff:example:1}
+  (b_1 \Rightarrow y_2) \land (y_2 = b_0) \land (y_2 \Rightarrow b_2)
+  \,.
+\end{equation}
+%
+In the general case, this corresponds to replacing, \emph{for
+  top-level connectors}, equations \eq{trig:encoding} and
+\eq{synch:encoding}, respectively, by
+%
+\begin{gather}
+  \label{eq:trig:encoding:1}
+  y_1 \lor \dots \lor y_m \Rightarrow x_1 \lor \dots
+  \lor x_n
+  \\
+  \intertext{and}
+  \label{eq:synch:encoding:1}
+  (y_1 = y_2) \land \dots \land (y_1 = y_m)
+  \,.
+\end{gather}
+%
+Furthermore, in the context of one connector (or synchronisation
+vector), some interaction must be fired.  Thus, \emph{for top-level
+  connectors}, \eq{synch:encoding:1} can be further simplified to 
+%
+\begin{equation}
+  \label{eq:synch:encoding:2}
+  y_1 \land \dots \land y_m
+  \,.
+\end{equation}
 
 %****************************************************************
 \subsection{Encoding with the maximal progress priority model}
@@ -2114,7 +2446,11 @@ SV4, synchronising the {\init} transitions of the two pLTSs.
 \appendix
 \clearpage
 
+%****************************************************************
+%****************************************************************
+
 \section{Proofs}
+\label{secn:proofs}
 
 \begin{lemma}
   \label{lem:onlyone}
@@ -2733,8 +3069,12 @@ SV4, synchronising the {\init} transitions of the two pLTSs.
   the proof.
 \end{proof}
 
+%*********************************************************************
+%*********************************************************************
 
 \section{pNets additional definitions}
+\label{secn:pNets:additional}
+
 \begin{definition}[Sorts, Holes, Leaves of pNets]
   \begin{itemize}
   \item  \noteSB{I think this can be lightened up a bit, since the definitions are all 
@@ -2785,5 +3125,403 @@ I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
 \end{array}\]
 \end{itemize}
 \end{definition}
+
+%*********************************************************************
+%*********************************************************************
+
+\section{Algebraic representations of the interaction model}
+\label{secn:algebras}
+
+In this section condensed from
+\cite[Section~4]{BarBliu15-offer-scico}, we briefly recall the syntax
+and semantics of the algebras used to represent BIP interaction models
+\emph{disregarding variables and data transfer}.  All the algebras are
+parameterised by a set $P$ of all the ports in a given system.  The
+semantics of the Algebra of Interactions $\ai(P)$ is given in terms of
+sets of interactions by a function $\intsem{\cdot}: \ai(P) \rightarrow
+2^{2^P}$.  The corresponding equivalence relation on $\ai(P)$ is
+defined as follows: two terms $x,y \in \ai(P)$ are {\em equivalent} $x
+\simeq y$ iff $\intsem{x} = \intsem{y}$.  For any other algebra
+$\cA(P)$ among those appearing in this section, we define its
+semantics by the function $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$.
+A function $\intsem{\cdot}: \cA(P) \rightarrow 2^{2^P}$ is obtained by
+composing $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$ and
+$\intsem{\cdot}: \ai(P) \rightarrow 2^{2^P}$.  The axiomatisation of
+$\ai(P)$ given in \cite{BliSif07-acp-emsoft} is sound and complete
+with respect to $\simeq$.  Hence, for other algebras, the equivalences
+induced by $\intsem{\cdot}$ and $\aisem{\cdot}$ coincide.
+
+Below, we assume that a set of ports $P$ is given, such that $0,1\not\in
+P$.
+
+For any set $X$ of propositional variables, we denote by $\sB[X]$ the
+corresponding Boolean algebra generated by $X$.  For presentation
+clarity, we will often omit the conjunction operator and write $a \lor
+bc$ instead of $a \lor (b \land c)$.
+
+
+% *********************************************************************
+
+\subsection{Algebra of Interactions}
+\label{secn:ai}
+
+The Algebra of Interactions is used to define the interaction semantics of other algebras. The elements of this algebra can be bijectively mapped to interaction models, \ie subsets of $2^P$.
+
+\begin{syntax}
+The syntax of the {\em Algebra of Interactions}, $\ai(P)$, is defined by
+the following grammar
+%
+\begin{equation} \label{eq:apsynt}
+  \begin{array}{rc*{4}{l@{\ |\ }}l}
+    x & ::= & 0 & 1 & p \in P & x\cdot x & x + x \,,\\
+  \end{array}
+\end{equation}
+%
+where `$+$' and `$\cdot$' are binary operators, respectively called
+{\em union} and {\em synchronisation}.  Synchronisation binds stronger
+than union.
+\end{syntax}
+%
+As follows from the interaction semantics given below, the additive
+identity element $0$ represents blocking, since it does not authorise
+any interaction.  The multiplicative identity element $1$ corresponds
+to the empty interaction, which represents idling (see the discussion
+in \cite{BarBliu15-offer-scico}).
+
+\begin{semantics}
+The semantics of $\ai(P)$ is given by the function $\|\cdot\| : \ai(P)
+\rightarrow 2^{2^P}$, defined by
+%
+\begin{equation} \label{eq:apsem}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{array}{lcl}
+    \lefteqn{\|0\|\ =\ \emptyset,\quad \|1\|\ =\ \{\emptyset\},\quad
+      \|p\|\ =\ \Big\{\{p\}\Big\},}\\
+    \|x_1 + x_2\| &=& \|x_1\| \cup \|x_2\|,\\
+    \|x_1 \cdot x_2\| &=& 
+    \Big\{a_1 \cup a_2\,\Big|\, a_1\in \|x_1\|, a_2\in \|x_2\| \Big\},
+  \end{array}
+\end{equation}
+for $p\in P$, $x_1,x_2\in\ai(P)$.  Terms of $\ai(P)$ represent sets of
+interactions between the ports $P$.
+\end{semantics}
+
+A sound and complete axiomatisation of $\ai(P)$ with respect to the
+semantic equivalence is provided in \cite{BliSif07-acp-emsoft}.  In a
+nutshell, $(\ai(P), +, \cdot, 0, 1)$ is a commutative semiring,
+idempotent in both $+$ and $\cdot$.
+
+
+% *********************************************************************
+
+\subsection{Algebra of Connectors}
+\label{secn:ac}
+
+The Algebra of Connectors provides an algebraic formalisation for
+structuring the interaction models.  It underlies the graphical
+notation (\eg \fig{connectors}) and the syntax for connectors used in the BIP language.
+
+\begin{syntax}
+The syntax of the {\em Algebra of Connectors}, $\ac(P)$, is defined by the
+following grammar
+%
+\begin{equation} \label{eq:acsynt}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{array}{lcll}
+    s & ::= & [0]\ |\ [1]\ |\ [p]\ |\ [x] \:\:\:\:\:\:\:\:\:(synchrons)\\
+    t & ::= & [0]'\ |\ [1]'\ |\ [p]'\ |\ [x]'  \:\:\:\:\:\:   (triggers)\\
+    x & ::= & s\ |\ t\ |\ x\cdot x\ |\ x + x\,, 
+  \end{array}
+\end{equation}
+for $p\in P$, and where `$+$' is a binary operator called {\em union},
+`$\cdot$' is a binary operator called {\em fusion}, and brackets
+`$[\cdot]$' and `$[\cdot]'$' are unary {\em typing} operators.  Fusion
+binds stronger than union.
+
+Union has the same meaning as union in $\ai(P)$. Fusion is a
+generalisation of the synchronisation in $\ai(P)$.  Typing is used to
+form typed connectors: `$[\cdot]$' defines {\em synchrons} (need
+synchronisation with other ports in order to interact) and
+`$[\cdot]'$' defines {\em triggers} (can initiate an interaction).
+\end{syntax}
+
+In order to simplify notation, we will omit brackets on 0, 1, and
+ports $p \in P$, as well as `$\cdot$' for the fusion operation.
+
+\begin{definition}
+ In a system with a set of ports $P$, connectors are elements of $\ac(P)$.
+\end{definition} 
+
+The operations of the Algebra of Connectors satisfy the following
+axioms.
+\begin{itemize}
+\item Union `$+$' is associative, commutative, idempotent and has the identity element 0.
+\item Fusion `$\cdot$' is associative, commutative and has the identity element 1. It is idempotent on monomial connectors, \ie[,] for any $x \in \ac(P)$, not involving the union operation, we have $x\cdot x = x$.
+\item Typing `$[\cdot]^*$' satisfies the following axioms, for $x,y,z
+  \in \ac(P)$ and $[\cdot]^\alpha,[\cdot]^\beta \in \bigl\{[\cdot]', [\cdot]\bigr\}$ arbitrary typings (trigger or synchron):
+  \begin{enumerate}
+  \item $[0] = [0]'$,
+  \item $[[x]^\alpha]^\beta = [x]^\beta$,
+  \item $[x + y]^\alpha = [x]^\alpha + [y]^\alpha$,
+  \item $[x]'[y]' = [x]'[y] + [x][y]'$.
+  \end{enumerate}
+\end{itemize}
+Complete axiomatisation of $\ac(P)$ with respect to the semantic
+equivalence is provided in \cite{BliSif08-acp-tc}.
+
+\begin{semantics}
+The semantics of $\ac(P)$ is given by the function $|\cdot| : \ac(P)
+\rightarrow \ai(P)$ (we use the $\sum$ and $\prod$ notation for,
+respectively, the union and fusion of multiple terms of $\ac(P)$):
+%
+\begin{align}
+  \label{eq:acap}
+  |[p]| & = p\,,
+  & |x_1 + x_2| & = |x_1| + |x_2|\,,
+  & \left|\prod_{i=1}^n [x_i]\,\right| & = \prod_{i=1}^n |x_k|\,,
+  \\
+  \label{eq:acaptrig}
+  && \hspace{-2cm}\left|\prod_{i=1}^n [x_i]' \prod_{j=1}^m [y_j]\,\right| = 
+  \sum_{i=1}^n |x_i| & \lefteqn{\left(
+  \prod_{k\not=i}\Big(1 + |x_k|\Big)\ \prod_{j=1}^m \Big(1 + |y_j|\Big)\right)}\,
+\end{align}
+%
+for $n > 0$, $m \geq 0$, $x_1,\dots,x_n,y_1,\dots,y_m \in \ac(P)$ and
+$p\in P\cup \{0,1\}$.
+\end{semantics}
+
+\fig{connectors} shows four basic examples of the graphical
+representation of connectors.  Triggers are denoted by triangles,
+whereas synchrons are denoted by bullets.  The interaction semantics
+of the four connectors is given in the sub-figure captions.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[b]{0.18\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/rdv.pspdftex}
+    \caption{\centering Rendezvous~$pqr$
+      $\intsem{pqr} = \{pqr\}$}
+    \label{fig:connectors:rdv}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.24\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/broadcast.pspdftex}
+    \caption{\centering Broadcast~$p'qr$
+      $\intsem{p'qr} = \{p, pq, pr, pqr\}$}
+    \label{fig:connectors:bdc}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.24\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/atomic-bdc.pspdftex}
+    \caption{\centering Atomic broadcast~$p'[qr]$
+      $\intsem{p'[qr]} = \{p, pqr\}$}
+    \label{fig:connectors:atomic}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.23\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/causal-chain.pspdftex}
+    \caption{\centering Causal chain~$p'[q'r]$
+      $\intsem{p'[q'r]} = \{p, pq, pqr\}$}
+    \label{fig:connectors:causal}
+  \end{subfigure}%
+  \caption{Basic connector examples}
+  \label{fig:connectors}
+\end{figure}
+
+The semantic equivalence $\simeq$ is not a congruence for $\ac(P)$.
+We denote by $\cong$ the largest congruence relation contained in
+$\simeq$.
+
+\begin{property}[\cite{BliSif08-acp-tc}]
+  \label{prop:cong}
+  For any $x, y \in \ac(P)$, we have $[x]'[y]' \cong \bigl[[x]'[y]'\bigr]'$.
+\end{property}
+
+%*********************************************************************
+
+\subsection{Algebra of Causal Interaction Trees}
+\label{secn:trees}
+
+The Algebra of Causal Interaction Trees serves as a pivot for
+transformations between all other algebraic representations.  It makes
+explicit the causal dependencies between ports contributing to the
+interactions defined by a connector.  
+
+\begin{syntax}
+The syntax of the \emph{Algebra of Causal Interaction Trees}, $\ct(P)$, is
+given by
+\begin{equation} \label{eq:ctsyn}
+  t ::= a \,|\, a \rightarrow t \,|\, t\oplus t\,,
+\end{equation}
+where $a \in \ai(P)$ is an interaction, \ie $0$, $1$ or a
+synchronisation of ports (without the use of the union operator), and
+`$\rightarrow$' and `$\oplus$' are respectively the {\em causality}
+and the {\em parallel composition} operators.  Causality binds
+stronger than parallel composition.  Notice that a causal interaction
+tree can have several roots.
+\end{syntax}
+
+``Atomic'' strongly synchronised interactions in the nodes of a causal
+interaction tree are the building blocks for the interactions provided
+by the connector.  The causality operator defines a dependency between
+two interactions: $a \rightarrow b$ means that for $b$ to
+participate in the overall interaction, $a$ must also participate.
+The parallel composition allows one to combine interactions without
+introducing dependencies: any combination of $a$
+and $b$ can participate in $a \oplus b$.
+
+The causality operator is right- (but not left-) associative: for
+interactions $a_1,\dots,a_n$, we have $a_1 \rightarrow (a_2
+\rightarrow (\dots \rightarrow a_n)\dots)) = a_1 \rightarrow a_2
+\rightarrow \dots \rightarrow a_n$.  We call this construction a {\em
+  causal chain}.
+
+\begin{semantics}
+The semantics of $\ct(P)$ is given by the function $|\cdot|: \ct(P)
+\rightarrow \ai(P)$
+\begin{align}
+  \label{eq:ctsem}
+  |a| & = a\,,
+  & |a \rightarrow t| & = a\Big(1 + |t|\Big)\,,
+  & |t_1 \oplus t_2| & = |t_1| + |t_2| + |t_1|\,|t_2|\,,
+\end{align}
+where $a\in 2^P \cup \{0,1\}$ is an interaction and $t, t_1, t_2 \in \ct(P)$.
+\end{semantics}
+
+A sound axiomatisation of $\ct(P)$ is provided in
+\cite{BliSif10-causal-fmsd}. 
+
+% *********************************************************************
+
+\subsection{Systems of Causal Rules}
+\label{secn:rules}
+
+Systems of causal rules represent an intermediate structure between
+causal interaction trees and arbitrary Boolean formulas.  They
+directly encode the causality information explicit in the causal
+interaction trees, by transforming causality relations into dual Horn
+clauses. %%  Apart from supporting connector synthesis, they provide a
+%% convenient way for expressing properties to be enforced by the glue
+%% operators (see \secn{example} for some examples).  Causal rules
+%% have also served as basis for the macro-notation used to specify
+%% the glue in Dy-BIP\mdash a dynamic flavour of BIP \cite{dybip}.
+
+\begin{definition}
+  A {\em causal rule} is a Boolean formula in $\sB[P]$ of the form $E
+  \Rightarrow C$.  The \emph{effect} $E$ is either the constant
+  $\true$ or a port variable $p \in P$.  The \emph{cause} $C$ is
+  either a constant, $\true$ or $\false$, or a disjunction of
+  interactions, \ie $\bigvee_{i=1}^n a_i$ where, for all $i\in [1,n]$,
+  $a_i$ are conjunctions of positive port variables.
+\end{definition}
+
+\begin{note} \label{rem:absorption}
+  Notice that $a_1 \lor a_1\,a_2 = a_1$, and therefore causal rules
+  can be simplified by replacing $p \Rightarrow a_1 \lor a_1\,a_2$
+  with $p \Rightarrow a_1)$.  We assume that all the causal rules are
+  simplified by this absorption rule.
+\end{note}
+
+\begin{definition}
+  A \emph{system of causal rules} is a set $R = \{p \Rightarrow
+  x_p\}_{p\in P\cup \{\true\}}$.  An interaction $a \in 2^P$ satisfies
+  the system $R$ (denoted $a \models R$), iff the characteristic
+  valuation of $a$ on $P$ satisfies the formula $\bigwedge_{p\in P\cup
+    \{\true\}} (p \Rightarrow x_p)$.  We denote by
+  $|R|\ \bydef{=}\ \sum_{a \models R} a$ the union (in terms of the
+  Algebra of Interactions) of the interactions satisfying $R$.  Thus
+  we have $|\cdot| : \cru(P) \rightarrow \ai(P)$, where $\cru(P)$ is
+  the set of all systems of causal rules over the set of port
+  variables $P$.
+\end{definition}
+
+%*********************************************************************
+
+\subsection{Transformations between algebraic representations of interaction models}
+\label{secn:transformations}
+
+Transformations $\ac(P)
+\overset{\tau}{\underset{\sigma}{\rightleftarrows}} \ct(P)$, $\ct(P)
+\overset{R}{\rightleftarrows} \cru(P)$ and $\cru(P) \rightleftarrows
+\sB[P]$ were defined in \cite{BliSif10-causal-fmsd} and have been
+shown to respect $\simeq$.  Below, we recall only the transformations
+that are used in this paper.
+
+We define the function $\tau : \ac(P) \rightarrow \ct(P)$, associating
+a causal interaction tree with a connector.  By \prop{cong}, and the
+associativity of both fusion in $\ac(P)$ and parallel composition in
+$\ct(P)$, the following equations are sufficient to define $\tau$:
+%
+\begin{align}
+  \label{eq:contree:p}
+  \tau(p) &= p
+  \,,\\
+  \label{eq:contree:trigsynch}
+  \tau\left(
+  [x]'\prod_{i=1}^n [y_i]
+  \right) &=
+  \tau(x) \rightarrow \bigoplus_{i=1}^n \tau(y_i)
+  \,,\\
+  \label{eq:contree:trig}
+  \tau\bigl([x_1]'[x_2]'\bigr) &= \tau(x_1) \oplus \tau(x_2)
+  \,,\\
+  \label{eq:contree:sync}  
+  \tau\bigl([y_1][y_2]\bigr) &=
+  \bigoplus_{i = 1}^{m_1}\bigoplus_{j = 1}^{m_2} a_i^1 a_j^2
+  \rightarrow (t_i^1 \oplus t_j^2)
+  \,,
+\end{align}
+%
+where $x, x_1, x_2, y_1,\dots, y_n \in \ac(P)$, $p \in P \cup \{0,1\}$
+and, in \eq{contree:sync}, we assume $\tau(y_k) = \bigoplus_{i =
+  1}^{m_k} a_i^k \rightarrow t_i^k$, for $k = 1,2$.
+
+%% $\sigma : \ct(P) \rightarrow \ac(P)$ is defined recursively by putting
+%% %
+%% \begin{align}
+%%   \label{eq:treecon}
+%%   \sigma(a) & = [a]\,,
+%%   & \sigma(a \rightarrow t) & = [a]'\,[\sigma(t)]\,,
+%%   & \sigma(t_1 \oplus t_2)  & = [\sigma(t_1)]'\,[\sigma(t_2)]'\,.
+%% \end{align}
+
+We define $R: \ct(P) \rightarrow \cru(P)$ by putting
+%
+\begin{equation} 
+  \label{eq:trees2rules}
+  R(t)\ =\ \{p \Rightarrow c_p(t)\}_{p\in P\cup\{\true\}}\,,
+\end{equation}
+where the function $c_p : \ct(P) \rightarrow \sB[P]$ is defined recursively
+as follows.  For $a\in 2^P$ (with $p\not\in a$) and $t,t_1,t_2 \in \ct(P)$,
+we put
+%
+\begin{align*}
+  c_p(0) & = \false\,, 
+  & c_{\true}(0) & = \false\,,\\
+  c_p(p \rightarrow t) & = \true\,,
+  & c_{\true}(1 \rightarrow t) & = \true\,,\\
+  c_p(pa \rightarrow t) & = a\,,\\
+  c_p(a \rightarrow t) & = a \land c_p(t)\,,
+  & c_{\true}(a \rightarrow t) & = a\,,\\
+  c_p(t_1 \oplus t_2) & = c_p(t_1) \lor c_p(t_2)\,, 
+  & c_{\true}(t_1 \oplus t_2) & = c_{\true}(t_1) \lor c_{\true}(t_2)\,.
+\end{align*}
+
+Observe that this transformation associates to each port $p \in P$ a
+causal rule $p \Rightarrow C$, where $C$ is the disjunction of all
+prefixes leading from roots of $t$ to some node containing $p$,
+including the ports of this node other than $p$.
+
 
 \end{document}
