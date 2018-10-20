@@ -20,6 +20,7 @@
 \usepackage{mathtools}  % for align, multline etc.
 \usepackage{caption}
 \usepackage{stmaryrd} % double brackets (\llbracket, \rrbracket)
+\usepackage{units}    % for nicefrac: x/y
 
 %% \usepackage[justification=centering,belowskip=-10pt,aboveskip=0pt]{caption}
 %% \setlength{\intextsep}{10pt plus 2pt minus 2pt}
@@ -93,6 +94,11 @@
   \def\nextitem{\def\nextitem{#1}}% Separator
   \renewcommand*{\do}[1]{\nextitem ##1}% How to process each item
   \tupleDeli\docsvlist{#2}\tupleDelii% Process list
+}
+
+\newcommand{\Tuple}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[\Big(]{\Big)}%
+  \tuple[#1]{#2}%
 }
 
 \newcommand{\pNetTuple}[2][\ensuremath{,\allowbreak}]{%
@@ -1480,7 +1486,7 @@ not have input variables, \ie they
 have the form $a(\Expr_j^{j \in J})$.
 
 
-\begin{definition}[pNets]\label{def-pnets}
+\begin{definition}[pNets]\label{defn:pnets}
 A pNet is a hierarchical structure where leaves are pLTSs and holes\footnote{Typing can 
 be added to pNets by defining and checking their interfaces, called 
 sort~\cite{HMZ-FORTE2016}}:
@@ -1554,7 +1560,7 @@ set of state modifications.
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transitions]
-	\label{def:OpenTransitions}
+	\label{defn:OpenTransitions}
 	An \emph{open transition} over a
 	set $J$ of holes  and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
@@ -1632,7 +1638,7 @@ inference rule. They correspond to two different logical levels.
 
 
 \begin{definition}[Open automaton]
-	\label{def:open-automaton}
+	\label{defn:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
 	<J,\mathcal{S},s_0,\mathcal{T}>$ where:
 	\begin{itemize}
@@ -1726,7 +1732,7 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 
 
 \begin{definition}[Operational semantics of open pNets]
-	\label{def:operationalSemantics}
+	\label{defn:operationalSemantics}
 	The semantics of a pNet $p$ is an open automaton $A = 
 	<Holes(p),States(p),InitState(p),
 	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
@@ -2101,7 +2107,9 @@ $\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
 \rightarrow \cru(P)$ encodes causal interaction trees into systems of
 causal rules, which are Boolean implications similar to the ones in
 the example above.  We briefly summarise the key definitions and
-results in \app{algebras}.
+results in \app{algebras}.  The $\ac(P)$, $\ct(P)$ and $\cru(P)$
+representations of the connectors in \fig{schema:ArchFailure:BIP} are
+shown in \tab{connectors}.
 
 \begin{table}[t]
   \caption{Algebraic representations of the connectors in \fig{schema:ArchFailure:BIP} (see \app{algebras})}
@@ -2296,106 +2304,109 @@ results in \app{algebras}.
   \end{tabular}}
 \end{table}
 
-First, consider a flat connector with $n$ trigger ports $p_1,\dots,
-p_n$ (with $n > 0$) and $m$ synchron ports $q_1,\dots, q_m$
-(\fig{connector}).  Similarly to the example above, for any of the
-ports $q_1,\dots, q_m$ to participate in an interaction defined by
-this connector, at least one of the ports $p_1,\dots, p_n$ must
-participate.  This causal dependency can be represented by the Boolean
-formula $q_1 \lor \dots \lor q_m \Rightarrow p_1 \lor \dots \lor p_n$.
-If there are no synchrons, \ie $m = 0$, this formula simplifies to
-$p_1 \lor \dots \lor p_n$.  However, if there are no triggers, \ie $n
-= 0$, the connector semantics is that \emph{all} synchron ports must
-participate for an interaction to take place, represented by the
-Boolean formula $(q_1 = q_2) \land \dots \land (q_1 = q_m)$.
-
-We now generalise this principle to hierarchical connectors, building
-the formula bottom-up.  In a flat connector above, we have implicitly
-associated a Boolean variable to each port.  In a hierarchical
-connector, we associate a fresh Boolean variable to each node.
-Similarly to the above example, consider a connector with $n > 0$
-trigger sub-connectors and $m$ synchron sub-connectors.  We associate
-to this connector a fresh Boolean variable $x$.  Assume that Boolean
-variables associated to trigger sub-connectors are $x_1,\dots,x_n$,
-whereas those associated to synchron sub-connectors are
-$y_1,\dots,y_m$.  The causal dependencies among the interactions
-defined by the sub-connectors can be encoded by the formula
-%
-\begin{equation}
-  \label{eq:trig:encoding}
-  (y_1 \lor \dots \lor y_m \Rightarrow x) \land (x = x_1 \lor \dots
-  \lor x_n).
-\end{equation}
-%
-If there are no trigger sub-connectors, \ie $n = 0$, we use the
-formula
-%
-\begin{equation}
-  \label{eq:synch:encoding}
-  x = \bigl((y_1 = y_2) \land \dots \land (y_1 = y_m)\bigr)
-\end{equation}
-%
-($x$ is equal to $\true$ if all $x_1, \dots, x_m$ are equal, it is
-equal to $\false$ otherwise).
-
-Notice that, in the flat connector example above, the formula was
-essentially the same, with $p_i$ instead of $x_i$ and $q_i$ instead of
-$y_i$, and without the additional variable $x$.  Indeed, $x$ is used
-to encode the causal dependencies between this connector and, if
-necessary, those in higher levels of the hierarchy.  The Boolean
-encoding of the causal dependencies among the ports of the entire
-connector is obtained by taking the conjunction of formulas obtained
-for each sub-connector.
-
-Consider again the connector {\NameTimer.\PortTick \trigsynch
-  (\PortFail \trigsynch \NameCtrl.\PortFail)}.  Associating the
-varaibles $b_0$, $b_1$ and $b_2$ to ports {\PortFail},
-{\NameCtrl.\PortFail} and {\NameTimer.\PortTick}, respectively, and
-variables $y_1$ and $y_2$ to the top- ({\NameTimer.\PortTick
-  \trigsynch $\cdot$}) and second-level (\PortFail \trigsynch \NameCtrl.\PortFail) connectors in the hierarchy,
-we obtain the following formula
-%
-\begin{equation}
-  \label{eq:tff:example}
-  (b_1 \Rightarrow y_2) \land (y_2 = b_0) \land (y_2 \Rightarrow y_1)
-  \land (y_1 = b_2)
-  \,.
-\end{equation}
-%
-Observe now that the top-level connector, by its very nature, does not
-have any higher level connectors and therefore we can eliminate the
-corresponding Boolean variable.  This simplifies \eq{tff:example}, to
-%
-\begin{equation}
-  \label{eq:tff:example:1}
-  (b_1 \Rightarrow y_2) \land (y_2 = b_0) \land (y_2 \Rightarrow b_2)
-  \,.
-\end{equation}
-%
-In the general case, this corresponds to replacing, \emph{for
-  top-level connectors}, equations \eq{trig:encoding} and
-\eq{synch:encoding}, respectively, by
-%
-\begin{gather}
-  \label{eq:trig:encoding:1}
-  y_1 \lor \dots \lor y_m \Rightarrow x_1 \lor \dots
-  \lor x_n
+Below, we assume that, as in \fig{schema:ArchFailure:BIP}, the
+interaction model is defined by a set of connectors, annotated with
+Boolean guards and with update assignments.  In particular, we assume
+that the guards and update assignments are well-defined for any
+interaction allowed by the connector.  For example, the choice
+$\NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval$ in
+the update assignement
+\[
+\NameTimer.\mathit{z} := \NameTimer.\mathit{z}
+\cap \Big(
+\bigl(
+\NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval
+\bigr)
++ \NameTimer.\mathit{t} \Big)
+\]
+associated to the connector {\NameTimer.\PortTick \trigsynch
+  (\PortFail \trigsynch \NameCtrl.\PortFail)} in
+\fig{schema:ArchFailure:BIP} ensures that the assignment is
+well-defined independently of whether {\NameCtrl.\PortFail}
+participates or not.  Let us denote by $\gamma \subset \ac(P_A)
+\times \guards{V_A} \times \assigns{V_A}$ the set of connectors in the
+architecture $A$ and by $P_x$ the set of ports involved in the
+connector $x \in \gamma$.  Then, we have
+\begin{align*}
+  \gamma &=
+  \setdef{(x, g, u)}{x \in \ac(P_x), g \in \guards{V_x}, u \in
+    \assigns{V_x}}
   \\
-  \intertext{and}
-  \label{eq:synch:encoding:1}
-  (y_1 = y_2) \land \dots \land (y_1 = y_m)
+  &\simeq \setdef{(a,g,u)}{(x,g,u) \in \gamma, a \in \intsem{x}}
+  = \Gamma
   \,.
-\end{gather}
-%
-Furthermore, in the context of one connector (or synchronisation
-vector), some interaction must be fired.  Thus, \emph{for top-level
-  connectors}, \eq{synch:encoding:1} can be further simplified to 
+\end{align*}
+
+We first define the encoding of $\Gamma$ as $\nopri[\Gamma] \bydef{=}
+\setdef{\nopri[x,g,u]}{(x,g,u) \in \gamma}$, where $\nopri[x,g,u]$ is the synchronisation vector defined by
 %
 \begin{equation}
-  \label{eq:synch:encoding:2}
-  y_1 \land \dots \land y_m
-  \,.
+  \label{eq:nopri:connector}
+  \nopri[x,g,u] \bydef{=}
+  \bigl(p(b_p,\export[A](p))\bigr)^{p \in P_x}
+  \rightarrow
+  \alpha_p
+  \left[\bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]\right]
+  \,,
 \end{equation}
+%
+with $b_p$ a fresh Boolean variable, $\alpha_p$ a fresh name, $\tau :
+\ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
+\cru(P_A)$ the two mappings defined in \app{transformations} and
+illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
+the substitution, which replaces, in the expression that preceeds it,
+all occurrences of $p$ by $b_p$.
+
+\todoLHin{The update assignment is missing from the above encoding.
+  It should be $u\bigl[\nicefrac{b_p}{p}\bigr]$, but I do not see in
+  \defn{pnets} where should I place it.  I think it is missing there.
+  \Simon}
+
+\begin{theorem}
+  The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
+  $\nopri[A,\partition]$ (see \defn{operationalSemantics}) is
+  isomorphic to the LTS $\semopen{\Gamma\bigl(\cC_A, (B_D)^{D \in
+      \partition}\bigr)}$ (see \defn{comp:semantics}), where, for each
+  $D \in \partition$, the component $B_D \bydef{=} \tuple{\{q\}, q,
+    V_D, \val{0}{D}, D, \export[D], \goesto{}}$, with
+%
+  \begin{align*}
+    V_D &= \bigcup_{p \in D} \export[A](p)
+    \,,
+    &\val{0}{D}(v) &= \bot, \text{ for all $v \in V_D$}
+    \,,\\
+    \goesto{} &= \bsetdef{(q, p, \true, \noop, q)}{p \in D}
+    \,,
+    &\export[D](p) &= \export[A](p), \text{ for all $p \in D$}
+    \,,
+  \end{align*}
+%
+  and $q$ a fresh state.
+\end{theorem}
+%
+\begin{proof}[Sketch of a proof]
+  The theorem follows from the correctness of $\tau$ and $R$ shown in
+  \cite{BliSif10-causal-fmsd}.
+\end{proof}
+
+\noteSBin{This theorem is very probably correct: the key question is
+  whether isomorphism is, indeed, the relation to use. In absence of
+  silent transitions, must be the case.}
+
+
+Observe now that this encoding can be optimised to remove unnecessary
+Boolean variables and loop transitions marked by \false.  For
+instance, consider the ports shown in red in the second column of
+\tab{connectors}.  All these ports only appear in the roots of the
+corresponding causal interaction trees and, furthermore, each of these
+trees only has one root (see \app{trees}).  In such cases, as in the
+{\NameTimer.\PortTick \trigsynch (\PortFail \trigsynch
+  \NameCtrl.\PortFail)} example discussed above, the Boolean variables
+and the \false-marked loop transitions associated to these ports can
+be removed.  Furthermore, the rules associated to these ports in the
+corresponding systems of causal rules (see the rules in red in the
+third column of \tab{connectors}) become tautological and can also be
+removed from the corresponding guards in \eq{nopri:connector}.
 
 %****************************************************************
 \subsection{Encoding with the maximal progress priority model}
