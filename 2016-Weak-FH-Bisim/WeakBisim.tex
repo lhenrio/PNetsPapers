@@ -1323,7 +1323,7 @@ actions of other systems in its environment. We show here that under such assump
 
 Intuition: tau is non observable if the automaton allows any tau transition from holes, and the global transition resulting from a tau in a hole is a tau transition not changing the action state.
 We define $\Id(s)$ as the identity function on variables of state s.
-\begin{definition}[Non-observability of silent actions]
+\begin{definition}[Non-observability of silent actions]\label{def:Non-ObsTau}
 An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ and $s$ in $\mathcal{S}$ we have
 \begin{enumerate}
 \item
@@ -2310,7 +2310,7 @@ predicates:
 		}
 	\]
 		with  $J\cap\Holes(Q)\neq\emptyset$ or $\exists i\in L_Q.\,s_i\neq s'_i$, i.e. $Q$ takes part in the reduction.
-		 Then there exist $v_Q$, $\Pred\,'$, $\Pred\,''$, 
+		 Then there exist $\alpha_Q$, $\Pred\,'$, $\Pred\,''$, 
 		$\Post\,'$, $\Post\,''$ s.t.:\\[-2ex]
 		%\[
 		\begin{mathpar}
@@ -3322,7 +3322,7 @@ This concludes the inductive step, showing  that the decomposition expressed by 
 \end{proof}
 -----------------------------------------------------
 
-Using this lemma, it is straightforward to see that....  
+\TODO{develop or delete this sentence} Using this lemma, it is straightforward to see that....  
 
 \begin{lemma} The definition of weak bisimulation given in Definition \ref{def-Weak-bisim} is equivalent to the following one:
 
@@ -3457,8 +3457,8 @@ by  Definition \ref{def-Weak-bisim} we have for an open transition, there exist 
      \land \alpha_x\!=\!\tau \land  
      \Pred_{s^1,t_x}\subst{\Post^1}\subst{\Post_{OT_x}}\right)$
    
-Note that, because $\AlgE\cap\AlgA=\emptyset$ and $\alpha_x\!=\!\tau$ we have 
-directly\NOTE{the argument is not trivial!}:
+Note that, because $\AlgE\cap\AlgA=\emptyset$  (actions and expressions are disjoint) and $\alpha_x\!=\!\tau$ we have 
+directly ($\alpha_x$ cannot be a variable, and cannot contain expressions/variables because $\tau$ has no parameter):
 \begin{mathpar}
     \openrule
          {
@@ -3576,13 +3576,13 @@ $(\Pred_{s,t} \land \Pred^1)\wedge\Pred^2\subst{\Post^1}\\
  \hspace{1cm} \implies\!\!\! \Big(\displaystyle{\bigvee_{x\in X}}
    \left(\forall j\in J_x. \vis{\beta^1_j}\!=\!\gamma_{jx}\Rightarrow \Pred_{OT_x}
      \!\land\! \alpha_x\!=\!\tau\land(\Pred_{s^1,t_x}\wedge\Pred^2)\subst{\Post^1}\subst{\Post_{OT_x}} \right)\Big)$\\
-By replacing $(\Pred_{s^1,t_x}\wedge\Pred^2)$ sub-term, so the formula becomes: \\
+By replacing $(\Pred_{s^1,t_x}\wedge\Pred^2)$ sub-term,  the formula becomes: \\
 $(\Pred_{s,t} \land \Pred^1)\wedge\Pred^2\subst{\Post^1}\\
  \hspace{1cm} \implies\!\!\! \Big(\displaystyle{\bigvee_{x\in X}}
    (\forall j\in J_x. \vis{\beta^1_j}\!\!=\!\!\gamma_{jx}  \Rightarrow \Pred_{OT_x}
      \!\land\! \alpha_x\!=\!\tau \land \Big(\displaystyle{\bigvee_{y\in Y}}
    ( \forall j\in J_{x y}. \vis{\beta^2_j}\!\!=\!\!\gamma_{jx y}\Rightarrow \Pred_{OT_{x y}}\land \alpha\!=\!\alpha_{x y} \land \Pred_{s^2,t_{x y}}\subst{\Post^2}\subst{\Post_{OT_{x y}}})\Big)\subst{\Post^1} \subst{\Post_{OT_x}} )\Big)$\\
-Furthermore, the rewriting of the implication will give:\\
+Furthermore, the rewriting of the implication  gives:\\
 $(\Pred_{s,t} \land \Pred^1)\wedge\Pred^2\subst{\Post^1}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}} \displaystyle{\bigvee_{y\in Y}} 
 \Big(\forall j\in J_x. \vis{\beta^1_j}\!\!=\!\!\gamma_{jx} \land  \forall j \in J_{x y}. \vis{\beta^2_j}\!\!=\!\!\gamma_{jx y}\Rightarrow\Pred_{OT_x} \land  \Pred_{OT_{x y}} \subst{\Post^1} \subst{\Post_{OT_x}} \land \alpha_x\!=\!\tau \land \alpha\!=\!\alpha_{x y} \land \Pred_{s^2,t_{x y}}\subst{\Post^2}\subst{\Post^1}\subst{\Post_{OT_{x y}}} \subst{\Post_{OT_x}}\Big)$\\ 
@@ -3670,6 +3670,52 @@ p\in[0..n]
 where $\Post_p$ only act upon variables of 
 		$\Leaves(Q)$.
 \end{lemma}
+\LUDO{A V2 by Ludo}
+\begin{lemma}[WOT decomposition]\label{lem-wot-decompose} 
+	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose\footnote{Note that the hypotheses of the 
+	lemma imply that $Q$ is 
+	not a \pLTS\ but a similar lemma can be proven for a pLTS $Q$}:
+	\[ P[Q]_{j_0}  
+		\models
+		{\openrule
+			{
+				\gamma_j^{j\in J}, \Pred,  
+				\Post}
+			{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
+				\ostate{s_i'^{\, i\in L}}}
+		}
+	\]
+		with  $J\cap\Holes(Q)\neq\emptyset$ or $\exists i\in L_Q.\,s_i\neq s'_i$, i.e. $Q$ takes part in the reduction\footnote{Note that necessarily $\alpha_Q\neq \tau$ as soon as silent actions are not observable Definition~\ref{def:Non-ObsTau}.}.
+		 Then there exist $\alpha_Q$, $\Pred\,'$, $\Pred\,''$, 
+		$\Post\,'$, $\Post\,''$ s.t.:\\[-2ex]
+		%\[
+		\begin{mathpar}
+		P\models{\openrule
+			{
+				\gamma_j^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
+				\Pred\,',  
+				\Post\,'}
+			{\ostate{s_i^{i\in L\setminus L_Q}} \OTWeakarrow {\alpha}
+				\ostate{s_i'^{\,i\in L\setminus L_Q}}}
+		}%\]
+	\vspace{-2.2ex}\\\text{and~~}
+		%\[
+		Q\models{\openrule
+			{
+				\gamma_j^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+				\Post\,''}
+			{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
+				\ostate{s_i'^{\,i\in L_Q}}}
+		}%\]
+		\end{mathpar}
+		and  $\Pred \iff \Pred\,'
+		\land \Pred\,''\land \gamma_{j_0}=[\alpha_Q]$, $\Post=\Post\,'\uplus 
+		\Post\,''$ where $\Post\,''$ is the restriction of $\Post$ over variables of 
+		$\Leaves(Q)$.
+
+
+\end{lemma}
+
 \TODO{proof}
 
 \begin{lemma}[Weak open transition composition]\label{lem-compose} 
