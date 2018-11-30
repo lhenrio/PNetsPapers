@@ -1621,20 +1621,28 @@ Open transitions are identified modulo logical equivalence on their predicate.
 
 \begin{example}\emph{An open-transition.}
   \label{OT:enable-composed}
-  \todoEM{remplacer cette OT par une du Timer, qui aurait tous les elements presents...}
+  \todoEM{Commenter...}
   The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
-  and 2 holes. One of its possible open-transition is\footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}: 
-\noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
+  and 2 holes. Two of its possible open-transitions are:
+
+%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
+%%   : 
+%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
 
  \smallskip
- $  OT_2  = \openrule{ 
-							(P\mapsto \delta(x4), Q\mapsto accept(x4))               
-%                            \xrightarrow{\delta(x4)}_P ~~
-%                            \xrightarrow{accept(x4)}_Q 
-                      }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {A1_0 \OTarrow{\underline{\delta(x4)}} A1_1}
+$  OT_1  = \openrule
+{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
+{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
+$
+\medskip
+
+  $  OT_3  = \openrule
+  {\{B\mapsto fail(b0)\},\\
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    \{z:=z1\} }
+  {\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{12}}
   $
+
 \end{example}
 
 
@@ -3625,106 +3633,19 @@ including the ports of this node other than $p$.
 \label{secn:full-results}
 
 \subsubsection{Output of the open-automaton construction}
-The standard pretty-print of OTs by the tool include the transitions of the pLTSs (controllers). This is not a full ``proof-carrying code'', but it allows for a better understanding of the construction of each OT.
+The standard pretty-print of OTs by the tool include the transitions
+of the pLTSs (controllers). This is not a full ``proof-carrying
+code'', but it allows for a better understanding of the construction
+of each OT.
 
-\begin{verbatim}
-INFO  BIPArchFailureTimerMax_LTF3 - Total: 12 OTs
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t0---init-->t1, s0---init-->s1},   {},   
-        [((init=:ra:117:1))/\((:ra:117:1=init))/\((init=:ra:118:1))/\((:ra:118:1=ini
-t))/\((alpha4=:ra:1:5))],   {t := 0, z := TopInt, zone := minZone,maxZone}
-    OT ------------------------------------------------------------
-        <t0_s0>-----:ra:1:5----><t1_s1>
+We first show the pNet input, then the twelve generated OTs in their
+verbatim form.
 
-INFO  BIPArchFailureTimerMax_LTF3 -
-     {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B:13:1-->},   
-     [((t<GET_MAX z))/\((tick(z, t, z1)=:ra:11:1))/\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-/\((fail(zone, false)=:ra:12:1))/\((:ra:12:1=fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))/\
-((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)/\
-(z1:sva_SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))/\((alpha0=:ra:1:1))],
-   {t := (t+1), z := z1}
-    OT ------------------------------------------------------------
-        <t1_s1>-----:ra:1:1----><t1_s1>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B:13:1-->},   [((t<GET_MAX z))/\((tick(z, t, z1)=:ra
-:11:1))/\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))/\((fail(zone, true)=:ra:12:1))/\((:ra:12:1=fail
-(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))/\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)/\(z1:sva_SV
-0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))/\((alpha0=:ra:1:1))],   {t := (t+1
-), z := z1}
-    OT ------------------------------------------------------------
-        <t1_s1>-----:ra:1:1----><t1_s2>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B:17:3-->},   [((cancel(false)=:ra:15:1))/\((:ra:15:1=ca
-ncel(b1:sva_SV1:1:2)))/\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))/\((:hb_B:17:3=resume))/\((b1:sva
-_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
-    OT ------------------------------------------------------------
-        <t1_s1>-----:ra:1:2----><t1_s1>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E:112:6-->},   [(t in z)/\((timeout=:ra:19:1))/\((:ra:19:1=timeout))
-/\((timeout=:ra:110:1))/\((:ra:110:1=timeout))/\((:hb_E:112:6=ask))/\((alpha2=:ra:1:3))],   {t := (t+1)}
-    OT ------------------------------------------------------------
-        <t1_s1>-----:ra:1:3----><t1_s1>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B:13:1-->},   [((t<GET_MAX z))/\((tick(z, t, z1)=:r
-a:11:1))/\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))/\((fail(zone, false)=:ra:12:1))/\((:ra:12:1=fa
-il(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))/\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)/\(z1:sva_
-SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))/\((alpha0=:ra:1:1))],   {t := (t
-+1), z := z1}
-    OT ------------------------------------------------------------
-        <t1_s2>-----:ra:1:1----><t1_s2>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B:17:3-->},   [((cancel(false)=:ra:15:1))/\((:ra:15:1=ca
-ncel(b1:sva_SV1:1:2)))/\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))/\((:hb_B:17:3=resume))/\((b1:sva
-_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
-    OT ------------------------------------------------------------
-        <t1_s2>-----:ra:1:2----><t1_s2>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B:17:3-->},   [((cancel(true)=:ra:15:1))/\((:ra:15:1=cance
-l(b1:sva_SV1:1:2)))/\((resume(true)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))/\((:hb_B:17:3=resume))/\((b1:sva_SV1
-:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {t := 0, z := TopInt}
-    OT ------------------------------------------------------------
-        <t1_s2>-----:ra:1:2----><t1_s1>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E:112:6-->},   [(t in z)/\((timeout=:ra:19:1))/\((:ra:19:1=timeout))
-/\((timeout=:ra:110:1))/\((:ra:110:1=timeout))/\((:hb_E:112:6=ask))/\((alpha2=:ra:1:3))],   {t := (t+1)}
-    OT ------------------------------------------------------------
-        <t1_s2>-----:ra:1:3----><t1_s3>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B:13:1-->},   [((t<GET_MAX z))/\((tick(z, t, z1)=:r
-a:11:1))/\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))/\((fail(zone, false)=:ra:12:1))/\((:ra:12:1=fa
-il(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))/\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)/\(z1:sva_
-SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))/\((alpha0=:ra:1:1))],   {t := (t
-+1), z := z1}
-    OT ------------------------------------------------------------
-        <t1_s3>-----:ra:1:1----><t1_s3>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B:17:3-->},   [((cancel(false)=:ra:15:1))/\((:ra:15:1=ca
-ncel(b1:sva_SV1:1:2)))/\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))/\((:hb_B:17:3=resume))/\((b1:sva
-_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
-    OT ------------------------------------------------------------
-        <t1_s3>-----:ra:1:2----><t1_s3>
-
-INFO  BIPArchFailureTimerMax_LTF3 -
-        {s3---reset-->s1},   {---:hb_E:116:8-->},   [((reset=:ra:114:1))/\((:ra:114:1=reset))/\((:hb_E:116:8=reset))/\((alpha3
-=:ra:1:4))],   {}
-    OT ------------------------------------------------------------
-        <t1_s3>-----:ra:1:4----><t1_s1>
-
-INFO  BIPArchFailureTimerMax_LTF3 - Total: 12 SATISFIABLE OTs
-INFO  BIPArchFailureTimerMax_LTF3 -        235 UNSATISFIABLE OTs
-INFO  BIPArchFailureTimerMax_LTF3 - Total Time: 1293 ms
+\small\begin{verbatim}
 FailureTimerArchi
 --------------------
-SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0, ((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))
+SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
+                          [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
 SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
 SV2 SVs: <timeout, timeout, _, ask>-->alpha2
 SV3 SVs: <_, reset, _, reset>-->alpha3
@@ -3753,6 +3674,206 @@ pLTS: Failure
 - Variable: zone, State: s1, Value(s) = minZone,maxZone,
 Holes: B
 Holes: E
+
+-------------------------------------------
+INFO  BIPArchFailureTimerMax_LTF3 - Total: 12 OTs
+INFO  BIPArchFailureTimerMax_LTF3 -
+        {t0---init-->t1, s0---init-->s1},   {},   
+        [((init=:ra:117:1))/\((:ra:117:1=init))/\((init=:ra:118:1))/\((:ra:118:1=init))
+          /\((alpha4=:ra:1:5))],   {t := 0, z := TopInt, zone := minZone,maxZone}
+    OT1 ------------------------------------------------------------
+        <t0_s0>-----:ra:1:5----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+     {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B:13:1-->},   
+     [((t<GET_MAX z))/\((tick(z, t, z1)=:ra:11:1))
+       /\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
+       /\((fail(zone, false)=:ra:12:1))
+       /\((:ra:12:1=fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))/\
+       ((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)/\
+       (z1:sva_SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))
+       /\((alpha0=:ra:1:1))],
+   {t := (t+1), z := z1}
+    OT2 ------------------------------------------------------------
+        <t1_s1>-----:ra:1:1----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B:13:1-->},
+   [((t<GET_MAX z))/\((tick(z, t, z1)=:ra:11:1))
+     /\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
+     /\((fail(zone, true)=:ra:12:1))/\((:ra:12:1=fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
+     /\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)
+     /\(z1:sva_SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))
+     /\((alpha0=:ra:1:1))],   {t := (t+1), z := z1}
+    OT3 ------------------------------------------------------------
+        <t1_s1>-----:ra:1:1----><t1_s2>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B:17:3-->},
+   [((cancel(false)=:ra:15:1))/\((:ra:15:1=cancel(b1:sva_SV1:1:2)))
+     /\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))
+     /\((:hb_B:17:3=resume))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
+    OT4 ------------------------------------------------------------
+        <t1_s1>-----:ra:1:2----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+{t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E:112:6-->},
+[(t in z)/\((timeout=:ra:19:1))/\((:ra:19:1=timeout))
+/\((timeout=:ra:110:1))/\((:ra:110:1=timeout))/\((:hb_E:112:6=ask))/\((alpha2=:ra:1:3))], {t := (t+1)}
+    OT5 ------------------------------------------------------------
+        <t1_s1>-----:ra:1:3----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B:13:1-->},
+   [((t<GET_MAX z))/\((tick(z, t, z1)=:ra:11:1))
+     /\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
+     /\((fail(zone, false)=:ra:12:1))/\((:ra:12:1=fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
+     /\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)
+     /\(z1:sva_SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))
+     /\((alpha0=:ra:1:1))],   {t := (t+1), z := z1}
+    OT6 ------------------------------------------------------------
+        <t1_s2>-----:ra:1:1----><t1_s2>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B:17:3-->},
+   [((cancel(false)=:ra:15:1))/\((:ra:15:1=cancel(b1:sva_SV1:1:2)))
+     /\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))
+     /\((:hb_B:17:3=resume))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
+    OT7 ------------------------------------------------------------
+        <t1_s2>-----:ra:1:2----><t1_s2>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B:17:3-->},
+   [((cancel(true)=:ra:15:1))/\((:ra:15:1=cancel(b1:sva_SV1:1:2)))
+     /\((resume(true)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))
+     /\((:hb_B:17:3=resume))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],
+   {t := 0, z := TopInt}
+    OT8 ------------------------------------------------------------
+        <t1_s2>-----:ra:1:2----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E:112:6-->},
+   [(t in z)/\((timeout=:ra:19:1))/\((:ra:19:1=timeout))
+     /\((timeout=:ra:110:1))/\((:ra:110:1=timeout))/\((:hb_E:112:6=ask))/\((alpha2=:ra:1:3))],
+   {t := (t+1)}
+    OT9 ------------------------------------------------------------
+        <t1_s2>-----:ra:1:3----><t1_s3>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B:13:1-->},
+   [((t<GET_MAX z))/\((tick(z, t, z1)=:ra:11:1))
+     /\((:ra:11:1=tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
+     /\((fail(zone, false)=:ra:12:1))/\((:ra:12:1=fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
+     /\((:hb_B:13:1=fail(b0:sva_SV0:1:1)))/\((b1:sva_SV0:1:1->b0:sva_SV0:1:1)
+     /\(z1:sva_SV0:1:1=z:sva_SV0:1:1/\(((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt)))+t:sva_SV0:1:1)))
+     /\((alpha0=:ra:1:1))],   {t := (t+1), z := z1}
+    OT10 ------------------------------------------------------------
+        <t1_s3>-----:ra:1:1----><t1_s3>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B:17:3-->},
+   [((cancel(false)=:ra:15:1))/\((:ra:15:1=cancel(b1:sva_SV1:1:2)))
+     /\((resume(false)=:ra:16:1))/\((:ra:16:1=resume(b2:sva_SV1:1:2)))
+     /\((:hb_B:17:3=resume))/\((b1:sva_SV1:1:2=b2:sva_SV1:1:2))/\((alpha1=:ra:1:2))],   {}
+    OT11 ------------------------------------------------------------
+        <t1_s3>-----:ra:1:2----><t1_s3>
+
+INFO  BIPArchFailureTimerMax_LTF3 -
+   {s3---reset-->s1},   {---:hb_E:116:8-->},
+   [((reset=:ra:114:1))/\((:ra:114:1=reset))/\((:hb_E:116:8=reset))/\((alpha3=:ra:1:4))],   {}
+    OT12 ------------------------------------------------------------
+        <t1_s3>-----:ra:1:4----><t1_s1>
+
+INFO  BIPArchFailureTimerMax_LTF3 - Total: 12 SATISFIABLE OTs
+INFO  BIPArchFailureTimerMax_LTF3 -        235 UNSATISFIABLE OTs
+INFO  BIPArchFailureTimerMax_LTF3 - Total Time: 1293 ms
 \end{verbatim}
+
+OTs simplifiees a la main:
+
+$  OT_1  = \openrule
+{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
+{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
+$
+\medskip
+    
+$  OT_2  = \openrule
+{\{B\mapsto fail(b0)\},\\
+  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+  \{z:=z1\} }
+{\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{11}}
+$
+\medskip
+  
+  $  OT_3  = \openrule
+  {\{B\mapsto fail(b0)\},\\
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    \{z:=z1\} }
+  {\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{12}}
+  $
+  \medskip
+
+  $  OT_4  = \openrule
+  {\{B\mapsto resume\},
+    b1=false \land b2=false \land b1=b2
+    \{\}  }
+  {\ostate{11} \OTarrow{\underline{\alpha_1}} \ostate{11}}
+  $
+  \medskip
+  
+  $  OT_5  = \openrule
+  {\{E\mapsto ask\},
+    t \in z,
+    \{t:=t+1\}  }
+  {\ostate{11} \OTarrow{\underline{\alpha_2}} \ostate{11}}
+  $
+  \medskip
+
+  $  OT_7  = \openrule
+  {\{B\mapsto resume\},
+    b1=false \land b2=false \land b1=b2,
+    \{\} }
+  {\ostate{12} \OTarrow{\underline{\alpha_1}} \ostate{12}}
+  $
+  \medskip
+
+  $  OT_8  = \openrule
+  {\{B\mapsto resume\},
+    b1=true \land b2=true \land b1=b2, 
+    \{t:=0, z:=TopInt\} }
+  {\ostate{12} \OTarrow{\underline{\alpha_1}} \ostate{11}}
+  $
+  \medskip
+
+  $  OT_9  = \openrule
+  {\{E\mapsto ask\},
+    t \in z,
+    \{t:=t+1\} }
+  {\ostate{12} \OTarrow{\underline{\alpha_2}} \ostate{13}}
+  $
+  \medskip
+
+  $  OT_{10}  = \openrule
+  {\{B\mapsto fail(b0)\},\\
+    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
+    \{t:=t+1, z:=z1\} }
+  {\ostate{13} \OTarrow{\underline{\alpha_0}} \ostate{13}}
+  $
+  \medskip
+
+  $  OT_{11}  = \openrule
+  {\{B\mapsto resume\},
+    b1=false \land b2=false \land b1=b2,
+    \{\} }
+  {\ostate{13} \OTarrow{\underline{\alpha_1}} \ostate{13}}
+  $
+  \medskip
+
+  $  OT_{12}  = \openrule
+  {\{E\mapsto reset\},
+    true,
+    \{\} }
+  {\ostate{13} \OTarrow{\underline{\alpha_3}} \ostate{11}}
+  $
 
 \end{document}
