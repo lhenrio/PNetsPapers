@@ -212,6 +212,13 @@
 \newcommand{\valuations}[1]{\ensuremath{\data^{#1}}}
 \newcommand{\val}[3][]{\ensuremath{#1{\sigma}^{#2}_{#3}}}
 
+%% CTL
+\newcommand{\AG}[1][\ ]{\ensuremath{\mathtt{AG}#1}}
+\newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{FG}#1}}
+\newcommand{\EF}[1][\ ]{\ensuremath{\mathtt{EF}#1}}
+\newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
+
+
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
 
 \newcommand{\primeit}[1]{#1'}
@@ -1222,6 +1229,51 @@ an interaction from $\Gamma$ be involved in every interaction
 belonging to $\IMextend{\Gamma}{P}$.  To allow the ports from $P
 \setminus P_A$ to be fired independently in $A(\cB)$, one must
 have $(\emptyset, \true, \noop) \in \Gamma$.  
+
+\begin{example}
+  The architecture in \fig{schema:ArchFailure:BIP} enforces the
+  following properties:
+  \begin{enumerate}
+  \item There is always a possibility to reset the system after a
+    failure:
+    \begin{equation}
+      \label{eq:prop:reset:can}
+      \AG (\PortFail \rightarrow \EF \PortReset).
+    \end{equation}
+  \item Whenever a reset is requested, it will eventually be
+    effectuated:
+    \begin{equation}
+      \label{eq:prop:reset:will}
+      \AG (\PortAsk \rightarrow \AF \PortReset).
+    \end{equation}
+  \item As long as no failure has occured, the $z$ variable of the
+    $\NameTimer$ component has the value $\topinterval$:
+    \begin{equation}
+      \label{eq:prop:z:top}
+      \AW[\quad]{(z = T)}{\PortFail} \land\quad
+      \AG \bigl(
+      \PortReset \rightarrow \AW[]{(z = T)}{\PortFail}
+      \bigr).
+    \end{equation}
+  \item A timeout can only occur within the specified delay after
+    a failure:
+    \begin{multline}
+      \label{eq:prop:to:delay}
+      \forall T_0, T_1 \in \sZ,\
+      \AG \Big((\PortFail \land \NameTimer.t = T_0) \rightarrow
+      \\
+      \AW[]{\bigl((\PortTO \land \NameTimer.t = T_1) \rightarrow
+        (T_1 - T_0 \in \NameCtrl.\mathit{zone})\bigr)
+      }{
+        (\PortReset \lor \PortResume)
+      }\Big),
+    \end{multline}
+    where $T_0$ and $T_1$ are integer parameters.  (The formula
+    holds with the universal quantification over $T_0$ and $T_1$
+    due to the fact that their individual values only appear in
+    the left-hand sides of the two implications.)
+  \end{enumerate}
+\end{example}
 
 \begin{definition}[Composition of architectures]
   \label{defn:arch:composition}
