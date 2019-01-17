@@ -319,7 +319,7 @@
 \begin{document}
 \graphicspath{{figures/}}
 
-\title{Architectures and Open pNets}
+\title{BIP Architectures and Open pNets}
 
 \author{%
 Simon~Bliudze\inst{1}
@@ -335,6 +335,7 @@ Eric~Madelaine\inst{3}
   INRIA Lille -- Nord Europe, Villeneuve d'Ascq, France\\
   \email{simon.bliudze@inria.fr}
   \and
+	Univ Lyon, CNRS, ENS de Lyon, Inria, Universit\'e Claude Bernard Lyon 1, LIP UMR 5668, Lyon, France\\\email{ludovic.henrio@ens-lyon.fr}
   \and
     Universit\'e C\^ote d'Azur, Inria, CNRS, I3S, 06902 Sophia-Antipolis, France\\
   \email{eric.madelaine@inria.fr}
@@ -393,12 +394,45 @@ application of architectures is compositional \wrt safety properties,
 \ie when several architectures are applied, each enforcing a safety
 property, the resulting system satisfies their conjunction.
 
+This article goes one step further in the proof of properties and in the compositionality of architectures, but this step is a significant one as it targets verification and consequently compositional verification. To ensure properties of BIP architectures
+it is necessary to have a representation of the BIP architecture in a verifiable format. 
+The verification problem has two unbounded parameters: 1) By nature, architectures have holes and are meant to interact with the interfaces of the component that will fill the hole; the properties must hold for all (well-typed) components that can be put inside the hole; 2) BIP interactions can transmit data, and properties might be dependent of the data, the domain of the data is generally huge or unbound and the value of transmitted data might have a significant impact on the properties.
+
+Due to the nature of the problem, we propose to rely on a translation of BIP architectures into pNets, a direct verification of BIP could also be possible but pNets already have a verification tools based on a SMT solver, and doing the same work for BIP would require  a large amount of similar development. More interestingly, relying on a translation to pNets allow us to compare the two models, as discussed below.
+
+Parameterised Networks of synchronised automata (pNets) is a formalism for defining behavioural specification of distributed systems.
+It inherited from the work of
+Arnold on synchronisation vectors~\cite{Arnold1982}. 
+In previous work~\cite{HMZ:PDP15}, it was shown pNets can be used to represent the behavioural semantics
+of a system 
+including value-passing and many kinds of synchronisation methods. We
+used these results to give the semantics of various constructs and
+languages for distributed objects, and to build a platform for design
+and verification of distributed software components
+\cite{CM:FMCO08,HKM-FASE16}. 
+By nature, pNets is a  parametrised and hierarchical model.
+Their structure is static, but unbounded, and this allows for model-checking
+approaches even for reconfigurable applications.
+Closed pNets were used to encode fully defined programs or systems,
+while open pNets have ``holes'', playing the role of process
+parameters. Such open systems can be used to define composition operators or structuring architectures.
+It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{AVOCS}. This encding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
+
+The methodology we propose is thus to an encoding of BIP architectures into open pNet in order to be able to verify, using SMT techniques, the coordination capabilities of the architecture, and more generally its properties. The encoding will also give us feedback on the comparison between the BIP architectures and the pNet formalism. 
+Overall, the encoding allows us to precisely compare the coordination mechanisms of the two models but also the way component composition is expressed in the two formalisms. This article is also the opportunity to investigate further on  compositional verification by relating two different composition mechanisms that provide different vision on compositional verification. \textbf{pas tres heureux la fin: pas assez detaille ou trop complique -> abstraire ou detailller a mon avis (Ludo)}
+
+\paragraph{Contributions}
+
+
+
 The concepts and results of the paper are illustrated by a running
 example extending the Failure Monitor architecture from the CubETH
 nanosatellite on-board software case-study~\cite{CubETH-case-study}.
 
 %****************************************************************
 %****************************************************************
+
+
 
 \section{Preliminaries}
 \label{secn:preliminaries}
