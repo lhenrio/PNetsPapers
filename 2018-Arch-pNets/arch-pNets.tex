@@ -92,20 +92,30 @@
   \renewcommand{\tupleDeli}{#1}%
   \ifx#2\relax\else\renewcommand{\tupleDelii}{#2}\fi%
 }
-\newcommand{\tuple}[2][\ensuremath{,\allowbreak}]{%  
+\newcommand{\tuplebase}[2][\ensuremath{,\allowbreak}]{%  
   \def\nextitem{\def\nextitem{#1}}% Separator
   \renewcommand*{\do}[1]{\nextitem ##1}% How to process each item
   \tupleDeli\docsvlist{#2}\tupleDelii% Process list
 }
 
+\newcommand{\tuple}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[(]{)}%
+  \tuplebase[#1]{#2}%
+}
+
 \newcommand{\Tuple}[2][\ensuremath{,\allowbreak}]{%
   \setTupleDelims[\Big(]{\Big)}%
-  \tuple[#1]{#2}%
+  \tuplebase[#1]{#2}%
 }
 
 \newcommand{\pNetTuple}[2][\ensuremath{,\allowbreak}]{%
   \setTupleDelims[\mylangle]{\myrangle}%
-  \tuple[#1]{#2}%
+  \tuplebase[#1]{#2}%
+}
+
+\newcommand{\listset}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[\{]{\}}%
+  \tuplebase[#1]{#2}%
 }
 
 \newcommand{\defn}[1]{Def.~\ref{defn:#1}}
@@ -214,7 +224,7 @@
 
 %% CTL
 \newcommand{\AG}[1][\ ]{\ensuremath{\mathtt{AG}#1}}
-\newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{FG}#1}}
+\newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{AF}#1}}
 \newcommand{\EF}[1][\ ]{\ensuremath{\mathtt{EF}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
 
@@ -739,8 +749,8 @@ the definitions of components and interaction models?
 
 \begin{definition}[Components]
   \label{defn:component}
-  A \emph{component} is a tuple $(Q, q^0, V, \val{0}{}, P,
-  \export, \goesto{})$, where
+  A \emph{component} is a tuple $\tuple{Q, q^0, V, \val{0}{}, P,
+  \export, \goesto{}}$, where
   \begin{itemize}
   \item $Q$ is a set of \emph{states}, with $q^0 \in Q$ the
     \emph{initial state}, 
@@ -1284,9 +1294,9 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
     $\NameTimer$ component has the value $\topinterval$:
     \begin{equation}
       \label{eq:prop:z:top}
-      \AW[\quad]{(z = T)}{\PortFail} \land\quad
+      \AW[\quad]{(z = \topinterval)}{\PortFail} \land\quad
       \AG \bigl(
-      \PortReset \rightarrow \AW[]{(z = T)}{\PortFail}
+      \PortReset \rightarrow \AW[]{(z = \topinterval)}{\PortFail}
       \bigr).
     \end{equation}
   \item A timeout can only occur within the specified delay after
@@ -2635,6 +2645,37 @@ Should list some temporal logic properties....
 
 \subsection{Composition of architectures}
 \label{secn:arch:composition}
+
+We now consider a system comprising two components $B_1$ and $B_2$
+with the corresponding interfaces $\tuple{V_i, P_i,
+  \export[i]}_{i=1,2}$, such that $\listset{\PortFail_i,
+  \PortResume_i} \subseteq P_i$, for $i = 1,2$.
+
+Assuming that the associated system requirements comprise the
+capability of monitoring the failure events corresponding to ports
+$\PortFail_1$ and $\PortFail_2$ of the two components, we would like
+to apply two instances of the Failure Monitor architecture.  However,
+we impose an additional constraint: only one timer coordinator is
+allowed, for example because it must eventually be implemented by a
+hardware component.
+
+We consider two architecture instances $A_i = \tuple{\cC_i, V_{A_i},
+  P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$, with all their
+constituting elements cloned from the Failure Monitor architecture of
+the previous examples while substituting each entity $X$ by $X^i$.
+For instance, the initialisation of the $\mathit{zone}$ variable is
+transformed into $\IntervalInit[1]$ and $\IntervalInit[2]$,
+respectively.  The only exception to this cloning procedure are the
+sets of coordinating components: $\cC^i = \listset{\NameTimer,
+  \NameCtrl^i}$, \ie the $\NameTimer$ component is shared, while
+components $\NameCtrl^1$ and $\NameCtrl^2$ are obtained by making two
+copies of $\NameCtrl$ as above.
+
+In order to apply both architectures, we must verify that they are
+upwards compatible and compute the combined interaction model $\Gamma$
+in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
+  P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$
+(see \defn{arch:composition}).
 
 %****************************************************************
 %****************************************************************
