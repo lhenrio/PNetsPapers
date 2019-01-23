@@ -345,7 +345,7 @@ Eric~Madelaine\inst{3}
   Inria Lille -- Nord Europe, Villeneuve d'Ascq, France\\
   \email{simon.bliudze@inria.fr}
   \and
-	Univ Lyon, CNRS, ENS de Lyon, Inria, Universit\'e Claude Bernard Lyon 1, LIP, Lyon, France\\\email{ludovic.henrio@ens-lyon.fr}
+	Univ Lyon, CNRS, ENS de Lyon, Inria, Universit\'e Claude Bernard Lyon 1, LIP, Lyon, France -- \email{ludovic.henrio@ens-lyon.fr}
   \and
     Universit\'e C\^ote d'Azur, Inria, CNRS, I3S, 06902 Sophia-Antipolis, France\\
   \email{eric.madelaine@inria.fr}
@@ -1508,23 +1508,19 @@ Below, we omit mentioning this explicitly.
 
 \section{Open pNets}
 \label{secn:pNets}
-This section briefly describes pNets, see~\cite{HMZ-FORTE2016} for a  description of open pNets and their properties.
-\todoLHin{rewrite after uniformisation}
+This section briefly describes pNets, see~\cite{HMZ-FORTE2016} for more complete   description.
 pNets are tree-like structures, where the leaves are either
 \emph{parameterised labelled transition systems (pLTSs)}, expressing the
 behaviour of basic processes, or \emph{holes}, used as placeholders
-for unknown processes, of which we only specify the set of possible
-actions, this set is named the \emph{sort}.
-Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+for unknown processes.
+Nodes of the tree are synchronising artefacts using a
 set of \emph{synchronisation vectors} that express the possible
 synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
-\subsection{The (open) pNets Core Model}
+\paragraph{pNets definition.}
 \label{section:pNets}
-
-
-A pLTS is a labelled transition system with variables. Variables can be
+A pLTS is a labelled transition system with variables that can be
 used to characterise a state, as part of actions, guards, and
 assignments. 
 %Without loss of generality and to simplify the formalisation, we suppose 
@@ -1536,7 +1532,7 @@ assignments.
 %suppose that transitions looping to the same state does not do assignments.
 %Note that we make no assumption on the finiteness of the set of states, nor
 %on the finite branching of the transition relation.
-We first define the set of actions a pLTS can use ($a$
+We  define the set of actions a pLTS can use ($a$
 ranges over action labels):\\
 %. Action terms are  of the form 
 $\alpha=a(?x_i^{i \in I}, 
@@ -1548,15 +1544,15 @@ are expressions.
 A pLTS is a tuple
 $\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
-\item[$\bullet$]
+\item
 $S$ is a set of states, $\vars(s)$ denotes the set of associated variables;
-\item[$\bullet$]
+\item
 $s_0 \in S$ is the initial state;
 %\item[$\bullet$]
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
-\item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
+\item $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
 % SB: I removed a new paragraph here, ok?
 $\langle \alpha,~g,~u\rangle$,
@@ -1564,49 +1560,49 @@ where $\alpha$ is a parameterised action, $\alpha \in\actions{\variables}$;
 $g\in\boolexprs{\variables}$ is a guard over variables of the source state and the 
 action, and $u\in\assigns{\variables}$
 assigns updated value for variables in the destination state. 
-If 
-$s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then 
-% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
-		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
-		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\vars(\codom(u))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		\vars(\dom(u))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
-\noteLH{is dom and codom clear?}
-\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
-\noteLH{COORDINATION: I believe we should remove the constraints}		
+%%% SHORTEN BY LUDO
+%If 
+%$s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then 
+%% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+%		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
+%		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
+%		$\vars(\codom(u))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
+%		\vars(\dom(u))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+%\noteLH{is dom and codom clear?}
+%\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
+%\noteLH{COORDINATION: I believe we should remove the constraints}		
 \end{itemize}
 \end{definition}
 %Now we define
 %pNets as constructors for hierarchical behavioural structures.
-A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of holes, playing the role of process parameters.
-A  pNet consists of a set of sub-pNets exposing
-a set of global actions, each of them resulting from the synchronisation of internal actions in some sub-pNets. The synchronisation between global actions and
-internal actions is given by  \emph{synchronisation vectors}.
-Actions involved at the pNet level (in the synchronisation vectors) do
+A pNet composes several pNets, pLTSs, and holes playing the role of process parameters.
+A  pNet  exposes
+ global actions resulting from the synchronisation of internal actions in some sub-pNets. 
+This synchronisation  is specified by  \emph{synchronisation vectors}.
+Actions involved in the synchronisation vectors do
 not need to distinguish input variables, \ie they 
 have the form $a(\Expr_j^{j \in J})$.
 
 
 \begin{definition}[pNets]\label{defn:pnets}
-A pNet is a hierarchical structure where leaves are pLTSs and holes\footnote{Typing can 
-be added to pNets by defining and checking their interfaces, called 
-sort~\cite{HMZ-FORTE2016}}:
+A pNet is a hierarchical structure where leaves are pLTSs and holes: %\footnote{Typing can 
+%be added to pNets by defining and checking their interfaces, called 
+%sort~\cite{HMZ-FORTE2016}}:
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
+\item $\pNet_i^{i\in I}$ is the family of sub-pNets;
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
 %sub-pNets are indexed.
 
-\item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
+\item $J$ is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 %\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
 %\emph{sort} of
 %hole $j$.
 
-\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
+\item $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors. % (\hl{$K\in\I_\P$}). 
 $\forall k\!\in\! K,
   \symb{SV}_k\!=\SV{\!\alpha_{l}^{l\in I_k \uplus J_k}}{\alpha'_k}{g_k}$, where
@@ -1618,12 +1614,13 @@ I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
 
 
 \end{itemize}
-We define the set of holes and leaves of a pNet as follows:
-  \begin{itemize}
-\item
-The set of holes $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
+%We define the set of holes and leaves of a pNet as follows:
+%  \begin{itemize}
+%\item
+The set of \emph{holes} $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
 itself plus the indexes of all the holes of its subnets (we suppose those indexes 
-disjoints).
+disjoints). A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
+is said to be \emph{open}.
 %
 %defined inductively; the sets of holes
 %in a pNet node and its subnets are all disjoint:
@@ -1636,13 +1633,11 @@ disjoints).
 %\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
 %\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
 %\end{array}\]
-\item
-The set of leaves of a pNet is the set of all pLTSs occurring in the structure, as an 
+%\item
+The set of \emph{leaves} of a pNet is the set of all pLTSs occurring in the structure, as an 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
-is said to be \emph{open}.
-\end{itemize}
-A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
-is said to be \emph{open}.
+%\end{itemize}
+
 \end{definition}
 
 
@@ -1650,7 +1645,7 @@ is said to be \emph{open}.
 
 
 
-\subsection{Operational Semantics for Open pNets}
+\paragraph{Operational Semantics for Open pNets.}
 \label{section:op-semantics}
 
 \noteLH{a pred is a g a post is a u (modified macros!)}
@@ -1666,7 +1661,8 @@ the transition occurs if some predicates hold, and can involve a
 	\label{defn:OpenTransitions}
 	An \emph{open transition} over a
 	set $J$ of holes  and a set of states $\mathcal{S}$ is 
-	a structure of the form:	
+	a structure of the form:
+\\[-2ex]	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
 	{	\beta_j^{j\in J}, \Pred, \Post}
@@ -1713,43 +1709,8 @@ Open transitions are identified modulo logical equivalence on their predicate.
 %\end{definition}
 
 
-\begin{example}\emph{An open-transition.}
-  \label{OT:enable-composed}
-  \todoEM{Commenter...
-  Questions: les $\alpha$ n'apparaissent pas dans l'archi Bip; la
-  synchro des initialisations non plus... OT3 est un peu plus facile a
-  expliquer (;-).}
-  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
-  and 2 holes. Two of its possible open-transitions are:
 
-%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
-%%   : 
-%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
-
- \smallskip
-$  OT_1  = \openrule
-{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
-{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
-$
-\medskip
-
-  $  OT_3  = \openrule
-  {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
-    \{z:=z1\} }
-  {\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{12}}
-  $
-
-The first one, $OT_1$, corresponds to the simultaneous initialisation
-of both controlers. No hole is active at that time, and the resulting
-global action is denoted $\alpha_4$.
-
-The second one, $OT_3$, correspond to the firing of the connector
-$''tick, fail, fail''$, with the hole B performing action $fail$......
-\end{example}
-
-
-It is important to understand that the red dotted rule expresses an implication but at a different logical level compared to  a normal 
+The red dotted rule expresses an implication but at a different logical level compared to  a normal 
 inference rule. 
  The open transition is  a logical implication that uses a simple logic with the 
  expressive power  given by the predicate algebra (it must include logical 
@@ -1763,10 +1724,10 @@ inference rule.
 	An \emph{open automaton} is a structure\\ $A =
 	<J,\mathcal{S},s_0,\mathcal{T}>$ where:
 	\begin{itemize}
-		\item[$\bullet$]   $J$ is a  set of indices,
-		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
+		\item   $J$ is a  set of indices,
+		\item   $\mathcal{S}$ is a set of states and $s_0$ an initial state
 		among $\mathcal{S}$,
-		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
+		\item $\mathcal{T}$ is a set of open transitions and for each
 		$t\in \mathcal{T}$ there exist  $J'$ with  $J'
 		\subseteq J$, such that $t$ is an open transition over  $J'$,
 		and  $\mathcal{S}$.
@@ -1783,146 +1744,216 @@ inference rule.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define states of open pNets as tuples of states, where we denote tuples
-in structured states as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
-states from other tuples.
-\begin{definition}[States of open pNets]\label{def-states}
-  A state of an open pNet is a tuple (not necessarily finite) of the
-  states of its leaves.
 
-  For any pNet p, let $\Leaves(p) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
-  the set of pLTS at its leaves,
-  then $States(p) = \{\triangleleft s_i^{i\in L}
-  \triangleright| \forall i\in L. s_i \in S_i\}$.
-A pLTS being its own single leave:
-  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
-
-The initial state is defined as:
-$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
-\end{definition}
-
-
-
-%% \begin{example} \emph{State of a pNet}
-%%   The states of pNet \texttt{EnableCompL} are:
-%%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 
-%%\triangleright$
-%% \end{example}
-
-\paragraph{Predicates:}
-Let
-$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
-be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
-define a
-predicate $\Pred$ relating
-the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\begin{multline}
-\Predsv(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
-{\alpha'} {g}, \alpha_i^{i\in I}, \beta_j^{j\in J}, \alpha)\Leftrightarrow \\
-\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\beta'_j \land 
-\alpha=\alpha' 
-\land g
-\end{multline}
-
-
- 
-
-Somehow, this predicate entails a verification of satisfiability in the sense that if the 
-predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
-synchronisation will not occur in the considered state. 
-
-
-In any other case (if the action families do not match or if there is no valuation of
-variables such that the above formula can be ensured) the predicate is undefined.
-
-This definition is not constructive but it is easy to build the predicate constructively
-by brute-force unification of the sub-pNets
-actions with the corresponding vector actions, possibly followed by a simplification
-step.
-
-
-We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
-the leaves of the pNet structure, and the states are given by 
-Definition~\ref{def-states}. The open transitions first
+We build the semantics of open pNets as an open automaton where  the states are
+tuples of states of the pLTSs at the leaves. We denote them $\triangleleft\ldots\triangleright$ for distinguishing tuple 
+states from other tuples. given by 
+Definition~\ref{def-states}. 
+The open transitions first
  project the global state into states of the leaves, then apply
-pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
-%structure does not appear in the open-automaton, only the
-%set of Holes and the set of Leaves.
-The semantics    instantiates \emph{fresh} variables, additionally, for an action 
-$\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
+pLTS transitions on these states, and compose them with the sort of the holes according to the synchronisation defined in the synchronisation vectors. More precisely, each open transition between two states is defined as a composition of transition from some pLTSs and actions of some holes as follows: 1) the actions of the holes involved in the transition, 2) a guard  built from the synchronisation vectors coordinating the holes and the transitions involved; 3) assignments defined by the pLTSs transitions involved. The synchronisation vectors also define the global action. The global state evolution is also defined by the set of state transitions of the pLTSs involved in the pLTSs.
 
 
-\begin{definition}[Operational semantics of open pNets]
-	\label{defn:operationalSemantics}
-	The semantics of a pNet $p$ is an open automaton $A = 
-	<Holes(p),States(p),InitState(p),
-	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
-	satisfying the rules below:
-%	\begin{itemize}
-%		\item $J$ is the set of holes: $Holes(p)= J$. 
-		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
-%		\item ${\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
-%		\item $\mathcal{T}$ is the smallest set of open transitions		satisfying the 
-%rules below:
-%	\end{itemize}
-	
-	%% \TODO{ We should be careful here: after (re) reading "Huimin
-	%% 	Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
-	%% 	think handling assignments is not trivial, even for comparisons of pLTSs. }
 
+\begin{example}\emph{An open-transition.}
+  \label{OT:enable-composed}
+  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
+  and 2 holes. One of its possible open-transitions is:\\[-2ex]
+%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
+%%   : 
+%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
+% \smallskip
+%$  OT_1  = \openrule
+%{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
+%{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
+%$
+%\medskip
+\begin{small}\[ \openrule
+  {\{B\mapsto fail(b0)\},\\
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    \{z:=z1\} }
+  {\ostate{11} \OTarrow{\alpha_0} \ostate{12}}
+  \]
+\end{small}\vspace{-1.5ex}
+%
+%The first one, $OT_1$, corresponds to the simultaneous initialisation
+%of both controlers. No hole is active at that time, and the resulting
+%global action is denoted $\alpha_4$.
 
-	
-	The rule for a pLTS  checks that the guard 
-	is verified and transforms assignments into post-conditions:
-	
-	\begin{description}
-		\item[{\bf Tr1:}]
-	$\inferrule
-		{ s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to  }
-		{ \mylangle  S,s_0, \to \myrangle
-			\models
-			\openrule
-			{\emptyset ,
-			g,u}
-			{\ostate{s} \OTarrow{\alpha} \ostate{s'}}
-		}
-		$
-	\end{description}
-%	Note that this note is greatly simplified by the fact that variables are local to 
-%	thread; introducing global state variables or accepting loops to the same 
-%	state would 
-%	require to reason 
-%	on the scope of 
-%	each variables, and to introduce additional variables to handle the several occurence 
-%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
-%	transitions 
-%	ensure that the same variable never appears both on the left and on the right of the 
-%	equations of a predicate.
-	
-	The second rule deals with pNet nodes: for each possible
-	synchronisation vector (of index $k$) applicable to the rule subject, the premisses
-	include one {\em open transition} for each sub-pNet involved , one possible
-	{\em action} for each Hole involved, and the predicate relating these
-	with the resulting action of the vector. The sub-pNets involved are split between two 
-	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
-	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
-	\in M}}{\alpha'}{g}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
-	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
-	I_2$}.                                                                    
-	           
-	                                                       
-	\begin{description}
-		\item[{\bf Tr2:}]
-	\end{description}
-	
+It correspond to the firing of the connector
+$''tick, fail, fail''$. It states that, if the hole B performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
+The guard corresponds both to the guard of this transition and to synchronisation vector constraints.
+\end{example}
+%
+%\begin{definition}[States of open pNets]\label{def-states}
+%  A state of an open pNet is a tuple (not necessarily finite) of the
+%  states of its leaves.
+%
+%  For any pNet p, let $\Leaves(p) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
+%  the set of pLTS at its leaves,
+%  then $States(p) = \{\triangleleft s_i^{i\in L}
+%  \triangleright| \forall i\in L. s_i \in S_i\}$.
+%A pLTS being its own single leave:
+%  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
+%
+%The initial state is defined as:
+%$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
+%\end{definition}
+%
+%
+%
+%%% \begin{example} \emph{State of a pNet}
+%%%   The states of pNet \texttt{EnableCompL} are:
+%%%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 
+%%%\triangleright$
+%%% \end{example}
+%
+%\paragraph{Predicates:}
+%Let
+%$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
+%be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
+%define a
+%predicate $\Pred$ relating
+%the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
+%\begin{multline}
+%\Predsv(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
+%{\alpha'} {g}, \alpha_i^{i\in I}, \beta_j^{j\in J}, \alpha)\Leftrightarrow \\
+%\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\beta'_j \land 
+%\alpha=\alpha' 
+%\land g
+%\end{multline}
+%
+%
+% 
+%
+%Somehow, this predicate entails a verification of satisfiability in the sense that if the 
+%predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
+%synchronisation will not occur in the considered state. 
+%
+%
+%In any other case (if the action families do not match or if there is no valuation of
+%variables such that the above formula can be ensured) the predicate is undefined.
+%
+%This definition is not constructive but it is easy to build the predicate constructively
+%by brute-force unification of the sub-pNets
+%actions with the corresponding vector actions, possibly followed by a simplification
+%step.
+%
+%
+%
+%
+%\begin{definition}[Operational semantics of open pNets]
+%	\label{defn:operationalSemantics}
+%	The semantics of a pNet $p$ is an open automaton $A = 
+%	<Holes(p),States(p),InitState(p),
+%	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
+%	satisfying the rules below:
+%%	\begin{itemize}
+%%		\item $J$ is the set of holes: $Holes(p)= J$. 
+%		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+%%		\item ${\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+%%		\item $\mathcal{T}$ is the smallest set of open transitions		satisfying the 
+%%rules below:
+%%	\end{itemize}
+%	
+%	%% \TODO{ We should be careful here: after (re) reading "Huimin
+%	%% 	Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
+%	%% 	think handling assignments is not trivial, even for comparisons of pLTSs. }
+%
+%
+%	
+%	The rule for a pLTS  checks that the guard 
+%	is verified and transforms assignments into post-conditions:
+%	
+%	\begin{description}
+%		\item[{\bf Tr1:}]
+%	$\inferrule
+%		{ s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to  }
+%		{ \mylangle  S,s_0, \to \myrangle
+%			\models
+%			\openrule
+%			{\emptyset ,
+%			g,u}
+%			{\ostate{s} \OTarrow{\alpha} \ostate{s'}}
+%		}
+%		$
+%	\end{description}
+%%	Note that this note is greatly simplified by the fact that variables are local to 
+%%	thread; introducing global state variables or accepting loops to the same 
+%%	state would 
+%%	require to reason 
+%%	on the scope of 
+%%	each variables, and to introduce additional variables to handle the several occurence 
+%%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
+%%	transitions 
+%%	ensure that the same variable never appears both on the left and on the right of the 
+%%	equations of a predicate.
+%	
+%	The second rule deals with pNet nodes: for each possible
+%	synchronisation vector (of index $k$) applicable to the rule subject, the premisses
+%	include one {\em open transition} for each sub-pNet involved , one possible
+%	{\em action} for each Hole involved, and the predicate relating these
+%	with the resulting action of the vector. The sub-pNets involved are split between two 
+%	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
+%	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
+%	\in M}}{\alpha'}{g}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
+%	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
+%	I_2$}.                                                                    
+%	           
+%	                                                       
+%	\begin{description}
+%		\item[{\bf Tr2:}]
+%	\end{description}
+%	
+%%	\noindent
+%%\begin{mathpar}
+%%    \mprset {vskip=1ex}
+%%\inferrule
+%%    {
+%%\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+%%    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
+%%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{g} 
+%%\\
+%%\\     	
+%%	\forall m\!\!\in\!\! I_1. {\pNet_m 
+%%	\models\openrule
+%%    	{
+%%    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+%%    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
+%%    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
+%%  \qquad
+%%\forall m\!\!\in\!\! I_2.		{ \pNet_m 
+%%    	 \models
+%%    	\openrule
+%%    	{\emptyset, \Pred_m, \Post_m}
+%%    	{\ostate{s_m} \OTarrow {\alpha_m}
+%%    		\ostate{s_m'}} }\\\\
+%%     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
+%%    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
+%%    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
+%%    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
+%%    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+%%    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
+%%    }
+%%    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+%%    	\models
+%%    	{\openrule
+%%    		{
+%%    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+%%    		\Post_m}
+%%    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+%%    			\ostate{(s_i^\prime)^{i\in L}}}
+%%    	}
+%%    }
+%%\end{mathpar}  
 %	\noindent
 %\begin{mathpar}
-%    \mprset {vskip=1ex}
+%    \mprset {vskip=.8ex}
 %\inferrule
 %    {
-%\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+%\Leaves(\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in 
 %    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{g} 
+%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
 %\\
 %\\     	
 %	\forall m\!\!\in\!\! I_1. {\pNet_m 
@@ -1939,75 +1970,36 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 %    	{\ostate{s_m} \OTarrow {\alpha_m}
 %    		\ostate{s_m'}} }\\\\
 %     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
-%    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-%    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
-%    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
-%    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+%    	\Pred = \bigwedge_{m\in I_1\uplus I_2}\!\! \Pred_m \land
+%    	\Predsv(SV_k,\alpha_m^{m\in I_1\uplus I_2},\beta_j^{j\in J},\alpha)\\ 
+%    	\forall i\in	L\backslash \left(\biguplus_{m\in I_1}\!\! L_m \uplus I_2\right).\,s'_i=s_i \\
 %    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
 %    }
-%    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+%    {\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in K}\myrangle
 %    	\models
 %    	{\openrule
 %    		{
-%    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+%    		{\beta_j}^{j\in J^\prime}, \Pred,  \biguplus_{m\in I_1\uplus I_2} 
 %    		\Post_m}
 %    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
 %    			\ostate{(s_i^\prime)^{i\in L}}}
 %    	}
 %    }
-%\end{mathpar}  
-	\noindent
-\begin{mathpar}
-    \mprset {vskip=.8ex}
-\inferrule
-    {
-\Leaves(\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in 
-    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
-\\
-\\     	
-	\forall m\!\!\in\!\! I_1. {\pNet_m 
-	\models\openrule
-    	{
-    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
-    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
-  \qquad
-\forall m\!\!\in\!\! I_2.		{ \pNet_m 
-    	 \models
-    	\openrule
-    	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {\alpha_m}
-    		\ostate{s_m'}} }\\\\
-     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
-    	\Pred = \bigwedge_{m\in I_1\uplus I_2}\!\! \Pred_m \land
-    	\Predsv(SV_k,\alpha_m^{m\in I_1\uplus I_2},\beta_j^{j\in J},\alpha)\\ 
-    	\forall i\in	L\backslash \left(\biguplus_{m\in I_1}\!\! L_m \uplus I_2\right).\,s'_i=s_i \\
-    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
-    }
-    {\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in K}\myrangle
-    	\models
-    	{\openrule
-    		{
-    		{\beta_j}^{j\in J^\prime}, \Pred,  \biguplus_{m\in I_1\uplus I_2} 
-    		\Post_m}
-    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
-    			\ostate{(s_i^\prime)^{i\in L}}}
-    	}
-    }
-\end{mathpar}        
+%\end{mathpar}        
 
+pNets have already been used to define a behavioural semantics for distributed components~\cite{AmeurBoulifa2017}, in these works, from a pNet model with finite instantiations of parameters, correctness properties can be verified by model-checking. 
+More recently, a bisimulation theory with composition properties have been formalised for open pNets~\cite{HMZ-FORTE2016}, and a SMT framework has been developed  for verifying properties of parametrised open pNets.
 
-\todoLHin{add a paragraph about pnets properties and usage, here are a few points (to be completed and written up properly depending on what we need}
-
-- pnets as a model for gcm components (behaviour, distributed systems, verification)
-
-- used for finite model checking (with finite domains for parameters)
-
-- smt framework for reasoning on infinite models
-
-- a theory of pnets: composition properties , stong (and weak) bisim
-	** extract a few useful composition theorems? **
+%\todoLHin{add a paragraph about pnets properties and usage, here are a few points (to be completed and written up properly depending on what we need}
+%
+%- pnets as a model for gcm components (behaviour, distributed systems, verification)
+%
+%- used for finite model checking (with finite domains for parameters)
+%
+%- smt framework for reasoning on infinite models
+%
+%- a theory of pnets: composition properties , stong (and weak) bisim
+%	** extract a few useful composition theorems? **
 
 
 %OLD	\begin{description}
@@ -2055,14 +2047,12 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 %    	}
 %    }
 %    $
-	\medskip
 %        \TODO{may be explain how $\Pred(SV,a_i^{i\in I_k},b_j^{j\in
 %            J_k},v)$ is built ? You mean more than what is written on previous page????}
 	%%    \TODO{I have tentatively added the sort constraint on hole actions, that was
 	%%not included in the first version... I'm unsure whether this is the best place to
 	%%include it, because it may change the decidability conditions on predicates}
 	
-\end{definition}
 
 
 %****************************************************************
