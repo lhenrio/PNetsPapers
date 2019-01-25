@@ -44,6 +44,7 @@
 \soulregister{\ie}{0}
 \soulregister{\etc}{0}
 \soulregister{\eg}{0}
+\soulregister{\Eg}{0}
 \soulregister{\wrt}{0}
 \soulregister{\resp}{0}
 \soulregister{\cf}{0}
@@ -100,6 +101,11 @@
 
 \newcommand{\tuple}[2][\ensuremath{,\allowbreak}]{%
   \setTupleDelims[(]{)}%
+  \tuplebase[#1]{#2}%
+}
+
+\newcommand{\btuple}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[\bigl(]{\bigr)}%
   \tuplebase[#1]{#2}%
 }
 
@@ -185,6 +191,7 @@
 \newcommand{\ie}[1][\ ]{i.e.#1}
 \newcommand{\etc}[1][\ ]{etc.#1}
 \newcommand{\eg}[1][\ ]{e.g.#1}
+\newcommand{\Eg}[1][\ ]{E.g.#1}
 \newcommand{\cf}[1][\ ]{cf.#1}
 \newcommand{\wrt}[1][\ ]{w.r.t.#1}
 \newcommand{\resp}[1][\ ]{resp.#1}
@@ -345,7 +352,7 @@ Eric~Madelaine\inst{3}
   Inria Lille -- Nord Europe, Villeneuve d'Ascq, France\\
   \email{simon.bliudze@inria.fr}
   \and
-	Univ Lyon, CNRS, ENS de Lyon, Inria, Universit\'e Claude Bernard Lyon 1, LIP, Lyon, France\\\email{ludovic.henrio@ens-lyon.fr}
+	Univ Lyon, CNRS, ENS de Lyon, Inria, Universit\'e Claude Bernard Lyon 1, LIP, Lyon, France -- \email{ludovic.henrio@ens-lyon.fr}
   \and
     Universit\'e C\^ote d'Azur, Inria, CNRS, I3S, 06902 Sophia-Antipolis, France\\
   \email{eric.madelaine@inria.fr}
@@ -442,14 +449,14 @@ nanosatellite on-board software case study~\cite{CubETH-case-study}.
 %****************************************************************
 %****************************************************************
 
+\section{Previous results: Architecture and pNets} 
 
-
-\section{Preliminaries}
+\subsection{Preliminaries}
 \label{secn:preliminaries}
 
 %****************************************************************
 
-\subsection{Notations}
+\subsubsection{Notations}
 \label{secn:notations}
 
 We extensively use indexed structures
@@ -491,7 +498,7 @@ think this can be solved, where necessary, by using parentheses,
 
 %****************************************************************
 
-\subsection{Term algebra}
+\subsubsection{Term algebra}
 \label{secn:terms}
 
 \todoLHin{Remove term algebra or simplify?}
@@ -672,6 +679,15 @@ different orders.  For example, we assume that $(\data,
 $\sB^< = \tuple{\{\true, \false\}, \{\false < \true\}}$, and
 similarly for integer and real numbers; as well as the set of
 intervals ordered by inclusion.
+%
+\addSB{In practice, and in the examples of
+this paper, all the variables are sorted, meaning that their values
+can only range over given subsets of $\data$, such as $\sB$ or
+$\sB^<$.
+%
+When speaking of an ordered sort, \eg $\sB^<$, we will assume that it
+forms a meet-semilattice and denote by $\wedge$ the corresponding meet
+operator.}
 
 For a set of variables $V \subseteq \variables$, we denote
 $\valuations{V} \bydef{=} \{\val{}{}: V \rightarrow \data\}$
@@ -681,20 +697,9 @@ $\val{}{}(x)$ and $\val{}{}(e)$ denote, respectively, the
 values of the variable $x$ and the expression $e$ under the
 valuation $\val{}{}$.
 %
-\addSB{
-%
-It is important to observe that in practice, and in the examples of
-this paper, all the variables are sorted, meaning that their values
-can only range over given subsets of $\data$, such as $\sB$ or
-$\sB^<$.  Hence, applied to expressions, valuations should be
-interpreted as partial functions $\exprs{V} \rightharpoonup
-\data$\footnote{
-%
-  
-%
-}
-%
-}
+\addSB{Since we consider variables to be sorted, valuations
+  applied to expressions are interpreted as partial functions
+  $\exprs{V} \rightharpoonup \data$.}
 
 For a valuation $\val{}{} \in
 \valuations{V}$ and an assignment $(x_i := e_i)^{i \in I} \in
@@ -708,8 +713,8 @@ valuation defined by
 \end{cases}
 \]
 For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
-\data$, we denote \[\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
-\bsetdef{v \in V}{\val{1}{}(v) \neq \val{2}{}(v)}\] the set of
+\data$, we denote $\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
+\bsetdef{x \in V}{\val{1}{}(x) \neq \val{2}{}(x)}$ the set of
 variables that are assigned different values by the two
 valuations.  As usual, we write $\val{1}{} \order \val{2}{}$
 iff $\val{1}{}(x) \order \val{2}{}(x)$, for all $x \in V$.  An
@@ -729,23 +734,23 @@ respectively.
 %****************************************************************
 %****************************************************************
 
-\section{The theory of architectures with data}
+\subsection{The theory of architectures with data}
 \label{secn:archs}
 
 %****************************************************************
 
-\subsection{Components and composition}
+\subsubsection{Components and composition}
 \label{secn:components}
 
-\noteSBin{%
-To guarantee preservation of properties guards and expressions
-have to be \emph{monotonic}.  In the case of a trivial order, \ie
-when nothing is comparable, \emph{any guard or expression is
-  monotonic}.  Thus, this is not really a constraint!
+%% \noteSBin{%
+%% To guarantee preservation of properties guards and expressions
+%% have to be \emph{monotonic}.  In the case of a trivial order, \ie
+%% when nothing is comparable, \emph{any guard or expression is
+%%   monotonic}.  Thus, this is not really a constraint!
 
-Do we put this in the definition of expressions and guards or in
-the definitions of components and interaction models?
-}
+%% Do we put this in the definition of expressions and guards or in
+%% the definitions of components and interaction models?
+%% }
 
 \begin{definition}[Components]
   \label{defn:component}
@@ -761,13 +766,15 @@ the definitions of components and interaction models?
     $\export : P \rightarrow 2^V$ 
     the \emph{set of variables exported by each port},
   \item $\goesto{}\, \subseteq
-    Q \times 2^P \times \guards{V} \times \updates{V} \times Q$
+    Q \times (2^P\setminus \{\emptyset\}) \times \guards{V} \times \updates{V} \times Q$
 %
     is a \emph{transition relation}, with transitions
-    labelled by \emph{interactions}, \ie triples consisting of a non-empty set of ports
-    $\emptyset \neq a \subseteq P$, a monotonic Boolean \emph{guard} $g \in
-    \guards{V}$ and a monotonic \emph{update assignment} \hl{$u \in
-    \updates{V}$}.
+    labelled by \emph{interactions}, \ie triples consisting of a non-empty set of ports,
+    %% $\emptyset \neq a \subseteq P$,
+    a monotonic Boolean \emph{guard}
+    %% $g \in \guards{V}$ 
+    and a monotonic \emph{update assignment}.
+    %% \hl{$u \in \updates{V}$}.
   \end{itemize}
 %
   We call the triple $(V,P, \export)$ the \emph{interface} of the
@@ -790,7 +797,7 @@ the definitions of components and interaction models?
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{BIPspec-ArchFailureTimerMax-v4}
+  \includegraphics[width=0.9\columnwidth]{BIPspec-ArchFailureTimerMax-v4}
   \caption{The BIP specification of the Failure Monitor architecture}
   \label{fig:schema:ArchFailure:BIP}
 \end{figure}
@@ -802,7 +809,7 @@ shows the full definition of this architecture, we will explain its
 various elements progressively, as we define the corresponding
 notions.
 
-The model in \fig{schema:ArchFailure:BIP} has two components:
+The model in \fig{schema:ArchFailure:BIP} has  components
 %% The
 %% component $\NameOprnd$ is an \emph{operand} of the architecture, \ie
 %% it only has its interface defined: $(\emptyset, \{\PortFinish,
@@ -811,34 +818,53 @@ The model in \fig{schema:ArchFailure:BIP} has two components:
 %% \PortResume, \PortFail\}$.  
 %% The other two components,
 %
-$\NameTimer$ and $\NameCtrl$, with interfaces
-\[\bigl(
-\{t, z\},
-\{\PortTick, \PortCancel, \PortTOT\},
-\export[\NameTimer]
-\bigr)\,,
-\qquad
-\export[\NameTimer](p) =
-\begin{cases}
-  \{t, z\}, & \text{if } p = \PortTick,\\
-  \emptyset, & \text{otherwise}
-\end{cases}
-\]
+$\NameTimer$(imer) and $\NameCtrl$(ontrol), with interfaces
+$\btuple{
+  \{t, z\},
+  \{\PortTick, \PortCancel, \PortTOT\},
+  \bigl\{\PortTick \mapsto \{t, z\}\bigr\}
+}$,
 and
-\[\bigl(
-\{\mathit{zone}\},
-\{\PortReset, \PortFail, \PortResume, \PortTOC\},
-\export[\NameCtrl]
-\bigr)\,,
-\quad
-\export[\NameCtrl](p) =
-\begin{cases}
-  \{\mathit{zone}\}, & \text{if } p = \PortFail,\\
-  \emptyset, & \text{otherwise}
-\end{cases}
-\]
+$\btuple{
+  \{\mathit{zone}\},
+  \{\PortReset, \PortFail, \PortResume, \PortTOC\},
+  \bigl\{\PortFail \mapsto \{\mathit{zone}\}\bigr\}
+}$, respectively.
 %
-respectively. %% , where $\export[\NameCtrl](\PortFail) =
+%% \[
+%% \begin{array}{@{}c@{\hspace{3mm}}c@{}}
+%%   \bigl(
+%%   \{t, z\},
+%%   \{\PortTick, \PortCancel, \PortTOT\},
+%%   \export[\NameTimer]
+%%   \bigr)\,,
+%%   %% \qquad
+%%   &
+%%   \bigl(
+%%   \{\mathit{zone}\},
+%%   \{\PortReset, \PortFail, \PortResume, \PortTOC\},
+%%   \export[\NameCtrl]
+%%   \bigr)\,,
+%%   \\
+%%   \export[\NameTimer](p) =
+%%   \begin{cases}
+%%     \{t, z\}, & \text{if } p = \PortTick,\\
+%%     \emptyset, & \text{otherwise,}
+%%   \end{cases}
+%%   %% \]
+%%   %% and
+%%   %% \[
+%%   %% \quad
+%%   &
+%%   \export[\NameCtrl](p) =
+%%   \begin{cases}
+%%     \{\mathit{zone}\}, & \text{if } p = \PortFail,\\
+%%     \emptyset, & \text{otherwise.}
+%%   \end{cases}
+%% \end{array}
+%% \]
+%
+%% , where $\export[\NameCtrl](\PortFail) =
 %% \{\mathit{zone}\}$ and $\export[\NameCtrl](p) = \emptyset$, for all
 %% other ports $p$; $\export[\NameTimer](\PortTick) = \{t, z\}$ and
 %% $\export[\NameTimer](p) = \emptyset$, for all other ports $p$.
@@ -850,15 +876,28 @@ natural ordering: increasing integers and interval inclusion.
 %% are \emph{coordinators}\mdash they are specified
 %% completely, including the states and transitions defining their
 %% \emph{behaviour}.
-Component \emph{behaviour} is defined by states ($\{\cstate{0},
-\cstate{1}, \cstate{2}\}$, for $\NameCtrl$; $\{\tstate{0}\}$, for
-$\NameTimer$) and transitions.
+Component \emph{behaviour} is defined by states %% ($\{\cstate{0},
+%% \cstate{1}, \cstate{2}\}$, for $\NameCtrl$; $\{\tstate{0}\}$, for
+%% $\NameTimer$)
+and transitions.
+The initial states
+\tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{t
+\mapsto 0, z \mapsto \topinterval\}$ and $\val{0}{\NameCtrl} =
+\{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
+the incoming arrows $\goesto{\TimerInit[]} \tstate{0}$ and
+$\goesto{\IntervalInit[]} \cstate{0}$.\footnote{%
 %
-Transitions are labelled with the ports of the
+  We use $\topinterval$ to denote the top interval in the inclusion
+  order, \ie $(-\infty, +\infty)$.
+%
+} The constants $\mathrm{Min}$ and $\mathrm{Max}$ are the parameters
+of the architecture.
+
+Transitions are labelled with ports of the
 corresponding components, Boolean guards and update assignments on local
-variables.  For instance, the loop transition $\tstate{0}
+variables.  \Eg[,] the loop transition $\tstate{0}
 \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{0}$ in the
-$\NameTimer$ component is labeled by the port $\PortTick$, it can be
+component $\NameTimer$ is labeled by the port $\PortTick$.  It can be
 fired only when the current value of the local variable $t$ is less
 than $z.u$.
 %% , where $z = [l, u]$ is a local variable representing an
@@ -866,26 +905,18 @@ than $z.u$.
 Upon firing, this transition increments the value of $t$ by $1$.  The
 guards and update assignments of the transitions of $\NameCtrl$ are
 omitted.  The default values are the constant predicate $\true$ (true) and
-the empty assignment {\noop}, respectively.  The initial states
-\tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{t
-\mapsto 0, z \mapsto \topinterval\}$ and $\val{0}{\NameCtrl} =
-\{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
-incoming arrows $\goesto{\TimerInit[]} \tstate{0}$ and
-$\goesto{\IntervalInit[]} \cstate{0}$, respectively.\footnote{%
-%
-  We use $\topinterval$ to denote the top interval in the inclusion
-  order, \ie $(-\infty, +\infty)$.
-%
-} The constants $\mathrm{Min}$ and $\mathrm{Max}$ are the parameters
-of the architecture.
+the empty assignment {\noop}, respectively.  
 %\noteLH{It looks like Max is in zone, I do not understand}
+%
+Clearly, all guards and update assignments are monotonic.
 
-\todoSBin{Speak of guard monotonicity}
+%% \todoSBin{Speak of guard monotonicity}
 
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
-  The \emph{open semantics} of a component $B = \tuple{Q, q^0, V,
-  \val{0}{}, P, \export, \goesto{}}$ is given by the LTS denoted $\semopen{B} = \tuple{S,
+  The \emph{semantics} of a component $B = \tuple{Q, q^0, V,
+  \val{0}{}, P, \export, \goesto{}}$ is %% given by
+  the LTS denoted $\semopen{B} = \tuple{S,
   s^0, \goesto{}}$, where $S = Q \times \valuations{V}$, $s^0 =
   \tuple{q^0, \val{0}{}}$ and $\goesto{}$ is the minimal transition
   relation satisfying the rule
@@ -906,10 +937,10 @@ of the architecture.
     \,.
   \end{equation}
   %
-  \todoSB{Do we actually need this?}\todoLH{I agree: I do not think we need this}
-  \hl{The \emph{closed semantics} of $B$ is given by the LTS denoted
-  $\semclosed{B} \bydef{=}\reachable{\semopen{B}}$, comprising
-  only the reachable states of $\semopen{B}$.}
+  %% \todoSB{Do we actually need this?}\todoLH{I agree: I do not think we need this}
+  %% \hl{The \emph{closed semantics} of $B$ is given by the LTS denoted
+  %% $\semclosed{B} \bydef{=}\reachable{\semopen{B}}$, comprising
+  %% only the reachable states of $\semopen{B}$.}
 \end{definition}
 
 The use of the intermediate valuation $\tilde{\val{}{}}$ in the
@@ -924,10 +955,11 @@ interaction.
 
 \begin{definition}[Interaction model]
   \label{defn:im}
-  Consider a finite set of component interfaces $(V_i, P_i,
+  For a finite set of component interfaces $(V_i, P_i,
   \export[i])^{i \in I}$, such that all $P_i$ and all $V_i$ are
-  pairwise disjoint, \ie $\forall i \neq j,\ P_i \cap P_j = V_i \cap
-  V_j = \emptyset$.  Let $P = \bigcup_{i \in I} P_i$, $V = \bigcup_{i
+  pairwise disjoint, %% \ie $\forall i \neq j,\ P_i \cap P_j = V_i \cap
+  %% V_j = \emptyset$. 
+  let $P = \bigcup_{i \in I} P_i$, $V = \bigcup_{i
     \in I} V_i$ and $\export : P \rightarrow 2^V$ such that, for any
   $p \in P_i$, $\export(p) = \export[i](p)$. 
 %
@@ -979,7 +1011,7 @@ denotes the set of the participating components.
   and $\goesto{}$ is the minimal transition relation satisfying
   the rule
 %
-  \begin{gather}
+  \begin{gather*}
 %%     \label{eq:im:empty}
 %%     \infer{
 %%       q_j \goesto{\emptyset, g, e} q_j'
@@ -1010,9 +1042,16 @@ denotes the set of the participating components.
     }{
       (q_i)^{i \in I} \goesto{a, g', u'} (q_i')^{i \in I}
     }\,.
-  \end{gather}
-  \todoSBin{Add the intuitive explanation}
+  \end{gather*}
+  %% \todoSBin{Add the intuitive explanation}
 \end{definition}
+
+\addSB{Intuitively, an interaction can be fired if all the involved
+  components are ready to fire their corresponding transitions.  The
+  other components do not change their states.  Both the interaction
+  guard and those of the participating transitions must be satisfied.
+  The update assignment of the interaction is executed first, followed
+  by those of the components.}
 
 Specifying interaction models as sets of sets of ports is not
 practical due to their potentially exponential size.  An algebra of
@@ -1021,40 +1060,97 @@ structure interactions in BIP models.
 
 Connectors are hierarchical, tree-like structures with component ports
 at the leaves.  They define sets of interactions, based on the
-attributes of the connected ports, which may be either \emph{trigger}
+attributes of the nodes, which may be either \emph{trigger}
 (triangles in \fig{schema:ArchFailure:BIP}) or \emph{synchron}
 (bullets in \fig{schema:ArchFailure:BIP}).
 %
 If all sub-connectors of a connector are synchrons, then an
-interaction may be executed by the connector only if each subconnector
+interaction is allowed by the connector only if each subconnector
 can contribute.
 %
 If at least one of the sub-connectors is a trigger, then any
-interaction consisting of contributions of any set of sub-connectors,
-\emph{involving at least one of the triggers}, can be executed.
-The composition semantics of BIP systems consists in
-firing exactly one interaction, enabled through at least one of the
-top-level connectors, at each execution round.
+interaction consisting of contributions of any set of sub-connectors
+\emph{involving at least one of the triggers} is allowed.
+%
+The interaction model is defined as the set of all interactions
+allowed by at least one of the connectors in the system.
+%% The composition semantics of BIP systems consists in
+%% firing exactly one interaction, enabled through at least one of the
+%% top-level connectors, at each execution round.
 
-\todoSB{Update this}
-\hl{For instance, in \fig{schema:ArchFailure:BIP}, the two ports
-$\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are always
-synchronised, since they belong to exactly one binary sub-connector,
-where they are both synchrons.  In particular, this means that
-whenever the transition \cstate{0} \goesto{\PortFail} \cstate{1} is
-fired, so is the transition \tstate{0} \goesto{\PortStart,
-  \TimerInit[]} \tstate{1}, initialising the timer.  The binary
-connector $\NameTimer.\PortStart \twosynch
-\NameCtrl.\PortFail$ is a sub-connector of a hierarchical connector,
-where the port $\NameOprnd.\PortFail$ is a trigger.  Thus, the above
-interaction can only happen together with $\NameOprnd.\PortFail$,
-forming a ternary interaction.  On the contrary, being a trigger, the
-port $\NameOprnd.\PortFail$ can fire alone, forming a singleton
-interaction.}
+For instance, the connector {\NameTimer.\PortTick
+  \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)} is a
+two-level hierarchical connector.  In the second-level subconnector
+{\PortFail \trigsynch \NameCtrl.\PortFail}, the port {\PortFail} is a
+trigger, whereas {\NameCtrl.\PortFail} is a synchron.  Therefore, this
+subconnector allows two interactions labelled $\{\PortFail\}$ and $\listset{\NameCtrl.\PortFail, \PortFail}$.  Similarly, at the top level,
+{\NameTimer.\PortTick} is a trigger, whereas the second-level
+subconnector is a synchron.  Hence, the overall connector allows the
+interaction involving only one port {\NameTimer.\PortTick}\footnote{%
+%
+  Such interactions are called \emph{singleton interactions}.
+%
+} and any interaction involving both {\NameTimer.\PortTick} and
+\emph{some} interaction of the second-level subconnector.  Combining
+the two levels we can see that the entire connector defines the
+following three interactions (observe that $\topinterval +
+\NameTimer.t = \topinterval$ and $\NameTimer.z \cap \topinterval =
+\NameTimer.z$):
+%
+\begin{gather*}
+  \bigl(\{\NameTimer.\PortTick\},
+  \true, \emptyset\bigr)
+  %% \NameTimer.z := \NameTimer.z\bigr)
+  ,
+%
+  \qquad
+%
+  \bigl(\{\PortFail, \NameTimer.\PortTick\},
+  \true, \emptyset\bigr)
+  %% \NameTimer.z := \NameTimer.z\bigr)
+  ,
+%
+  \\
+%
+  \bigl(\{\NameCtrl.\PortFail, \PortFail, \NameTimer.\PortTick \},
+  \true,
+  \NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
+  .
+\end{gather*}
+%% \begin{align*}
+%%   \bigl(\{\NameTimer.\PortTick\}&,
+%%   \true, 
+%%   \NameTimer.z := \NameTimer.z\bigr)
+%%   \,,\\
+%%   \bigl(\{\PortFail, \NameTimer.\PortTick\}&,
+%%   \true,
+%%   \NameTimer.z := \NameTimer.z\bigr)
+%%   \,,\\
+%%   \bigl(\{\NameCtrl.\PortFail, \PortFail, \NameTimer.\PortTick \}&,
+%%   \true,
+%%   \NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
+%%   \,.
+%% \end{align*}
 
-\todoSBin{Speak of data transfer}
+%% \todoSB{Update this}
+%% \hl{For instance, in \fig{schema:ArchFailure:BIP}, the two ports
+%% $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are always
+%% synchronised, since they belong to exactly one binary sub-connector,
+%% where they are both synchrons.  In particular, this means that
+%% whenever the transition \cstate{0} \goesto{\PortFail} \cstate{1} is
+%% fired, so is the transition \tstate{0} \goesto{\PortStart,
+%%   \TimerInit[]} \tstate{1}, initialising the timer.  The binary
+%% connector $\NameTimer.\PortStart \twosynch
+%% \NameCtrl.\PortFail$ is a sub-connector of a hierarchical connector,
+%% where the port $\NameOprnd.\PortFail$ is a trigger.  Thus, the above
+%% interaction can only happen together with $\NameOprnd.\PortFail$,
+%% forming a ternary interaction.  On the contrary, being a trigger, the
+%% port $\NameOprnd.\PortFail$ can fire alone, forming a singleton
+%% interaction.}
 
-\todoSBin{Provide the interaction model}
+%% \todoSBin{Speak of data transfer}
+
+%% \todoSBin{Provide the interaction model}
 
 \begin{definition}[Priority model]
   \label{defn:priority}
@@ -1067,9 +1163,9 @@ interaction.}
   } is a strict partial order on interactions: $\pi
   \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
 
-  We write $\alpha \prec_\pi \beta$ for $(\alpha, \beta) \in \pi$ and 
-  denote $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
-    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$ the set of
+  We write $\alpha \prec_\pi \beta$, for $(\alpha, \beta) \in \pi$, and 
+   $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
+    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$, for the set of
   interactions that have higher priority than $\alpha$.
 \end{definition}
 
@@ -1079,9 +1175,12 @@ interaction.}
   to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
   is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
   \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
-  relation satisfying the rule
+  relation satisfying the rule (we denote
+  $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
+  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
+  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$)
 %
-  \begin{equation}
+  \begin{equation*}
     \label{eq:priority:sem}
 %
     \infer{
@@ -1093,41 +1192,42 @@ interaction.}
       g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
     }{
       q \goesto[\pi]{a, g', u} q'
-    }\,, 
-  \end{equation}
+    }\,.
+  \end{equation*}
 %
-  where $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
-  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
-  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$.
-  \todoSBin{Add the intuitive explanation}
+  %% \todoSBin{Add the intuitive explanation}
 \end{definition}
+
+\addSB{Intuitively, an interaction can be fired only if all the
+higher-priority interactions available in the current state are
+disabled by their respective guards.}
 
 In this paper, we will only consider the so-called \emph{maximal
   progress} priority $\mu$, where $(a, g, u) \prec_\mu (b, h, w)$ iff $a
 \varsubsetneq b$ (\ie $a \subseteq b$ and $a \neq b$).  In
 \secn{conclusion}, we discuss the possibility of generalising the
 obtained results to other priority models.
+%
+Below, we will assume that the maximal progress priority $\mu$ is
+applied after each composition with an interaction model.
 
 %% Finally, \emph{priorities}\mdash defined by a strict partial order on
 %% the set of possible interactions\mdash narrow the choice among the
 %% enabled interactions at any given round.  The default priority is the
 %% so-called \emph{maximal progress}, whereby among any two interactions
 %% $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
-Going back to our running example in \fig{schema:ArchFailure:BIP}, under the maximal progress priority, the
-port $\NameOprnd.\PortFail$ will never fire alone in a global state,
-where both $\NameTimer.\PortStart$ and $\NameCtrl.\PortFail$ are
-enabled.
+In our running example, under the maximal progress priority, the
+port $\NameTimer.\PortTick$ will never fire alone in a global state,
+where the \noteSB{This turns out to be the first use of the word. I am tempted to pretend I did not notice.}\hl{dangling} port $\PortFail$ is also enabled. 
 
 %% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
 %% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
 %% a failure, the operation performed by $\NameOprnd$ cannot finish
 %% unless it is explicitly resumed or the system is reset.
 
-\begin{note}
-  \label{rem:maxprogress}
-  Below, we will assume that the maximal progress priority $\mu$ is
-  applied after each composition with an interaction model.
-\end{note}
+%% \begin{note}
+%%   \label{rem:maxprogress}
+%% \end{note}
 
 
 %% %****************************************************************
@@ -1137,22 +1237,24 @@ enabled.
 %\noteLH{Ludo ou simon: essayer de remonter la description generique en debut de section}
 
 %****************************************************************
-\subsection{Architectures}
+\subsubsection{Architectures}
 \label{secn:archi}
 
-\todoSBin{Sort out the following two paragraphs}
+Architectures are partially defined BIP models, where \emph{dangling}
+ports serve as placeholders for the eventual connection with
+additional \emph{operand} components.
 
-Contrary to standard BIP models, architectures comprise one or several
-\emph{operand} components, whereof only the set of \emph{ports} is
-given.  Here, the operand component is $\NameOprnd$ and its interface
-consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
+%% Contrary to standard BIP models, architectures comprise one or several
+%% \emph{operand} components, whereof only the set of \emph{ports} is
+%% given.  Here, the operand component is $\NameOprnd$ and its interface
+%% consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
 
-Application of the Failure Monitor architecture ensures that, whenever
-a failure is registered in the operand component, the system will be
-reset, unless a resumption is registered within $\mathrm{Max}$ time
-units (more details in Sect.~\ref{section:resultOA}).
+%% Application of the Failure Monitor architecture ensures that, whenever
+%% a failure is registered in the operand component, the system will be
+%% reset, unless a resumption is registered within $\mathrm{Max}$ time
+%% units (more details in Sect.~\ref{section:resultOA}).
 
-\noteLHin{should we say that always epsilon C is the epsilon of C?}
+%% \noteLHin{should we say that always epsilon C is the epsilon of C?}
 
 \begin{definition}[Architecture]
   \label{defn:arch}
@@ -1161,8 +1263,9 @@ units (more details in Sect.~\ref{section:resultOA}).
 %  
   \begin{itemize}
 \item
-  $\cC$ is a finite set of \emph{coordinating components}
-  with pairwise disjoint sets of ports and variables, such that
+  $\cC$ is a finite set of \emph{coordinating components},
+  %% with pairwise disjoint sets of ports and variables,
+  such that
   $\bigcup_{C \in \cC} P_C \subseteq P_A$ and
   $\bigcup_{C \in \cC} V_C \subseteq V_A$;
 %
@@ -1177,7 +1280,7 @@ units (more details in Sect.~\ref{section:resultOA}).
   V_C$ for any dangling port $p$; and
 
 \item
-  $\Gamma \subseteq 2^{P_A} \times \guards{V_A} \times \exprs{V_A}$
+  $\Gamma \subseteq 2^{P_A} \times \guards{V_A} \times \updates{V_A}$
   is an interaction model over $(V_A, P_A, \export[A])$.
   \end{itemize}
 
@@ -1187,26 +1290,37 @@ units (more details in Sect.~\ref{section:resultOA}).
   \label{defn:arch:application}
   Let $A = \tuple{\cC, V_A, P_A, \export[A], \Gamma}$ be an architecture and let $\cB$
   be a set of components, such that
+  $V_A \subseteq V \bydef{=} \bigcup_{B \in \cB \cup \cC} V_B$,
+  $P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B$
 %
-  \begin{align}
-    \bigcup_{B \in \cB} V_B \cap \bigcup_{C \in \cC} V_C = \emptyset\,,
-    &&
-    V_A \subseteq V \bydef{=} \bigcup_{B \in \cB \cup \cC} V_B\,,
-    \\
-    \bigcup_{B \in \cB} P_B \cap \bigcup_{C \in \cC} P_C = \emptyset\,,
-    &&
-    P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B\,,
-  \end{align}
+  %% \begin{align}
+  %%   \bigcup_{B \in \cB} V_B \cap \bigcup_{C \in \cC} V_C = \emptyset\,,
+  %%   &&
+  %%   V_A \subseteq V \bydef{=} \bigcup_{B \in \cB \cup \cC} V_B\,,
+  %%   \\
+  %%   \bigcup_{B \in \cB} P_B \cap \bigcup_{C \in \cC} P_C = \emptyset\,,
+  %%   &&
+  %%   P_A \subseteq P \bydef{=} \bigcup_{B \in \cB \cup \cC} P_B\,,
+  %% \end{align}
 %
-  \hl{and $\export[A](p) = V_A \cap \export[B](p)$, for any $B \in \cB$
-  and $p \in P_A \cap P_B$.}
+  and $\export[A](p) = V_A \cap \export[B](p)$, for any $B \in \cB$
+  and $p \in P_A \cap P_B$.
 %
   The \emph{application of the architecture $A$ to the set of
   components $\cB$} is the component $ A(\cB) \bydef{=}
   \mu\bigl((\IMextend{\Gamma}{P})(\cC \cup \cB)\bigr)$, where
 %
-  $\IMextend{\Gamma}{P}$ is the \emph{extension} of the interaction
-  model $\Gamma$ to the set of ports $P$, \ie the interaction model
+  $\IMextend{\Gamma}{P} \bydef{=}
+  \bsetdef{
+    (a, g, u)
+  }{
+    a \subseteq P,
+    (a \cap P_A, g, u) \in \Gamma
+  }$
+  is
+  %% is the \emph{extension} of the interaction
+  %% model $\Gamma$ to the set of ports $P$, \ie
+  the interaction model
   over $(V, P, \export)$, with
   \[
   \export(p) = 
@@ -1216,108 +1330,70 @@ units (more details in Sect.~\ref{section:resultOA}).
     \export[B](p), & \text{for all } B \in \cB, p \in P_B,
   \end{cases}
   \]
-  defined by\noteLH{looks like this also depends on Pa}
+%% defined by \noteLH{looks like this also depends on Pa}
+%% %
+%%   \noteSB{It does, indeed.  To be completely rigorous, I could replace
+%%     this with something like $\Gamma\uparrow_{P_A}^P$ but this is
+%%     quite heavy and the dependency is already implicit from the fact
+%%     that $\Gamma$ is defined on $P_A$}
+%% %
+%%   \noteSB{Which one of \eq{im:extension} and \eq{im:extension1} is
+%%     more intuitive?}
 %
-  \noteSB{It does, indeed.  To be completely rigorous, I could replace
-    this with something like $\Gamma\uparrow_{P_A}^P$ but this is
-    quite heavy and the dependency is already implicit from the fact
-    that $\Gamma$ is defined on $P_A$}
-%
-  \noteSB{Which one of \eq{im:extension} and \eq{im:extension1} is
-    more intuitive?}
-%
-  \begin{align}
-    \label{eq:im:extension}
-    \IMextend{\Gamma}{P} &\bydef{=}
-    \bsetdef{
-      (a \cup a', g, e)
-    }{
-      (a, g, e) \in \Gamma, a' \subseteq P \setminus P_A
-    }
-    \\
-    \label{eq:im:extension1}
-    &= 
-    \bsetdef{
-      (a, g, e)
-    }{
-      a \subseteq P,
-      (a \cap P_A, g, e) \in \Gamma
-    }
-  \end{align}
+  %% \begin{align}
+  %%   \label{eq:im:extension}
+  %%   \IMextend{\Gamma}{P} &\bydef{=}
+  %%   \bsetdef{
+  %%     (a \cup a', g, e)
+  %%   }{
+  %%     (a, g, e) \in \Gamma, a' \subseteq P \setminus P_A
+  %%   }
+  %%   \\
+  %%   \label{eq:im:extension1}
+  %%   &= 
+  %%   \bsetdef{
+  %%     (a, g, e)
+  %%   }{
+  %%     a \subseteq P,
+  %%     (a \cap P_A, g, e) \in \Gamma
+  %%   }
+  %% \end{align}
 %
   and $\mu$ is the maximal progress priority model.
 \end{definition}
 
-\todoSBin{Define equivalence $\arequiv$?}
+%% \todoSBin{Define equivalence $\arequiv$?}
 
 An architecture $A$ enforces coordination constraints on the
-components in $\cB$.  The interface \hl{$(V_A, P_A, \export[A])$} of an
+components in $\cB$.  The interface $(V_A, P_A, \export[A])$ of an
 architecture $A$ contains all ports of the coordinating
-components $\cC$ and some additional ports, which must belong to
+components $\cC$ and the dangling ports, which must belong to
 the components in $\cB$.  In the application $A(\cB)$, the ports
 belonging to $P_A$ can only participate in the interactions
 defined by the interaction model $\Gamma$ of $A$.  Ports which do
 not belong to $P_A$ are not restricted and can participate in any
-interaction.  In particular, they can join the interactions in
-$\Gamma$ (see \eq{im:extension}).  If the interface of the
-architecture covers all ports of the system, \ie $P = P_A$, we
-have $P\setminus P_A = \emptyset$ and the only interactions
-allowed in $A(\cB)$ are those belonging to $\Gamma$.  Notice also
-that the restrictions imposed by \defn{arch:application} on the
-set of operand components $\cB$ ensure that an interaction in
-$\IMextend{\Gamma}{P}$ can only refer to variables of the
-participating components.
+interaction.  %% In particular, they can join the interactions in
+%% $\Gamma$ (see \eq{im:extension}).  If the interface of the
+%% architecture covers all ports of the system, \ie $P = P_A$, we
+%% have $P\setminus P_A = \emptyset$ and the only interactions
+%% allowed in $A(\cB)$ are those belonging to $\Gamma$.  Notice also
+%% that the restrictions imposed by \defn{arch:application} on the
+%% set of operand components $\cB$ ensure that an interaction in
+%% $\IMextend{\Gamma}{P}$ can only refer to variables of the
+%% participating components.
 %
-Finally, the definition of $\IMextend{\Gamma}{P}$ requires that
+%% Finally, 
+The definition of $\IMextend{\Gamma}{P}$ requires that
 an interaction from $\Gamma$ be involved in every interaction
 belonging to $\IMextend{\Gamma}{P}$.  To allow the ports from $P
 \setminus P_A$ to be fired independently in $A(\cB)$, one must
 have $(\emptyset, \true, \noop) \in \Gamma$.  
 
-\begin{example}
-  The architecture in \fig{schema:ArchFailure:BIP} enforces the
-  following properties:
-  \begin{enumerate}
-  \item There is always a possibility to reset the system after a
-    failure:
-    \begin{equation}
-      \label{eq:prop:reset:can}
-      \AG (\PortFail \rightarrow \EF \PortReset).
-    \end{equation}
-  \item Whenever a reset is requested, it will eventually be
-    effectuated:
-    \begin{equation}
-      \label{eq:prop:reset:will}
-      \AG (\PortAsk \rightarrow \AF \PortReset).
-    \end{equation}
-  \item As long as no failure has occured, the $z$ variable of the
-    $\NameTimer$ component has the value $\topinterval$:
-    \begin{equation}
-      \label{eq:prop:z:top}
-      \AW[\quad]{(z = \topinterval)}{\PortFail} \land\quad
-      \AG \bigl(
-      \PortReset \rightarrow \AW[]{(z = \topinterval)}{\PortFail}
-      \bigr).
-    \end{equation}
-  \item A timeout can only occur within the specified delay after
-    a failure:
-    \begin{multline}
-      \label{eq:prop:to:delay}
-      \forall T_0, T_1 \in \sZ,\
-      \AG \Big((\PortFail \land \NameTimer.t = T_0) \rightarrow
-      \\
-      \AW[]{\bigl((\PortTOC \land \NameTimer.t = T_1) \rightarrow
-        (T_1 - T_0 \in \NameCtrl.\mathit{zone})\bigr)
-      }{
-        (\PortReset \lor \PortResume)
-      }\Big),
-    \end{multline}
-    where $T_0$ and $T_1$ are integer parameters.  (The formula
-    holds with the universal quantification over $T_0$ and $T_1$
-    due to the fact that their individual values only appear in
-    the left-hand sides of the two implications.)
-  \end{enumerate}
-\end{example}
+In our running example, there are four dangling ports.  Intuitively, the
+architecture monitors the activation of the dangling port {\PortFail}, then
+waits for a period comprised between $\mathrm{Min}$ and $\mathrm{Max}$
+and, unless {\PortResume} is activated, asks for a system reset
+through an invocation of the dangling port {\PortAsk}.
 
 \begin{definition}[Composition of architectures]
   \label{defn:arch:composition}
@@ -1329,9 +1405,9 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
   \begin{equation}
     \label{eq:arch:composition}
     \Gamma = \bsetdef{
-      (a, g^1 \land g^2, e^1 \expmix e^2) 
+      (a, g^1 \land g^2, u^1 \expmix u^2) 
     }{
-      (a \cap P_{A_i}, g^i, e^i) \in \Gamma_i,
+      (a \cap P_{A_i}, g^i, u^i) \in \Gamma_i,
       \text{ for } i = 1,2
     }
     \,.
@@ -1340,55 +1416,59 @@ have $(\emptyset, \true, \noop) \in \Gamma$.
 
 \begin{proposition}[Properties of $\arcomp$]
   \label{prop:arcomp:nice}
-  Architecture composition $\arcomp$ is commutative and
-  associative; it is idempotent if all coordinating components
-  are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
-  \emptyset, \emptyset, \{(\emptyset, \true, \noop)\}\bigr)$ is its neutral element, \ie for
-  any architecture $A$, we have $A \oplus A_{id} \arequiv A$.
-  Furthermore, for any component $B$, we have $A_{id}(B) = \mu(B)$.
+  %% Architecture composition
+  $\arcomp$ is associative and commutative.
+  %%; it is idempotent if all coordinating components
+  %% are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
+  %% \emptyset, \emptyset, \{(\emptyset, \true, \noop)\}\bigr)$ is its neutral element, \ie for
+  %% any architecture $A$, we have $A \oplus A_{id} \arequiv A$.
+  %% Furthermore, for any component $B$, we have $A_{id}(B) = \mu(B)$.
 \end{proposition}
 %
 \begin{proof}[Sketch of the proof]
-  Commutativity and associativity follow from the corresponding
+  %% Commutativity and associativity 
+  Follows from the corresponding
   properties of set union, Boolean conjunction and
-  \todoSB{Check ``semi''}\hl{semilattice meet}.
+  semilattice meet.
 %
-\todoLH{Check when equivalence is defined}
-  Suppose we have two architectures $A \arequiv A'$.  This does not
-  necessarily mean that their sets of coordinating components
-  coincide.  However, if all the involved coordinating components
-  are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
-  both architectures will impose the same restrictions, enabling
-  the same interactions between the coordinating and operand
-  components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
-  A'(\cB)$.  Since this holds for any set of components $\cB$, we
-  conclude that $A \arcomp A' \arequiv A \arequiv A'$.
-%
-  The properties of $A_{id}$ follow immediately from the
-  definitions of architecture application and composition.
+%% \todoLH{Check when equivalence is defined}
+%%   Suppose we have two architectures $A \arequiv A'$.  This does not
+%%   necessarily mean that their sets of coordinating components
+%%   coincide.  However, if all the involved coordinating components
+%%   are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
+%%   both architectures will impose the same restrictions, enabling
+%%   the same interactions between the coordinating and operand
+%%   components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
+%%   A'(\cB)$.  Since this holds for any set of components $\cB$, we
+%%   conclude that $A \arcomp A' \arequiv A \arequiv A'$.
+%% %
+%%   The properties of $A_{id}$ follow immediately from the
+%%   definitions of architecture application and composition.
 \end{proof}
 
-The last statement of \prop{arcomp:nice} highlights a subtle point:
-$A_{id}$ is the neutral element of the $\arcomp$ operator\mdash it is
-not the identity operator on components.
+%% The last statement of \prop{arcomp:nice} highlights a subtle point:
+%% $A_{id}$ is the neutral element of the $\arcomp$ operator\mdash it is
+%% not the identity operator on components.
 
 %****************************************************************
-\subsection{Preservation of safety properties}
+\subsubsection{Preservation of safety properties}
 \label{secn:safety}
 
 For a component $B$, we denote $S_{\semopen{B}}$,
 $s^0_{\semopen{B}}$ the corresponding constituents of
 $\semopen{B}$.
 
-\begin{definition}[Safety properties]
+\begin{definition}[Properties]
   \label{defn:property}
-  Let $B$ be a component.  A \emph{safety property} (below,
-  simply \emph{property}) of $B$ is a state predicate $\Phi:
-  S_{\semopen{B}} \rightarrow \sB$, such that $\bigl((q,
+  Let $B$ be a component.  A \emph{(safety) property} 
+  of $B$ is a predicate $\Phi$ on
+  $S_{\semopen{B}}$, such that $\bigl((q,
   \val{}{}) \models \Phi\bigr) \land (\val[\primeit]{}{} \order
-  \val{}{})$ implies $(q, \val[\primeit]{}{}) \models \Phi$,
-  where we write $(q, \val{}{}) \models \Phi$ iff $\Phi(q,
-  \val{}{}) = \true$.  A property $\Phi$ is \emph{initial} if
+  \val{}{})$ implies $(q, \val[\primeit]{}{}) \models \Phi$.
+  %% ,
+  %% where we write $(q, \val{}{}) \models \Phi$ iff $\Phi(q,
+  %% \val{}{}) = \true$.
+  A property $\Phi$ is \emph{initial} if
   $s^0_{\semopen{B}} \models \Phi$.
   %% \todoSB{Do we need this?}\hl{;
   %% it is \emph{reachable} iff there exists a possibly empty path
@@ -1397,7 +1477,14 @@ $\semopen{B}$.
   %% $s^n \models \Phi$}.
 \end{definition}
 
-\todoSB{Cite the original paper somewhere.}
+\addSB{Although we define properties as state predicates, any
+  appropriate logic can be used to specify them.  For instance, the
+  property \emph{``There is always a possibility to reset the system
+    after a failure''} enforced by the Failure Monitor architecture
+  can be specified using CTL as $\AG (\PortFail \rightarrow \EF
+  \PortReset)$.  Additional properties are provided in \app{properties}.}
+
+%% \todoSB{Cite the original paper somewhere.}
 The main idea of our approach is that an architecture enforces
 its characteristic property on the set of its operand components.
 From this point of view, the set of coordinating components is
@@ -1407,11 +1494,12 @@ the unrestricted composition of the operand components as
 formalized by the following definition.
 
 \begin{definition}[Enforcing properties]
-  \label{defn:impose}
+  \label{defn:enforce}
   Let $A = \tuple{\cC, P_A, V_A, \export[A], \Gamma}$ be an architecture; let $\cB$
   be a set of components and $\Phi$ an initial property of
-  their parallel composition $A_{id}(\cB)$ (see
-  \prop{arcomp:nice}).  We say that \emph{$A$ enforces $\Phi$ on
+  their parallel composition $\Gamma_{\|}(\cB)$,
+  with $\Gamma_{\|} = \setdef{(a,\true,\emptyset)}{a \subseteq \bigcup_{B \in \cB} P_B}$.
+  We say that \emph{$A$ enforces $\Phi$ on
     $\cB$} iff, for every state $s = (s_c, s_b)$ reachable in
   $\semopen{A(\cB)}$, with 
   $s_c \in \prod_{C \in \cC} S_{\semopen{C}}$ and
@@ -1424,75 +1512,15 @@ architecture enforces some property $\Phi$, it is implicitly
 assumed that $\Phi$ is initial for the coordinated components.
 Below, we omit mentioning this explicitly.
 
-\begin{definition}[Upwards compatibility]
-  \label{defn:up:compat}
-  \todoSB{Summarise in English and move to the appendix}
-%
-  Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
-  \export[A_i], \Gamma_i}$, for $i = 1,2$.
-%
-  We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
-  any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
-  \cap P_{A_2} = a_2 \cap P_{A_1}$ (\ie they agree on the common ports
-  of the two architectures), we have 1)~for any interaction $(b_1,
-  h_1, f_1) \in \Gamma_1$, such that $a_1 \varsubsetneq b_1$, there
-  exists an interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
-  \subseteq b_2$, $b_1 \cap P_{A_2} = b_2 \cap P_{A_1}$ and the 
-  implication  
-%
-  \begin{multline*}
-    \left(
-    \exists (q^1_C)^{C \in \supp{b_1} \cap \cC_1}:
-    \exists (q^2_C)^{C \in \supp{a_2} \cap \cC_2}:
-    \bigwedge_{
-      \begin{multlined}
-        \scriptstyle
-        C \in \supp{b_1} \cap \cC_1 \cap
-        \\
-        \scriptstyle
-        \supp{a_2} \cap \cC_2
-      \end{multlined}
-    }
-    q^1_C = q^2_C
-    \ \land
-    \right.
-    \\
-    \begin{aligned}
-      \exists \bigl(q^1_C \goesto{b_1 \cap P_C, g^{b_1}_C, f^{b_1}_C}\bigr)^{C \in \supp{b_1} \cap \cC_1}:
-      & \quad \left.
-      h_1 \land \bigwedge_{C \in \supp{b_1} \cap \cC_1} g^{b_1}_C
-      \ \land \right.
-      \\
-      \exists \bigl(q^1_C \goesto{a_1 \cap P_C, g^{a_1}_C, e^{b_1}_C}\bigr)^{C \in \supp{a_1} \cap \cC_1}:
-      & \quad \left.
-      g_1 \land \bigwedge_{C \in \supp{a_1} \cap \cC_1} g^{a_1}_C
-      \ \land \right.
-      \\
-      \exists \bigl(q^2_C \goesto{a_2 \cap P_C, g^{a_2}_C, e^{a_2}_C}\bigr)^{C \in \supp{a_2} \cap \cC_2}:
-      & \quad
-      \left.
-      g_2 \land \bigwedge_{C \in \supp{a_2} \cap \cC_2} g^{a_2}_C
-      \right) \implies 
-    \end{aligned}
-  \end{multline*}
-%
-  \begin{multline*}
-    \left(
-    \exists (q^2_C)^{C \in (\supp{b_2}\setminus\supp{a_2}) \cap \cC_2}:
-            {\color{white}\bigwedge_{C \in \cC_1}}\right. % Fake bigwedge to make the parenthesis the right size
-            \\
-            \left.
-            \exists \bigl(q^2_C \goesto{b_2 \cap P_C, g^{b_2}_C, f^{b_2}_C}\bigr)^{C \in \supp{b_2} \cap \cC_2}:
-            h_2 \land
-            \bigwedge_{C \in \supp{b_2} \cap \cC_2} g^{b_2}_C
-            \right)
-  \end{multline*}
-%  
-  holds for all valuations $\val{}{1} : V_{A_1} \rightarrow \data$
-  and $\val{}{2} : V_{A_2} \rightarrow \data$; and 2)~symmetrically
-  for any interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
-  \varsubsetneq b_2$.
-\end{definition}
+\defn{up:compat} in \secn{arch:appendix} provides a formal definition
+of the notion of \emph{upwards compatibility}, which we present here
+informally due to page limitations.  Two architectures $A_1$ and $A_2$
+are said to be upwards compatible iff, whenever their composition
+involves the fusion of two interactions $a_1 = a \cap P_{A_1}$ and
+$a_2 = a \cap P_{A_2}$ (see \eq{arch:composition}), whereof one, say
+$a_1$, is inhibited in a given state by a larger interaction $b_1
+\supset a_1$, there exists an interaction $b_2 \supseteq a_2$ that can
+be fused with $b_1$ to form an interaction enabled in the same state.
 
 \begin{theorem}[Preserving enforced properties]
   \label{thm:combining}
@@ -1506,25 +1534,21 @@ Below, we omit mentioning this explicitly.
 %****************************************************************
 %****************************************************************
 
-\section{Open pNets}
+\subsection{Open pNets}
 \label{secn:pNets}
-This section briefly describes pNets, see~\cite{HMZ-FORTE2016} for a  description of open pNets and their properties.
-\todoLHin{rewrite after uniformisation}
+This section briefly describes pNets, see~\cite{HMZ-FORTE2016} for more complete   description.
 pNets are tree-like structures, where the leaves are either
 \emph{parameterised labelled transition systems (pLTSs)}, expressing the
 behaviour of basic processes, or \emph{holes}, used as placeholders
-for unknown processes, of which we only specify the set of possible
-actions, this set is named the \emph{sort}.
-Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+for unknown processes.
+Nodes of the tree are synchronising artefacts using a
 set of \emph{synchronisation vectors} that express the possible
 synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
-\subsection{The (open) pNets Core Model}
+\paragraph{pNets definition.}
 \label{section:pNets}
-
-
-A pLTS is a labelled transition system with variables. Variables can be
+A pLTS is a labelled transition system with variables that can be
 used to characterise a state, as part of actions, guards, and
 assignments. 
 %Without loss of generality and to simplify the formalisation, we suppose 
@@ -1536,7 +1560,7 @@ assignments.
 %suppose that transitions looping to the same state does not do assignments.
 %Note that we make no assumption on the finiteness of the set of states, nor
 %on the finite branching of the transition relation.
-We first define the set of actions a pLTS can use ($a$
+We  define the set of actions a pLTS can use ($a$
 ranges over action labels):\\
 %. Action terms are  of the form 
 $\alpha=a(?x_i^{i \in I}, 
@@ -1548,15 +1572,15 @@ are expressions.
 A pLTS is a tuple
 $\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
 \begin{itemize}
-\item[$\bullet$]
+\item
 $S$ is a set of states, $\vars(s)$ denotes the set of associated variables;
-\item[$\bullet$]
+\item
 $s_0 \in S$ is the initial state;
 %\item[$\bullet$]
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
-\item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
+\item $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
 % SB: I removed a new paragraph here, ok?
 $\langle \alpha,~g,~u\rangle$,
@@ -1564,49 +1588,49 @@ where $\alpha$ is a parameterised action, $\alpha \in\actions{\variables}$;
 $g\in\boolexprs{\variables}$ is a guard over variables of the source state and the 
 action, and $u\in\assigns{\variables}$
 assigns updated value for variables in the destination state. 
-If 
-$s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then 
-% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
-		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
-		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\vars(\codom(u))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		\vars(\dom(u))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
-\noteLH{is dom and codom clear?}
-\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
-\noteLH{COORDINATION: I believe we should remove the constraints}		
+%%% SHORTEN BY LUDO
+%If 
+%$s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to $ then 
+%% REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
+%		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
+%		$\vars(g)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
+%		$\vars(\codom(u))\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
+%		\vars(\dom(u))\!\in\!\vars(s')$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+%\noteLH{is dom and codom clear?}
+%\noteSB{Not sure: I understand, because I know what is meant, but this is not a canonical use, so should be explained. Will be solved if we roll back to \mbox{$(?x_i := e_i)^{i \in I}$} or \mbox{$\overline{?x := e}$}.}
+%\noteLH{COORDINATION: I believe we should remove the constraints}		
 \end{itemize}
 \end{definition}
 %Now we define
 %pNets as constructors for hierarchical behavioural structures.
-A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
-set of holes, playing the role of process parameters.
-A  pNet consists of a set of sub-pNets exposing
-a set of global actions, each of them resulting from the synchronisation of internal actions in some sub-pNets. The synchronisation between global actions and
-internal actions is given by  \emph{synchronisation vectors}.
-Actions involved at the pNet level (in the synchronisation vectors) do
+A pNet composes several pNets, pLTSs, and holes playing the role of process parameters.
+A  pNet  exposes
+ global actions resulting from the synchronisation of internal actions in some sub-pNets. 
+This synchronisation  is specified by  \emph{synchronisation vectors}.
+Actions involved in the synchronisation vectors do
 not need to distinguish input variables, \ie they 
 have the form $a(\Expr_j^{j \in J})$.
 
 
 \begin{definition}[pNets]\label{defn:pnets}
-A pNet is a hierarchical structure where leaves are pLTSs and holes\footnote{Typing can 
-be added to pNets by defining and checking their interfaces, called 
-sort~\cite{HMZ-FORTE2016}}:
+A pNet is a hierarchical structure where leaves are pLTSs and holes: %\footnote{Typing can 
+%be added to pNets by defining and checking their interfaces, called 
+%sort~\cite{HMZ-FORTE2016}}:
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
+\item $\pNet_i^{i\in I}$ is the family of sub-pNets;
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
 %sub-pNets are indexed.
 
-\item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
+\item $J$ is a set of indexes, called \emph{holes}.
 $I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
 %\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
 %\emph{sort} of
 %hole $j$.
 
-\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
+\item $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors. % (\hl{$K\in\I_\P$}). 
 $\forall k\!\in\! K,
   \symb{SV}_k\!=\SV{\!\alpha_{l}^{l\in I_k \uplus J_k}}{\alpha'_k}{g_k}$, where
@@ -1618,12 +1642,13 @@ I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
 
 
 \end{itemize}
-We define the set of holes and leaves of a pNet as follows:
-  \begin{itemize}
-\item
-The set of holes $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
+%We define the set of holes and leaves of a pNet as follows:
+%  \begin{itemize}
+%\item
+The set of \emph{holes} $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
 itself plus the indexes of all the holes of its subnets (we suppose those indexes 
-disjoints).
+disjoints). A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
+is said to be \emph{open}.
 %
 %defined inductively; the sets of holes
 %in a pNet node and its subnets are all disjoint:
@@ -1636,13 +1661,11 @@ disjoints).
 %\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
 %\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
 %\end{array}\]
-\item
-The set of leaves of a pNet is the set of all pLTSs occurring in the structure, as an 
+%\item
+The set of \emph{leaves} of a pNet is the set of all pLTSs occurring in the structure, as an 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
-is said to be \emph{open}.
-\end{itemize}
-A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
-is said to be \emph{open}.
+%\end{itemize}
+
 \end{definition}
 
 
@@ -1650,7 +1673,7 @@ is said to be \emph{open}.
 
 
 
-\subsection{Operational Semantics for Open pNets}
+\paragraph{Operational Semantics for Open pNets.}
 \label{section:op-semantics}
 
 \noteLH{a pred is a g a post is a u (modified macros!)}
@@ -1662,11 +1685,12 @@ the transition occurs if some predicates hold, and can involve a
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
-\begin{definition}[Open transitions]
+\begin{definition}[Open transition]
 	\label{defn:OpenTransitions}
 	An \emph{open transition} over a
 	set $J$ of holes  and a set of states $\mathcal{S}$ is 
-	a structure of the form:	
+	a structure of the form:
+\\[-2ex]	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
 	{	\beta_j^{j\in J}, \Pred, \Post}
@@ -1713,42 +1737,8 @@ Open transitions are identified modulo logical equivalence on their predicate.
 %\end{definition}
 
 
-\begin{example}\emph{An open-transition.}
-  \label{Example:TimerOT3}
- 
-  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
-  and 2 holes. One of its possible open-transitions is:
 
-%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
-%%   : 
-%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
-
-  %% Removed to save space:
-%%  \smallskip
-%% $  OT_1  = \openrule
-%% {\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
-%% {\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
-%% $
-\medskip
-
-  $  OT_3  = \openrule
-  {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
-    \{z:=z1\} }
-  %  {\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{12}}
-    {\ostate{11} \OTarrow{fail} \ostate{12}}
-  $
-
-The first one, $OT_1$, corresponds to the simultaneous initialisation
-of both controlers. No hole is active at that time, and the resulting
-global action is denoted $\alpha_4$.
-
-The second one, $OT_3$, correspond to the firing of the connector
-$''tick, fail, fail''$, with the hole B performing action $fail$......
-\end{example}
-
-
-It is important to understand that the red dotted rule expresses an implication but at a different logical level compared to  a normal 
+The red dotted rule expresses an implication but at a different logical level compared to  a normal 
 inference rule. 
  The open transition is  a logical implication that uses a simple logic with the 
  expressive power  given by the predicate algebra (it must include logical 
@@ -1762,10 +1752,10 @@ inference rule.
 	An \emph{open automaton} is a structure\\ $A =
 	<J,\mathcal{S},s_0,\mathcal{T}>$ where:
 	\begin{itemize}
-		\item[$\bullet$]   $J$ is a  set of indices,
-		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
+		\item   $J$ is a  set of indices,
+		\item   $\mathcal{S}$ is a set of states and $s_0$ an initial state
 		among $\mathcal{S}$,
-		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and for each
+		\item $\mathcal{T}$ is a set of open transitions and for each
 		$t\in \mathcal{T}$ there exist  $J'$ with  $J'
 		\subseteq J$, such that $t$ is an open transition over  $J'$,
 		and  $\mathcal{S}$.
@@ -1782,146 +1772,216 @@ inference rule.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define states of open pNets as tuples of states, where we denote tuples
-in structured states as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
-states from other tuples.
-\begin{definition}[States of open pNets]\label{def-states}
-  A state of an open pNet is a tuple (not necessarily finite) of the
-  states of its leaves.
 
-  For any pNet p, let $\Leaves(p) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
-  the set of pLTS at its leaves,
-  then $States(p) = \{\triangleleft s_i^{i\in L}
-  \triangleright| \forall i\in L. s_i \in S_i\}$.
-A pLTS being its own single leave:
-  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
-
-The initial state is defined as:
-$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
-\end{definition}
-
-
-
-%% \begin{example} \emph{State of a pNet}
-%%   The states of pNet \texttt{EnableCompL} are:
-%%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 
-%%\triangleright$
-%% \end{example}
-
-\paragraph{Predicates:}
-Let
-$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
-be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
-define a
-predicate $\Pred$ relating
-the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
-\begin{multline}
-\Predsv(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
-{\alpha'} {g}, \alpha_i^{i\in I}, \beta_j^{j\in J}, \alpha)\Leftrightarrow \\
-\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\beta'_j \land 
-\alpha=\alpha' 
-\land g
-\end{multline}
-
-
- 
-
-Somehow, this predicate entails a verification of satisfiability in the sense that if the 
-predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
-synchronisation will not occur in the considered state. 
-
-
-In any other case (if the action families do not match or if there is no valuation of
-variables such that the above formula can be ensured) the predicate is undefined.
-
-This definition is not constructive but it is easy to build the predicate constructively
-by brute-force unification of the sub-pNets
-actions with the corresponding vector actions, possibly followed by a simplification
-step.
-
-
-We build the semantics of open pNets as an open automaton where LTSs are the pLTSs at
-the leaves of the pNet structure, and the states are given by 
-Definition~\ref{def-states}. The open transitions first
+We build the semantics of open pNets as an open automaton where  the states are
+tuples of states of the pLTSs at the leaves. We denote them $\triangleleft\ldots\triangleright$ for distinguishing tuple 
+states from other tuples. given by 
+Definition~\ref{def-states}. 
+The open transitions first
  project the global state into states of the leaves, then apply
-pLTS transitions on these states, and compose them with the sort of the holes. %The pNet
-%structure does not appear in the open-automaton, only the
-%set of Holes and the set of Leaves.
-The semantics    instantiates \emph{fresh} variables, additionally, for an action 
-$\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
+pLTS transitions on these states, and compose them with the sort of the holes according to the synchronisation defined in the synchronisation vectors. More precisely, each open transition between two states is defined as a composition of transition from some pLTSs and actions of some holes as follows: 1) the actions of the holes involved in the transition, 2) a guard  built from the synchronisation vectors coordinating the holes and the transitions involved; 3) assignments defined by the pLTSs transitions involved. The synchronisation vectors also define the global action. The global state evolution is also defined by the set of state transitions of the pLTSs involved in the pLTSs.
 
 
-\begin{definition}[Operational semantics of open pNets]
-	\label{defn:operationalSemantics}
-	The semantics of a pNet $p$ is an open automaton $A = 
-	<Holes(p),States(p),InitState(p),
-	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
-	satisfying the rules below:
-%	\begin{itemize}
-%		\item $J$ is the set of holes: $Holes(p)= J$. 
-		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
-%		\item ${\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
-%		\item $\mathcal{T}$ is the smallest set of open transitions		satisfying the 
-%rules below:
-%	\end{itemize}
-	
-	%% \TODO{ We should be careful here: after (re) reading "Huimin
-	%% 	Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
-	%% 	think handling assignments is not trivial, even for comparisons of pLTSs. }
 
+\begin{example}\emph{An open-transition.}
+  \label{OT:enable-composed}
+  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
+  and 2 holes. One of its possible open-transitions is:\\[-2ex]
+%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
+%%   : 
+%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
+% \smallskip
+%$  OT_1  = \openrule
+%{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
+%{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
+%$
+%\medskip
+\begin{small}\[ \openrule
+  {\{B\mapsto fail(b0)\},\\
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    \{z:=z1\} }
+  {\ostate{11} \OTarrow{\alpha_0} \ostate{12}}
+  \]
+\end{small}\vspace{-1.5ex}
+%
+%The first one, $OT_1$, corresponds to the simultaneous initialisation
+%of both controlers. No hole is active at that time, and the resulting
+%global action is denoted $\alpha_4$.
 
-	
-	The rule for a pLTS  checks that the guard 
-	is verified and transforms assignments into post-conditions:
-	
-	\begin{description}
-		\item[{\bf Tr1:}]
-	$\inferrule
-		{ s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to  }
-		{ \mylangle  S,s_0, \to \myrangle
-			\models
-			\openrule
-			{\emptyset ,
-			g,u}
-			{\ostate{s} \OTarrow{\alpha} \ostate{s'}}
-		}
-		$
-	\end{description}
-%	Note that this note is greatly simplified by the fact that variables are local to 
-%	thread; introducing global state variables or accepting loops to the same 
-%	state would 
-%	require to reason 
-%	on the scope of 
-%	each variables, and to introduce additional variables to handle the several occurence 
-%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
-%	transitions 
-%	ensure that the same variable never appears both on the left and on the right of the 
-%	equations of a predicate.
-	
-	The second rule deals with pNet nodes: for each possible
-	synchronisation vector (of index $k$) applicable to the rule subject, the premisses
-	include one {\em open transition} for each sub-pNet involved , one possible
-	{\em action} for each Hole involved, and the predicate relating these
-	with the resulting action of the vector. The sub-pNets involved are split between two 
-	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
-	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
-	\in M}}{\alpha'}{g}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
-	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
-	I_2$}.                                                                    
-	           
-	                                                       
-	\begin{description}
-		\item[{\bf Tr2:}]
-	\end{description}
-	
+It correspond to the firing of the connector
+$''tick, fail, fail''$. It states that, if the hole B performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
+The guard corresponds both to the guard of this transition and to synchronisation vector constraints.
+\end{example}
+%
+%\begin{definition}[States of open pNets]\label{def-states}
+%  A state of an open pNet is a tuple (not necessarily finite) of the
+%  states of its leaves.
+%
+%  For any pNet p, let $\Leaves(p) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
+%  the set of pLTS at its leaves,
+%  then $States(p) = \{\triangleleft s_i^{i\in L}
+%  \triangleright| \forall i\in L. s_i \in S_i\}$.
+%A pLTS being its own single leave:
+%  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S\}$.
+%
+%The initial state is defined as:
+%$InitState(p) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
+%\end{definition}
+%
+%
+%
+%%% \begin{example} \emph{State of a pNet}
+%%%   The states of pNet \texttt{EnableCompL} are:
+%%%   $\triangleleft 00 \triangleright, \triangleleft 10 \triangleright, \triangleleft 11 
+%%%\triangleright$
+%%% \end{example}
+%
+%\paragraph{Predicates:}
+%Let
+%$\mylangle\overline{\pNet},\overline{\Sort},\overline{\symb{SV}}\myrangle$
+%be a pNet. Consider a synchronisation vector $\symb{SV}\in \overline{\symb{SV}}$. We 
+%define a
+%predicate $\Pred$ relating
+%the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
+%\begin{multline}
+%\Predsv(\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
+%{\alpha'} {g}, \alpha_i^{i\in I}, \beta_j^{j\in J}, \alpha)\Leftrightarrow \\
+%\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\beta'_j \land 
+%\alpha=\alpha' 
+%\land g
+%\end{multline}
+%
+%
+% 
+%
+%Somehow, this predicate entails a verification of satisfiability in the sense that if the 
+%predicate $\Pred_{\symb{sv}}$ is not satisfiable, then the transition associated with the 
+%synchronisation will not occur in the considered state. 
+%
+%
+%In any other case (if the action families do not match or if there is no valuation of
+%variables such that the above formula can be ensured) the predicate is undefined.
+%
+%This definition is not constructive but it is easy to build the predicate constructively
+%by brute-force unification of the sub-pNets
+%actions with the corresponding vector actions, possibly followed by a simplification
+%step.
+%
+%
+%
+%
+%\begin{definition}[Operational semantics of open pNets]
+%	\label{defn:operationalSemantics}
+%	The semantics of a pNet $p$ is an open automaton $A = 
+%	<Holes(p),States(p),InitState(p),
+%	\mathcal{T}>$ where $\mathcal{T}$ is the smallest set of open transitions		
+%	satisfying the rules below:
+%%	\begin{itemize}
+%%		\item $J$ is the set of holes: $Holes(p)= J$. 
+%		%  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+%%		\item ${\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+%%		\item $\mathcal{T}$ is the smallest set of open transitions		satisfying the 
+%%rules below:
+%%	\end{itemize}
+%	
+%	%% \TODO{ We should be careful here: after (re) reading "Huimin
+%	%% 	Lin, 'Symbolic Transition Systems with Assignements', Concur'96" I
+%	%% 	think handling assignments is not trivial, even for comparisons of pLTSs. }
+%
+%
+%	
+%	The rule for a pLTS  checks that the guard 
+%	is verified and transforms assignments into post-conditions:
+%	
+%	\begin{description}
+%		\item[{\bf Tr1:}]
+%	$\inferrule
+%		{ s \xrightarrow{\langle \alpha,~g,~u\rangle} s'\in \to  }
+%		{ \mylangle  S,s_0, \to \myrangle
+%			\models
+%			\openrule
+%			{\emptyset ,
+%			g,u}
+%			{\ostate{s} \OTarrow{\alpha} \ostate{s'}}
+%		}
+%		$
+%	\end{description}
+%%	Note that this note is greatly simplified by the fact that variables are local to 
+%%	thread; introducing global state variables or accepting loops to the same 
+%%	state would 
+%%	require to reason 
+%%	on the scope of 
+%%	each variables, and to introduce additional variables to handle the several occurence 
+%%	of the same pLTS variable in the predicates. Indeed the constraints on pLTS 
+%%	transitions 
+%%	ensure that the same variable never appears both on the left and on the right of the 
+%%	equations of a predicate.
+%	
+%	The second rule deals with pNet nodes: for each possible
+%	synchronisation vector (of index $k$) applicable to the rule subject, the premisses
+%	include one {\em open transition} for each sub-pNet involved , one possible
+%	{\em action} for each Hole involved, and the predicate relating these
+%	with the resulting action of the vector. The sub-pNets involved are split between two 
+%	sets, $I_2$ for subnets that are pLTSs, and $I_1$ for the others, $J$ is the set of 
+%	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{\alpha_m^{m 
+%	\in M}}{\alpha'}{g}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
+%	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
+%	I_2$}.                                                                    
+%	           
+%	                                                       
+%	\begin{description}
+%		\item[{\bf Tr2:}]
+%	\end{description}
+%	
+%%	\noindent
+%%\begin{mathpar}
+%%    \mprset {vskip=1ex}
+%%\inferrule
+%%    {
+%%\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+%%    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
+%%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{g} 
+%%\\
+%%\\     	
+%%	\forall m\!\!\in\!\! I_1. {\pNet_m 
+%%	\models\openrule
+%%    	{
+%%    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
+%%    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
+%%    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
+%%  \qquad
+%%\forall m\!\!\in\!\! I_2.		{ \pNet_m 
+%%    	 \models
+%%    	\openrule
+%%    	{\emptyset, \Pred_m, \Post_m}
+%%    	{\ostate{s_m} \OTarrow {\alpha_m}
+%%    		\ostate{s_m'}} }\\\\
+%%     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
+%%    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
+%%    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
+%%    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
+%%    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+%%    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
+%%    }
+%%    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+%%    	\models
+%%    	{\openrule
+%%    		{
+%%    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+%%    		\Post_m}
+%%    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+%%    			\ostate{(s_i^\prime)^{i\in L}}}
+%%    	}
+%%    }
+%%\end{mathpar}  
 %	\noindent
 %\begin{mathpar}
-%    \mprset {vskip=1ex}
+%    \mprset {vskip=.8ex}
 %\inferrule
 %    {
-%\Leaves(\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in 
+%\Leaves(\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in 
 %    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{g} 
+%k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
 %\\
 %\\     	
 %	\forall m\!\!\in\!\! I_1. {\pNet_m 
@@ -1938,75 +1998,36 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 %    	{\ostate{s_m} \OTarrow {\alpha_m}
 %    		\ostate{s_m'}} }\\\\
 %     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
-%    	\Pred = \bigwedge_{m\in (I_1\uplus I_2)}\!\! \Pred_m \land
-%    	\Pred_{\symb{sv}}(SV_k,\alpha_m^{m\in (I_1\uplus I_2)},\beta_j^{j\in J},\alpha)\\ 
-%    		I' = \biguplus_{m\in I_1}\!\! I_m \uplus I_2
-%    	\\\forall i\in	L\backslash I'.\,s'_i=s_i \\
+%    	\Pred = \bigwedge_{m\in I_1\uplus I_2}\!\! \Pred_m \land
+%    	\Predsv(SV_k,\alpha_m^{m\in I_1\uplus I_2},\beta_j^{j\in J},\alpha)\\ 
+%    	\forall i\in	L\backslash \left(\biguplus_{m\in I_1}\!\! L_m \uplus I_2\right).\,s'_i=s_i \\
 %    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
 %    }
-%    {\mylangle \overline{\pNet}, \overline{\Sort}, \symb{SV}_k^{k\in K}\myrangle
+%    {\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in K}\myrangle
 %    	\models
 %    	{\openrule
 %    		{
-%    		{\beta_j}^{j\in J^\prime}, \Pred, \uplus_{m\in I_1\uplus I_2} 
+%    		{\beta_j}^{j\in J^\prime}, \Pred,  \biguplus_{m\in I_1\uplus I_2} 
 %    		\Post_m}
 %    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
 %    			\ostate{(s_i^\prime)^{i\in L}}}
 %    	}
 %    }
-%\end{mathpar}  
-	\noindent
-\begin{mathpar}
-    \mprset {vskip=.8ex}
-\inferrule
-    {
-\Leaves(\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in 
-    	K}\myrangle) \!=\! \pLTS_l^{l\in L} \qquad  	
-k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alpha'}{e_b} 
-\\
-\\     	
-	\forall m\!\!\in\!\! I_1. {\pNet_m 
-	\models\openrule
-    	{
-    	\beta_{j}^{j\in J_m}, \Pred_m, \Post_m}
-    	{\ostate{s_{i}^{i \in L_m}} \OTarrow {\alpha_m}
-    		\ostate{(s_i^\prime)^{i\in L_m}}} }	
-  \qquad
-\forall m\!\!\in\!\! I_2.		{ \pNet_m 
-    	 \models
-    	\openrule
-    	{\emptyset, \Pred_m, \Post_m}
-    	{\ostate{s_m} \OTarrow {\alpha_m}
-    		\ostate{s_m'}} }\\\\
-     J' = \biguplus_{m\in I_1}\!\! J_m \uplus J 	\\
-    	\Pred = \bigwedge_{m\in I_1\uplus I_2}\!\! \Pred_m \land
-    	\Predsv(SV_k,\alpha_m^{m\in I_1\uplus I_2},\beta_j^{j\in J},\alpha)\\ 
-    	\forall i\in	L\backslash \left(\biguplus_{m\in I_1}\!\! L_m \uplus I_2\right).\,s'_i=s_i \\
-    \fresh(\alpha'_m,\alpha',\beta_j,\alpha) 
-    }
-    {\mylangle {\pNet}_m^{m\in I}, \set{\Sort}, \symb{SV}_k^{k\in K}\myrangle
-    	\models
-    	{\openrule
-    		{
-    		{\beta_j}^{j\in J^\prime}, \Pred,  \biguplus_{m\in I_1\uplus I_2} 
-    		\Post_m}
-    		{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
-    			\ostate{(s_i^\prime)^{i\in L}}}
-    	}
-    }
-\end{mathpar}        
+%\end{mathpar}        
 
+pNets have already been used to define a behavioural semantics for distributed components~\cite{AmeurBoulifa2017}, in these works, from a pNet model with finite instantiations of parameters, correctness properties can be verified by model-checking. 
+More recently, a bisimulation theory with composition properties have been formalised for open pNets~\cite{HMZ-FORTE2016}, and a SMT framework has been developed  for verifying properties of parametrised open pNets.
 
-\todoLHin{add a paragraph about pnets properties and usage, here are a few points (to be completed and written up properly depending on what we need}
-
-- pnets as a model for gcm components (behaviour, distributed systems, verification)
-
-- used for finite model checking (with finite domains for parameters)
-
-- smt framework for reasoning on infinite models
-
-- a theory of pnets: composition properties , stong (and weak) bisim
-	** extract a few useful composition theorems? **
+%\todoLHin{add a paragraph about pnets properties and usage, here are a few points (to be completed and written up properly depending on what we need}
+%
+%- pnets as a model for gcm components (behaviour, distributed systems, verification)
+%
+%- used for finite model checking (with finite domains for parameters)
+%
+%- smt framework for reasoning on infinite models
+%
+%- a theory of pnets: composition properties , stong (and weak) bisim
+%	** extract a few useful composition theorems? **
 
 
 %OLD	\begin{description}
@@ -2054,14 +2075,12 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 %    	}
 %    }
 %    $
-	\medskip
 %        \TODO{may be explain how $\Pred(SV,a_i^{i\in I_k},b_j^{j\in
 %            J_k},v)$ is built ? You mean more than what is written on previous page????}
 	%%    \TODO{I have tentatively added the sort constraint on hole actions, that was
 	%%not included in the first version... I'm unsure whether this is the best place to
 	%%include it, because it may change the decidability conditions on predicates}
 	
-\end{definition}
 
 
 %****************************************************************
@@ -2071,21 +2090,20 @@ k\!\in\! K \qquad SV_k \!=\! \SV{(\alpha'_m)^{m \in I_1\uplus I_2\uplus J}}{\alp
 \label{secn:encoding}
 
 We will define the encoding of BIP architectures into pNets by
-associating to each architecture \emph{and a partition of its dangling
-  ports} the corresponding pNet.  Notice that the addition of a
-partition of dangling ports is a matter of convenience, since one can
-use a trivial partition comprising only one complete set of dangling
-ports.
-
-Let $A = \tuple{\cC, V_A, P_A, \export[A], \Gamma}$ be an
-architecture.  For each $C \in \cC$, let $C = \tuple{Q_C, q^0_C, V_C,
-  \val{0}{C}, P_C, \export[C], \goesto{}}$.  Finally, let $\partition
-\subseteq 2^{P_A}$ be a partition of the set of dangling ports of $A$,
-\ie $\bigcup_{D \in \partition} D = P_A \setminus \bigcup_{C \in \cC}
-P_C$ and $D_1 \cap D_2 = \emptyset$, for any two distinct $D_1, D_2
-\in \partition$.  In particular, as mentioned above, one can consider
-the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
-  \in \cC} P_C\}$.
+associating to each architecture $A = \tuple{\cC, V_A, P_A,
+  \export[A], \Gamma}$ with $C = \tuple{Q_C, q^0_C, V_C, \val{0}{C},
+  P_C, \export[C], \goesto{}}$, for each $C \in \cC$, \emph{and a
+  partition $\partition \subseteq 2^{P_A}$ of its dangling ports} (\ie
+$\biguplus_{D \in \partition} D = P_A \setminus \bigcup_{C \in \cC}
+P_C$), the corresponding pNet $\nopri[A, \partition]$.
+%
+%% and $D_1 \cap D_2 = \emptyset$, for any two distinct $D_1, D_2
+%% \in \partition$.
+%
+%% Notice that this addition 
+%% is a matter of convenience, since one can
+%% use the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
+%%   \in \cC} P_C\}$.
 
 Below, for the sake of clarity, we start by presenting in
 \secn{enc:nopri} the encoding of $A$ into pNets without accounting for
@@ -2100,44 +2118,53 @@ implicitly assumed maximal progress priority.
 Recall that $\Gamma$ is an interaction model over the interface
 $\tuple{V_A, P_A, \export[A]}$, \ie these interface elements are
 implicitly involved in the definition of $\Gamma$.
+%
+We define $\nopri[A, \partition] \bydef{=} \pNetTuple{(\nopri[C])^{C
+    \in \cC}, \partition, \nopri[\Gamma]}$, where $\nopri[C]$ and
+$\nopri[\Gamma]$ are the encodings of a coordinator $C$ and the
+interaction model $\Gamma$ respectively.
 
-\paragraph{Encoding the coordinators} We define the
-mapping $\nopri$ as $\nopri[A, \partition] \bydef{=}
-\pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$,
-where, for each $C \in \cC$, the encoding $\nopri[C]$ is a pLTS
-$\pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
-%
-\begin{itemize}
-\item $s_0 \not\in Q_C$ is fresh and $S = Q_C \cup \{s_0\}$,
-\item $\vars(s) = V_C$, for all $s \in Q_C$, and $\vars(s_0) =
-  \emptyset$,
-\item the transition relation $\goesto[{\nopri[C]}]{}$ is defined as
-  the union of three sets of transitions:
-%
-  \begin{multline}
-    \label{eq:nopri:trans}
-    \goesto[{\nopri[C]}]{} \bydef{=}
-    \bsetdef{\tuple{s, a(\true), g, u, s'}}{
-      \tuple{s, a, g, u, s'} \in \goesto{}}
-    \\    
-    \cup
-    \bsetdef{\tuple{s, a(\false), \true, \noop, s}}{
-      s \in Q_C, a \in P_C}
-    \\
-    \cup
-    \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}
-    \,,
-  \end{multline}
-%
-  where $\mathit{init} = \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$.
-\end{itemize}
-
-Intuitively, we 1)~introduce a fresh initial state with an additional
+\paragraph{Encoding the coordinators}
+To encode a coordinator $C$, we 1)~introduce a fresh initial state with an additional
 $\init$ transition that initialises all the variables to those defined
 by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
 additional Boolean value to each port, 3)~create pNet transitions that reflect the original transitions of
 $C$ with $\true$ as parameter and 4)~create additional loop transitions marked by
 $\false$.
+
+Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
+%
+\begin{itemize}
+\item $s_0 \not\in Q_C$ is fresh and $S = Q_C \cup \{s_0\}$,
+\item $\vars(s) = V_C$, for all $s \in Q_C$, and $\vars(s_0) =
+  \emptyset$,
+%% \item the transition relation $\goesto[{\nopri[C]}]{}$ is defined as
+%%   the union of three sets of transitions
+%%   (with $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$):
+%% %
+%%   \begin{multline}
+%%     \label{eq:nopri:trans}
+%%     {\goesto[{\nopri[C]}]{}} \bydef{=}
+%%     \bsetdef{\tuple{s, a(\true), g, u, s'}}{
+%%       \tuple{s, a, g, u, s'} \in \goesto{}}
+%%     \\    
+%%     \cup
+%%     \bsetdef{\tuple{s, a(\false), \true, \noop, s}}{
+%%       s \in Q_C, a \in P_C}
+%%     %% \\
+%%     \cup
+%%     \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}
+%%     \,.
+%%   \end{multline}
+
+\item ${\goesto[{\nopri[C]}]{}} \bydef{=} T_1 \cup T_2 \cup T_3$, with
+  $T_1 = \bsetdef{\tuple{s, a(\true), g, u, s'}}{
+      \tuple{s, a, g, u, s'} \in \goesto{}}$,
+  $T_2 = \bsetdef{\tuple{s, a(\false), \true, \noop, s}}{
+      s \in Q_C, a \in P_C}$,
+  $T_3 = \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}$
+    and $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$.
+\end{itemize}
 
 The loop transitions marked by $\false$ will be used in the encoding
 of connectors.  Each BIP connector can define several interactions,
@@ -2153,12 +2180,12 @@ architecture, including the encodings of the two coordinators, \ie
 $\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
 encoding in the figure is slightly optimised: some of the ports do not
 have an associated Boolean value, nor the additional loop transitions.
-\todoSB{Revise this if necessary}\hl{We will explicitate this optimisation once we have defined the
+\todoSB{Revise this if necessary}\hl{We will explicitate this optimisation after we define the
 encoding of the interaction model.}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{FailureTimerPNET-v4}
+  \includegraphics[width=0.9\columnwidth]{FailureTimerPNET-v4}
   \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the priority model}
   \label{fig:FailureTimer:pNet}
 \end{figure}
@@ -2173,17 +2200,18 @@ encoding of the interaction model.}
 %% \end{figure*}
 
 \paragraph{Encoding the interaction model}
-First of all, recall that $\nopri[A, \partition ] \bydef{=}
-\pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$.
-Thus, the holes in the resulting pNet are indexed by the elements of
+%% First of all, recall that $\nopri[A, \partition ] \bydef{=}
+%% \pNetTuple{(\nopri[C])^{C \in \cC}, \partition, \nopri[\Gamma]}$.
+%% Thus, 
+The holes in $\nopri[A, \partition]$ are indexed by the elements of
 the partition \partition.  For the encoding of our running example, we
 take $\partition = \bigl\{\{\PortFail, \PortResume\},\{\PortAsk,
 \PortReset\}\bigr\}$.  This corresponds to the intuition that the
 dangling ports {\PortFail} and {\PortResume} will be provided by a 
 monitored component, whereas {\PortAsk} and {\PortReset} correspond to
 the actions provided by the ``environment'' (other components of the
-system) that are triggered in case of a persistent failure.  Similarly
-to the encoding of the coordinators, in the synchronisation vectors of
+system) that are invoked in case of a persistent failure.  As for
+the encoding of the coordinators, in the synchronisation vectors of
 \nopri[\Gamma], we will associate Boolean values to the actions
 corresponding to these ports.
 
@@ -2201,41 +2229,7 @@ as a set of connectors. \noteSB{%
 } Indeed, as illustrated by the Failure Monitor architecture in
 \fig{schema:ArchFailure:BIP}, each connector can define several
 allowed interactions, depending on its hierarchical structure and the
-use of synchrons and triggers.  \noteSB{Move this to
-  \secn{components}?}For instance, the connector {\NameTimer.\PortTick
-  \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)} is a
-two-level hierarchical connector.  In the second-level subconnector
-{\PortFail \trigsynch \NameCtrl.\PortFail}, the port {\PortFail} is a
-trigger, whereas {\NameCtrl.\PortFail} is a synchron.  Therefore, this
-subconnector allows two interactions: one with {\PortFail} alone and
-another one involving both ports.  Similarly, at the top level,
-{\NameTimer.\PortTick} is a trigger, whereas the second-level
-subconnector is a synchron.  Hence, the overall connector allows the
-interaction involving only one port {\NameTimer.\PortTick}\footnote{%
-%
-  Such interactions are called \emph{singleton interactions}.
-%
-} and any interaction involving both {\NameTimer.\PortTick} and
-\emph{some} interaction of the second-level subconnector.  Combining
-the two levels we can see that the entire connector defines the
-following three interactions (observe that $\topinterval +
-\NameTimer.t = \topinterval$ and $\NameTimer.z \cap \topinterval =
-\NameTimer.z$):
-%
-\begin{align*}
-  \bigl(\{\NameTimer.\PortTick\}&,
-  \true, 
-  \NameTimer.z := \NameTimer.z\bigr)
-  \,,\\
-  \bigl(\{\PortFail, \NameTimer.\PortTick\}&,
-  \true,
-  \NameTimer.z := \NameTimer.z\bigr)
-  \,,\\
-  \bigl(\{\NameCtrl.\PortFail, \PortFail, \NameTimer.\PortTick \}&,
-  \true,
-  \NameTimer.z := \NameTimer.z \cap (\NameCtrl.\mathit{zone} + \NameTimer.t)\bigr)
-  \,.\
-\end{align*}
+use of synchrons and triggers.
 
 In order to encode these interactions using only one synchronisation vector, we use
 the additional Boolean values associated to each port by the encoding
@@ -2608,7 +2602,7 @@ removed from the corresponding guards in \eq{nopri:connector}.
 %****************************************************************
 %****************************************************************
 
-\section{SMT encoding of open pNets}
+\subsection{SMT encoding of open pNets}
 \label{secn:smt}
 
 %****************************************************************
@@ -2622,27 +2616,23 @@ removed from the corresponding guards in \eq{nopri:connector}.
 \subsection{Verification of the characteristic properties}
 \label{secn:arch:verif}
 
-%% \begin{figure}[t]
-%%   \centering
-%%   \includegraphics[width=\columnwidth]{TimerOpenAut}
-%%   \caption{The open Automaton of the Failure Monitor Architecture}
-%%   \label{schema:ArchFailure:BIP}
-%% \end{figure}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{TimerOpenAut}
+  \caption{The open Automaton of the Failure Monitor Architecture}
+  \label{schema:ArchFailure:BIP}
+\end{figure}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{TimerOADetailed}
+  \includegraphics[width=0.8\columnwidth]{FailureTimerOA}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA}
+  \label{schema:ArchFailure:BIP}
 \end{figure}
 
-In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
-obtained from our pNet. For reasons of space, we have not shown the
-detail of the open transition, but only the assignement of state
-variables, and the resulting action. You can find the full details in
-Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one explained in Example
-\ref{Example:TimerOT3} page \pageref{Example:TimerOT3}.
+12 open transitions... Comments on the predicates ???
 
+Should list some temporal logic properties....
 
 %****************************************************************
 
@@ -2685,8 +2675,30 @@ in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
 
 \section{Related work}
 \label{secn:related}
+Previous works on pNets and BIP architectures have been mentioned at the beginning of the paper. Consequently, we  review here the closest related works outside the scope of pNets and BIP architectures. Among those, we focus on existing approaches for the compositional and parameterized verification of systems, and on alternative verification engines???
+\noteLH{not sure about this classification ; to be refined}
+
+A few tracks
+
+%%% compositional verification
+approaches by typing interfaces/protocols
+
+infinite/parametrized model checking?
+
+theorem proving? (too much manual effort) we need an example, we could cite Coqcots and Pycots for reconfiguration
+
+SMT on an application not using component structure. is there a strong Z3 example
+
+KeY? (I would call this symbolic execution and assume-guarantee)
+
+
+
+
+
+
 
 %****************************************************************
+
 %****************************************************************
 
 \section{Conclusion}
@@ -2955,7 +2967,7 @@ in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
   \,.
   \]
 %
-  By \eq{im:sem} and \eq{priority:sem}, this implies
+  By \defn{im:sem} and \defn{priority:sem}, this implies
   that
   $(q_1, q_2, q) \goesto {a, g', e'} (q_1', q_2', q')$
   is a transition in $(A_1 \arcomp A_2)(\cB)$, with
@@ -2994,8 +3006,8 @@ in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
     } \lnot h'
   \end{equation}
 %
-  is the conjunct encoding the maximal progress priority
-  \eq{priority:sem}.  As above for $g'$, for each $(b, h', f')$ in
+  is the conjunct encoding the maximal progress priority in
+  \defn{priority:sem}.  As above for $g'$, for each $(b, h', f')$ in
   \eq{onestep:maxprog:guard}, $h'$ can be decomposed as $h' = h \land
   h_1 \land h_2 \land h_\cB$ (without the maximal progress conjunct,
   since no priority is applied in $\bigl(\IMextend{\Gamma}{(P_1 \cup
@@ -3048,7 +3060,7 @@ in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
 
   \paragraph*{Step \ref{onestep:proof:im}}
   %% Denoting $P_\cB = \bigcup_{B \in \supp{a} \cap \cB} P_B$, 
-  By \eq{im:sem}, we have
+  By \defn{im:sem}, we have
 %
   \begin{mathpar}
     q_1 \goesto{a \cap P_{C_1}, g_1, e_1} q_1'
@@ -3081,7 +3093,7 @@ in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
   (\val[\primeit]{}{1}, \val[\secondit]{}{})$ with 
   $\val[\primeit]{}{} \order \val[\secondit]{}{}$.
 
-  By \eq{comp:semantics} and \eq{im:sem}, we have
+  By \defn{comp:semantics} and \defn{im:sem}, we have
   $
   (q_1, \val{}{1}, q, \val{}{})
   \goesto{a \cap P_1, \val[\doubletilde]{}{1}}
@@ -3780,10 +3792,142 @@ causal rule $p \Rightarrow C$, where $C$ is the disjunction of all
 prefixes leading from roots of $t$ to some node containing $p$,
 including the ports of this node other than $p$.
 
-\subsection{Full results of the case study}
+\section{Additional material for the theory of architectures}
+\label{secn:arch:appendix}
+
+
+\begin{definition}[Upwards compatibility]
+  \label{defn:up:compat}
+  \todoSB{Summarise in English and move to the appendix}
+%
+  Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
+  \export[A_i], \Gamma_i}$, for $i = 1,2$.
+%
+  We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
+  any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
+  \cap P_{A_2} = a_2 \cap P_{A_1}$ (\ie they agree on the common ports
+  of the two architectures), we have 1)~for any interaction $(b_1,
+  h_1, f_1) \in \Gamma_1$, such that $a_1 \varsubsetneq b_1$, there
+  exists an interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \subseteq b_2$, $b_1 \cap P_{A_2} = b_2 \cap P_{A_1}$ and the 
+  implication  
+%
+  \begin{multline*}
+    \left(
+    \exists (q^1_C)^{C \in \supp{b_1} \cap \cC_1}:
+    \exists (q^2_C)^{C \in \supp{a_2} \cap \cC_2}:
+    \bigwedge_{
+      \begin{multlined}
+        \scriptstyle
+        C \in \supp{b_1} \cap \cC_1 \cap
+        \\
+        \scriptstyle
+        \supp{a_2} \cap \cC_2
+      \end{multlined}
+    }
+    q^1_C = q^2_C
+    \ \land
+    \right.
+    \\
+    \begin{aligned}
+      \exists \bigl(q^1_C \goesto{b_1 \cap P_C, g^{b_1}_C, f^{b_1}_C}\bigr)^{C \in \supp{b_1} \cap \cC_1}:
+      & \quad \left.
+      h_1 \land \bigwedge_{C \in \supp{b_1} \cap \cC_1} g^{b_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^1_C \goesto{a_1 \cap P_C, g^{a_1}_C, e^{b_1}_C}\bigr)^{C \in \supp{a_1} \cap \cC_1}:
+      & \quad \left.
+      g_1 \land \bigwedge_{C \in \supp{a_1} \cap \cC_1} g^{a_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^2_C \goesto{a_2 \cap P_C, g^{a_2}_C, e^{a_2}_C}\bigr)^{C \in \supp{a_2} \cap \cC_2}:
+      & \quad
+      \left.
+      g_2 \land \bigwedge_{C \in \supp{a_2} \cap \cC_2} g^{a_2}_C
+      \right) \implies 
+    \end{aligned}
+  \end{multline*}
+%
+  \begin{multline*}
+    \left(
+    \exists (q^2_C)^{C \in (\supp{b_2}\setminus\supp{a_2}) \cap \cC_2}:
+            {\color{white}\bigwedge_{C \in \cC_1}}\right. % Fake bigwedge to make the parenthesis the right size
+            \\
+            \left.
+            \exists \bigl(q^2_C \goesto{b_2 \cap P_C, g^{b_2}_C, f^{b_2}_C}\bigr)^{C \in \supp{b_2} \cap \cC_2}:
+            h_2 \land
+            \bigwedge_{C \in \supp{b_2} \cap \cC_2} g^{b_2}_C
+            \right)
+  \end{multline*}
+%  
+  holds for all valuations $\val{}{1} : V_{A_1} \rightarrow \data$
+  and $\val{}{2} : V_{A_2} \rightarrow \data$; and 2)~symmetrically
+  for any interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \varsubsetneq b_2$.
+\end{definition}
+
+
+\section{Additional material for the case study}
+
+\subsection{Properties enforced by the Failure Monitor architecture}
+\label{secn:properties}
+
+The architecture in \fig{schema:ArchFailure:BIP} enforces the
+following safety properties:
+\begin{enumerate}
+\item There is always a possibility to reset the system after a
+  failure:
+  \begin{equation}
+    \label{eq:prop:reset:can}
+    \AG (\PortFail \rightarrow \EF \PortReset).
+  \end{equation}
+
+\item As long as no failure has occured, the $z$ variable of the
+  $\NameTimer$ component has the value $\topinterval$:
+  \begin{equation}
+    \label{eq:prop:z:top}
+    \AW[\quad]{(z = \topinterval)}{\PortFail} \land\quad
+    \AG \bigl(
+    \PortReset \rightarrow \AW[]{(z = \topinterval)}{\PortFail}
+    \bigr).
+  \end{equation}
+
+\item A reset can only be requested within the specified delay after
+  a failure:
+  \begin{multline}
+    \label{eq:prop:to:delay}
+    \forall T_0, T_1 \in \sZ,\
+    \AG \Big((\PortFail \land \NameTimer.t = T_0) \rightarrow
+    \\
+    \AW[]{\bigl((\PortAsk \land \NameTimer.t = T_1) \rightarrow
+      (T_1 - T_0 \in \NameCtrl.\mathit{zone})\bigr)
+    }{
+      (\PortReset \lor \PortResume)
+    }\Big),
+  \end{multline}
+  where $T_0$ and $T_1$ are integer parameters.  (The formula
+  holds with the universal quantification over $T_0$ and $T_1$
+  due to the fact that their individual values only appear in
+  the left-hand sides of the two implications.)
+\end{enumerate}
+
+In addition\mdash although outside the scope of this paper\mdash it
+enforces the \emph{liveness} property \emph{``Whenever a reset is
+  requested, it will eventually be effectuated''}:
+%
+  \begin{equation}
+    \label{eq:prop:reset:will}
+    \AG (\PortAsk \rightarrow \AF \PortReset).
+  \end{equation}
+%
+  (See \cite{AttieBBJS16-architectures-faoc} for the definition and
+  results on the preservation of liveness properties by composition of
+  architectures in absence of data and priorities.)
+
+
+\subsection{Output of the open-automaton construction}
 \label{secn:full-results}
 
-\subsubsection{Output of the open-automaton construction}
 The standard pretty-print of OTs by the tool include the transitions
 of the pLTSs (controllers). This is not a full ``proof-carrying
 code'', but it allows for a better understanding of the construction
@@ -3795,12 +3939,12 @@ verbatim form.
 \small\begin{verbatim}
 FailureTimerArchi
 --------------------
-SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->fail,
+SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
                           [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
-SV1 SVs: <cancel(b1), resume(b2), resume, _>-->resume, (b1=b2)
-SV2 SVs: <timeout, timeout, _, ask>-->ask
-SV3 SVs: <_, reset, _, reset>-->reset
-SV4 SVs: <init, init, _, _>-->init
+SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
+SV2 SVs: <timeout, timeout, _, ask>-->alpha2
+SV3 SVs: <_, reset, _, reset>-->alpha3
+SV4 SVs: <init, init, _, _>-->alpha4
 pLTS: Timer
 - Transition: t0---init-->t1, { t := 0 z := TopInt}
 - Transition: t1---tick(z, t, z1)-->t1, [(t<GET_MAX z)], { t := (t+1) z := z1}
@@ -3830,7 +3974,7 @@ INFO  BIPArchFailureTimerMax_LTF3 -
        {t0---init-->t1, s0---init-->s1},   {},  [true],
        {t := 0, z := TopInt, zone := minZone,maxZone}
     OT1 ------------------------------------------------------------
-        <t0_s0>-----init----><t1_s1>
+        <t0_s0>-----alpha4----><t1_s1>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B-->},
@@ -3842,7 +3986,7 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT2 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s1>
+        <t1_s1>-----alpha0----><t1_s1>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
@@ -3854,7 +3998,7 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT3 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s2>
+        <t1_s1>-----alpha0----><t1_s2>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
@@ -3863,13 +4007,13 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          /\((resume(false))=(resume(b2:sva_SV1:1:2)))
          /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
     OT4 ------------------------------------------------------------
-        <t1_s1>-----resume----><t1_s1>
+        <t1_s1>-----alpha1----><t1_s1>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E-->},
        [(:hb_E=ask)/\(t in z)],   {t := t+1}
     OT5 ------------------------------------------------------------
-        <t1_s1>-----ask----><t1_s1>
+        <t1_s1>-----alpha2----><t1_s1>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B-->},
@@ -3881,14 +4025,14 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT6 ------------------------------------------------------------
-        <t1_s2>-----fail----><t1_s2>
+        <t1_s2>-----alpha0----><t1_s2>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
        [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
          /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
     OT7 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s2>
+        <t1_s2>-----alpha1----><t1_s2>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B-->},
@@ -3896,13 +4040,13 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          /\((resume(true))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
        {t := 0, z := TopInt}
     OT8 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s1>
+        <t1_s2>-----alpha1----><t1_s1>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E-->},
        [(:hb_E=ask)/\(t in z)],   {t := t+1}
     OT9 ------------------------------------------------------------
-        <t1_s2>-----ask----><t1_s3>
+        <t1_s2>-----alpha2----><t1_s3>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B-->},
@@ -3914,19 +4058,19 @@ INFO  BIPArchFailureTimerMax_LTF3 -
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT10 ------------------------------------------------------------
-        <t1_s3>-----fail----><t1_s3>
+        <t1_s3>-----alpha0----><t1_s3>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
        {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
        [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
          /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
     OT11 ------------------------------------------------------------
-        <t1_s3>-----resume----><t1_s3>
+        <t1_s3>-----alpha1----><t1_s3>
 
 INFO  BIPArchFailureTimerMax_LTF3 -
         {s3---reset-->s1},   {---:hb_E-->},     [(:hb_E=ask)],   {}
     OT12 ------------------------------------------------------
-        <t1_s3>-----reset----><t1_s1>
+        <t1_s3>-----alpha3----><t1_s1>
 
 
 INFO  BIPArchFailureTimerMax_LTF3 - Total: 12 SATISFIABLE OTs
@@ -3945,7 +4089,7 @@ OTs simplifiees a la main:
 
 $  OT_1  = \openrule
 {\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
-{\ostate{00} \OTarrow{init} \ostate{11}}
+{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
 $
 \medskip
     
@@ -3953,7 +4097,7 @@ $  OT_2  = \openrule
 {\{B\mapsto fail(b0)\},\\
   t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
   \{z:=z1\} }
-{\ostate{11} \OTarrow{fail} \ostate{11}}
+{\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{11}}
 $
 \medskip
   
@@ -3961,7 +4105,7 @@ $
   {\{B\mapsto fail(b0)\},\\
     t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
     \{z:=z1\} }
-  {\ostate{11} \OTarrow{fail} \ostate{12}}
+  {\ostate{11} \OTarrow{\underline{\alpha_0}} \ostate{12}}
   $
   \medskip
 
@@ -3969,7 +4113,7 @@ $
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2
     \{\}  }
-  {\ostate{11} \OTarrow{resume} \ostate{11}}
+  {\ostate{11} \OTarrow{\underline{\alpha_1}} \ostate{11}}
   $
   \medskip
   
@@ -3977,15 +4121,7 @@ $
   {\{E\mapsto ask\},
     t \in z,
     \{t:=t+1\}  }
-  {\ostate{11} \OTarrow{ask} \ostate{11}}
-  $
-  \medskip
-
-  $  OT_6  = \openrule
-  {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
-    \{t:=t+1, z:=z1\} }
-  {\ostate{12} \OTarrow{fail} \ostate{12}}
+  {\ostate{11} \OTarrow{\underline{\alpha_2}} \ostate{11}}
   $
   \medskip
 
@@ -3993,7 +4129,7 @@ $
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
     \{\} }
-  {\ostate{12} \OTarrow{resume} \ostate{12}}
+  {\ostate{12} \OTarrow{\underline{\alpha_1}} \ostate{12}}
   $
   \medskip
 
@@ -4001,7 +4137,7 @@ $
   {\{B\mapsto resume\},
     b1=true \land b2=true \land b1=b2, 
     \{t:=0, z:=TopInt\} }
-  {\ostate{12} \OTarrow{resume} \ostate{11}}
+  {\ostate{12} \OTarrow{\underline{\alpha_1}} \ostate{11}}
   $
   \medskip
 
@@ -4009,7 +4145,7 @@ $
   {\{E\mapsto ask\},
     t \in z,
     \{t:=t+1\} }
-  {\ostate{12} \OTarrow{ask} \ostate{13}}
+  {\ostate{12} \OTarrow{\underline{\alpha_2}} \ostate{13}}
   $
   \medskip
 
@@ -4017,7 +4153,7 @@ $
   {\{B\mapsto fail(b0)\},\\
     t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
     \{t:=t+1, z:=z1\} }
-  {\ostate{13} \OTarrow{fail} \ostate{13}}
+  {\ostate{13} \OTarrow{\underline{\alpha_0}} \ostate{13}}
   $
   \medskip
 
@@ -4025,7 +4161,7 @@ $
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
     \{\} }
-  {\ostate{13} \OTarrow{resume} \ostate{13}}
+  {\ostate{13} \OTarrow{\underline{\alpha_1}} \ostate{13}}
   $
   \medskip
 
@@ -4033,7 +4169,7 @@ $
   {\{E\mapsto reset\},
     true,
     \{\} }
-  {\ostate{13} \OTarrow{reset} \ostate{11}}
+  {\ostate{13} \OTarrow{\underline{\alpha_3}} \ostate{11}}
   $
 
 \end{document}
