@@ -234,6 +234,7 @@
 \newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{AF}#1}}
 \newcommand{\EF}[1][\ ]{\ensuremath{\mathtt{EF}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
+\newcommand{\EU}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{U}\ #3\right]#1}}
 
 
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
@@ -1480,9 +1481,12 @@ $\semopen{B}$.
 \addSB{Although we define properties as state predicates, any
   appropriate logic can be used to specify them.  For instance, the
   property \emph{``There is always a possibility to reset the system
-    after a failure''} enforced by the Failure Monitor architecture
-  can be specified using CTL as $\AG (\PortFail \rightarrow \EF
-  \PortReset)$.  Additional properties are provided in \app{properties}.}
+    or resume operation after a single failure'' (\ie without
+    additional failures occuring in the meantime)} enforced by the
+  Failure Monitor architecture can be specified using CTL as $\AG
+  \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor
+    \PortReset)}\bigr)$.  Additional properties are provided in
+  \app{properties}.}
 
 %% \todoSB{Cite the original paper somewhere.}
 The main idea of our approach is that an architecture enforces
@@ -3880,11 +3884,12 @@ including the ports of this node other than $p$.
 The architecture in \fig{schema:ArchFailure:BIP} enforces the
 following safety properties:
 \begin{enumerate}
-\item There is always a possibility to reset the system after a
-  failure:
+\item There is always a possibility to reset the system or resume
+  operation after a single failure (\ie without additional failures
+  occuring in the meantime):
   \begin{equation}
     \label{eq:prop:reset:can}
-    \AG (\PortFail \rightarrow \EF \PortReset).
+    \AG \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor \PortReset)}\bigr).
   \end{equation}
 
 \item As long as no failure has occured, the $z$ variable of the
