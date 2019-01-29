@@ -1478,6 +1478,7 @@ $\semopen{B}$.
   %% $s^n \models \Phi$}.
 \end{definition}
 
+\label{property:reset}
 \addSB{Although we define properties as state predicates, any
   appropriate logic can be used to specify them.  For instance, the
   property \emph{``There is always a possibility to reset the system
@@ -1788,7 +1789,7 @@ pLTS transitions on these states, and compose them with the sort of the holes ac
 
 
 \begin{example}[An open-transition]
-  \label{OT:enable-composed}
+  \label{Example:TimerOT3}
   The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has \replaceSB{2 controllers 
   and 2 holes. O}{two coordinators and four dangling ports, which can be grouped into two holes (see \secn{encoding} below).  Disregarding the maximal progress priority, o}ne of its possible open-transitions is:\\[-2ex]
 %%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
@@ -2208,13 +2209,13 @@ encoding of the interaction model.}
   \includegraphics[width=0.9\columnwidth]{FailureTimerPNET-v4}
   \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the priority model}
   \label{fig:FailureTimer:pNet}
-%
-  \noteSBin{The updated encoding exports more primed variables in the
-    actions, \eg $tick(z,t,z',t')$ and $fail(zone, zone', b1)$ instead
-    of $tick(z,t,z')$ and $fail(zone, b1)$, and SVs, \eg $\dots \land
-    (t' = t) \land (zone' = zone)$ in the guard of SV0. Shall we
-    update the figure to include these or, rather, explain that the
-    figure is cleaned-out for readability?}
+%% %
+%%   \noteSBin{The updated encoding exports more primed variables in the
+%%     actions, \eg $tick(z,t,z',t')$ and $fail(zone, zone', b1)$ instead
+%%     of $tick(z,t,z')$ and $fail(zone, b1)$, and SVs, \eg $\dots \land
+%%     (t' = t) \land (zone' = zone)$ in the guard of SV0. Shall we
+%%     update the figure to include these or, rather, explain that the
+%%     figure is cleaned-out for readability?}
 %
 \end{figure}
 
@@ -2639,6 +2640,10 @@ removed from the corresponding guards in \eq{nopri:connector}.
 \subsection{SMT encoding of open pNets}
 \label{secn:smt}
 
+\begin{indent}
+  description courte et intuitive avec reference au papier d'Avocs
+\end{indent}
+
 %****************************************************************
 %****************************************************************
 
@@ -2661,17 +2666,26 @@ removed from the corresponding guards in \eq{nopri:connector}.
   \centering
   \includegraphics[width=0.8\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:BIP}
+  \label{schema:ArchFailure:OA}
 \end{figure}
 
 In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
 obtained from our pNet. For reasons of space, we have not shown the
 detail of the open transition, but only the assignement of state
-variables, and the resulting action. You can find the full details in
-Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one explained in Example
-\ref{Example:TimerOT3} page \pageref{Example:TimerOT3}
+variables, and the resulting action; you can find the full details in
+Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one
+explained in Example~\ref{Example:TimerOT3} page~\pageref{Example:TimerOT3}
 
-\todoEM{12 open transitions... Comments on the predicates ???}
+This automaton has 12 transitions, including those encoding various
+possible firing of some interactions (e.g. OT 2 and 3 for
+$fail$). At first sight, it appears the rough behaviour is
+reasonable, although a detailed study shows that the property stated
+in page~\pageref{property:reset} does not hold, because of the
+$fail$ loops on states $11$ and $12$. This is because we did not use
+the maximal progress assumption here. If we do, we get the corrected
+behaviour in Fig~\ref{schema:ArchFailure:MaxProgress}. This one
+verifies all the properties listed in  \app{properties}.
+
 
 %****************************************************************
 
