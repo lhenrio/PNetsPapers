@@ -3128,6 +3128,8 @@ similar.\qed
        \section{Weak FH-bisimulation lemmas and proofs}
 
 \TODO{Voir ou ajouter ceci: We introduce the notation ${\displaystyle \bigotimes_{i=1}^{n} \subst{Post_i}}$ to denote a combination of multiple substitution operations}
+
+${\displaystyle \bigotimes_{i=0}^{n} \subst{Post_i}} = \subst{Post_n}..\subst{Post_0}$
 \subsection{Weak bisimulation is an equivalence}
 
 \begin{lemma}
@@ -3155,7 +3157,7 @@ there exist   $\set{\beta^1}_i$, $\set{\beta^2_i}$, and $\set{\beta^3_i}$, $\Pre
 \quad \wedge\\
 \forall i \in [0\ldots m].\openrule
          {
-           \set{\beta^3_i},\Pred\,^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+           \set{\beta^3_i},\Pred\,^3_i,({x^3_{ik}\gets e^3_{ik}})^{k\in K_i}    }
          {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
  \end{mathpar}
 \item  there exist $\set{\gamma}$, $\Pred$, $\Post$ s.t.
@@ -3173,8 +3175,8 @@ $
 s=s^1_0 \wedge s^1_n=s^2 \wedge s'^2 = s^3_0 \wedge s^3_m=s',
 \displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta^1_i}} \dotcup  \vis{\set{\beta^2}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta^3_i}}}
 \\
-\Pred=\bigwedge_{i=0}^n\Pred^1_i\land\Pred\,^2 \bigotimes_{i=0}^{n}\subst{\Post_i^1}\land (\bigwedge_{i=0}^m\Pred_i^3\subst{\Post^2})\bigotimes_{i=0}^{n}\subst{\Post^1_i}\\
-\Post=({x^3_k\gets (e^3_k\subst {\Post^2})\subst{\Post^1_i}})^{k\in K}
+\Pred=\bigwedge_{i=0}^n(\Pred^1_i\bigotimes_{j=0}^{i-1}\subst{\Post_j^1})\land\Pred\,^2 \bigotimes_{j=0}^{n}\subst{\Post_j^1}\land (\bigwedge_{i=0}^m\Pred_i^3\bigotimes_{j=0}^{i-1}\subst{\Post_j^3}\subst{\Post^2}\bigotimes_{j=0}^{n}\subst{\Post^1_j})\\
+\Post={x^3_{mk}\gets (e^3_{mk}\bigotimes_{j=0}^{m-1}\subst{\Post_j^3}\subst{\Post^2}\bigotimes_{j=0}^{n}\subst{\Post^1_j})^{k\in K_m}}
 $
 
 
@@ -3934,7 +3936,7 @@ $P[Q]_{j_0}\!\models
 If $Q$ moves then we obtain by Lemma \ref{lem-decompose}:\\
 $P\models{\openrule
 			{
-				(\beta^1_{p})_j^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
+				(\beta^1_{pj})^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
 				{\Pred^1_p}\!',  
 				{\Post^1_p}\!'}
 			{\ostate{s_{p l}^{l\in L\setminus L_Q}} \OTarrow {\tau}
@@ -3943,13 +3945,13 @@ $P\models{\openrule
 	\,\text{~~and~~} 
 		Q\models{\openrule
 			{
-				(\beta^1_{p})_j^{j\in J\cap\Holes(Q)}, {{\Pred^1_p}\!''},  
+				(\beta^1_{pj})^{j\in J\cap\Holes(Q)}, {{\Pred^1_p}\!''},  
 				{{\Post^1_p}\!''}}
 				{\ostate{s_{pl}^{l\in L_Q}} \OTarrow {\alpha_{p}}
 				\ostate{s_{(p+1)l}^{l\in L_Q}}}
 				}\\%\]\\
 $
-
+\TODO{from here simplify the double indices in beta and gamma}
 such that  $\Pred^1_p \iff {\Pred^1_p}\!'
 		\land {\Pred^1_p}\!''\land \alpha_p=\beta_{pj_0}$, $\Post^1_p={\Post^1_p}\!'\uplus 
 		{\Post^1_p}\!''$ where ${{\Post^1_p}\!''}$ is the restriction of $\Post^1_p$ over variables of $\Leaves(Q)$.\\
@@ -4020,16 +4022,17 @@ By using  Lemma \ref{lem-rel-OT-WOT} we can conclude from cases 1, 2 and 3 that 
 		}%\]
 \end{mathpar}
 where for all $l\in L$:\\
+\TODO{a reprendere avec la nouvelle decomp ; add the v of visible}
+
 $s_l=s_{0l} \wedge s_{{(m_1+1)}l}=t_l \wedge t'_l = u_{0l} \wedge u_{(m_2+1)}l=s'_l$\\
 $\forall j\in (J\setminus \Holes(Q))\cup \{j_0\},\quad
 \displaystyle{\gamma_j}=\mybigdotcup_{i=0}^{m_1}  (\beta^1_{ij}) \dotcup  (\set{\beta^2}_i) \dotcup \mybigdotcup_{i=0}^{m_2} (\beta^3_{ij})
 \\
 \Pred\,'=\bigwedge_{i=0}^{m_1}
-{\Pred_i^1}'\land{\Pred^2}'\bigotimes_{i=0}^{m_1}\subst{{\Post_i^1}'}\land (\bigwedge_{i=0}^{m_2}{\Pred\,^3_i}'\subst{{\Post^2}'})\bigotimes_{i=0}^{m_1}\subst{{\Post^1_i}'}\\
+({\Pred_i^1}'\bigotimes_{i=0}^{i-1}\subst{{\Post_i^1}'})
+\land{\Pred^2}'\bigotimes_{i=0}^{m_1}\subst{{\Post_i^1}'}\land (\bigwedge_{i=0}^{m_2}{\Pred\,^3_i}'(\bigotimes_{i=0}^{m_1}\subst{{\Post^1_i}'})\subst{{\Post^2}'}(\bigotimes_{j=0}^{i-1}\subst{{\Post^3_j}'}))\\
 \Post'=(\bigotimes_{i=0}^{m_2}{\Post^3_i}')\subst{{\Post^2}'}\bigotimes_{i=0}^{m_1}\subst{{\Post^1_i}'}
-$\\
-\TODO{To check: ce n'est pas $m_1, m_2$ mais $m_1', m_2'$ such that 
- $m_1'= m_1\setminus\Holes(Q)$???}\\
+$
 
 Concerning $Q$, we consider only the paths for which it moves. So for each, state such that we have $\ostate{(s_{p})_l^{l\in L_Q}} = \ostate{({s}_{(p+1) l})^{l\in L_Q}}$, we skip the state $\ostate{({s}_{(p+1) l})^{l\in L_Q}}$ and  we rename all its following states  $\ostate{(s_{p})_l^{l\in L_Q}}$ by $\ostate{({s}_{(p-1) l})^{l\in L_Q}}$. We proceed in the same way as for states named $u$. To simplify the proof, we consider that in case 3, $Q$  moves, i.e, $\ostate{t_l^{l\in L_Q}} \neq \ostate{t_l'^{\,l\in L_Q}}$, else transition 3 of $Q$ should be skipped and the last $s_{p l}$ are equal to the first $u_{0 l}$. So we have: \\ 
 $\forall p \in [0\ldots n_1] Q\models{\openrule
@@ -4069,7 +4072,7 @@ $\forall p \in [0\ldots (n_1+n_2+2)]\,\, Q\models{\openrule
 				}%\]
 $ 
 
-Let us consider the sequence of $(n_1+n_2+3)$  actions $\alpha_p$ some of them may be non-observable (are $\tau$ transition). By considering $\tau$  actions we split the sequence of actions into $n$ subsequences, such that each subsequence is a sequence of  $\tau$ action containing only one observable action.  We can decompose each subsequence $k$ of length $len$  as follows:\\
+Let us consider the sequence of $(n_1+n_2+3)$  actions $\alpha_p$ some of them may be non-observable (are $\tau$ transition). By considering $\tau$  actions we split the sequence of actions into $n$ subsequences, such that each subsequence is a sequence of actions containing  only one observable action, and possibly many $\tau$ ones.  We can decompose each of the $n$ subsequences, where sequence  $k$ has length $n_k$,  as follows:\\
 $\forall p \in [0\ldots (n'-1)] Q\models{\openrule
 			{
 				(\beta^1_{p})_j^{j\in J\cap\Holes(Q)}, {{\Pred^1_p}''},  
@@ -4087,7 +4090,7 @@ $Q\models{\openrule
 				}%\]
 $
 and
-$\forall p \in [(n'+1)\ldots (len-1)]\,\, Q\models{\openrule
+$\forall p \in [(n'+1)\ldots (n_k-1)]\,\, Q\models{\openrule
 			{
 				(\beta^3_{p})_j^{j\in J\cap\Holes(Q)}, {{\Pred^3_p}''},  
 				{{\Post^3_p}''}}
@@ -4106,7 +4109,7 @@ Q\models{\openrule
 				\ostate{v_{l}'^{l\in L_Q}}}
 		}%\]
 \end{mathpar}
-$v_l=v_{0l} \wedge v_l'=v_{len}$\\
+$\forall l. v_l=v_{0l} \wedge v_l'=v_{n_kl}$\\
 $\forall j \in {j\in (J\cap\Holes(Q))},\quad
 \displaystyle{\gamma_{kj} }=\mybigdotcup_{i=0}^{(n'_1-1)}\!\!(\beta^1_{ij})\,\dotcup\,(\set{\beta^2})_j\,\dotcup\!\!\!\mybigdotcup_{i=(n'+1)}^{(len-1)}\!\!\!(\beta^3_{ij})
 \\
@@ -4117,13 +4120,15 @@ $\\
 
 In this case, the number of weak open transitions
 might not be exactly the number of open transitions that take part in the reduction but something smaller, thus the resulting set of weak open transitions could also be smaller.\\
-For  $\gamma_{j_0}=[\beta_0..\beta_n]$ we have $n$ weak open transitions  $\symb{WOT}_p$ such that $p\in [0\ldots n]$.
-Therefore, we can conclude that we have forall $p\in [0\ldots n]$:  
+
+\TODO{link gamma j 0 with the alpha k ; this ises the visible abstraction and the ewautaions of 1,2,3 decomposition}
+For  $\gamma_{j_0}=[\beta_0..\beta_n]$ we have $n$ weak open transitions  $\symb{WOT}_k$ such that $k\in [0\ldots n]$.
+Therefore, we can conclude that we have for all $k\in [0\ldots n]$:  
 \begin{mathpar}
 Q\models{\openrule
 			{
-			(\gamma_p)_j^{J_p}, {\Pred_p}, {\Post_p}}
-			{\ostate{s_{pl}^{l\in L_Q}} \OTWeakarrow {\alpha_{p}}
+			\gamma_{kj}^{j\in J_k}, {\Pred_k}, {\Post_k}}
+			{\ostate{s_{pl}^{l\in L_Q}} \OTWeakarrow {\alpha_{k}}
 				\ostate{s_{(p+1)l}^{l\in L_Q}}}
 		}%\]
 \end{mathpar}
