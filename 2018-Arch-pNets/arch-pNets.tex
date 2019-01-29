@@ -234,6 +234,7 @@
 \newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{AF}#1}}
 \newcommand{\EF}[1][\ ]{\ensuremath{\mathtt{EF}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
+\newcommand{\EU}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{U}\ #3\right]#1}}
 
 
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
@@ -1480,9 +1481,12 @@ $\semopen{B}$.
 \addSB{Although we define properties as state predicates, any
   appropriate logic can be used to specify them.  For instance, the
   property \emph{``There is always a possibility to reset the system
-    after a failure''} enforced by the Failure Monitor architecture
-  can be specified using CTL as $\AG (\PortFail \rightarrow \EF
-  \PortReset)$.  Additional properties are provided in \app{properties}.}
+    or resume operation after a single failure'' (\ie without
+    additional failures occuring in the meantime)} enforced by the
+  Failure Monitor architecture can be specified using CTL as $\AG
+  \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor
+    \PortReset)}\bigr)$.  Additional properties are provided in
+  \app{properties}.}
 
 %% \todoSB{Cite the original paper somewhere.}
 The main idea of our approach is that an architecture enforces
@@ -1783,10 +1787,10 @@ pLTS transitions on these states, and compose them with the sort of the holes ac
 
 
 
-\begin{example}\emph{An open-transition.}
+\begin{example}[An open-transition]
   \label{OT:enable-composed}
-  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has 2 controllers 
-  and 2 holes. One of its possible open-transitions is:\\[-2ex]
+  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has \replaceSB{2 controllers 
+  and 2 holes. O}{two coordinators and four dangling ports, which can be grouped into two holes (see \secn{encoding} below).  Disregarding the maximal progress priority, o}ne of its possible open-transitions is:\\[-2ex]
 %%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
 %%   : 
 %% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
@@ -1798,8 +1802,8 @@ pLTS transitions on these states, and compose them with the sort of the holes ac
 %\medskip
 \begin{small}\[ \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
-    \{z:=z1\} }
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z'= (z \cap (b1?zone;TopInt)+t) {\color{blue}\land (t' = t) \land (zone' = zone)},\\
+    \{z:=z', {\color{blue}t := t'+1, zone := zone'}\} }
   {\ostate{11} \OTarrow{\alpha_0} \ostate{12}}
   \]
 \end{small}\vspace{-1.5ex}
@@ -1808,8 +1812,8 @@ pLTS transitions on these states, and compose them with the sort of the holes ac
 %of both controlers. No hole is active at that time, and the resulting
 %global action is denoted $\alpha_4$.
 
-It correspond to the firing of the connector
-$''tick, fail, fail''$. It states that, if the hole B performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
+It corresponds to the firing of the \replaceSB{connector
+$''tick, fail, fail''$}{interaction $\listset{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail}$}. It states that, if the hole $B$ performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
 The guard corresponds both to the guard of this transition and to synchronisation vector constraints.
 \end{example}
 %
@@ -2128,15 +2132,15 @@ interaction model $\Gamma$ respectively.
 To encode a coordinator $C$, we 1)~introduce a fresh initial state with an additional
 $\init$ transition that initialises all the variables to those defined
 by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
-additional Boolean value to each port, 3)~create pNet transitions that reflect the original transitions of
-$C$ with $\true$ as parameter and 4)~create additional loop transitions marked by
+additional Boolean value to each port, \add{3)~for each exported variable $x$, create the corresponding fresh variable $x'$ to allow updates during interactions,} 4)~create pNet transitions that reflect the original transitions of
+$C$ with $\true$ as parameter and 5)~create additional loop transitions marked by
 $\false$.
 
 Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
 %
 \begin{itemize}
 \item $s_0 \not\in Q_C$ is fresh and $S = Q_C \cup \{s_0\}$,
-\item $\vars(s) = V_C$, for all $s \in Q_C$, and $\vars(s_0) =
+\item $\vars(s) = V_C \cup \setdef{x'}{x \in \export[C](p), p \in a, s\goesto{a} }$, for all $s \in Q_C$, and $\vars(s_0) =
   \emptyset$,
 %% \item the transition relation $\goesto[{\nopri[C]}]{}$ is defined as
 %%   the union of three sets of transitions
@@ -2157,13 +2161,29 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
 %%     \,.
 %%   \end{multline}
 
-\item ${\goesto[{\nopri[C]}]{}} \bydef{=} T_1 \cup T_2 \cup T_3$, with
-  $T_1 = \bsetdef{\tuple{s, a(\true), g, u, s'}}{
-      \tuple{s, a, g, u, s'} \in \goesto{}}$,
-  $T_2 = \bsetdef{\tuple{s, a(\false), \true, \noop, s}}{
-      s \in Q_C, a \in P_C}$,
-  $T_3 = \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}$
-    and $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$.
+\item denoting  $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$;
+  \noteSB{Ludo, Eric, pourriez-vous v\'erifier que cela est compr\'ehensible ?}%
+  \add{for $s \goesto{a, g, u} s'$ with $u = (x := e_x)^{x
+    \in V}$ (for some $V \subseteq V_C$),
+%  
+  $u' \bydef{=}
+  \bigl(x := e_x\bigr)^{x \in V \setminus \export[C](a)}
+  \cup
+  \bigl(x := e_x\bigl[\nicefrac{x'}{x}\bigr]\bigr)^{x \in V \cap \export[C](a)}$,
+%
+  and $\export[C]'(a) \bydef{=} \setdef{x'}{x \in \export[C](p), p \in a}$,
+%
+  \begin{multline*}
+    {\goesto[{\nopri[C]}]{}} \bydef{=} 
+    \Setdef{\Tuple{s, a\bigl(\export[C](a), \export[C]'(a),\true\bigr), g, u', s'}}{
+      s \goesto{a, g, u} s'}
+    \\
+    {} \cup
+    \Setdef{\Tuple{s, a\bigl(\export[C](a), \export[C]'(a),\false\bigr), \true, \noop, s}}{
+      s \in Q_C, \exists s' \in Q_C: s' \goesto{a}}
+    \\
+    {} \cup \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}.
+  \end{multline*}}
 \end{itemize}
 
 The loop transitions marked by $\false$ will be used in the encoding
@@ -2188,6 +2208,14 @@ encoding of the interaction model.}
   \includegraphics[width=0.9\columnwidth]{FailureTimerPNET-v4}
   \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the priority model}
   \label{fig:FailureTimer:pNet}
+%
+  \noteSBin{The updated encoding exports more primed variables in the
+    actions, \eg $tick(z,t,z',t')$ and $fail(zone, zone', b1)$ instead
+    of $tick(z,t,z')$ and $fail(zone, b1)$, and SVs, \eg $\dots \land
+    (t' = t) \land (zone' = zone)$ in the guard of SV0. Shall we
+    update the figure to include these or, rather, explain that the
+    figure is cleaned-out for readability?}
+%
 \end{figure}
 
 %% \begin{figure*}[t]
@@ -2224,17 +2252,21 @@ as a set of connectors. \noteSB{%
   the factors is the encoding pNets$\rightarrow$SAT: is it better to
   have more or fewer SVs if the price is additional Boolean variables?
   The other factor might be the facility of maximal progress
-  encoding\mdash TBC.  Traceability.  Anything else?
+  encoding\mdash TBC.  Traceability.  Anything else?\newline
+  \hl{UPDATE: Maximal progress encoding requires this!}
 %
 } Indeed, as illustrated by the Failure Monitor architecture in
 \fig{schema:ArchFailure:BIP}, each connector can define several
 allowed interactions, depending on its hierarchical structure and the
 use of synchrons and triggers.
 
-In order to encode these interactions using only one synchronisation vector, we use
+\todoSB{Update?}\hl{In order to encode these interactions using only one synchronisation vector}, we use
 the additional Boolean values associated to each port by the encoding
-of coordinator components.  We observe that the three ports in this
-connector form a ``causality chain'': {\NameCtrl.\PortFail} can only
+of coordinator components.  For example, observe that the three ports in 
+the connector
+{\NameTimer.\PortTick
+  \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)}
+form a ``causality chain'': {\NameCtrl.\PortFail} can only
 participate in the interaction if the dangling port {\PortFail}
 participates, which in turn can only participate if
 {\NameTimer.\PortTick} does so.  These dependencies can be rewritten
@@ -2242,8 +2274,7 @@ as Boolean implications $\NameCtrl.\PortFail \Rightarrow \PortFail$
 and $\PortFail \Rightarrow \NameTimer.\PortTick$.
 %
 The conjunction of these two implications can be used as a guard for
-the synchronisation vector encoding connector {\NameTimer.\PortTick
-  \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)}.
+the synchronisation vector encoding this connector.
 
 However, notice
 that, within the scope of this connector, {\NameTimer.\PortTick}
@@ -2263,7 +2294,7 @@ synchronisation vector SV0 shown in \fig{FailureTimer:pNet}, where $b_0$ and
 $b_1$ are the Boolean values associated to the actions encoding the
 ports {\PortFail} and {\NameCtrl.\PortFail}, $\alpha_0$ is a fresh
 action name.  The guard $b_1 \Rightarrow b_0$ encodes the causal
-relation among ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
+relation between ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
 that, in our encoding, all three ports are present in the
 synchronisation vector.  \Fig{FailureTimer:pNet} shows
 the four synchronisation vectors SV0\ndash SV3 corresponding to the
@@ -2283,7 +2314,8 @@ causal rules, which are Boolean implications similar to the ones in
 the example above.  We briefly summarise the key definitions and
 results in \app{algebras}.  The $\ac(P)$, $\ct(P)$ and $\cru(P)$
 representations of the connectors in \fig{schema:ArchFailure:BIP} are
-shown in \tab{connectors}.
+shown in \tab{connectors} (elements shown in red can be removed for
+simplification as described in the example above).
 
 \begin{table}[t]
   \caption{Algebraic representations of the connectors in \fig{schema:ArchFailure:BIP} (see \app{algebras})}
@@ -2500,29 +2532,35 @@ well-defined independently of whether {\NameCtrl.\PortFail}
 participates or not.  Let us denote by $\gamma \subset \ac(P_A)
 \times \guards{V_A} \times \assigns{V_A}$ the set of connectors in the
 architecture $A$ and by $P_x$ the set of ports involved in the
-connector $x \in \gamma$.  Then, we have
-\begin{align*}
-  \gamma &=
-  \setdef{(x, g, u)}{x \in \ac(P_x), g \in \guards{V_x}, u \in
-    \assigns{V_x}}
-  \\
-  &\simeq \setdef{(a,g,u)}{(x,g,u) \in \gamma, a \in \intsem{x}}
-  = \Gamma
-  \,.
-\end{align*}
-
-We first define the encoding of $\Gamma$ as $\nopri[\Gamma] \bydef{=}
+connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma$ is 
+  $\Gamma = \setdef{(a,g,u)}{(x,g,u) \in \gamma, a \in \intsem{x}}$
+  and the encoding of $\Gamma$ is} $\nopri[\Gamma] \bydef{=}
 \setdef{\nopri[x,g,u]}{(x,g,u) \in \gamma}$, where $\nopri[x,g,u]$ is the synchronisation vector defined by
 %
-\begin{equation}
+\begin{multline}
   \label{eq:nopri:connector}
   \nopri[x,g,u] \bydef{=}
-  \bigl(p(b_p,\export[A](p))\bigr)^{p \in P_x}
+  \Tuple{p\bigl(\export[A](p),{{\color{blue}\export[A]'(p),}}b_p\bigr)}^{p \in P_x}
   \rightarrow
   \alpha_p
-  \left[\bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]\right]
+  \\
+  \left[
+    \bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]
+    {\color{blue}{}
+    \land
+    \bigwedge_{(x := e_x) \in u} (x' = e_x)
+    \land
+    \bigwedge_{x \in \export[A](x), x \not\in u} (x' = x)
+    }
+    \right]
   \,,
-\end{equation}
+\end{multline}
+\noteSB{Ought to group ports by components in
+  $\Tuple{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}^{p \in P_x}$...
+  \newline
+  Will probably restrict interactions to one port per component
+  throughout the paper to simplify.
+}
 %
 with $b_p$ a fresh Boolean variable, $\alpha_p$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
@@ -2531,18 +2569,15 @@ illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
 the substitution, which replaces, in the expression that preceeds it,
 all occurrences of $p$ by $b_p$.
 
-\todoLHin{The update assignment is missing from the above encoding.
-  It should be $u\bigl[\nicefrac{b_p}{p}\bigr]$, but I do not see in
-  \defn{pnets} where should I place it.  I think it is missing there.
-  \Simon}
-
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
-  $\nopri[A,\partition]$ (see \defn{operationalSemantics}) is
+  $\nopri[A,\partition]$ is
   isomorphic to the LTS $\semopen{\Gamma\bigl(\cC_A, (B_D)^{D \in
       \partition}\bigr)}$ (see \defn{comp:semantics}), where, for each
   $D \in \partition$, the component $B_D \bydef{=} \tuple{\{q\}, q,
     V_D, \val{0}{D}, D, \export[D], \goesto{}}$, with
+  a fresh state $q$ and
+
 %
   \begin{align*}
     V_D &= \bigcup_{p \in D} \export[A](p)
@@ -2552,22 +2587,21 @@ all occurrences of $p$ by $b_p$.
     \goesto{} &= \bsetdef{(q, p, \true, \noop, q)}{p \in D}
     \,,
     &\export[D](p) &= \export[A](p), \text{ for all $p \in D$}
-    \,,
+    \,.
   \end{align*}
 %
-  and $q$ a fresh state.
 \end{theorem}
 %
 \begin{proof}[Sketch of a proof]
+  \noteSB{This theorem is very probably correct: the key question is
+  whether isomorphism is, indeed, the relation to use. In absence of
+  silent transitions, must be the case.}
   The theorem follows from the correctness of $\tau$ and $R$ shown in
   \cite{BliSif10-causal-fmsd}.
 \end{proof}
 
-\noteSBin{This theorem is very probably correct: the key question is
-  whether isomorphism is, indeed, the relation to use. In absence of
-  silent transitions, must be the case.}
 
-
+\todoSB{This repeats things that were already said before.  Will reduce.}
 Observe now that this encoding can be optimised to remove unnecessary
 Boolean variables and loop transitions marked by \false.  For
 instance, consider the ports shown in red in the second column of
@@ -2678,6 +2712,8 @@ upwards compatible and compute the combined interaction model $\Gamma$
 in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
   P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$
 (see \defn{arch:composition}).
+
+\todoSBin{Complete this section}
 
 %****************************************************************
 %****************************************************************
@@ -3884,11 +3920,12 @@ including the ports of this node other than $p$.
 The architecture in \fig{schema:ArchFailure:BIP} enforces the
 following safety properties:
 \begin{enumerate}
-\item There is always a possibility to reset the system after a
-  failure:
+\item There is always a possibility to reset the system or resume
+  operation after a single failure (\ie without additional failures
+  occuring in the meantime):
   \begin{equation}
     \label{eq:prop:reset:can}
-    \AG (\PortFail \rightarrow \EF \PortReset).
+    \AG \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor \PortReset)}\bigr).
   \end{equation}
 
 \item As long as no failure has occured, the $z$ variable of the
