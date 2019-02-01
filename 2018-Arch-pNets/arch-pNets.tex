@@ -585,8 +585,8 @@ set of \emph{synchronisation vectors} that express the possible
 synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
-\paragraph{pNets definition.}
-\label{section:pNets}
+%\paragraph{Definitions.}
+%\label{section:pNets}
 A pLTS is a labelled transition system with variables that can be
 used to characterise a state, as part of actions, guards, and
 assignments. 
@@ -676,16 +676,15 @@ $\forall k\!\in\! K,
   \symb{SV}_k\!=\SV{\!\alpha_{l}^{l\in I_k \uplus J_k}}{\alpha'_k}{g_k}$, where
   $\alpha'_k\in \actions{\variables}$, $I_k\subseteq I$, $J_k\subseteq J$, and 
   $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
-  J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\alpha'_k$. The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in 
-I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
+  J_k}{\vars({\alpha_l})}$. The global action  is
+$\alpha'_k$,  $g_k$ is a guard associated to the vector.
 
 
 \end{itemize}
 %We define the set of holes and leaves of a pNet as follows:
 %  \begin{itemize}
 %\item
-The set of \emph{holes} $\Holes(\pNet_{i_1})$ of a pNet is the indexes of the holes of the pNet 
+The set of \emph{holes} $\Holes(\pNet)$ of a pNet is the indexes of the holes of the pNet 
 itself plus the indexes of all the holes of its subnets (we suppose those indexes 
 disjoints). A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
 is said to be \emph{open}.
@@ -713,14 +712,12 @@ indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L
 
 
 
-\paragraph{Operational Semantics for Open pNets.}
-\label{section:op-semantics}
-
-\noteLH{a pred is a g a post is a u (modified macros!)}
+%\paragraph{Operational Semantics.}
+%\label{section:op-semantics}
 \renewcommand{\Pred}{g}
 \renewcommand{\Post}{u}
-The semantics of an open pNets is expressed as an open automaton, i.e., an automaton where each transition composes the actions of several holes, 
-the transition occurs if some predicates hold, and can involve a 
+The semantics of an open pNets is expressed as  an automaton where each transition composes the actions of several holes, 
+the transition occurs if some predicates hold, and can involve  
  state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
@@ -825,32 +822,23 @@ pLTS transitions on these states, and compose them with the sort of the holes ac
 
 \begin{example}[An open-transition]
   \label{Example:TimerOT3}
-  The \texttt{Failure TimerMonitor} pNet of \Fig{FailureTimer:pNet} has \replaceSB{2 controllers 
-  and 2 holes. O}{two coordinators and four dangling ports, which can be grouped into two holes (see \secn{encoding} below).  Disregarding the maximal progress priority, o}ne of its possible open-transitions is:\\[-2ex] \noteLH{maximal progress undefined}
-%%   \footnote{Note the underlined action notation that we use to represent synchronised actions, i.e. actions that are the result of a synchronisation and that we declare as \emph{non-observable}. Those actions are only used for monitoring purposes and statement of properties but cannot be synchronised again in a synchronisation vector. This allows us to define a weak bisimilarity equivalence with p=compositional properties.}
-%%   : 
-%% \noteLH{underline notation might be a bit too much for this paper : see at the end if we remove it or not (will we use it?)}
-% \smallskip
-%$  OT_1  = \openrule
-%{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
-%{\ostate{00} \OTarrow{\underline{\alpha_4}} \ostate{11}}
-%$
-%\medskip
+We now briefly illustrate an open transition:
 \begin{small}\[ \openrule
-  {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z'= (z \cap (b1?zone;TopInt)+t) {\color{blue}\land (t' = t) \land (zone' = zone)},\\
-    \{z:=z', {\color{blue}t := t'+1, zone := zone'}\} }
-  {\ostate{11} \OTarrow{\alpha_0} \ostate{12}}
+  {\{B\mapsto fail(b)\},
+    t<Max \land b=true ,
+    \{t' := t+1\} }
+  {\ostate{11} \OTarrow{\alpha(t)} \ostate{12}}\vspace{-1.3ex}
   \]
-\end{small}\vspace{-1.5ex}
+\end{small}
 %
 %The first one, $OT_1$, corresponds to the simultaneous initialisation
 %of both controlers. No hole is active at that time, and the resulting
 %global action is denoted $\alpha_4$.
-
-It corresponds to the firing of the \replaceSB{connector
-$''tick, fail, fail''$}{interaction $\listset{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail}$}. It states that, if the hole $B$ performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
-The guard corresponds both to the guard of this transition and to synchronisation vector constraints.
+It requires the hole at label $B$ to fire a $fail(b)$ action, with the condition $b=true$ and the state variable $t<Max$. In this case, the global pNet goes from state $\ostate{11}$ to state $\ostate{12}$ where $t'=t+1$. This emits a global action $\alpha(t)$.
+%
+%It corresponds to the firing of the \replaceSB{connector
+%$''tick, fail, fail''$}{interaction $\listset{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail}$}. It states that, if the hole $B$ performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
+%The guard corresponds both to the guard of this transition and to synchronisation vector constraints.
 \end{example}
 %
 %\begin{definition}[States of open pNets]\label{def-states}
