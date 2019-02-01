@@ -3780,7 +3780,7 @@ following safety properties:
     \AG \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor \PortReset)}\bigr).
   \end{equation}
 
-  \notein{Checking this on the resulting open automaton should be understood after application of the encoding, namely here the original ``fail'' event must be an effective ``fail'' of the hole ``B'', that is a ``fail(true)'' action in the automaton.}
+  \noteIn{Checking this on the resulting open automaton should be understood after application of the encoding, namely here the original ``fail'' event must be an effective ``fail'' of the hole ``B'', that is a ``fail(true)'' action in the automaton.}
 
 \item As long as no failure has occured, the $z$ variable of the
   $\NameTimer$ component has the value $\topinterval$:
@@ -3851,8 +3851,6 @@ pLTS: Timer
 - Transition: t1---cancel(false)-->t1, {}
 - Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
 - Transition: t1---timeout-->t1, [t in z], { t := (t+1)}
-- Variable: t, State: t1, Value(s) = 0,0,(t+1),
-- Variable: z, State: t1, Value(s) = TopInt,z1,
 pLTS: Failure
 - Transition: s0---init-->s1, { zone := minZone,maxZone}
 - Transition: s1---timeout-->s1, {}
@@ -3866,7 +3864,6 @@ pLTS: Failure
 - Transition: s3---fail(zone, false)-->s3, {}
 - Transition: s3---resume(false)-->s3, {}
 - Transition: s3---reset-->s1, {}
-- Variable: zone, State: s1, Value(s) = minZone,maxZone,
 Holes: B
 Holes: E
 
@@ -3884,7 +3881,7 @@ Holes: E
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT2 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s1>
+        <t1_s1>-----fail(b0:sva_SV0:1:1)----><t1_s1>
 
        {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
        [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
@@ -3895,7 +3892,7 @@ Holes: E
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT3 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s2>
+        <t1_s1>-----fail(true)----><t1_s2>
 
        {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
        [(:hb_B=fail(b0:sva_SV0:1:1)
@@ -3919,7 +3916,7 @@ Holes: E
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT6 ------------------------------------------------------------
-        <t1_s2>-----fail----><t1_s2>
+        <t1_s2>-----fail(b0:sva_SV0:1:1)----><t1_s2>
 
        {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
        [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
@@ -3948,7 +3945,7 @@ Holes: E
          (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
        {t := t+1, z := z1}
     OT10 ------------------------------------------------------------
-        <t1_s3>-----fail----><t1_s3>
+        <t1_s3>-----fail(b0:sva_SV0:1:1)----><t1_s3>
 
        {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
        [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
@@ -3972,7 +3969,7 @@ OTs simplifiees a la main:
   \centering
   \includegraphics[width=\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:BIP}
+  \label{schema:ArchFailure:OA}
 \end{figure}
 
 
@@ -4068,5 +4065,72 @@ $
     \{\} }
   {\ostate{13} \OTarrow{reset} \ostate{11}}
   $
+
+  Now the version with the Max Progress encoding.
+ This modifies both the pLTS transitions, and the synchronisation vectors:
+ 
+
+\small\begin{verbatim}
+FailureTimerArchi
+--------------------
+SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
+                          [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
+SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
+SV2 SVs: <timeout, timeout, _, ask>-->alpha2
+SV3 SVs: <_, reset, _, reset>-->alpha3
+SV4 SVs: <init, init, _, _>-->alpha4
+pLTS: Timer
+- Transition: t0---init-->t1, { t := 0 z := TopInt}
+- Transition: t1---tick(z, t, z1)-->t1, [(t<GET_MAX z)], { t := (t+1) z := z1}
+- Transition: t1---cancel(false)-->t1, {}
+- Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
+- Transition: t1---timeout-->t1, [t in z], { t := (t+1)}
+pLTS: Failure
+- Transition: s0---init-->s1, { zone := minZone,maxZone}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false)-->s1, {}
+- Transition: s1---fail(zone, false)-->s1, {}
+- Transition: s1---fail(zone, true)-->s2, {}
+- Transition: s2---fail(zone, false)-->s2, {}
+- Transition: s2---resume(false)-->s2, {}
+- Transition: s2---resume(true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone, false)-->s3, {}
+- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+Holes: B
+Holes: E
+\end{verbatim}
+
+  The new (simplied) OA is in figure \ref{schema:ArchFailure:OA-MaxProgress}.
+  Here we give the detail only of the modifed OTs:
+
+  \begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{TimerOAMaxProgress}
+  \caption{The open Automaton of the Failure Monitor Architecture}
+  \label{schema:ArchFailure:OA-MaxProgress}
+\end{figure}
+
+\begin{itemize}
+\item OT:2 has changed because $b0=true$ is no longer possible
+\item OT7 has disappeared because it is now unsat.
+\end{itemize}
+
+\small\begin{verbatim}
+	    {t1---tick(z, t, z1)-->t1, s1---fail(zone, true, false)-->s1},
+            {B|->fail(b0:sva_SV0:1:1)},
+            [(t<(GET_MAX z))/\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
+              /\((fail(zone, true, false))=(fail(zone:sva_SV0:1:1, bf:sva_SV0:1:1, b1:sva_SV0:1:1)))
+              /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
+              /\((bf:sva_SV0:1:1/\b0:sva_SV0:1:1)=>b1:sva_SV0:1:1)
+              /\(z1:sva_SV0:1:1=(z:sva_SV0:1:1 |Intersection| ((b1:sva_SV0:1:1?(zone:sva_SV0:1:1):(TopInt))+t:sva_SV0:1:1)))],
+            {t := t+1, z := z1}
+	OT:2 ------------------------------------------------------------
+		<t1_s1>-----fail(false)----><t1_s1>
+
+
+
+\end{verbatim}
 
 \end{document}
