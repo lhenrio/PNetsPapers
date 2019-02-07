@@ -70,6 +70,7 @@
 \newcommand{\todoLH}[2][color=orange!40, size=\tiny]{\todo[#1]{\textbf{To-do Ludo:} {#2}}}
 \newcommand{\todoLHin}[2][inline,color=orange!40]{\todo[#1]{\textbf{To-do Ludo: } {#2}}}
 \newcommand{\todoEM}[2][color=green!40, size=\tiny]{\todo[#1]{\textbf{To-do Eric:} {#2}}}
+\newcommand{\noteEMin}[2][inline,color=green!40]{\todo[#1]{{#2}\Eric}}
 
 \newcommand{\noteIn}[2][inline,color=black!20]{\todo[#1]{{#2}}}
 
@@ -445,7 +446,7 @@ approaches even for reconfigurable applications.
 Closed pNets were used to encode fully defined programs or systems,
 while open pNets have ``holes'', playing the role of process
 parameters. Such open systems can be used to define composition operators or structuring architectures.
-It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{AVOCS}. This encding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
+It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. This encding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
 
 The methodology we propose is thus to an encoding of BIP architectures into open pNet in order to be able to verify, using SMT techniques, the coordination capabilities of the architecture, and more generally its properties. The encoding will also give us feedback on the comparison between the BIP architectures and the pNet formalism. 
 Overall, the encoding allows us to precisely compare the coordination mechanisms of the two models but also the way component composition is expressed in the two formalisms. This article is also the opportunity to investigate further on  compositional verification by relating two different composition mechanisms that provide different vision on compositional verification. \textbf{pas tres heureux la fin: pas assez detaille ou trop complique -> abstraire ou detailller a mon avis (Ludo)}
@@ -2481,9 +2482,26 @@ removed from the corresponding guards in \eq{nopri:connector}.
 \subsection{SMT encoding of open pNets}
 \label{secn:smt}
 
-\begin{indent}
-  description courte et intuitive avec reference au papier d'Avocs
-\end{indent}
+In \cite{HMZ-FORTE2016QBMZ-AVOCS18}, we have described an algorithm
+and a tool that 
+computes the open automaton encoding the semantics of an open
+pNet. This tool computes open transitions from the combinations of all
+possible behaviours and synchronisation vectors of the pNet, then makes
+use of an SMT engine to check satisfiability of the open transition
+predicates, and minimize the size of the resulting automaton.
+
+The encoding into the SMT language involves the definition of the
+action and data domains and operators, and the axiomatisation of
+domain-dependant properties, to allow the SMT engine to be as precise
+as possible (even if it cannot be complete).
+
+The resulting open automaton will later be subject to (symbolic)
+model-checking and equivalence checking algorithms, themselves
+requiring automatic proof assistance. \todoEM{trop flou pour le
+  moment, mais je n'ose pas dire des trucs trop precis... meme si on a
+  deja une implem de la FH-bisim, elle n'est pas validee!}
+
+\noteEMin{Est-ce qu'on a la place de mettre un exemple de script SMT ici ?}
 
 %****************************************************************
 %****************************************************************
@@ -2505,15 +2523,16 @@ removed from the corresponding guards in \eq{nopri:connector}.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\columnwidth]{TimerOADetailed}
+  \includegraphics[width=0.9\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
   \label{schema:ArchFailure:OA}
 \end{figure}
 
 In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
 obtained from our pNet. For reasons of space, we have not shown the
-detail of the open transition, but only the assignement of state
-variables, and the resulting action; you can find the full details in
+detail of the open transition, but only the assignments of state
+variables, some usefull parts of the predicates, and the resulting
+action; you can find the full details in 
 Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one
 explained in Example~\ref{Example:TimerOT3} page~\pageref{Example:TimerOT3}
 
@@ -2524,8 +2543,11 @@ reasonable, although a detailed study shows that the property stated
 in page~\pageref{property:reset} does not hold, because of the
 $fail$ loops on states $11$ and $12$. This is because we did not use
 the maximal progress assumption here. If we do, we get the corrected
-behaviour in Fig~\ref{schema:ArchFailure:MaxProgress}. This one
-verifies all the properties listed in  \app{properties}.
+behaviour in Fig~\ref{schema:ArchFailure:OA-MaxProgress}
+(\app{full-results}), in which $OT_7$ has 
+disappeared, and $OT_2$ and $OT_{10}$ have been restricted to
+$b0=false$. This one verifies all the properties listed in
+\app{properties}. 
 
 
 %****************************************************************
@@ -4102,7 +4124,7 @@ Holes: E
 \end{verbatim}
 
   The new (simplied) OA is in figure \ref{schema:ArchFailure:OA-MaxProgress}.
-  Here we give the detail only of the modifed OTs:
+  Here we give the detail only of one the modifed OTs:
 
   \begin{figure}[t]
   \centering
@@ -4112,8 +4134,8 @@ Holes: E
 \end{figure}
 
 \begin{itemize}
-\item OT:2 has changed because $b0=true$ is no longer possible
-\item OT7 has disappeared because it is now unsat.
+\item $OT_2$ and $OT_{10}$ have changed because $b0=true$ is no longer possible
+\item $OT_7$ has disappeared because it is now unsat.
 \end{itemize}
 
 \small\begin{verbatim}
