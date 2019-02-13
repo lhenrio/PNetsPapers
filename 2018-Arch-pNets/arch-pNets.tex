@@ -9,7 +9,6 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 
-
 \let\proof\relax   
 \let\endproof\relax
 
@@ -306,6 +305,10 @@
 }
 
 % %%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+% %%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{tikz}
 \usetikzlibrary{calc}
@@ -446,7 +449,7 @@ approaches even for reconfigurable applications.
 Closed pNets were used to encode fully defined programs or systems,
 while open pNets have ``holes'', playing the role of process
 parameters. Such open systems can be used to define composition operators or structuring architectures.
-It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. This encding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
+It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. This encoding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
 
 The methodology we propose is thus to an encoding of BIP architectures into open pNet in order to be able to verify, using SMT techniques, the coordination capabilities of the architecture, and more generally its properties. The encoding will also give us feedback on the comparison between the BIP architectures and the pNet formalism. 
 Overall, the encoding allows us to precisely compare the coordination mechanisms of the two models but also the way component composition is expressed in the two formalisms. This article is also the opportunity to investigate further on  compositional verification by relating two different composition mechanisms that provide different vision on compositional verification. \textbf{pas tres heureux la fin: pas assez detaille ou trop complique -> abstraire ou detailller a mon avis (Ludo)}
@@ -3850,30 +3853,26 @@ enforces the \emph{liveness} property \emph{``Whenever a reset is
 \subsection{Output of the open-automaton construction}
 \label{secn:full-results}
 
-The standard pretty-print of OTs by the tool include the transitions
-of the pLTSs (controllers). This is not a full ``proof-carrying
-code'', but it allows for a better understanding of the construction
-of each OT.
 
-We first show the pNet input, then the twelve generated OTs in their
-verbatim form.
 
-\small\begin{verbatim}
-FailureTimerArchi
---------------------
-SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
-                          [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
-SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
-SV2 SVs: <timeout, timeout, _, ask>-->alpha2
-SV3 SVs: <_, reset, _, reset>-->alpha3
-SV4 SVs: <init, init, _, _>-->alpha4
+We first show the input pNet, with its 5 synchronisation vectors, and 2 controllers.
+
+\noindent
+\verbatimfont{\small}
+\begin{verbatim}
+SV0: <tick(z, t, z1), fail(zone, b1), fail(b0), _> --> fail(b0),
+         [(b1->b0)/\(z1=z |Intersection| ((b1?zone:TopInt)+t))]
+SV1: <cancel(b1), resume(b2), resume, _> --> resume, (b1=b2)
+SV2: <timeout, timeout, _, ask> --> ask
+SV3: <_, reset, _, reset> --> reset
+SV4: <init, init, _, _> --> init
 pLTS: Timer
 - Transition: t0---init-->t1, { t := 0 z := TopInt}
 - Transition: t1---tick(z, t, z1)-->t1, [(t<GET_MAX z)], { t := (t+1) z := z1}
 - Transition: t1---cancel(false)-->t1, {}
 - Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
 - Transition: t1---timeout-->t1, [t in z], { t := (t+1)}
-pLTS: Failure
+pLTS: Control
 - Transition: s0---init-->s1, { zone := minZone,maxZone}
 - Transition: s1---timeout-->s1, {}
 - Transition: s1---resume(false)-->s1, {}
@@ -3888,97 +3887,54 @@ pLTS: Failure
 - Transition: s3---reset-->s1, {}
 Holes: B
 Holes: E
+\end{verbatim}
 
-       {t0---init-->t1, s0---init-->s1},   {},  [true],
-       {t := 0, z := TopInt, zone := minZone,maxZone}
-    OT1 ------------------------------------------------------------
-        <t0_s0>-----init----><t1_s1>
+Then some of the twelve generated OTs in their verbatim form. In this format
+the first element of the premisse is a list of the moves of the pLTS
+participating in the transition. This is not part of the OT, but
+provides a trace of its construction. Also, the variables occuring in
+the actions and predicate expressions have names helping to understand
+where they come from (e.g. \verb|b0:sva_SV0| in $OT2$ below).
+This is not a full ``proof-carrying
+code'', but it allows for a better understanding of the construction
+of each OT.
 
-       {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT2 ------------------------------------------------------------
-        <t1_s1>-----fail(b0:sva_SV0:1:1)----><t1_s1>
+\verbatimfont{\small}
+\begin{verbatim}
+   {t0---init-->t1, s0---init-->s1},   {},  [true],
+   {t := 0, z := TopInt, zone := minZone,maxZone}
+OT1 ------------------------------------------------------------
+    <t0_s0>-----init----><t1_s1>
 
-       {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z,t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, true))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT3 ------------------------------------------------------------
-        <t1_s1>-----fail(true)----><t1_s2>
+   {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+     /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+     /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+     /\(b1:sva_SV0=>b0:sva_SV0)
+     /\(z1:sva_SV0=
+     (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+   {t := t+1, z := z1}
+OT2 ------------------------------------------------------------
+    <t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
 
-       {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)
-         /\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))
-         /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT4 ------------------------------------------------------------
-        <t1_s1>-----resume----><t1_s1>
+   {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+     /\((tick(z,t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+     /\((fail(zone, true))=(fail(zone:sva_SV0, b1:sva_SV0)))
+     /\(b1:sva_SV0=>b0:sva_SV0)
+     /\(z1:sva_SV0=
+     (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+   {t := t+1, z := z1}
+OT3 ------------------------------------------------------------
+    <t1_s1>-----fail(true)----><t1_s2>
 
-       {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E-->},
-       [(:hb_E=ask)/\(t in z)],   {t := t+1}
-    OT5 ------------------------------------------------------------
-        <t1_s1>-----ask----><t1_s1>
-
-       {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT6 ------------------------------------------------------------
-        <t1_s2>-----fail(b0:sva_SV0:1:1)----><t1_s2>
-
-       {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT7 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s2>
-
-       {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(true))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(true))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
-       {t := 0, z := TopInt}
-    OT8 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s1>
-
-       {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E-->},
-       [(:hb_E=ask)/\(t in z)],   {t := t+1}
-    OT9 ------------------------------------------------------------
-        <t1_s2>-----ask----><t1_s3>
-
-       {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT10 ------------------------------------------------------------
-        <t1_s3>-----fail(b0:sva_SV0:1:1)----><t1_s3>
-
-       {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT11 ------------------------------------------------------------
-        <t1_s3>-----resume----><t1_s3>
-
-        {s3---reset-->s1},   {---:hb_E-->},     [(:hb_E=ask)],   {}
-    OT12 ------------------------------------------------------
-        <t1_s3>-----reset----><t1_s1>
-
+   {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)
+     /\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+     /\((resume(false))=(resume(b2:sva_SV1:1:2)))
+     /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
+OT4 ------------------------------------------------------------
+    <t1_s1>-----resume----><t1_s1>
 
 
 INFO  BIPArchFailureTimerMax - Total: 12 SATISFIABLE OTs
@@ -3986,37 +3942,102 @@ INFO  BIPArchFailureTimerMax -        235 UNSATISFIABLE OTs
 INFO  BIPArchFailureTimerMax - Total Time: 1293 ms
 \end{verbatim}
 
-OTs simplifiees a la main:
+%%    {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E-->},
+%%    [(:hb_E=ask)/\(t in z)],   {t := t+1}
+%% OT5 ------------------------------------------------------------
+%%     <t1_s1>-----ask----><t1_s1>
+
+%%    {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B-->},
+%%    [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+%%      /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+%%      /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+%%      /\(b1:sva_SV0=>b0:sva_SV0)
+%%      /\(z1:sva_SV0=
+%%      (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+%%    {t := t+1, z := z1}
+%% OT6 ------------------------------------------------------------
+%%     <t1_s2>-----fail(b0:sva_SV0)----><t1_s2>
+
+%%    {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
+%%    {}
+%% OT7 ------------------------------------------------------------
+%%     <t1_s2>-----resume----><t1_s2>
+
+%%    {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(true))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(true))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
+%%    {t := 0, z := TopInt}
+%% OT8 ------------------------------------------------------------
+%%     <t1_s2>-----resume----><t1_s1>
+
+%%    {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E-->},
+%%    [(:hb_E=ask)/\(t in z)],   {t := t+1}
+%% OT9 ------------------------------------------------------------
+%%     <t1_s2>-----ask----><t1_s3>
+
+%%    {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B-->},
+%%    [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+%%      /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+%%      /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+%%      /\(b1:sva_SV0=>b0:sva_SV0)
+%%      /\(z1:sva_SV0=
+%%      (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+%%    {t := t+1, z := z1}
+%% OT10 ------------------------------------------------------------
+%%     <t1_s3>-----fail(b0:sva_SV0)----><t1_s3>
+
+%%    {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
+%% OT11 ------------------------------------------------------------
+%%     <t1_s3>-----resume----><t1_s3>
+
+%%     {s3---reset-->s1},   {---:hb_E-->},     [(:hb_E=ask)],   {}
+%% OT12 ------------------------------------------------------
+%%     <t1_s3>-----reset----><t1_s1>
+
+Now we list the full set of OTs, in latex form, for better
+readability. This comes as a complement to the open automaton in
+Fig. \ref{schema:ArchFailure:OA}, in which we only have a partial view
+of the OTs details.
+
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{TimerOADetailed}
+  \includegraphics[width=\columnwidth]{TimerOAFullDetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
   \label{schema:ArchFailure:OA}
 \end{figure}
 
 
+\medskip
+\noindent
 $  OT_1  = \openrule
 {\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
 {\ostate{00} \OTarrow{init} \ostate{11}}
 $
-\medskip
-    
+
+\medskip    
+\noindent
 $  OT_2  = \openrule
 {\{B\mapsto fail(b0)\},\\
-  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
   \{z:=z1\} }
 {\ostate{11} \OTarrow{fail} \ostate{11}}
 $
 \medskip
   
+\noindent
   $  OT_3  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
     \{z:=z1\} }
   {\ostate{11} \OTarrow{fail} \ostate{12}}
   $
   \medskip
 
+\noindent
   $  OT_4  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2
@@ -4025,6 +4046,7 @@ $
   $
   \medskip
   
+\noindent
   $  OT_5  = \openrule
   {\{E\mapsto ask\},
     t \in z,
@@ -4033,14 +4055,16 @@ $
   $
   \medskip
 
+\noindent
   $  OT_6  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),\\
     \{t:=t+1, z:=z1\} }
   {\ostate{12} \OTarrow{fail} \ostate{12}}
   $
   \medskip
 
+\noindent
   $  OT_7  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
@@ -4049,6 +4073,7 @@ $
   $
   \medskip
 
+\noindent
   $  OT_8  = \openrule
   {\{B\mapsto resume\},
     b1=true \land b2=true \land b1=b2, 
@@ -4057,6 +4082,7 @@ $
   $
   \medskip
 
+\noindent
   $  OT_9  = \openrule
   {\{E\mapsto ask\},
     t \in z,
@@ -4065,14 +4091,16 @@ $
   $
   \medskip
 
+\noindent
   $  OT_{10}  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),\\
     \{t:=t+1, z:=z1\} }
   {\ostate{13} \OTarrow{fail} \ostate{13}}
   $
   \medskip
 
+\noindent
   $  OT_{11}  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
@@ -4081,6 +4109,7 @@ $
   $
   \medskip
 
+\noindent
   $  OT_{12}  = \openrule
   {\{E\mapsto reset\},
     true,
@@ -4088,44 +4117,59 @@ $
   {\ostate{13} \OTarrow{reset} \ostate{11}}
   $
 
-  Now the version with the Max Progress encoding.
- This modifies both the pLTS transitions, and the synchronisation vectors:
+  \medskip
+
+  \subsubsection{Properties}
+
+  In Fig. \ref{schema:ArchFailure:OA}, you can see that some
+  properties from appendix \app{properties} do not hold.
+
+  In particular, the first safety property:
+  \begin{equation}*
+    \label{eq:prop:reset:can}
+    \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{(\PortResume(true) \lor \PortReset)}\bigr).
+  \end{equation}
+is not true, because the $OT_2$ loop on state $\ostate{11}$ stays in
+state 11 where you need another $\PortFail(true)$ before enabling a
+resume (or reset). This is because without priorities we can have an
+activity on the dandling ``fail'' port without synchronising with the
+others, even if they are available.
+  
+This can be sloved by the version with the Max Progress encoding.
+This modifies both the pLTS transitions, and the synchronisation
+vectors, as shown below:
  
 
 \small\begin{verbatim}
-FailureTimerArchi
---------------------
-SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
-                          [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
-SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
-SV2 SVs: <timeout, timeout, _, ask>-->alpha2
-SV3 SVs: <_, reset, _, reset>-->alpha3
-SV4 SVs: <init, init, _, _>-->alpha4
+SV0: <tick(z, t, z1), fail(zone, bf, b1), fail(b0), _> --> fail(b0),
+         [(b1=>b0)/\((bf/\b0)=>b1)/\(z1=(z |Intersection| ((b1?zone:TopInt)+t)))]
+SV1: <cancel(bc, b1), resume(br, b2), resume, _>-->resume, (b1=b2)/\((bc/\br)=>(b1/\b2))
+SV2: <timeout, timeout, _, ask> --> ask
+SV3: <_, reset, _, reset> --> reset
+SV4: <init, init, _, _> --> init
+
 pLTS: Timer
 - Transition: t0---init-->t1, { t := 0 z := TopInt}
-- Transition: t1---tick(z, t, z1)-->t1, [(t<GET_MAX z)], { t := (t+1) z := z1}
-- Transition: t1---cancel(false)-->t1, {}
-- Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
-- Transition: t1---timeout-->t1, [t in z], { t := (t+1)}
+- Transition: t1---tick(z, t, z1)-->t1, [t<(GET_MAX z)], { t := t+1 z := z1}
+- Transition: t1---cancel(true, false)-->t1, {}
+- Transition: t1---cancel(true, true)-->t1, { t := 0 z := TopInt}
+- Transition: t1---timeout-->t1, [t in z], { t := 0 z := TopInt}
 pLTS: Failure
 - Transition: s0---init-->s1, { zone := minZone,maxZone}
 - Transition: s1---timeout-->s1, {}
-- Transition: s1---resume(false)-->s1, {}
-- Transition: s1---fail(zone, false)-->s1, {}
-- Transition: s1---fail(zone, true)-->s2, {}
-- Transition: s2---fail(zone, false)-->s2, {}
-- Transition: s2---resume(false)-->s2, {}
-- Transition: s2---resume(true)-->s1, {}
+- Transition: s1---resume(false, false)-->s1, {}
+- Transition: s1---fail(zone, true, false)-->s1, {}
+- Transition: s1---fail(zone, true, true)-->s2, {}
+- Transition: s2---fail(zone, false, false)-->s2, {}
+- Transition: s2---resume(true, false)-->s2, {}
+- Transition: s2---resume(true, true)-->s1, {}
 - Transition: s2---timeout-->s3, {}
-- Transition: s3---fail(zone, false)-->s3, {}
-- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---fail(zone, false, false)-->s3, {}
+- Transition: s3---resume(false, false)-->s3, {}
 - Transition: s3---reset-->s1, {}
-Holes: B
-Holes: E
 \end{verbatim}
 
-  The new (simplied) OA is in figure \ref{schema:ArchFailure:OA-MaxProgress}.
-  Here we give the detail only of one the modifed OTs:
+  The new OA is shown in figure \ref{schema:ArchFailure:OA-MaxProgress}.
 
   \begin{figure}[t]
   \centering
@@ -4140,20 +4184,84 @@ Holes: E
 \item $OT_7$ has disappeared because it is now unsat.
 \end{itemize}
 
+  Here we give the detail of the modification of $OT_2$:
+
 \small\begin{verbatim}
 	    {t1---tick(z, t, z1)-->t1, s1---fail(zone, true, false)-->s1},
-            {B|->fail(b0:sva_SV0:1:1)},
-            [(t<(GET_MAX z))/\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-              /\((fail(zone, true, false))=(fail(zone:sva_SV0:1:1, bf:sva_SV0:1:1, b1:sva_SV0:1:1)))
-              /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-              /\((bf:sva_SV0:1:1/\b0:sva_SV0:1:1)=>b1:sva_SV0:1:1)
-              /\(z1:sva_SV0:1:1=(z:sva_SV0:1:1 |Intersection| ((b1:sva_SV0:1:1?(zone:sva_SV0:1:1):(TopInt))+t:sva_SV0:1:1)))],
+            {B|->fail(b0:sva_SV0)},
+            [(t<(GET_MAX z))/\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+              /\((fail(zone, true, false))=(fail(zone:sva_SV0, bf:sva_SV0, b1:sva_SV0)))
+              /\(b1:sva_SV0=>b0:sva_SV0)
+              /\((bf:sva_SV0/\b0:sva_SV0)=>b1:sva_SV0)
+              /\(z1:sva_SV0=(z:sva_SV0 |Intersection| ((b1:sva_SV0?(zone:sva_SV0):(TopInt))+t:sva_SV0)))],
             {t := t+1, z := z1}
 	OT:2 ------------------------------------------------------------
-		<t1_s1>-----fail(false)----><t1_s1>
+		<t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
+\end{verbatim}
 
+As \verb|bf| is true, and \verb|b1| is false, the predicate fragment
+\verb|((bf/\b0)=>b1)| imposes that \verb|b0| is false.
 
+\subsubsection{Scaling-up: composing architectures}
 
+\todoEM{Il faudrait (mais a-t-on le temps?): faire un dessin de la
+  composition au niveau BIP, et au niveau pNet. Un resultat brut, vaguement
+  correct, montre 36 OTs, modulo les petites questions de mon mail de
+  mercredi midi...
+  Au moins dessiner cet automate, et ecrire les proprietes qu'il
+  verifie... }
+
+Primary version of the composed pNet:
+
+\begin{verbatim}
+SV0: <tick(z, t, z1), fail(zone1, b11), fail(zone2, b12), fail1(b01), fail2(b02), _> --> fail(b01, b02), 
+     (z1 = z |Intersection| ((b11?zone1:TopInt)+t) |Intersection| ((b12?zone2:TopInt)+t))
+     /\(b11=>b01)/\(b12=>b02)
+SV1: <cancel(b1), resume(b21), resume(b22), resume1, resume2, _>-->resume, (b1=b21)/\(b1=b22)
+SV2: <timeout, timeout, timeout, _, _, ask>-->ask
+SV3: <_, reset, reset, _, _, reset>-->reset
+SV4: <init, init, init, _, _, _>-->init
+
+pLTS: Timer
+- Transition: t0---init-->t1, { t := 0 z := TopInt}
+- Transition: t1---tick(z, t, z1)-->t1, [t<(GET_MAX z)], { t := t+1 z := z1}
+- Transition: t1---cancel(false)-->t1, {}
+- Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
+- Transition: t1---timeout-->t1, [t in z], { t := 0 z := TopInt}
+
+pLTS: FC1
+- Transition: s0---init-->s1, { zone1 := minZone1,maxZone1}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false)-->s1, {}
+- Transition: s1---fail(zone1, false)-->s1, {}
+- Transition: s1---fail(zone1, true)-->s2, {}
+- Transition: s2---fail(zone1, false)-->s2, {}
+- Transition: s2---resume(false)-->s2, {}
+- Transition: s2---resume(true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone1, false)-->s3, {}
+- Transition: s3---timeout-->s3, {}
+- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+
+pLTS: FC2
+- Transition: s0---init-->s1, { zone2 := minZone2,maxZone2}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false)-->s1, {}
+- Transition: s1---fail(zone2, false)-->s1, {}
+- Transition: s1---fail(zone2, true)-->s2, {}
+- Transition: s2---fail(zone2, false)-->s2, {}
+- Transition: s2---resume(false)-->s2, {}
+- Transition: s2---resume(true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone2, false)-->s3, {}
+- Transition: s3---timeout-->s3, {}
+- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+
+INFO  BIPArchFailureTimerMaxV4X2 - Total: 37 SATISFIABLE OTs
+INFO  BIPArchFailureTimerMaxV4X2 -        3136 UNSATISFIABLE OTs
+INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
 \end{verbatim}
 
 \end{document}
