@@ -233,6 +233,7 @@
 \newcommand{\AG}[1][\ ]{\ensuremath{\mathtt{AG}#1}}
 \newcommand{\AF}[1][\ ]{\ensuremath{\mathtt{AF}#1}}
 \newcommand{\EF}[1][\ ]{\ensuremath{\mathtt{EF}#1}}
+\newcommand{\EX}[1][\ ]{\ensuremath{\mathtt{EX}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
 \newcommand{\EU}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{U}\ #3\right]#1}}
 
@@ -1133,20 +1134,15 @@ More recently, a bisimulation theory with composition properties have been forma
 \section{The theory of architectures with data}
 \label{secn:archs}
 
+\addSB{This section presents the extension of the theory of
+  architectures \cite{AttieBBJS16-architectures-faoc} with data and
+  briefly discusses a special case of priority models, called
+  \emph{maximal progress}.}
+
 %****************************************************************
 
 \subsubsection{Components and composition}
 \label{secn:components}
-
-%% \noteSBin{%
-%% To guarantee preservation of properties guards and expressions
-%% have to be \emph{monotonic}.  In the case of a trivial order, \ie
-%% when nothing is comparable, \emph{any guard or expression is
-%%   monotonic}.  Thus, this is not really a constraint!
-
-%% Do we put this in the definition of expressions and guards or in
-%% the definitions of components and interaction models?
-%% }
 
 \begin{definition}[Components]
   \label{defn:component}
@@ -1179,7 +1175,7 @@ More recently, a bisimulation theory with composition properties have been forma
   In practice, only exported variables, \ie those in the set
   $\bigcup_{p \in P}\export(p)$, belong to the component interface and
   can be used for the interactions with other components (see
-  \defn{im}).  However, in the context of this paper we can simplify
+  \defn{im}).  In the context of this paper, we can simplify
   by omitting this separation.
 %
   }
@@ -1548,74 +1544,31 @@ following three interactions (observe that $\topinterval +
 
 %% \todoSBin{Provide the interaction model}
 
-\begin{definition}[Priority model]
-  \label{defn:priority}
-  A \emph{priority model} over a component interface $(V, P,
-  \export)$\footnote{%
+\addSB{In addition to interaction models, BIP relies on the so-called
+  \emph{priority models}, imposing a strict partial order on
+  interactions.  Formal definitions are provided in \app{arch:appendix}.  Intuitively, an interaction can be fired only if all
+  the higher-priority interactions available in the current state are
+  disabled by their respective guards.
 %
-    Notice that the export function $\export$ has no impact on the
-    priority model definition.
-%
-  } is a strict partial order on interactions: $\pi
-  \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
-
-  We write $\alpha \prec_\pi \beta$, for $(\alpha, \beta) \in \pi$, and 
-   $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
-    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$, for the set of
-  interactions that have higher priority than $\alpha$.
-\end{definition}
-
-\begin{definition}[Application of priority]
-  \label{defn:priority:sem}
-  The application of a priority model $\pi$ over $(V, P, \export)$
-  to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
-  is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
-  \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
-  relation satisfying the rule (we denote
-  $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
-  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
-  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$)
-%
-  \begin{equation*}
-    \label{eq:priority:sem}
-%
-    \infer{
-      \alpha = (a, g, u)
-      \and
-      q \goesto{a, g, u} q'
-      \and
-      \textstyle
-      g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
-    }{
-      q \goesto[\pi]{a, g', u} q'
-    }\,.
-  \end{equation*}
-%
-  %% \todoSBin{Add the intuitive explanation}
-\end{definition}
-
-\addSB{Intuitively, an interaction can be fired only if all the
-higher-priority interactions available in the current state are
-disabled by their respective guards.}
-
-
-In this paper, we will only consider the so-called \emph{maximal
-  progress} priority $\mu$, where $(a, g, u) \prec_\mu (b, h, w)$ iff $a
-\varsubsetneq b$ (\ie $a \subseteq b$ and $a \neq b$).  In
-\secn{conclusion}, we discuss the possibility of generalising the
+In the results and the running example of this paper, we will implicitly assume application of the so-called \emph{maximal
+  progress} priority $\mu$, where $(a, g, u) \prec_\mu (b, h, w)$ iff  $a \subset b$ and $a \neq b$.  For instance, the
+port $\NameTimer.\PortTick$ will never fire alone in a global state,
+where the \noteSB{This turns out to be the first use of the word. I am tempted to pretend I did not notice.}\hl{dangling} port $\PortFail$ is also enabled.
+In \secn{conclusion}, we discuss the possibility of generalising the
 obtained results to other priority models.
-%
-Below, we will assume that the maximal progress priority $\mu$ is
-applied after each composition with an interaction model.
+}
+%% Below, we will assume that the maximal progress priority $\mu$ is
+%% applied after each composition with an interaction model.
 
 %% Finally, \emph{priorities}\mdash defined by a strict partial order on
 %% the set of possible interactions\mdash narrow the choice among the
 %% enabled interactions at any given round.  The default priority is the
 %% so-called \emph{maximal progress}, whereby among any two interactions
 %% $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
-In our running example, under the maximal progress priority, the
-port $\NameTimer.\PortTick$ will never fire alone in a global state,
-where the \noteSB{This turns out to be the first use of the word. I am tempted to pretend I did not notice.}\hl{dangling} port $\PortFail$ is also enabled. 
+
+%% In our running example, under the maximal progress priority, the
+%% port $\NameTimer.\PortTick$ will never fire alone in a global state,
+%% where the \noteSB{This turns out to be the first use of the word. I am tempted to pretend I did not notice.}\hl{dangling} port $\PortFail$ is also enabled. 
 
 %% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
 %% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
@@ -1822,26 +1775,26 @@ through an invocation of the dangling port {\PortAsk}.
   %% Furthermore, for any component $B$, we have $A_{id}(B) = \mu(B)$.
 \end{proposition}
 %
-\begin{proof}[Sketch of the proof]
-  %% Commutativity and associativity 
-  Follows from the corresponding
-  properties of set union, Boolean conjunction and
-  semilattice meet.
-%
-%% \todoLH{Check when equivalence is defined}
-%%   Suppose we have two architectures $A \arequiv A'$.  This does not
-%%   necessarily mean that their sets of coordinating components
-%%   coincide.  However, if all the involved coordinating components
-%%   are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
-%%   both architectures will impose the same restrictions, enabling
-%%   the same interactions between the coordinating and operand
-%%   components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
-%%   A'(\cB)$.  Since this holds for any set of components $\cB$, we
-%%   conclude that $A \arcomp A' \arequiv A \arequiv A'$.
+%% \begin{proof}[Sketch of the proof]
+%%   %% Commutativity and associativity 
+%%   Follows from the corresponding
+%%   properties of set union, Boolean conjunction and
+%%   semilattice meet.
 %% %
-%%   The properties of $A_{id}$ follow immediately from the
-%%   definitions of architecture application and composition.
-\end{proof}
+%% %% \todoLH{Check when equivalence is defined}
+%% %%   Suppose we have two architectures $A \arequiv A'$.  This does not
+%% %%   necessarily mean that their sets of coordinating components
+%% %%   coincide.  However, if all the involved coordinating components
+%% %%   are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
+%% %%   both architectures will impose the same restrictions, enabling
+%% %%   the same interactions between the coordinating and operand
+%% %%   components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
+%% %%   A'(\cB)$.  Since this holds for any set of components $\cB$, we
+%% %%   conclude that $A \arcomp A' \arequiv A \arequiv A'$.
+%% %% %
+%% %%   The properties of $A_{id}$ follow immediately from the
+%% %%   definitions of architecture application and composition.
+%% \end{proof}
 
 %% The last statement of \prop{arcomp:nice} highlights a subtle point:
 %% $A_{id}$ is the neutral element of the $\arcomp$ operator\mdash it is
@@ -1851,7 +1804,7 @@ through an invocation of the dangling port {\PortAsk}.
 \subsubsection{Preservation of safety properties}
 \label{secn:safety}
 
-For a component $B$, we denote $S_{\semopen{B}}$,
+For a component $B$, we denote $S_{\semopen{B}}$ and
 $s^0_{\semopen{B}}$ the corresponding constituents of
 $\semopen{B}$.
 
@@ -1875,15 +1828,15 @@ $\semopen{B}$.
 \end{definition}
 
 \label{property:reset}
-\addSB{Although we define properties as state predicates, any
-  appropriate logic can be used to specify them.  For instance, the
-  property \emph{``There is always a possibility to reset the system
-    or resume operation after a single failure'' (\ie without
-    additional failures occuring in the meantime)} enforced by the
-  Failure Monitor architecture can be specified using CTL as $\AG
-  \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor
-    \PortReset)}\bigr)$.  Additional properties are provided in
-  \app{properties}.}
+Although we define properties as state predicates, any
+appropriate logic can be used to specify them.  For instance, the
+property \addSB{\emph{``There is always a possibility to reset the system
+  after a single failure''} (\ie without
+  additional failures having to occur in the meantime)} enforced by the
+Failure Monitor architecture can be specified using CTL as \noteSB{Removed $\lnot \PortResume$, because not needed \emph{and} could not reformulate nicely in English.}\addSB{$\AG
+\bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
+  \PortReset}\bigr)$}.  Additional properties are provided in
+\app{properties}.
 
 %% \todoSB{Cite the original paper somewhere.}
 The main idea of our approach is that an architecture enforces
@@ -1913,8 +1866,8 @@ architecture enforces some property $\Phi$, it is implicitly
 assumed that $\Phi$ is initial for the coordinated components.
 Below, we omit mentioning this explicitly.
 
-\defn{up:compat} in \secn{arch:appendix} provides a formal definition
-of the notion of \emph{upwards compatibility}, which we present here
+\defn{up:compat} in \app{arch:appendix} provides a formal definition
+of the notion of \emph{upwards compatibility} needed to ensure property preservation when composing architectures relying on the maximal progress priority model.  Here, we present it
 informally due to page limitations.  Two architectures $A_1$ and $A_2$
 are said to be upwards compatible iff, whenever their composition
 involves the fusion of two interactions $a_1 = a \cap P_{A_1}$ and
@@ -3714,11 +3667,58 @@ including the ports of this node other than $p$.
 \section{Additional material for the theory of architectures}
 \label{secn:arch:appendix}
 
+This section provides the formal definitions related to priority
+models, which are omitted from the main body of the paper due to size
+limitations.
+
+\begin{definition}[Priority model]
+  \label{defn:priority}
+  A \emph{priority model} over a component interface $(V, P,
+  \export)$\footnote{%
+%
+    Notice that the export function $\export$ has no impact on the
+    priority model definition.
+%
+  } is a strict partial order on interactions: $\pi
+  \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
+
+  We write $\alpha \prec_\pi \beta$, for $(\alpha, \beta) \in \pi$, and 
+   $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
+    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$, for the set of
+  interactions that have higher priority than $\alpha$.
+\end{definition}
+
+\begin{definition}[Application of priority]
+  \label{defn:priority:sem}
+  The application of a priority model $\pi$ over $(V, P, \export)$
+  to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
+  is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
+  \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
+  relation satisfying the rule (we denote
+  $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
+  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
+  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$)
+%
+  \begin{equation*}
+    \label{eq:priority:sem}
+%
+    \infer{
+      \alpha = (a, g, u)
+      \and
+      q \goesto{a, g, u} q'
+      \and
+      \textstyle
+      g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
+    }{
+      q \goesto[\pi]{a, g', u} q'
+    }\,.
+  \end{equation*}
+%
+  %% \todoSBin{Add the intuitive explanation}
+\end{definition}
 
 \begin{definition}[Upwards compatibility]
   \label{defn:up:compat}
-  \todoSB{Summarise in English and move to the appendix}
-%
   Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
   \export[A_i], \Gamma_i}$, for $i = 1,2$.
 %
@@ -3794,12 +3794,12 @@ including the ports of this node other than $p$.
 The architecture in \fig{schema:ArchFailure:BIP} enforces the
 following safety properties:
 \begin{enumerate}
-\item There is always a possibility to reset the system or resume
-  operation after a single failure (\ie without additional failures
-  occuring in the meantime):
+\item There is always a possibility to reset the system
+  after a single failure (\ie without additional failures
+  having to occur in the meantime):
   \begin{equation}
     \label{eq:prop:reset:can}
-    \AG \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor \PortReset)}\bigr).
+    \AG \bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{\PortReset}\bigr).
   \end{equation}
 
   \noteIn{Checking this on the resulting open automaton should be understood after application of the encoding, namely here the original ``fail'' event must be an effective ``fail'' of the hole ``B'', that is a ``fail(true)'' action in the automaton.}
