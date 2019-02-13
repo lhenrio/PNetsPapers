@@ -9,7 +9,6 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 
-
 \let\proof\relax   
 \let\endproof\relax
 
@@ -70,6 +69,7 @@
 \newcommand{\todoLH}[2][color=orange!40, size=\tiny]{\todo[#1]{\textbf{To-do Ludo:} {#2}}}
 \newcommand{\todoLHin}[2][inline,color=orange!40]{\todo[#1]{\textbf{To-do Ludo: } {#2}}}
 \newcommand{\todoEM}[2][color=green!40, size=\tiny]{\todo[#1]{\textbf{To-do Eric:} {#2}}}
+\newcommand{\noteEMin}[2][inline,color=green!40]{\todo[#1]{{#2}\Eric}}
 
 \newcommand{\noteIn}[2][inline,color=black!20]{\todo[#1]{{#2}}}
 
@@ -305,6 +305,10 @@
 }
 
 % %%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+% %%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{tikz}
 \usetikzlibrary{calc}
@@ -337,7 +341,7 @@
 \begin{document}
 \graphicspath{{figures/}}
 
-\title{BIP Architectures and Open pNets}
+\title{Verification of concurrent design patterns with data}
 
 \author{%
 Simon~Bliudze\inst{1}
@@ -345,8 +349,6 @@ Simon~Bliudze\inst{1}
 Ludovic~Henrio\inst{2}
 \and
 Eric~Madelaine\inst{3}
-\and
-...
 }
 
 \institute{%
@@ -363,14 +365,27 @@ Eric~Madelaine\inst{3}
 \maketitle
 
 \begin{abstract}
-  We extend the theory of architectures with a general
-  mechanism for handling various types of data transfer.  We
-  encode this extended model into the open pNet semantic
-  model and show how this encoding can be used to verify
-  that an architecture does, indeed, enforce its
-  characteristic property.
+We provide a solution for the design of safe concurrent systems by
+compositional application of verified design patterns\mdash which we
+call \emph{architectures}\mdash to a minimal set of functional
+components.  To this end, we extend the theory of architectures
+developed previously for the BIP framework with the elements necessary
+for handling data: definition and operations on data domains, syntax
+and semantics of composition operators involving data transfer.  Under
+monotonicity assumptions on guards and assignments, composition of
+architectures preserves their characteristic safety properties.
 
-\keywords{}
+To verify that individual architectures do enforce their associated
+properties, we provide a non-trivial encoding into an intermediate
+model called open pNets that supports SMT-based verification.
+Additionally, the translation into the open pNet semantic model gives
+us a strong insight and a comparison of the coordination mechanisms
+provided by the two frameworks.  The approach is illustrated by a case
+study based on a previously developed BIP model of a nanosatellite
+on-board software.
+
+\keywords{Parametrised verification, composition, safety, interaction
+  models.}
 \end{abstract}
 
 %****************************************************************
@@ -434,7 +449,7 @@ approaches even for reconfigurable applications.
 Closed pNets were used to encode fully defined programs or systems,
 while open pNets have ``holes'', playing the role of process
 parameters. Such open systems can be used to define composition operators or structuring architectures.
-It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{AVOCS}. This encding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
+It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. This encoding of open pNets into Z3 that is under development is the starting point of this article. Our objective is to benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
 
 The methodology we propose is thus to an encoding of BIP architectures into open pNet in order to be able to verify, using SMT techniques, the coordination capabilities of the architecture, and more generally its properties. The encoding will also give us feedback on the comparison between the BIP architectures and the pNet formalism. 
 Overall, the encoding allows us to precisely compare the coordination mechanisms of the two models but also the way component composition is expressed in the two formalisms. This article is also the opportunity to investigate further on  compositional verification by relating two different composition mechanisms that provide different vision on compositional verification. \textbf{pas tres heureux la fin: pas assez detaille ou trop complique -> abstraire ou detailller a mon avis (Ludo)}
@@ -541,10 +556,10 @@ For a set of variables $V \subseteq \variables$, we denote
 $\valuations{V} \bydef{=} \{\val{}{}: V \rightarrow \data\}$
 the set of \emph{valuations} of the variables in $V$.
 Valuations extend canonically to expressions and denote $\val{}{}(e)$ the value of $e$ under the valuation $\val{}{}$.
-\noteLH{its the following really necessary}
-\addSB{Since we consider variables to be sorted, valuations
-  applied to expressions are interpreted as partial functions
-  $\exprs{V} \rightharpoonup \data$.}
+%\noteLH{its the following really necessary}
+%\addSB{Since we consider variables to be sorted, valuations
+%  applied to expressions are interpreted as partial functions
+%  $\exprs{V} \rightharpoonup \data$.}
 For a valuation $\val{}{}$ and an assignment $(x_i := e_i)^{i \in I}$, we define:
 \[
 \val{}{}\bigl[(x_i := e_i)^{i \in I}\bigr](x) \bydef{=}
@@ -2467,15 +2482,10 @@ removed from the corresponding guards in \eq{nopri:connector}.
 %****************************************************************
 %****************************************************************
 
-\subsection{SMT encoding of open pNets}
-\label{secn:smt}
+% \subsection{SMT encoding of open pNets}
+% \label{secn:smt}
 
-\begin{indent}
-  description courte et intuitive avec reference au papier d'Avocs
-\end{indent}
 
-%****************************************************************
-%****************************************************************
 
 \section{Case study}
 \label{secn:case-study}
@@ -2494,15 +2504,35 @@ removed from the corresponding guards in \eq{nopri:connector}.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\columnwidth]{TimerOADetailed}
+  \includegraphics[width=0.9\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
   \label{schema:ArchFailure:OA}
 \end{figure}
 
+In \cite{HMZ-FORTE2016QBMZ-AVOCS18}, we have described an algorithm
+and a tool that 
+computes the open automaton encoding the semantics of an open
+pNet. This tool computes open transitions from the combinations of all
+possible behaviours and synchronisation vectors of the pNet, then makes
+use of an SMT engine to check satisfiability of the open transition
+predicates, and minimize the size of the resulting automaton.
+
+%% The encoding into the SMT language involves the definition of the
+%% action and data domains and operators, and the axiomatisation of
+%% domain-dependant properties, to allow the SMT engine to be as precise
+%% as possible (even if it cannot be complete).
+
+%% The resulting open automaton will later be subject to (symbolic)
+%% model-checking and equivalence checking algorithms, themselves
+%% requiring automatic proof assistance. \todoEM{trop flou pour le
+%%   moment, mais je n'ose pas dire des trucs trop precis... meme si on a
+%%   deja une implem de la FH-bisim, elle n'est pas validee!}
+
 In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
 obtained from our pNet. For reasons of space, we have not shown the
-detail of the open transition, but only the assignement of state
-variables, and the resulting action; you can find the full details in
+detail of the open transition, but only the assignments of state
+variables, some usefull parts of the predicates, and the resulting
+action; you can find the full details in 
 Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one
 explained in Example~\ref{Example:TimerOT3} page~\pageref{Example:TimerOT3}
 
@@ -2513,8 +2543,11 @@ reasonable, although a detailed study shows that the property stated
 in page~\pageref{property:reset} does not hold, because of the
 $fail$ loops on states $11$ and $12$. This is because we did not use
 the maximal progress assumption here. If we do, we get the corrected
-behaviour in Fig~\ref{schema:ArchFailure:MaxProgress}. This one
-verifies all the properties listed in  \app{properties}.
+behaviour in Fig~\ref{schema:ArchFailure:OA-MaxProgress}
+(\app{full-results}), in which $OT_7$ has 
+disappeared, and $OT_2$ and $OT_{10}$ have been restricted to
+$b0=false$. This one verifies all the properties listed in
+\app{properties}. 
 
 
 %****************************************************************
@@ -2566,16 +2599,17 @@ Previous works on pNets and BIP architectures have been mentioned at the beginni
 A few tracks
 
 %%% compositional verification
-approaches by typing interfaces/protocols
+approaches by typing interfaces/protocols == Simon
 
-infinite/parametrized model checking?
+infinite/parametrized model checking? == ERIC + Simon
 
-theorem proving? (too much manual effort) we need an example, we could cite Coqcots and Pycots for reconfiguration
+As compositional proof of safety is difficult, some approaches rely on theorem proving to ensure the safety of component operations. Coqots and Pycots\cite{BCDLM:CBSE2014} even allow to prove the safety of reconfiguration procedures which are known to be highly difficult to verify, and massively parametrised. unfortunately the approach relies on a high expertise and significant efforts from the component user as (s)he must prove manually the safety of the reconfiguration process. In this paper, we rely on automatic encoding into a SMT solver making the proof of properties much more automatic, but we cannot prove the safety of the reconfiguration procedure.
 
-SMT on an application not using component structure. is there a strong Z3 example
 
-KeY? (I would call this symbolic execution and assume-guarantee)
+SMT on an application not using component structure. is there a strong Z3 example == Eric
 
+In~\cite{DDJO:JLAMP2012}, the authors propose a compositional proof system for distributed objects that is suitable for implementation within the KeY framework~\cite{BHS:Key2007} and uses a Hoare logic approach.
+The approach relies on history invariant for each object, separating local reasoning for proving object invariant from global reasoning that relies on well-formedness of traces. Compared to this  approach, we do not  deal with complex history-based specifications because we use interaction specification and SMT-reasoning instead of Hoare logic. Also the correctness of the composition is given by the properties of architectures which allows for more flexibility than well-formedness of traces.
 
 
 
@@ -3225,60 +3259,60 @@ KeY? (I would call this symbolic execution and assume-guarantee)
 
 %*********************************************************************
 %*********************************************************************
-
-\section{pNets additional definitions}
-\label{secn:pNets:additional}
-
-\begin{definition}[Sorts, Holes, Leaves of pNets]
-  \begin{itemize}
-  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all 
-  straightforward, whereas the notation is complex.  Maybe reformulate in words and move 
-  the formal definitions in the appendix?}
- The sort of a pNet is its signature, i.e. the set of actions it can
-perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), 
-we could eliminate the need to distinguish the input variables at all? That would 
-simplify things.}\hl{In the definition of sorts, we do not need to distinguish
-input variables} (that specify the dataflow within LTSs), so for
-computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
-K}$ is the parallel substitution 
-operation.} to remove the
-\emph{input marker} of variables\footnote{$\overline{S}$ denotes a set of $S$.}. Formally:
-\[
-\begin{array}{l}
-\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
-x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~g,~(x_j\!:= {e}_j)^{j\in
-    J}\rangle} s'\in \to \} \\
-\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
-\overline{\pNet}\!,
-\overline{\symb{SV}}\myrangle)
-=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
-\to\alpha'\in\set{\symb{SV}}\}
-\end{array}
-\]
-
-\item
-The set of holes of a pNet is defined inductively; the sets of holes
-in a pNet node and its subnets are all disjoint:
-  \[\begin{array}{l}
-\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
-\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
-=J\uplus{\displaystyle \bigcup_{i\in 
-I}\Holes(\pNet_i)}\\
-\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
-\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
-\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
-\end{array}\]
-\item
-The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
-inductively as:
-\[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\%\{\mylangle S,s_0, \to\myrangle\}\\
-\Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
-\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
-I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
-\end{array}\]
-\end{itemize}
-\end{definition}
+%
+%\section{pNets additional definitions}
+%\label{secn:pNets:additional}
+%
+%\begin{definition}[Sorts, Holes, Leaves of pNets]
+%  \begin{itemize}
+%  \item  \noteSB{I think this can be lightened up a bit, since the definitions are all 
+%  straightforward, whereas the notation is complex.  Maybe reformulate in words and move 
+%  the formal definitions in the appendix?}
+% The sort of a pNet is its signature, i.e. the set of actions it can
+%perform. \noteSB{Is there any chance that, by writing assignments explicitly ($x := e$), 
+%we could eliminate the need to distinguish the input variables at all? That would 
+%simplify things.}\hl{In the definition of sorts, we do not need to distinguish
+%input variables} (that specify the dataflow within LTSs), so for
+%computing LTS sorts, we use a substitution operator\footnote{$\subst{y_k\gets x_k}^{k\in 
+%K}$ is the parallel substitution 
+%operation.} to remove the
+%\emph{input marker} of variables\footnote{$\overline{S}$ denotes a set of $S$.}. Formally:
+%\[
+%\begin{array}{l}
+%\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{x \gets ?x| 
+%x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~g,~(x_j\!:= {e}_j)^{j\in
+%    J}\rangle} s'\in \to \} \\
+%\Sortop(\mylangle \overline{\pNet}\!, %\pNet_i^{i\in I}, \Sort_j^{j\in J}
+%\overline{\pNet}\!,
+%\overline{\symb{SV}}\myrangle)
+%=\{\alpha' |\, \overline{\alpha}%\alpha_j^{j\in J_k}
+%\to\alpha'\in\set{\symb{SV}}\}
+%\end{array}
+%\]
+%
+%\item
+%The set of holes of a pNet is defined inductively; the sets of holes
+%in a pNet node and its subnets are all disjoint:
+%  \[\begin{array}{l}
+%\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset \\
+%\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}\!, \overline{\symb{SV}}\myrangle) 
+%=J\uplus{\displaystyle \bigcup_{i\in 
+%I}\Holes(\pNet_i)}\\
+%\forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
+%\forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  
+%\Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
+%\end{array}\]
+%\item
+%The set of leaves of a pNet is the set of all pLTSs occurring in the structure, defined 
+%inductively as:
+%\[\begin{array}{l}
+%\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\%\{\mylangle S,s_0, \to\myrangle\}\\
+%\Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
+%\overline{\Sort}\!, \overline{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
+%I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i\pNet_i \text{ is a }\pLTS\}}
+%\end{array}\]
+%\end{itemize}
+%\end{definition}
 
 %*********************************************************************
 %*********************************************************************
@@ -3768,7 +3802,7 @@ following safety properties:
     \AG \bigl(\PortFail \rightarrow \EU[]{\lnot \PortFail}{(\PortResume \lor \PortReset)}\bigr).
   \end{equation}
 
-  \notein{Checking this on the resulting open automaton should be understood after application of the encoding, namely here the original ``fail'' event must be an effective ``fail'' of the hole ``B'', that is a ``fail(true)'' action in the automaton.}
+  \noteIn{Checking this on the resulting open automaton should be understood after application of the encoding, namely here the original ``fail'' event must be an effective ``fail'' of the hole ``B'', that is a ``fail(true)'' action in the automaton.}
 
 \item As long as no failure has occured, the $z$ variable of the
   $\NameTimer$ component has the value $\topinterval$:
@@ -3816,32 +3850,26 @@ enforces the \emph{liveness} property \emph{``Whenever a reset is
 \subsection{Output of the open-automaton construction}
 \label{secn:full-results}
 
-The standard pretty-print of OTs by the tool include the transitions
-of the pLTSs (controllers). This is not a full ``proof-carrying
-code'', but it allows for a better understanding of the construction
-of each OT.
 
-We first show the pNet input, then the twelve generated OTs in their
-verbatim form.
 
-\small\begin{verbatim}
-FailureTimerArchi
---------------------
-SV0 SVs: <tick(z, t, z1), fail(zone, b1), fail(b0), _>-->alpha0,
-                          [((b1->b0)/\(z1=z/\(((b1?(zone)TopInt)))+t)))]
-SV1 SVs: <cancel(b1), resume(b2), resume, _>-->alpha1, (b1=b2)
-SV2 SVs: <timeout, timeout, _, ask>-->alpha2
-SV3 SVs: <_, reset, _, reset>-->alpha3
-SV4 SVs: <init, init, _, _>-->alpha4
+We first show the input pNet, with its 5 synchronisation vectors, and 2 controllers.
+
+\noindent
+\verbatimfont{\small}
+\begin{verbatim}
+SV0: <tick(z, t, z1), fail(zone, b1), fail(b0), _> --> fail(b0),
+         [(b1->b0)/\(z1=z |Intersection| ((b1?zone:TopInt)+t))]
+SV1: <cancel(b1), resume(b2), resume, _> --> resume, (b1=b2)
+SV2: <timeout, timeout, _, ask> --> ask
+SV3: <_, reset, _, reset> --> reset
+SV4: <init, init, _, _> --> init
 pLTS: Timer
 - Transition: t0---init-->t1, { t := 0 z := TopInt}
 - Transition: t1---tick(z, t, z1)-->t1, [(t<GET_MAX z)], { t := (t+1) z := z1}
 - Transition: t1---cancel(false)-->t1, {}
 - Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
 - Transition: t1---timeout-->t1, [t in z], { t := (t+1)}
-- Variable: t, State: t1, Value(s) = 0,0,(t+1),
-- Variable: z, State: t1, Value(s) = TopInt,z1,
-pLTS: Failure
+pLTS: Control
 - Transition: s0---init-->s1, { zone := minZone,maxZone}
 - Transition: s1---timeout-->s1, {}
 - Transition: s1---resume(false)-->s1, {}
@@ -3854,100 +3882,56 @@ pLTS: Failure
 - Transition: s3---fail(zone, false)-->s3, {}
 - Transition: s3---resume(false)-->s3, {}
 - Transition: s3---reset-->s1, {}
-- Variable: zone, State: s1, Value(s) = minZone,maxZone,
 Holes: B
 Holes: E
+\end{verbatim}
 
-       {t0---init-->t1, s0---init-->s1},   {},  [true],
-       {t := 0, z := TopInt, zone := minZone,maxZone}
-    OT1 ------------------------------------------------------------
-        <t0_s0>-----init----><t1_s1>
+Then some of the twelve generated OTs in their verbatim form. In this format
+the first element of the premisse is a list of the moves of the pLTS
+participating in the transition. This is not part of the OT, but
+provides a trace of its construction. Also, the variables occuring in
+the actions and predicate expressions have names helping to understand
+where they come from (e.g. \verb|b0:sva_SV0| in $OT2$ below).
+This is not a full ``proof-carrying
+code'', but it allows for a better understanding of the construction
+of each OT.
 
-       {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT2 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s1>
+\verbatimfont{\small}
+\begin{verbatim}
+   {t0---init-->t1, s0---init-->s1},   {},  [true],
+   {t := 0, z := TopInt, zone := minZone,maxZone}
+OT1 ------------------------------------------------------------
+    <t0_s0>-----init----><t1_s1>
 
-       {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z,t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, true))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT3 ------------------------------------------------------------
-        <t1_s1>-----fail----><t1_s2>
+   {t1---tick(z, t, z1)-->t1, s1---fail(zone, false)-->s1},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+     /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+     /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+     /\(b1:sva_SV0=>b0:sva_SV0)
+     /\(z1:sva_SV0=
+     (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+   {t := t+1, z := z1}
+OT2 ------------------------------------------------------------
+    <t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
 
-       {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)
-         /\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))
-         /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT4 ------------------------------------------------------------
-        <t1_s1>-----resume----><t1_s1>
+   {t1---tick(z, t, z1)-->t1, s1---fail(zone, true)-->s2},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+     /\((tick(z,t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+     /\((fail(zone, true))=(fail(zone:sva_SV0, b1:sva_SV0)))
+     /\(b1:sva_SV0=>b0:sva_SV0)
+     /\(z1:sva_SV0=
+     (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+   {t := t+1, z := z1}
+OT3 ------------------------------------------------------------
+    <t1_s1>-----fail(true)----><t1_s2>
 
-       {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E-->},
-       [(:hb_E=ask)/\(t in z)],   {t := t+1}
-    OT5 ------------------------------------------------------------
-        <t1_s1>-----ask----><t1_s1>
-
-       {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT6 ------------------------------------------------------------
-        <t1_s2>-----fail----><t1_s2>
-
-       {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT7 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s2>
-
-       {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(true))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(true))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
-       {t := 0, z := TopInt}
-    OT8 ------------------------------------------------------------
-        <t1_s2>-----resume----><t1_s1>
-
-       {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E-->},
-       [(:hb_E=ask)/\(t in z)],   {t := t+1}
-    OT9 ------------------------------------------------------------
-        <t1_s2>-----ask----><t1_s3>
-
-       {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B-->},
-       [(:hb_B=fail(b0:sva_SV0:1:1)/\(t<(GET_MAX z))
-         /\((tick(z, t, z1))=(tick(z:sva_SV0:1:1, t:sva_SV0:1:1, z1:sva_SV0:1:1)))
-         /\((fail(zone, false))=(fail(zone:sva_SV0:1:1, b1:sva_SV0:1:1)))
-         /\(b1:sva_SV0:1:1=>b0:sva_SV0:1:1)
-         /\(z1:sva_SV0:1:1=
-         (z:sva_SV0:1:1/\((b1:sva_SV0:1:1?(zone:sva_SV0:1:1)TopInt))+t:sva_SV0:1:1)))],
-       {t := t+1, z := z1}
-    OT10 ------------------------------------------------------------
-        <t1_s3>-----fail----><t1_s3>
-
-       {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
-       [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-         /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
-    OT11 ------------------------------------------------------------
-        <t1_s3>-----resume----><t1_s3>
-
-        {s3---reset-->s1},   {---:hb_E-->},     [(:hb_E=ask)],   {}
-    OT12 ------------------------------------------------------
-        <t1_s3>-----reset----><t1_s1>
-
+   {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
+   [(:hb_B=fail(b0:sva_SV0)
+     /\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+     /\((resume(false))=(resume(b2:sva_SV1:1:2)))
+     /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
+OT4 ------------------------------------------------------------
+    <t1_s1>-----resume----><t1_s1>
 
 
 INFO  BIPArchFailureTimerMax - Total: 12 SATISFIABLE OTs
@@ -3955,37 +3939,102 @@ INFO  BIPArchFailureTimerMax -        235 UNSATISFIABLE OTs
 INFO  BIPArchFailureTimerMax - Total Time: 1293 ms
 \end{verbatim}
 
-OTs simplifiees a la main:
+%%    {t1---timeout-->t1, s1---timeout-->s1},   {---:hb_E-->},
+%%    [(:hb_E=ask)/\(t in z)],   {t := t+1}
+%% OT5 ------------------------------------------------------------
+%%     <t1_s1>-----ask----><t1_s1>
+
+%%    {t1---tick(z, t, z1)-->t1, s2---fail(zone, false)-->s2},   {---:hb_B-->},
+%%    [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+%%      /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+%%      /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+%%      /\(b1:sva_SV0=>b0:sva_SV0)
+%%      /\(z1:sva_SV0=
+%%      (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+%%    {t := t+1, z := z1}
+%% OT6 ------------------------------------------------------------
+%%     <t1_s2>-----fail(b0:sva_SV0)----><t1_s2>
+
+%%    {t1---cancel(false)-->t1, s2---resume(false)-->s2},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
+%%    {}
+%% OT7 ------------------------------------------------------------
+%%     <t1_s2>-----resume----><t1_s2>
+
+%%    {t1---cancel(true)-->t1, s2---resume(true)-->s1},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(true))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(true))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],
+%%    {t := 0, z := TopInt}
+%% OT8 ------------------------------------------------------------
+%%     <t1_s2>-----resume----><t1_s1>
+
+%%    {t1---timeout-->t1, s2---timeout-->s3},   {---:hb_E-->},
+%%    [(:hb_E=ask)/\(t in z)],   {t := t+1}
+%% OT9 ------------------------------------------------------------
+%%     <t1_s2>-----ask----><t1_s3>
+
+%%    {t1---tick(z, t, z1)-->t1, s3---fail(zone, false)-->s3},   {---:hb_B-->},
+%%    [(:hb_B=fail(b0:sva_SV0)/\(t<(GET_MAX z))
+%%      /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+%%      /\((fail(zone, false))=(fail(zone:sva_SV0, b1:sva_SV0)))
+%%      /\(b1:sva_SV0=>b0:sva_SV0)
+%%      /\(z1:sva_SV0=
+%%      (z:sva_SV0  |Intersection| ((b1:sva_SV0?(zone:sva_SV0)TopInt))+t:sva_SV0)))],
+%%    {t := t+1, z := z1}
+%% OT10 ------------------------------------------------------------
+%%     <t1_s3>-----fail(b0:sva_SV0)----><t1_s3>
+
+%%    {t1---cancel(false)-->t1, s3---resume(false)-->s3},   {---:hb_B-->},
+%%    [(:hb_B=resume)/\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
+%%      /\((resume(false))=(resume(b2:sva_SV1:1:2)))/\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
+%% OT11 ------------------------------------------------------------
+%%     <t1_s3>-----resume----><t1_s3>
+
+%%     {s3---reset-->s1},   {---:hb_E-->},     [(:hb_E=ask)],   {}
+%% OT12 ------------------------------------------------------
+%%     <t1_s3>-----reset----><t1_s1>
+
+Now we list the full set of OTs, in latex form, for better
+readability. This comes as a complement to the open automaton in
+Fig. \ref{schema:ArchFailure:OA}, in which we only have a partial view
+of the OTs details.
+
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{TimerOADetailed}
+  \includegraphics[width=\columnwidth]{TimerOAFullDetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:BIP}
+  \label{schema:ArchFailure:OA}
 \end{figure}
 
 
+\medskip
+\noindent
 $  OT_1  = \openrule
 {\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
 {\ostate{00} \OTarrow{init} \ostate{11}}
 $
-\medskip
-    
+
+\medskip    
+\noindent
 $  OT_2  = \openrule
 {\{B\mapsto fail(b0)\},\\
-  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
   \{z:=z1\} }
 {\ostate{11} \OTarrow{fail} \ostate{11}}
 $
 \medskip
   
+\noindent
   $  OT_3  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
     \{z:=z1\} }
   {\ostate{11} \OTarrow{fail} \ostate{12}}
   $
   \medskip
 
+\noindent
   $  OT_4  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2
@@ -3994,6 +4043,7 @@ $
   $
   \medskip
   
+\noindent
   $  OT_5  = \openrule
   {\{E\mapsto ask\},
     t \in z,
@@ -4002,14 +4052,16 @@ $
   $
   \medskip
 
+\noindent
   $  OT_6  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),\\
     \{t:=t+1, z:=z1\} }
   {\ostate{12} \OTarrow{fail} \ostate{12}}
   $
   \medskip
 
+\noindent
   $  OT_7  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
@@ -4018,6 +4070,7 @@ $
   $
   \medskip
 
+\noindent
   $  OT_8  = \openrule
   {\{B\mapsto resume\},
     b1=true \land b2=true \land b1=b2, 
@@ -4026,6 +4079,7 @@ $
   $
   \medskip
 
+\noindent
   $  OT_9  = \openrule
   {\{E\mapsto ask\},
     t \in z,
@@ -4034,14 +4088,16 @@ $
   $
   \medskip
 
+\noindent
   $  OT_{10}  = \openrule
   {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),
+    t<GetMax(z) \land b1=false \land b1=>b0 \land z1=(z \cap (b1?zone;TopInt)+t),\\
     \{t:=t+1, z:=z1\} }
   {\ostate{13} \OTarrow{fail} \ostate{13}}
   $
   \medskip
 
+\noindent
   $  OT_{11}  = \openrule
   {\{B\mapsto resume\},
     b1=false \land b2=false \land b1=b2,
@@ -4050,11 +4106,159 @@ $
   $
   \medskip
 
+\noindent
   $  OT_{12}  = \openrule
   {\{E\mapsto reset\},
     true,
     \{\} }
   {\ostate{13} \OTarrow{reset} \ostate{11}}
   $
+
+  \medskip
+
+  \subsubsection{Properties}
+
+  In Fig. \ref{schema:ArchFailure:OA}, you can see that some
+  properties from appendix \app{properties} do not hold.
+
+  In particular, the first safety property:
+  \begin{equation}*
+    \label{eq:prop:reset:can}
+    \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{(\PortResume(true) \lor \PortReset)}\bigr).
+  \end{equation}
+is not true, because the $OT_2$ loop on state $\ostate{11}$ stays in
+state 11 where you need another $\PortFail(true)$ before enabling a
+resume (or reset). This is because without priorities we can have an
+activity on the dandling ``fail'' port without synchronising with the
+others, even if they are available.
+  
+This can be sloved by the version with the Max Progress encoding.
+This modifies both the pLTS transitions, and the synchronisation
+vectors, as shown below:
+ 
+
+\small\begin{verbatim}
+SV0: <tick(z, t, z1), fail(zone, bf, b1), fail(b0), _> --> fail(b0),
+         [(b1=>b0)/\((bf/\b0)=>b1)/\(z1=(z |Intersection| ((b1?zone:TopInt)+t)))]
+SV1: <cancel(bc, b1), resume(br, b2), resume, _>-->resume, (b1=b2)/\((bc/\br)=>(b1/\b2))
+SV2: <timeout, timeout, _, ask> --> ask
+SV3: <_, reset, _, reset> --> reset
+SV4: <init, init, _, _> --> init
+
+pLTS: Timer
+- Transition: t0---init-->t1, { t := 0 z := TopInt}
+- Transition: t1---tick(z, t, z1)-->t1, [t<(GET_MAX z)], { t := t+1 z := z1}
+- Transition: t1---cancel(true, false)-->t1, {}
+- Transition: t1---cancel(true, true)-->t1, { t := 0 z := TopInt}
+- Transition: t1---timeout-->t1, [t in z], { t := 0 z := TopInt}
+pLTS: Failure
+- Transition: s0---init-->s1, { zone := minZone,maxZone}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false, false)-->s1, {}
+- Transition: s1---fail(zone, true, false)-->s1, {}
+- Transition: s1---fail(zone, true, true)-->s2, {}
+- Transition: s2---fail(zone, false, false)-->s2, {}
+- Transition: s2---resume(true, false)-->s2, {}
+- Transition: s2---resume(true, true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone, false, false)-->s3, {}
+- Transition: s3---resume(false, false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+\end{verbatim}
+
+  The new OA is shown in figure \ref{schema:ArchFailure:OA-MaxProgress}.
+
+  \begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{TimerOAMaxProgress}
+  \caption{The open Automaton of the Failure Monitor Architecture,
+    with Maximal Progress}
+  \label{schema:ArchFailure:OA-MaxProgress}
+\end{figure}
+
+\begin{itemize}
+\item $OT_2$ and $OT_{10}$ have changed because $b0=true$ is no longer possible
+\item $OT_7$ has disappeared because it is now unsat.
+\end{itemize}
+
+  Here we give the detail of the modification of $OT_2$:
+
+\small\begin{verbatim}
+	    {t1---tick(z, t, z1)-->t1, s1---fail(zone, true, false)-->s1},
+            {B|->fail(b0:sva_SV0)},
+            [(t<(GET_MAX z))/\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+              /\((fail(zone, true, false))=(fail(zone:sva_SV0, bf:sva_SV0, b1:sva_SV0)))
+              /\(b1:sva_SV0=>b0:sva_SV0)
+              /\((bf:sva_SV0/\b0:sva_SV0)=>b1:sva_SV0)
+              /\(z1:sva_SV0=(z:sva_SV0 |Intersection| ((b1:sva_SV0?(zone:sva_SV0):(TopInt))+t:sva_SV0)))],
+            {t := t+1, z := z1}
+	OT:2 ------------------------------------------------------------
+		<t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
+\end{verbatim}
+
+As \verb|bf| is true, and \verb|b1| is false, the predicate fragment
+\verb|((bf/\b0)=>b1)| imposes that \verb|b0| is false.
+
+\subsubsection{Scaling-up: composing architectures}
+
+\todoEM{Il faudrait (mais a-t-on le temps?): faire un dessin de la
+  composition au niveau BIP, et au niveau pNet. Un resultat brut, vaguement
+  correct, montre 36 OTs, modulo les petites questions de mon mail de
+  mercredi midi...
+  Au moins dessiner cet automate, et ecrire les proprietes qu'il
+  verifie... }
+
+Primary version of the composed pNet:
+
+\begin{verbatim}
+SV0: <tick(z, t, z1), fail(zone1, b11), fail(zone2, b12), fail1(b01), fail2(b02), _> --> fail(b01, b02), 
+     (z1 = z |Intersection| ((b11?zone1:TopInt)+t) |Intersection| ((b12?zone2:TopInt)+t))
+     /\(b11=>b01)/\(b12=>b02)
+SV1: <cancel(b1), resume(b21), resume(b22), resume1, resume2, _>-->resume, (b1=b21)/\(b1=b22)
+SV2: <timeout, timeout, timeout, _, _, ask>-->ask
+SV3: <_, reset, reset, _, _, reset>-->reset
+SV4: <init, init, init, _, _, _>-->init
+
+pLTS: Timer
+- Transition: t0---init-->t1, { t := 0 z := TopInt}
+- Transition: t1---tick(z, t, z1)-->t1, [t<(GET_MAX z)], { t := t+1 z := z1}
+- Transition: t1---cancel(false)-->t1, {}
+- Transition: t1---cancel(true)-->t1, { t := 0 z := TopInt}
+- Transition: t1---timeout-->t1, [t in z], { t := 0 z := TopInt}
+
+pLTS: FC1
+- Transition: s0---init-->s1, { zone1 := minZone1,maxZone1}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false)-->s1, {}
+- Transition: s1---fail(zone1, false)-->s1, {}
+- Transition: s1---fail(zone1, true)-->s2, {}
+- Transition: s2---fail(zone1, false)-->s2, {}
+- Transition: s2---resume(false)-->s2, {}
+- Transition: s2---resume(true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone1, false)-->s3, {}
+- Transition: s3---timeout-->s3, {}
+- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+
+pLTS: FC2
+- Transition: s0---init-->s1, { zone2 := minZone2,maxZone2}
+- Transition: s1---timeout-->s1, {}
+- Transition: s1---resume(false)-->s1, {}
+- Transition: s1---fail(zone2, false)-->s1, {}
+- Transition: s1---fail(zone2, true)-->s2, {}
+- Transition: s2---fail(zone2, false)-->s2, {}
+- Transition: s2---resume(false)-->s2, {}
+- Transition: s2---resume(true)-->s1, {}
+- Transition: s2---timeout-->s3, {}
+- Transition: s3---fail(zone2, false)-->s3, {}
+- Transition: s3---timeout-->s3, {}
+- Transition: s3---resume(false)-->s3, {}
+- Transition: s3---reset-->s1, {}
+
+INFO  BIPArchFailureTimerMaxV4X2 - Total: 37 SATISFIABLE OTs
+INFO  BIPArchFailureTimerMaxV4X2 -        3136 UNSATISFIABLE OTs
+INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
+\end{verbatim}
 
 \end{document}
