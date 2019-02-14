@@ -1723,7 +1723,7 @@ belonging to $P_A$ can only participate in the interactions
 defined by the interaction model $\Gamma$ of $A$.  Ports which do
 not belong to $P_A$ are not restricted and can participate in any
 interaction.  %% In particular, they can join the interactions in
-%% $\Gamma$ (see \eq{im:extension}).  If the interface of the
+%% $\Gamma$ (see \defn{arch:application}).  If the interface of the
 %% architecture covers all ports of the system, \ie $P = P_A$, we
 %% have $P\setminus P_A = \emptyset$ and the only interactions
 %% allowed in $A(\cB)$ are those belonging to $\Gamma$.  Notice also
@@ -1908,15 +1908,15 @@ P_C$), the corresponding pNet $\nopri[A, \partition]$.
 %% use the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
 %%   \in \cC} P_C\}$.
 
-Below, for the sake of clarity, we start by presenting in
-\secn{enc:nopri} the encoding of $A$ into pNets without accounting for
-any priority model (see \secn{components}).  Then, in
-\secn{enc:maxprog}, we slightly modify this encoding to include the
-implicitly assumed maximal progress priority.
+For the sake of clarity and conciseness, we define the encoding of $A$
+into pNets without accounting for any priority model (see
+\secn{components}).  Then, we provide a brief sketch of the
+modification necessary to incorporate the implicitly assumed maximal
+progress priority.
 
-%****************************************************************
-\subsection{Encoding without the priority model}
-\label{secn:enc:nopri}
+%% %****************************************************************
+%% \subsection{Encoding without the priority model}
+%% \label{secn:enc:nopri}
 
 Recall that $\Gamma$ is an interaction model over the interface
 $\tuple{V_A, P_A, \export[A]}$, \ie these interface elements are
@@ -1931,7 +1931,7 @@ interaction model $\Gamma$ respectively.
 To encode a coordinator $C$, we 1)~introduce a fresh initial state with an additional
 $\init$ transition that initialises all the variables to those defined
 by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
-additional Boolean value to each port, \add{3)~for each exported variable $x$, create the corresponding fresh variable $x'$ to allow updates during interactions,} 4)~create pNet transitions that reflect the original transitions of
+additional Boolean value to each port, \add{3)~for each exported variable $x$, create the corresponding fresh variable $?x'$ to allow updates during interactions,} 4)~create pNet transitions that reflect the original transitions of
 $C$ with $\true$ as parameter and 5)~create additional loop transitions marked by
 $\false$.
 
@@ -1939,7 +1939,7 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
 %
 \begin{itemize}
 \item $s_0 \not\in Q_C$ is fresh and $S = Q_C \cup \{s_0\}$,
-\item $\vars(s) = V_C \cup \setdef{x'}{x \in \export[C](p), p \in a, s\goesto{a} }$, for all $s \in Q_C$, and $\vars(s_0) =
+\item $\vars(s) = V_C \cup \setdef{?x'}{x \in \export[C](p), p \in a, s\goesto{a} }$, for all $s \in Q_C$, and $\vars(s_0) =
   \emptyset$,
 %% \item the transition relation $\goesto[{\nopri[C]}]{}$ is defined as
 %%   the union of three sets of transitions
@@ -1960,7 +1960,7 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
 %%     \,.
 %%   \end{multline}
 
-\item denoting  $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$;
+\item denoting  $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$ and,
   \noteSB{Ludo, Eric, pourriez-vous v\'erifier que cela est compr\'ehensible ?}%
   \add{for $s \goesto{a, g, u} s'$ with $u = (x := e_x)^{x
     \in V}$ (for some $V \subseteq V_C$),
@@ -1968,9 +1968,9 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
   $u' \bydef{=}
   \bigl(x := e_x\bigr)^{x \in V \setminus \export[C](a)}
   \cup
-  \bigl(x := e_x\bigl[\nicefrac{x'}{x}\bigr]\bigr)^{x \in V \cap \export[C](a)}$,
+  \bigl(x := e_x\bigl[\nicefrac{?x'}{x}\bigr]\bigr)^{x \in V \cap \export[C](a)}$,
 %
-  and $\export[C]'(a) \bydef{=} \setdef{x'}{x \in \export[C](p), p \in a}$,
+  and $\export[C]'(a) \bydef{=} \setdef{?x'}{x \in \export[C](p), p \in a}$,
 %
   \begin{multline*}
     {\goesto[{\nopri[C]}]{}} \bydef{=} 
@@ -1999,8 +1999,8 @@ architecture, including the encodings of the two coordinators, \ie
 $\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
 encoding in the figure is slightly optimised: some of the ports do not
 have an associated Boolean value, nor the additional loop transitions.
-\todoSB{Revise this if necessary}\hl{We will explicitate this optimisation after we define the
-encoding of the interaction model.}
+We will explain this optimisation after we define the
+encoding of the interaction model.
 
 \begin{figure}[t]
   \centering
@@ -2059,15 +2059,16 @@ as a set of connectors. \noteSB{%
 allowed interactions, depending on its hierarchical structure and the
 use of synchrons and triggers.
 
-\todoSB{Update?}\hl{In order to encode these interactions using only one synchronisation vector}, we use
+\addSB{We encode all interactions of a connector in one synchronisation vector.  This will allow us to also encode the maximal progress priority model.}
+We use
 the additional Boolean values associated to each port by the encoding
 of coordinator components.  For example, observe that the three ports in 
 the connector
 {\NameTimer.\PortTick
   \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)}
 form a ``causality chain'': {\NameCtrl.\PortFail} can only
-participate in the interaction if the dangling port {\PortFail}
-participates, which in turn can only participate if
+participate in an interaction if the dangling port {\PortFail}
+participates, which in turn can only happen if
 {\NameTimer.\PortTick} does so.  These dependencies can be rewritten
 as Boolean implications $\NameCtrl.\PortFail \Rightarrow \PortFail$
 and $\PortFail \Rightarrow \NameTimer.\PortTick$.
@@ -2075,24 +2076,23 @@ and $\PortFail \Rightarrow \NameTimer.\PortTick$.
 The conjunction of these two implications can be used as a guard for
 the synchronisation vector encoding this connector.
 
-However, notice
-that, within the scope of this connector, {\NameTimer.\PortTick}
-participates in all the interactions.
+Within the scope of this connector, the port {\NameTimer.\PortTick}
+participates in all interactions.
 %
-Furthermore, {\NameTimer.\PortTick} is not involved in any other
-connector.  Therefore, the loop transition in \nopri[\NameTimer]
-labelled by $\PortTick(\false)$ can never be taken and, therefore can
-be removed from the encoding.  Furthermore, since only the transition
+Furthermore, it is not involved in any other
+connector.  Hence, the loop transition in \nopri[\NameTimer]
+labelled by $\PortTick(\false)$ can never be taken and, therefore, can
+be removed from the encoding.  Since only the transition
 labelled by $\PortTick(\true)$ is ever taken, 
 %
 the
 implication $\PortFail \Rightarrow \NameTimer.\PortTick$ is a tautology and can also be discarded.
 
 We obtain the
-synchronisation vector SV0 shown in \fig{FailureTimer:pNet}, where $b_0$ and
-$b_1$ are the Boolean values associated to the actions encoding the
-ports {\PortFail} and {\NameCtrl.\PortFail}, $\alpha_0$ is a fresh
-action name.  The guard $b_1 \Rightarrow b_0$ encodes the causal
+synchronisation vector SV0 shown in \fig{FailureTimer:pNet}, where $b0$ and
+$b1$ are the Boolean values associated to the actions encoding the
+ports {\PortFail} and {\NameCtrl.\PortFail}.
+The guard $b_1 \Rightarrow b_0$ encodes the causal
 relation between ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
 that, in our encoding, all three ports are present in the
 synchronisation vector.  \Fig{FailureTimer:pNet} shows
@@ -2100,13 +2100,21 @@ the four synchronisation vectors SV0\ndash SV3 corresponding to the
 connectors in \fig{schema:ArchFailure:BIP} and an additional vector
 SV4, synchronising the {\init} transitions of the two pLTSs.
 
+\addSB{In the general encoding, the global actions of the
+  synchronisation vectors should be fresh action names.  However, for
+  the properties considered in our case study, we only need to exhibit
+  the actions of the holes.  Furthermore, each synchronisation vector
+  involves at most one such action.  This allows us to reuse them as
+  the global actions of the synchronisation vectors, simplifying the
+  translation of properties to be verified (\cf \secn{arch:verif}).}
+  
 The general case encoding relies on the causal semantics of the
 algebra of BIP connectors \cite{BliSif10-causal-fmsd}.  Disregarding
 the variables and data transfer, the Algebra of Connectors $\ac(P)$
 \cite{BliSif07-acp-emsoft} provides a syntactic notation for the BIP
 connectors.  The causal semantics of the connectors, given in terms of
 the Algebra of Causal Interaction Trees $\ct(P)$, explicitates the
-causal dependencies discussed above, through an encoding mapping
+causal dependencies discussed above through an encoding mapping
 $\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
 \rightarrow \cru(P)$ encodes causal interaction trees into systems of
 causal rules, which are Boolean implications similar to the ones in
@@ -2316,14 +2324,14 @@ that the guards and update assignments are well-defined for any
 interaction allowed by the connector.  For example, the choice
 $\NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval$ in
 the update assignement
-\[
+$
 \NameTimer.\mathit{z} := \NameTimer.\mathit{z}
-\cap \Big(
-\bigl(
+\cap \bigl(
+(
 \NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval
-\bigr)
-+ \NameTimer.\mathit{t} \Big)
-\]
+)
++ \NameTimer.\mathit{t} \bigr)
+$
 associated to the connector {\NameTimer.\PortTick \trigsynch
   (\PortFail \trigsynch \NameCtrl.\PortFail)} in
 \fig{schema:ArchFailure:BIP} ensures that the assignment is
@@ -2339,44 +2347,42 @@ connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma
 \begin{multline}
   \label{eq:nopri:connector}
   \nopri[x,g,u] \bydef{=}
-  \Tuple{p\bigl(\export[A](p),{{\color{blue}\export[A]'(p),}}b_p\bigr)}^{p \in P_x}
+  %% \Tuple{p\bigl(\export[A](p),{{\color{blue}\export[A]'(p),}}b_p\bigr)}^{p \in P_x}
+  \Tuple{\Setdef{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}{p \in P_x \cap P}}^{P \in P_C^{C \in \cC} \cup \partition}
   \rightarrow
   \alpha_p
   \\
   \left[
     \bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]
-    {\color{blue}{}
     \land
-    \bigwedge_{(x := e_x) \in u} (x' = e_x)
+    \bigwedge_{(x := e_x) \in u} (?x' = e_x)
     \land
-    \bigwedge_{x \in \export[A](x), x \not\in u} (x' = x)
-    }
+    \bigwedge_{x \in \export[A](x), x \not\in u} (?x' = x)
     \right]
   \,,
 \end{multline}
-\noteSB{Ought to group ports by components in
-  $\Tuple{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}^{p \in P_x}$...
-  \newline
-  Will probably restrict interactions to one port per component
-  throughout the paper to simplify.
-}
+%% \noteSB{Ought to group ports by components in
+%%   $\Tuple{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}^{p \in P_x}$...
+%%   \newline
+%%   Will probably restrict interactions to one port per component
+%%   throughout the paper to simplify.
+%% }
 %
 with $b_p$ a fresh Boolean variable, $\alpha_p$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
 \cru(P_A)$ the two mappings defined in \app{transformations} and
 illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
-the substitution, which replaces, in the expression that preceeds it,
+the substitution that replaces in the expression that preceeds it
 all occurrences of $p$ by $b_p$.
 
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
   $\nopri[A,\partition]$ is
   isomorphic to the LTS $\semopen{\Gamma\bigl(\cC_A, (B_D)^{D \in
-      \partition}\bigr)}$ (see \defn{comp:semantics}), where, for each
+      \partition}\bigr)}$ (see \defn{comp:semantics}), with, for each
   $D \in \partition$, the component $B_D \bydef{=} \tuple{\{q\}, q,
     V_D, \val{0}{D}, D, \export[D], \goesto{}}$, with
   a fresh state $q$ and
-
 %
   \begin{align*}
     V_D &= \bigcup_{p \in D} \export[A](p)
@@ -2391,47 +2397,53 @@ all occurrences of $p$ by $b_p$.
 %
 \end{theorem}
 %
-\begin{proof}[Sketch of a proof]
-  \noteSB{This theorem is very probably correct: the key question is
-  whether isomorphism is, indeed, the relation to use. In absence of
-  silent transitions, must be the case.}
-  The theorem follows from the correctness of $\tau$ and $R$ shown in
-  \cite{BliSif10-causal-fmsd}.
-\end{proof}
+%% \begin{proof}[Sketch of a proof]
+%%   \noteSB{This theorem is very probably correct: the key question is
+%%   whether isomorphism is, indeed, the relation to use. In absence of
+%%   silent transitions, must be the case.}
+%%   The theorem follows from the correctness of $\tau$ and $R$ shown in
+%%   \cite{BliSif10-causal-fmsd}.
+%% \end{proof}
 
 
-\todoSB{This repeats things that were already said before.  Will reduce.}
-Observe now that this encoding can be optimised to remove unnecessary
-Boolean variables and loop transitions marked by \false.  For
-instance, consider the ports shown in red in the second column of
-\tab{connectors}.  All these ports only appear in the roots of the
-corresponding causal interaction trees and, furthermore, each of these
-trees only has one root (see \app{trees}).  In such cases, as in the
-{\NameTimer.\PortTick \trigsynch (\PortFail \trigsynch
-  \NameCtrl.\PortFail)} example discussed above, the Boolean variables
-and the \false-marked loop transitions associated to these ports can
-be removed.  Furthermore, the rules associated to these ports in the
-corresponding systems of causal rules (see the rules in red in the
-third column of \tab{connectors}) become tautological and can also be
-removed from the corresponding guards in \eq{nopri:connector}.
+%% \todoSB{This repeats things that were already said before.  Will reduce.}
+%% Observe now that this encoding can be optimised to remove unnecessary
+%% Boolean variables and loop transitions marked by \false.  For
+%% instance, consider the ports shown in red in the second column of
+%% \tab{connectors}.  All these ports only appear in the roots of the
+%% corresponding causal interaction trees and, furthermore, each of these
+%% trees only has one root (see \app{trees}).  In such cases, as in the
+%% {\NameTimer.\PortTick \trigsynch (\PortFail \trigsynch
+%%   \NameCtrl.\PortFail)} example discussed above, the Boolean variables
+%% and the \false-marked loop transitions associated to these ports can
+%% be removed.  Furthermore, the rules associated to these ports in the
+%% corresponding systems of causal rules (see the rules in red in the
+%% third column of \tab{connectors}) become tautological and can also be
+%% removed from the corresponding guards in \eq{nopri:connector}.
 
-%****************************************************************
-\subsection{Encoding with the maximal progress priority model}
-\label{secn:enc:maxprog}
+%% %****************************************************************
+%% \subsection{Encoding with the maximal progress priority model}
+%% \label{secn:enc:maxprog}
 
-\noteSBin{In order to encode the maximal progress priority model, one
-  has to introduce an additional Boolean variable, for each port (for
-  which we have introduced one in $\nopri[A, \partition]$), such that
-  $q \goesto{p(b_p, \true)} q'$ iff $\exists q'': q \goesto{p(\true)}
-  q''$ in $\nopri[A, \partition]$.  Intuitively, this variable
-  indicates whether \emph{there is a possibility to fire $p$ from the
-    same state}.  Then, in the SV guard, we have to check whether
-  \emph{all ports in $c_p(\tau(x))$ can be fired} (see
-  \app{transformations}).  If so, then $p$ must be fired, \ie
-  $p(\false)$ must be blocked.  This is pretty much straightforward,
-  but care must be taken when doing this in the general case, since
-  causal interaction trees can get pretty tricky due to $\oplus$ (see
-  \app{trees}).}
+\bigskip
+In order to encode the maximal progress priority model, one has to
+introduce an additional Boolean variable, for each port, for which we
+have introduced one in $\nopri[A, \partition]$.  Intuitively, the
+variables introduced above determine whether the original transition
+labeled by the port is executed (\true), or rather the corresponding
+self-loop, introduced by the encoding (\false).  The new variables
+determine whether \emph{there is an original transition labelled by
+  $p$ that could be executed from the same state}, \ie[,] with $b_p$
+the variable introduced above for the encoding without maximal
+progress, $q \goesto{p(\true, b_p)} q'$ iff $\exists q'': q
+\goesto{p(b_p)} q''$ with $b_p = \true$ in $\nopri[A, \partition]$.
+Then, in the SV guard, we have to check whether \emph{all ports
+  leading to $p$ in the caual tree $\tau(x)$ can be fired} (see
+\app{transformations}).  If so, then $p$ must be fired, \ie
+$p(\false)$ must be blocked.  %% This is pretty much straightforward, but
+%% care must be taken when doing this in the general case, since causal
+%% interaction trees can get pretty tricky due to $\oplus$ (see
+%% \app{trees}).}
 %****************************************************************
 %****************************************************************
 
@@ -2751,7 +2763,7 @@ The approach relies on history invariant for each object, separating local reaso
   \end{enumerate}
 
   Consider $(a,g,e) \in \IMextend{\Gamma}{P}$.  By
-  \eq{im:extension}, this is equivalent to
+  \defn{arch:application}, this is equivalent to
   $(a \cap P_A, g, e) \in \Gamma$.
   Since $P_{C'} = P_\cC \subseteq P_A$, we have
   $a \cap P_{C'} = a \cap P_\cC = (a \cap P_A) \cap P_\cC$.
@@ -2986,7 +2998,7 @@ The approach relies on history invariant for each object, separating local reaso
   and $A_2$, there exists $(b_2, h^2, f^2) \in
   \IMextend{\Gamma_2}{P_2}$, enabled in $(q_2, \val{}{2}, q,
   \val{}{})$, such that $a \cap P_2 \subseteq b_2$ and $b_2 \cap P_1 =
-  b_1 \cap P_2$.  By \eq{im:extension}, we have $(b_1 \cap P_{A_1},
+  b_1 \cap P_2$.  By \defn{arch:application}, we have $(b_1 \cap P_{A_1},
   h^1, e^1) \in \Gamma^1$.  Furthermore,
 %
   \begin{multline*}
@@ -3002,7 +3014,7 @@ The approach relies on history invariant for each object, separating local reaso
   $((b_1 \cap P_{A_1}) \cup (b_2 \cap P_{A_2})) \cap P_{A_2} = b_2
   \cap P_{A_2}$.  By \eq{arch:composition}, we then have $((b_1 \cap
   P_{A_1}) \cup (b_2 \cap P_{A_2}), h^1 \land h^2, f^1 \expmix f^2)
-  \in \Gamma$ and, by \eq{im:extension}, $(b_1 \cup b_2, h^1 \land
+  \in \Gamma$ and, by \defn{arch:application}, $(b_1 \cup b_2, h^1 \land
   h^2, f^1 \expmix f^2) \in \IMextend{\Gamma}{(P_1 \cup P_2)}$.
 %
   Since both $(b_i, h^i, f^i) \in \IMextend{\Gamma_i}{P_i}$ are
@@ -4121,11 +4133,10 @@ $
   In Fig. \ref{schema:ArchFailure:OA}, you can see that some
   properties from appendix \app{properties} do not hold.
 
-  In particular, the first safety property:
-  \begin{equation}*
-    \label{eq:prop:reset:can}
+  In particular, the first safety property \eq{prop:reset:can}:
+  \begin{equation*}
     \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{(\PortResume(true) \lor \PortReset)}\bigr).
-  \end{equation}
+  \end{equation*}
 is not true, because the $OT_2$ loop on state $\ostate{11}$ stays in
 state 11 where you need another $\PortFail(true)$ before enabling a
 resume (or reset). This is because without priorities we can have an
