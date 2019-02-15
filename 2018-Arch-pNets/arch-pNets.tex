@@ -2462,7 +2462,9 @@ $p(\false)$ must be blocked.  %% This is pretty much straightforward, but
 
 %****************************************************************
 
-\subsection{Verification of the characteristic properties}
+%% \subsection{Verification of the characteristic properties}
+%% Eric: je pense que ce soutitre est inutile...
+
 \label{secn:arch:verif}
 
 %% \begin{figure}[t]
@@ -4035,14 +4037,14 @@ INFO  BIPArchFailureTimerMax - Total Time: 1293 ms
 
 Now we list the full set of OTs, in latex form, for better
 readability. This comes as a complement to the open automaton in
-Fig. \ref{schema:ArchFailure:OA}, in which we only have a partial view
+Fig. \ref{schema:ArchFailure:OA-annex}, in which we only have a partial view
 of the OTs details.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{TimerOAFullDetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA}
+  \label{schema:ArchFailure:OA-annex}
 \end{figure}
 
 
@@ -4156,7 +4158,7 @@ $
 
   \subsubsection{Properties}
 
-  In Fig. \ref{schema:ArchFailure:OA}, you can see that some
+  In Fig. \ref{schema:ArchFailure:OA-annex}, you can see that some
   properties from appendix \app{properties} do not hold.
 
   In particular, the first safety property \eq{prop:reset:can}:
@@ -4220,17 +4222,19 @@ pLTS: Failure
 
   Here we give the detail of the modification of $OT_2$:
 
-\small\begin{verbatim}
-	    {t1---tick(z, t, z1)-->t1, s1---fail(zone, true, false)-->s1},
-            {B|->fail(b0:sva_SV0)},
-            [(t<(GET_MAX z))/\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
-              /\((fail(zone, true, false))=(fail(zone:sva_SV0, bf:sva_SV0, b1:sva_SV0)))
-              /\(b1:sva_SV0=>b0:sva_SV0)
-              /\((bf:sva_SV0/\b0:sva_SV0)=>b1:sva_SV0)
-              /\(z1:sva_SV0=(z:sva_SV0 |Intersection| ((b1:sva_SV0?(zone:sva_SV0):(TopInt))+t:sva_SV0)))],
-            {t := t+1, z := z1}
-	OT:2 ------------------------------------------------------------
-		<t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
+\begin{verbatim}
+  {t1---tick(z, t, z1)-->t1, s1---fail(zone, true, false)-->s1},
+  {B|->fail(b0:sva_SV0)},
+    [(t<(GET_MAX z))
+     /\((tick(z, t, z1))=(tick(z:sva_SV0, t:sva_SV0, z1:sva_SV0)))
+     /\((fail(zone, true, false))=(fail(zone:sva_SV0, bf:sva_SV0, b1:sva_SV0)))
+     /\(b1:sva_SV0=>b0:sva_SV0)
+     /\((bf:sva_SV0/\b0:sva_SV0)=>b1:sva_SV0)
+     /\(z1:sva_SV0=(z:sva_SV0 |Intersection|
+                    ((b1:sva_SV0?(zone:sva_SV0):(TopInt))+t:sva_SV0)))],
+ {t := t+1, z := z1}
+OT:2 ------------------------------------------------------------
+     <t1_s1>-----fail(b0:sva_SV0)----><t1_s1>
 \end{verbatim}
 
 As \verb|bf| is true, and \verb|b1| is false, the predicate fragment
@@ -4238,20 +4242,26 @@ As \verb|bf| is true, and \verb|b1| is false, the predicate fragment
 
 \subsubsection{Scaling-up: composing architectures}
 
-\todoEM{Il faudrait (mais a-t-on le temps?): faire un dessin de la
+\medskip
+\noteEMin{Il faudrait (mais a-t-on le temps?): faire un dessin de la
   composition au niveau BIP, et au niveau pNet. Un resultat brut, vaguement
-  correct, montre 36 OTs, modulo les petites questions de mon mail de
+  correct, montre 37 OTs, modulo les petites questions de mon mail de
   mercredi midi...
-  Au moins dessiner cet automate, et ecrire les proprietes qu'il
-  verifie... }
+  
+  J'ai une version simplifiee de cet automate ci-dessous.
+  
+  Ecrire les proprietes qu'il verifie... ? }
 
-Primary version of the composed pNet:
+Here is the code of the corresponding composed pNet:
 
+\medskip
 \begin{verbatim}
-SV0: <tick(z, t, z1), fail(zone1, b11), fail(zone2, b12), fail1(b01), fail2(b02), _> --> fail(b01, b02), 
-     (z1 = z |Intersection| ((b11?zone1:TopInt)+t) |Intersection| ((b12?zone2:TopInt)+t))
-     /\(b11=>b01)/\(b12=>b02)
-SV1: <cancel(b1), resume(b21), resume(b22), resume1, resume2, _>-->resume, (b1=b21)/\(b1=b22)
+SV0: <tick(z, t, z1), fail(zone1, b11), fail(zone2, b12), fail1(b01), fail2(b02), _> 
+     --> fail(b01, b02), 
+     [(z1 = z |Intersection| ((b11?zone1:TopInt)+t) |Intersection| ((b12?zone2:TopInt)+t))
+      /\(b11=>b01)/\(b12=>b02)]
+SV1: <cancel(b1), resume(b21), resume(b22), resume1, resume2, _>-->resume, 
+     [(b1=b21)/\(b1=b22)]
 SV2: <timeout, timeout, timeout, _, _, ask>-->ask
 SV3: <_, reset, reset, _, _, reset>-->reset
 SV4: <init, init, init, _, _, _>-->init
@@ -4297,5 +4307,12 @@ INFO  BIPArchFailureTimerMaxV4X2 - Total: 37 SATISFIABLE OTs
 INFO  BIPArchFailureTimerMaxV4X2 -        3136 UNSATISFIABLE OTs
 INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
 \end{verbatim}
+
+  \begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{TimerV4X2}
+  \caption{The open Automaton of the composed system}
+  \label{schema:ArchFailure:OA-TimerV4X2}
+\end{figure}
 
 \end{document}
