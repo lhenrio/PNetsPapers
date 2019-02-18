@@ -2006,9 +2006,6 @@ difference, we use the classical~\cite{milner83-calculi} approach,
 whereby non-participation of a port in an interaction is simulated
 by an additional loop transition.
 
-\noteEM{Je m'arrete la, j'\'etais suppos\'e passer apr\`es Simon... (;-)}
-
-
 \Fig{FailureTimer:pNet} shows the encoding of the Failure Monitor
 architecture, including the encodings of the two coordinators, \ie
 $\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
@@ -2020,7 +2017,7 @@ encoding of the interaction model.
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{FailureTimerPNET-v4}
-  \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the priority model}
+  \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the Max Progress priority model}
   \label{fig:FailureTimer:pNet}
 %% %
 %%   \noteSBin{The updated encoding exports more primed variables in the
@@ -2060,15 +2057,15 @@ corresponding to these ports.
 The encoding of the interaction model is based on its representation
 as a set of connectors. \noteSB{%
 %
-  A legitimate question is whether we actually need to do this,
-  instead of listing explicitly the individual interactions, then
-  associating a synchronisation vector to each one of them?  One of
-  the factors is the encoding pNets$\rightarrow$SAT: is it better to
-  have more or fewer SVs if the price is additional Boolean variables?
-  The other factor might be the facility of maximal progress
-  encoding\mdash TBC.  Traceability.  Anything else?\newline
-  \hl{UPDATE: Maximal progress encoding requires this!}
-%
+%%   A legitimate question is whether we actually need to do this,
+%%   instead of listing explicitly the individual interactions, then
+%%   associating a synchronisation vector to each one of them?  One of
+%%   the factors is the encoding pNets$\rightarrow$SAT: is it better to
+%%   have more or fewer SVs if the price is additional Boolean variables?
+%%   The other factor might be the facility of maximal progress
+%%   encoding\mdash TBC.  Traceability.  Anything else?\newline
+%%   \hl{UPDATE: Maximal progress encoding requires this!}
+%% %
 } Indeed, as illustrated by the Failure Monitor architecture in
 \fig{schema:ArchFailure:BIP}, each connector can define several
 allowed interactions, depending on its hierarchical structure and the
@@ -2121,7 +2118,7 @@ SV4, synchronising the {\init} transitions of the two pLTSs.
   the actions of the holes.  Furthermore, each synchronisation vector
   involves at most one such action.  This allows us to reuse them as
   the global actions of the synchronisation vectors, simplifying the
-  translation of properties to be verified (\cf \secn{arch:verif}).}
+  translation of properties to be verified (\cf \app{properties}).}
   
 The general case encoding relies on the causal semantics of the
 algebra of BIP connectors \cite{BliSif10-causal-fmsd}.  Disregarding
@@ -2332,6 +2329,7 @@ simplification as described in the example above).
   \end{tabular}}
 \end{table}
 
+\noteEM{Dans le paragraph precedent, tu resume le cas des connecteurs sans data, dans les prochains, tu formalise avec data, mais pour le lecteur ``casual'', le changement n'est pas evident... }
 Below, we assume that, as in \fig{schema:ArchFailure:BIP}, the
 interaction model is defined by a set of connectors, annotated with
 Boolean guards and with update assignments.  In particular, we assume
@@ -2453,7 +2451,7 @@ the variable introduced above for the encoding without maximal
 progress, $q \goesto{p(\true, b_p)} q'$ iff $\exists q'': q
 \goesto{p(b_p)} q''$ with $b_p = \true$ in $\nopri[A, \partition]$.
 Then, in the SV guard, we have to check whether \emph{all ports
-  leading to $p$ in the caual tree $\tau(x)$ can be fired} (see
+  leading to $p$ in the causal tree $\tau(x)$ can be fired} (see
 \app{transformations}).  If so, then $p$ must be fired, \ie
 $p(\false)$ must be blocked.  %% This is pretty much straightforward, but
 %% care must be taken when doing this in the general case, since causal
@@ -3987,9 +3985,9 @@ OT3 ------------------------------------------------------------
 
    {t1---cancel(false)-->t1, s1---resume(false)-->s1},   {---:hb_B-->},
    [(:hb_B=fail(b0:sva_SV0)
-     /\((cancel(false))=(cancel(b1:sva_SV1:1:2)))
-     /\((resume(false))=(resume(b2:sva_SV1:1:2)))
-     /\(b1:sva_SV1:1:2=b2:sva_SV1:1:2)],   {}
+     /\((cancel(false))=(cancel(b1:sva_SV1)))
+     /\((resume(false))=(resume(b2:sva_SV1)))
+     /\(b1:sva_SV1=b2:sva_SV1)],   {}
 OT4 ------------------------------------------------------------
     <t1_s1>-----resume----><t1_s1>
 
@@ -4183,11 +4181,11 @@ $
 
   In particular, the first safety property \eq{prop:reset:can}:
   \begin{equation*}
-    \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{(\PortResume(true) \lor \PortReset)}\bigr).
+    \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{\PortReset}\bigr).
   \end{equation*}
 is not true, because the $OT_2$ loop on state $\ostate{11}$ stays in
 state 11 where you need another $\PortFail(true)$ before enabling a
-resume (or reset). This is because without priorities we can have an
+reset. This is because without priorities we can have an
 activity on the dandling ``fail'' port without synchronising with the
 others, even if they are available.
   
@@ -4210,7 +4208,7 @@ pLTS: Timer
 - Transition: t1---cancel(true, false)-->t1, {}
 - Transition: t1---cancel(true, true)-->t1, { t := 0 z := TopInt}
 - Transition: t1---timeout-->t1, [t in z], { t := 0 z := TopInt}
-pLTS: Failure
+pLTS: Control
 - Transition: s0---init-->s1, { zone := minZone,maxZone}
 - Transition: s1---timeout-->s1, {}
 - Transition: s1---resume(false, false)-->s1, {}
@@ -4268,10 +4266,10 @@ Here is the code of the corresponding composed pNet:
 \noteEMin{Il faudrait (mais a-t-on le temps?): faire un dessin de la
   composition au niveau BIP, et au niveau pNet. Un resultat brut, vaguement
   correct, montre 37 OTs, modulo les petites questions de mon mail de
-  mercredi midi...
+  mercredi midi...}
   
   
-  Ecrire les proprietes qu'il doit verifier... ? }
+\todoSBin{Ecrire les proprietes qu'il doit verifier... ? }
 
 
 \medskip
@@ -4328,6 +4326,7 @@ INFO  BIPArchFailureTimerMaxV4X2 -        3136 UNSATISFIABLE OTs
 INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
 \end{verbatim}
 
+\bigskip
 Fig. \ref{schema:ArchFailure:OA-TimerV4X2} shows the open automata of
 this composed architecture.
 Note that e..g. the open transition labelled ``$fail(*,tt)$'' stands for
@@ -4338,7 +4337,7 @@ should be replaced by ``$ff$''.
 
   \begin{figure}[h]
   \centering
-  \includegraphics[width=\columnwidth]{TimerV4X2}
+  \includegraphics[width=0.8\columnwidth]{TimerV4X2}
   \caption{The open Automaton of the composed system}
   \label{schema:ArchFailure:OA-TimerV4X2}
 \end{figure}
