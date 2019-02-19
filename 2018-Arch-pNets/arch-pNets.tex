@@ -279,9 +279,9 @@
 
 
 \newcommand{\addspace}[1]{#1 }
-\newcommand{\nopri}[1][]{\ensuremath{\mathit{pNet}%
+\newcommand{\nopri}[1][]{\ensuremath{\mathit{enc}%
     \ifx#1\relax\else(#1)\fi}}
-\newcommand{\maxprog}[1][]{\ensuremath{\mathit{pNet}_\mu%
+\newcommand{\maxprog}[1][]{\ensuremath{\mathit{enc}_\mu%
     \ifx#1\relax\else(#1)\fi}}
 
 \newcommand{\partition}{\cD}
@@ -845,7 +845,7 @@ tuples of states of the pLTSs at the leaves, denoted $\triangleleft\ldots\triang
 
 
 \begin{example}[An open-transition]
-  \label{Example:TimerOT3}
+  \label{ex:TimerOT3}
 We now briefly illustrate an open transition:
 \begin{small}\[ \openrule
   {\{B\mapsto fail(b)\},
@@ -2116,22 +2116,14 @@ We obtain the
 synchronisation vector SV0 shown in \fig{FailureTimer:pNet}, where $b0$ and
 $b1$ are the Boolean values associated to the actions encoding the
 ports {\PortFail} and {\NameCtrl.\PortFail}.
-The guard $b_1 \Rightarrow b_0$ encodes the causal
-relation between ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
-that, in our encoding, all three ports are present in the
+The guard $b1 \Rightarrow b0$ encodes the causal
+relation between these ports.  Notice
+that %% , in our encoding,
+all three ports are present in the
 synchronisation vector.  \Fig{FailureTimer:pNet} shows
 the four synchronisation vectors SV0\ndash SV3 corresponding to the
 connectors in \fig{schema:ArchFailure:BIP} and an additional vector
 SV4, synchronising the {\init} transitions of the two pLTSs.
-
-\addSB{In the general encoding, the global actions of the
-  synchronisation vectors should be fresh action names.  However, for
-  the properties considered in our case study, we only need to exhibit
-  the actions of the holes.  Furthermore, each synchronisation vector
-  involves at most one such action.  This allows us to reuse them as
-  the global actions of the synchronisation vectors, simplifying the
-  translation of properties to be verified (\cf \app{properties}).}
-\noteLH{ce paragraphe sonne vraiment note de rapport de recherche, tu arrives a lui donner un peu d'abstraction/de recul?}  
 
 In the general case, the encoding relies on the causal semantics of the
 algebra of BIP connectors \cite{BliSif10-causal-fmsd}.  Disregarding
@@ -2139,7 +2131,7 @@ the variables and data transfer, the Algebra of Connectors $\ac(P)$
 \cite{BliSif07-acp-emsoft} provides a syntactic notation for the BIP
 connectors.  The causal semantics of the connectors, given in terms of
 the Algebra of Causal Interaction Trees $\ct(P)$, explicitates the
-causal dependencies discussed above through an encoding mapping
+causal dependencies through an encoding mapping
 $\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
 \rightarrow \cru(P)$ encodes causal interaction trees into systems of
 causal rules, which are Boolean implications similar to the ones in
@@ -2376,7 +2368,7 @@ connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma
   %% \Tuple{p\bigl(\export[A](p),{{\color{blue}\export[A]'(p),}}b_p\bigr)}^{p \in P_x}
   \Tuple{\Setdef{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}{p \in P_x \cap P}}^{P \in P_C^{C \in \cC} \cup \partition}
   \rightarrow
-  \alpha_p
+  {\color{blue}\alpha \bigl(b_p^{p \in P_x}\bigr)}
   \\
   \left[
     \bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]
@@ -2387,19 +2379,36 @@ connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma
     \right]
   \,,
 \end{multline}
-%% \noteSB{Ought to group ports by components in
-%%   $\Tuple{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}^{p \in P_x}$...
-%%   \newline
-%%   Will probably restrict interactions to one port per component
-%%   throughout the paper to simplify.
-%% }
 %
-with $b_p$ a fresh Boolean variable, $\alpha_p$ a fresh name, $\tau :
+with $b_p^{p \in P_x}$ fresh Boolean variables, $\alpha$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
 \cru(P_A)$ the two mappings defined in \app{transformations} and
 illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
 the substitution that replaces in the expression that preceeds it
-all occurrences of $p$ by $b_p$.
+all occurrences of all $p$ by corresponding variables $b_p$.
+
+\addSB{%
+%
+For the sake of clarity, we simplify the encoding in
+\fig{FailureTimer:pNet} by reusing the port names of the original
+architecture instead of fresh names $\alpha$.  This is made
+possible by the fact that each synchronisation vector involves at
+most one action of interest (see the properties in
+\app{properties}).
+%% In the general encoding, the global actions of the
+%% synchronisation vectors should be fresh action names.
+%% However,
+%% for the properties considered in our case study, we only need to
+%% exhibit the actions of the holes.  Furthermore, each
+%% synchronisation vector involves at most one such action.
+%% This
+%% allows us to reuse them as the global actions of the
+%% synchronisation vectors, simplifying the translation of
+%% properties to be verified (\cf \app{properties}).
+%
+}\noteLH{ce
+  paragraphe sonne vraiment note de rapport de recherche, tu
+  arrives a lui donner un peu d'abstraction/de recul?}\noteSB{Est-ce que c'est mieux comme \c{c}a ?}
 
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
@@ -2451,7 +2460,7 @@ all occurrences of $p$ by $b_p$.
 %% \subsection{Encoding with the maximal progress priority model}
 %% \label{secn:enc:maxprog}
 
-\paragraph{Encoding of the maximal progress priority model}
+\paragraph{Encoding of the maximal progress}
 We only present the key idea, which consists in
 introducing an additional Boolean variable, for each port, for which we
 have introduced one in $\nopri[A, \partition]$.  Intuitively, 
@@ -2465,7 +2474,7 @@ determine whether \emph{there is an original transition labelled by
 the variable introduced above for the encoding without maximal
 progress, $q \goesto{p(\true, b_p)} q'$ iff $\exists q'': q
 \goesto{p(b_p)} q''$ with $b_p = \true$ in $\nopri[A, \partition]$.
-Then, in the SV guard, we have to check whether \emph{all ports
+In the SV guard, we have to check whether \emph{all ports
   leading to $p$ in the causal tree $\tau(x)$ can be fired} (see
 \app{transformations}).  If so, then $p$ must be fired, \ie
 $p(\false)$ must be blocked.
@@ -2489,7 +2498,7 @@ $p(\false)$ must be blocked.
 %% \subsection{Verification of the characteristic properties}
 %% Eric: je pense que ce soutitre est inutile...
 
-\label{secn:arch:verif}
+%% \label{secn:arch:verif}
 
 %% \begin{figure}[t]
 %%   \centering
@@ -2502,16 +2511,17 @@ $p(\false)$ must be blocked.
   \centering
   \includegraphics[width=0.9\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA}
+  \label{fig:ArchFailure:OA}
 \end{figure}
 
-In \cite{HMZ-FORTE2016QBMZ-AVOCS18}, we have described an algorithm
-and a tool that 
-computes the open automaton encoding the semantics of an open
-pNet. This tool computes open transitions from the combinations of all
-possible behaviours and synchronisation vectors of the pNet, then makes
-use of an SMT engine to check satisfiability of the open transition
-predicates, and minimize the size of the resulting automaton.
+\bigskip\noteSB{J'ai repris ce paragraphe}
+The above encoding provides a mechanism for the symbolic verification
+of architectures using our existing tool
+\cite{HMZ-FORTE2016QBMZ-AVOCS18} to compute the open automaton
+semantics of an open pNet. This tool computes open transitions from
+pLTS behaviours and synchronisation vectors of the pNet, then uses an
+SMT engine to check satisfiability of their predicates, minimizing the
+size of the resulting automaton.
 
 %% The encoding into the SMT language involves the definition of the
 %% action and data domains and operators, and the axiomatisation of
@@ -2524,26 +2534,29 @@ predicates, and minimize the size of the resulting automaton.
 %%   moment, mais je n'ose pas dire des trucs trop precis... meme si on a
 %%   deja une implem de la FH-bisim, elle n'est pas validee!}
 
-In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
-obtained from our pNet. For reasons of space, we have not shown the
-detail of the open transition, but only the assignments of state
-variables, some usefull parts of the predicates, and the resulting
-action; you can find the full details in 
-Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one
-explained in Example~\ref{Example:TimerOT3} page~\pageref{Example:TimerOT3}
+In \fig{ArchFailure:OA} we show the full open automaton
+obtained from the pNet in \fig{FailureTimer:pNet}.  Due to space limitations, we do not show the
+details of the open transitions, but only the assignments of state
+variables, some useful parts of the predicates, and the resulting
+action; full details can be found in 
+\app{full-results}.
+%
+\noteSB{Removed ``As an example...'', since that \ex{TimerOT3} was
+  simplified and does not correspond to the real OT.}
+%% As an example, $OT_3$ is the one
+%% explained in \ex{TimerOT3} (page~\pageref{ex:TimerOT3}).
 
 This automaton has 12 transitions, including those encoding various
 possible firing of some interactions (e.g. OT 2 and 3 for
-$fail$). At first sight, it appears the rough behaviour is
+{\PortFail}). At first sight, it appears the rough behaviour is
 reasonable, although a detailed study shows that the property stated
 in page~\pageref{property:reset} does not hold, because of the
-$fail$ loops on states $11$ and $12$. This is because we did not use
-the maximal progress assumption here. If we do, we get the corrected
-behaviour in Fig~\ref{schema:ArchFailure:OA-MaxProgress}
-(\app{full-results}), in which $OT_7$ has 
-disappeared, and $OT_2$ and $OT_{10}$ have been restricted to
-$b0=false$. This one verifies all the properties listed in
-\app{properties}. 
+{\PortFail} loops on states $11$ and $12$. This is because we did not
+use the maximal progress assumption here. If we do, we get the
+corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
+(\app{full-results}), in which $OT_7$ has disappeared, and $OT_2$ and
+$OT_{10}$ have been restricted to $b0=\false$. This one verifies all
+the properties listed in \app{properties}.
 
 
 %% %****************************************************************
@@ -4091,14 +4104,14 @@ INFO  BIPArchFailureTimerMax - Total Time: 1293 ms
 
 Now we list the full set of OTs, in latex form, for better
 readability. This comes as a complement to the open automaton in
-Fig. \ref{schema:ArchFailure:OA-annex}, in which we only have a partial view
+\fig{ArchFailure:OA-annex}, in which we only have a partial view
 of the OTs details.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{TimerOAFullDetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA-annex}
+  \label{fig:ArchFailure:OA-annex}
 \end{figure}
 
 
@@ -4212,7 +4225,7 @@ $
 
   \subsubsection{Properties}
 
-  In Fig. \ref{schema:ArchFailure:OA-annex}, you can see that some
+  In \fig{ArchFailure:OA-annex}, you can see that some
   properties from appendix \app{properties} do not hold.
 
   In particular, the first safety property \eq{prop:reset:can}:
@@ -4259,14 +4272,14 @@ pLTS: Control
 - Transition: s3---reset-->s1, {}
 \end{verbatim}
 
-  The new OA is shown in figure \ref{schema:ArchFailure:OA-MaxProgress}.
+  The new OA is shown in \fig{ArchFailure:OA-MaxProgress}.
 
   \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{TimerOAMaxProgress}
   \caption{The open Automaton of the Failure Monitor Architecture,
     with Maximal Progress}
-  \label{schema:ArchFailure:OA-MaxProgress}
+  \label{fig:ArchFailure:OA-MaxProgress}
 \end{figure}
 
 \begin{itemize}
@@ -4363,7 +4376,7 @@ INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
 \end{verbatim}
 
 \bigskip
-Fig. \ref{schema:ArchFailure:OA-TimerV4X2} shows the open automata of
+\Fig{ArchFailure:OA-TimerV4X2} shows the open automata of
 this composed architecture.
 Note that e..g. the open transition labelled ``$fail(*,tt)$'' stands for
 ``$fail(b01,b02)$'', where  $b01'$ can be arbitrarily true or
@@ -4375,7 +4388,7 @@ should be replaced by ``$ff$''.
   \centering
   \includegraphics[width=0.8\columnwidth]{TimerV4X2}
   \caption{The open Automaton of the composed system}
-  \label{schema:ArchFailure:OA-TimerV4X2}
+  \label{fig:ArchFailure:OA-TimerV4X2}
 \end{figure}
 
 \end{document}
