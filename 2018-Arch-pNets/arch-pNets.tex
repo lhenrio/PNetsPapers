@@ -1897,7 +1897,7 @@ be fused with $b_1$ to form an interaction enabled in the same state.
 \section{Encoding of architectures into open pNets}
 \label{secn:encoding}
 
-We will define the encoding of BIP architectures into pNets by
+We  define the encoding of BIP architectures into pNets by
 associating to each architecture $A = \tuple{\cC, V_A, P_A,
   \export[A], \Gamma}$ with $C = \tuple{Q_C, q^0_C, V_C, \val{0}{C},
   P_C, \export[C], \goesto{}}$, for each $C \in \cC$, \emph{and a
@@ -1912,17 +1912,12 @@ P_C$), the corresponding pNet $\nopri[A, \partition]$.
 %% is a matter of convenience, since one can
 %% use the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
 %%   \in \cC} P_C\}$.
-
-For the sake of clarity and conciseness, we define the encoding of $A$
-into pNets without accounting for any priority model (see
-\secn{components}).  Then, we provide a brief sketch of the
-modification necessary to incorporate the implicitly assumed maximal
-progress priority.
-
+For the sake of clarity, we define the encoding  without  any priority model.  Then, we provide a brief sketch of the
+modifications necessary to encode maximal
+progress (implicitly assumed).
 %% %****************************************************************
 %% \subsection{Encoding without the priority model}
 %% \label{secn:enc:nopri}
-
 Recall that $\Gamma$ is an interaction model over the interface
 $\tuple{V_A, P_A, \export[A]}$, \ie these interface elements are
 implicitly involved in the definition of $\Gamma$.
@@ -1933,15 +1928,14 @@ $\nopri[\Gamma]$ are the encodings of a coordinator $C$ and the
 interaction model $\Gamma$ respectively.
 
 \paragraph{Encoding the coordinators.}
-The encoding of a coordinator $C$ is a pLTS where we: 1)~introduce a
-fresh initial state with an additional  
+The encoding of a coordinator $C$ is a pLTS with: 1)~an
+ initial state and an   
 $\init$ transition that initialises all the variables to those defined
-by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
-additional Boolean value to each port, \add{3)~for each exported
-variable $x$, create the corresponding fresh input variable $?x'$ to allow updates during interactions,} 4)~create pLTS transitions that reflect the original transitions of
-$C$ with $\true$ as parameter and 5)~create additional loop transitions marked by
+by the initial valuation $\val{0}{C}$ of $C$, 2)~an action algebra that matches the actions of the coordinator ports but adds, an additional boolean action parameter, and also, for each exported
+variable $x$, a corresponding fresh input variable $?x'$ to allow updates during interactions, 3)~pLTS transitions that reflect the original transitions of
+$C$ with $\true$ as parameter and 5)~additional loop transitions marked by
 $\false$.
-
+\noteLH{enleve le 3 et integre au 2}
 Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
 %
 \begin{itemize}
@@ -1969,13 +1963,14 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
 %%     \,.
 %%   \end{multline}
 
-\item denoting  $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$ and,
+\item let  $\mathit{uinit} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$ and,
   \noteSB{Ludo, Eric, pourriez-vous v\'erifier que cela est
-    compr\'ehensible ? Ok pour moi (Eric)}%
-  \add{for $s \goesto{a, g, u} s'$ with $u = (x := e_x)^{x
-    \in V}$ (for some $V \subseteq V_C$),
+    compr\'ehensible ? Ok pour moi (Eric) OK Ludo, rephrase un peu}%
+  \add{for all $s \goesto{a, g, u} s'$ with $u = (x\! :=
+\! e_x)^{x
+    \in V}$ (with $V \!\subseteq\! V_C$),
 %  
-  $u' \bydef{=}
+  let $u' \bydef{=}
   \bigl(x := e_x\bigr)^{x \in V \setminus \export[C](a)}
   \cup
   \bigl(x := e_x\bigl[\nicefrac{?x'}{x}\bigr]\bigr)^{x \in V \cap \export[C](a)}$,
@@ -1993,18 +1988,18 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
     \Setdef{\Tuple{s, a\bigl(\export[C]'(a), \export[C](a),\false\bigr), \true, \noop, s}}{
       s \in Q_C, \exists s' \in Q_C: s' \goesto{a}}
     \\
-    {} \cup \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}.
+    {} \cup \bigl\{(s_0, \init, \true, \mathit{uinit}, q^0_C)\bigr\}.
   \end{multline*}}
-\end{itemize}
+\end{itemize}\vspace{-3ex}
 
 The loop transitions marked by $\false$ will be used in the encoding
 of connectors.  Each BIP connector can define several interactions,
 \ie ports involved in a connector need not necessarily always
 participate.  On the contrary, each action in a pNet synchronisation
 vector must participate in the synchronisation.  To address this
-difference, we use the classical~\cite{milner83-calculi} approach,
-whereby non-participation of a port in an interaction is simulated
-by an additional loop transition.
+difference, we use the classical approach
+where non-participation of a port in an interaction is simulated
+by an additional loop transition~\cite{milner83-calculi}.
 
 \Fig{FailureTimer:pNet} shows the encoding of the Failure Monitor
 architecture, including the encodings of the two coordinators, \ie
