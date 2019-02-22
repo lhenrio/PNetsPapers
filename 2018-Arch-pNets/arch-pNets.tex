@@ -141,6 +141,7 @@
 \newcommand{\lem}[1]{Lem.~\ref{lem:#1}}
 \newcommand{\cor}[1]{Cor.~\ref{cor:#1}}
 \newcommand{\thm}[1]{Th.~\ref{thm:#1}}
+\newcommand{\Thm}[1]{Theorem~\ref{thm:#1}}
 \newcommand{\axs}[1]{Ax.~\ref{ax:#1}}
 % \newcommand{\ax}[2]{\ref{ax:#1}.\ref{ax:#1:#2}}
 \newcommand{\ax}[1]{Ax.~\ref{ax:#1}}
@@ -278,9 +279,9 @@
 
 
 \newcommand{\addspace}[1]{#1 }
-\newcommand{\nopri}[1][]{\ensuremath{\mathit{pNet}%
+\newcommand{\nopri}[1][]{\ensuremath{\mathit{enc}%
     \ifx#1\relax\else(#1)\fi}}
-\newcommand{\maxprog}[1][]{\ensuremath{\mathit{pNet}_\mu%
+\newcommand{\maxprog}[1][]{\ensuremath{\mathit{enc}_\mu%
     \ifx#1\relax\else(#1)\fi}}
 
 \newcommand{\partition}{\cD}
@@ -369,8 +370,8 @@ Eric~Madelaine\inst{3}
 
 \begin{abstract}
 We provide a solution for the design of safe concurrent systems by
-compositional application of verified design patterns\mdash which we
-call \emph{architectures}\mdash to a \noteEM{ca veut dire quoi, minimal? On enleve ?}minimal set of functional
+compositional application of verified design patterns\mdash 
+called \emph{architectures}\mdash to a small set of functional
 components.  To this end, we extend the theory of architectures
 developed previously for the BIP framework with the elements necessary
 for handling data: definition and operations on data domains, syntax
@@ -386,7 +387,7 @@ provided by the two frameworks.  The approach is illustrated by a case
 study based on a previously developed BIP model of a nanosatellite
 on-board software.
 
-\keywords{Verification, \noteEM{Je mettrais bien symbolic quelque part...}symbolic automaton, composition, safety, interaction
+\keywords{Symbolic verification, composition, safety, interaction
   models.}
 \end{abstract}
 
@@ -457,9 +458,7 @@ the properties of the architectures. The encoding also allows us to
 compare BIP architectures and  pNet formalism.  
 Overall, the encoding allows us to precisely compare the coordination
 mechanisms of the two models but also the way component composition is
-expressed in the two formalisms. \noteEM{J'ai vire une phrase un peu
-  redondante avec la phrase precedente, et deja une autre 20 lignes
-  plus haut... }
+expressed in the two formalisms. 
 %This also gives the opportunity
 %to relate two  different visions on compositional verification.
 
@@ -745,7 +744,7 @@ indexed family of the form $\Leaves(Q)= \mylangle \pLTS_i \myrangle^{i \in L}$.
 %\label{section:op-semantics}
 \renewcommand{\Pred}{g}
 \renewcommand{\Post}{u}
-The semantics of an open pNet is expressed as  an automaton where each transition \noteEM{remplacer composes par ``coordinates'' ?}composes the actions of several holes, 
+The semantics of an open pNet is expressed as  an automaton where each transition coordinates the actions of several holes, 
 the transition occurs if some predicates hold, and can involve  
  state modifications.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
@@ -846,7 +845,7 @@ tuples of states of the pLTSs at the leaves, denoted $\triangleleft\ldots\triang
 
 
 \begin{example}[An open-transition]
-  \label{Example:TimerOT3}
+  \label{ex:TimerOT3}
 We now briefly illustrate an open transition:
 \begin{small}\[ \openrule
   {\{B\mapsto fail(b)\},
@@ -1217,7 +1216,7 @@ $\btuple{
   \{\PortReset, \PortFail, \PortResume, \PortTOC\},
   \bigl\{\!\PortFail \mapsto \{\mathit{zone}\}\!\bigr\}
 }$
-\noteEM{Attention, bug dans la figure 2, ou tu mets $reset\mapsto \mathit{zone}$}{respectively}.
+\noteEM{Attention, bug dans la figure 2, ou tu mets $reset\mapsto \mathit{zone}$}\noteSB{Done!}respectively.
 %
 %% \[
 %% \begin{array}{@{}c@{\hspace{3mm}}c@{}}
@@ -1890,14 +1889,31 @@ be fused with $b_1$ to form an interaction enabled in the same state.
   $\cB$ the property $\Phi_1 \land \Phi_2$.
 \end{theorem}
 
-%****************************************************************
 
+\addSB{%
+%
+\Thm{combining} implies that safe BIP systems can be designed
+\emph{compositionally}.  Indeed, it is sufficient to verify that
+1)~the applied architectures do enforce their characteristic
+properties and 2)~that they are pairwise upwards compatible.  To
+a large extent, item~2, \ie verification of the upwards
+compatibility, can be carried out syntactically by analysing the
+structure of the connectors defining the interaction models:
+maximal progress is mostly relevant for connectors involving
+triggers; whenever a trigger port is not common to both
+architectures, upwards \emph{in}compatibility cannot arise.  The
+next section is devoted to the encoding of architectures into
+pNets, which addresses item~1 by symbolic verification.
+%
+}
+
+%****************************************************************
 %****************************************************************
 
 \section{Encoding of architectures into open pNets}
 \label{secn:encoding}
 
-We will define the encoding of BIP architectures into pNets by
+We  define the encoding of BIP architectures into pNets by
 associating to each architecture $A = \tuple{\cC, V_A, P_A,
   \export[A], \Gamma}$ with $C = \tuple{Q_C, q^0_C, V_C, \val{0}{C},
   P_C, \export[C], \goesto{}}$, for each $C \in \cC$, \emph{and a
@@ -1912,17 +1928,12 @@ P_C$), the corresponding pNet $\nopri[A, \partition]$.
 %% is a matter of convenience, since one can
 %% use the trivial partition $\partition \bydef{=} \{P_A \setminus \bigcup_{C
 %%   \in \cC} P_C\}$.
-
-For the sake of clarity and conciseness, we define the encoding of $A$
-into pNets without accounting for any priority model (see
-\secn{components}).  Then, we provide a brief sketch of the
-modification necessary to incorporate the implicitly assumed maximal
-progress priority.
-
+For the sake of clarity, we define the encoding  without  any priority model.  Then, we provide a brief sketch of the
+modifications necessary to encode maximal
+progress (implicitly assumed).
 %% %****************************************************************
 %% \subsection{Encoding without the priority model}
 %% \label{secn:enc:nopri}
-
 Recall that $\Gamma$ is an interaction model over the interface
 $\tuple{V_A, P_A, \export[A]}$, \ie these interface elements are
 implicitly involved in the definition of $\Gamma$.
@@ -1933,15 +1944,14 @@ $\nopri[\Gamma]$ are the encodings of a coordinator $C$ and the
 interaction model $\Gamma$ respectively.
 
 \paragraph{Encoding the coordinators.}
-The encoding of a coordinator $C$ is a pLTS where we: 1)~introduce a
-fresh initial state with an additional  
+The encoding of a coordinator $C$ is a pLTS with: 1)~an
+ initial state and an   
 $\init$ transition that initialises all the variables to those defined
-by the initial valuation $\val{0}{C}$ of $C$, 2)~define a pNet action algebra that associates, as action parameter, an
-additional Boolean value to each port, \add{3)~for each exported
-variable $x$, create the corresponding fresh input variable $?x'$ to allow updates during interactions,} 4)~create pLTS transitions that reflect the original transitions of
-$C$ with $\true$ as parameter and 5)~create additional loop transitions marked by
+by the initial valuation $\val{0}{C}$ of $C$, 2)~an action algebra that matches the actions of the coordinator ports but adds, an additional boolean action parameter, and also, for each exported
+variable $x$, a corresponding fresh input variable $?x'$ to allow updates during interactions, 3)~pLTS transitions that reflect the original transitions of
+$C$ with $\true$ as parameter and 4)~additional loop transitions marked by
 $\false$.
-
+\noteLH{enleve le 3 et integre au 2}
 Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, such that
 %
 \begin{itemize}
@@ -1969,13 +1979,14 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
 %%     \,.
 %%   \end{multline}
 
-\item denoting  $\mathit{init} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$ and,
+\item let  $\mathit{uinit} \bydef{=} \bigl(x := \val{0}{C}(x)\bigr)^{x \in V_C}$ and,
   \noteSB{Ludo, Eric, pourriez-vous v\'erifier que cela est
-    compr\'ehensible ? Ok pour moi (Eric)}%
-  \add{for $s \goesto{a, g, u} s'$ with $u = (x := e_x)^{x
-    \in V}$ (for some $V \subseteq V_C$),
+    compr\'ehensible ? Ok pour moi (Eric) OK Ludo, rephrase un peu}%
+  \add{for all $s \goesto{a, g, u} s'$ with $u = (x\! :=
+\! e_x)^{x
+    \in V}$ (with $V \!\subseteq\! V_C$),
 %  
-  $u' \bydef{=}
+  let $u' \bydef{=}
   \bigl(x := e_x\bigr)^{x \in V \setminus \export[C](a)}
   \cup
   \bigl(x := e_x\bigl[\nicefrac{?x'}{x}\bigr]\bigr)^{x \in V \cap \export[C](a)}$,
@@ -1993,18 +2004,18 @@ Formally,  $\nopri[C] \bydef{=} \pNetTuple{S, s_0, \goesto[{\nopri[C]}]{}}$, suc
     \Setdef{\Tuple{s, a\bigl(\export[C]'(a), \export[C](a),\false\bigr), \true, \noop, s}}{
       s \in Q_C, \exists s' \in Q_C: s' \goesto{a}}
     \\
-    {} \cup \bigl\{(s_0, \init, \true, \mathit{init}, q^0_C)\bigr\}.
+    {} \cup \bigl\{(s_0, \init, \true, \mathit{uinit}, q^0_C)\bigr\}.
   \end{multline*}}
-\end{itemize}
+\end{itemize}\vspace{-3ex}
 
 The loop transitions marked by $\false$ will be used in the encoding
 of connectors.  Each BIP connector can define several interactions,
 \ie ports involved in a connector need not necessarily always
 participate.  On the contrary, each action in a pNet synchronisation
 vector must participate in the synchronisation.  To address this
-difference, we use the classical~\cite{milner83-calculi} approach,
-whereby non-participation of a port in an interaction is simulated
-by an additional loop transition.
+difference, we use the classical approach
+where non-participation of a port in an interaction is simulated
+by an additional loop transition~\cite{milner83-calculi}.
 
 \Fig{FailureTimer:pNet} shows the encoding of the Failure Monitor
 architecture, including the encodings of the two coordinators, \ie
@@ -2046,7 +2057,7 @@ The holes in $\nopri[A, \partition]$ are indexed by the elements of
 the partition \partition.  For the encoding of our running example, we
 take $\partition = \bigl\{\{\PortFail, \PortResume\},\{\PortAsk,
 \PortReset\}\bigr\}$.  This corresponds to the intuition that the
-dangling ports {\PortFail} and {\PortResume} will be provided by a 
+dangling ports {\PortFail} and {\PortResume} will be provided by a \noteLH{monitored ou monitoring???}
 monitored component, whereas {\PortAsk} and {\PortReset} correspond to
 the actions provided by the ``environment'' (other components of the
 system) that are invoked in case of a persistent failure.  As for
@@ -2055,7 +2066,7 @@ the encoding of the coordinators, in the synchronisation vectors of
 corresponding to these ports.
 
 The encoding of the interaction model is based on its representation
-as a set of connectors. \noteSB{%
+as a set of connectors. %% \noteSB{%
 %
 %%   A legitimate question is whether we actually need to do this,
 %%   instead of listing explicitly the individual interactions, then
@@ -2066,7 +2077,8 @@ as a set of connectors. \noteSB{%
 %%   encoding\mdash TBC.  Traceability.  Anything else?\newline
 %%   \hl{UPDATE: Maximal progress encoding requires this!}
 %% %
-} Indeed, as illustrated by the Failure Monitor architecture in
+%% }
+Indeed, as illustrated by the Failure Monitor architecture in
 \fig{schema:ArchFailure:BIP}, each connector can define several
 allowed interactions, depending on its hierarchical structure and the
 use of synchrons and triggers.
@@ -2104,29 +2116,22 @@ We obtain the
 synchronisation vector SV0 shown in \fig{FailureTimer:pNet}, where $b0$ and
 $b1$ are the Boolean values associated to the actions encoding the
 ports {\PortFail} and {\NameCtrl.\PortFail}.
-The guard $b_1 \Rightarrow b_0$ encodes the causal
-relation between ports {\NameCtrl.\PortFail} and {\PortFail}.  Notice
-that, in our encoding, all three ports are present in the
+The guard $b1 \Rightarrow b0$ encodes the causal
+relation between these ports.  Notice
+that %% , in our encoding,
+all three ports are present in the
 synchronisation vector.  \Fig{FailureTimer:pNet} shows
 the four synchronisation vectors SV0\ndash SV3 corresponding to the
 connectors in \fig{schema:ArchFailure:BIP} and an additional vector
 SV4, synchronising the {\init} transitions of the two pLTSs.
 
-\addSB{In the general encoding, the global actions of the
-  synchronisation vectors should be fresh action names.  However, for
-  the properties considered in our case study, we only need to exhibit
-  the actions of the holes.  Furthermore, each synchronisation vector
-  involves at most one such action.  This allows us to reuse them as
-  the global actions of the synchronisation vectors, simplifying the
-  translation of properties to be verified (\cf \app{properties}).}
-  
-The general case encoding relies on the causal semantics of the
+In the general case, the encoding relies on the causal semantics of the
 algebra of BIP connectors \cite{BliSif10-causal-fmsd}.  Disregarding
 the variables and data transfer, the Algebra of Connectors $\ac(P)$
 \cite{BliSif07-acp-emsoft} provides a syntactic notation for the BIP
 connectors.  The causal semantics of the connectors, given in terms of
 the Algebra of Causal Interaction Trees $\ct(P)$, explicitates the
-causal dependencies discussed above through an encoding mapping
+causal dependencies through an encoding mapping
 $\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
 \rightarrow \cru(P)$ encodes causal interaction trees into systems of
 causal rules, which are Boolean implications similar to the ones in
@@ -2363,7 +2368,7 @@ connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma
   %% \Tuple{p\bigl(\export[A](p),{{\color{blue}\export[A]'(p),}}b_p\bigr)}^{p \in P_x}
   \Tuple{\Setdef{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}{p \in P_x \cap P}}^{P \in P_C^{C \in \cC} \cup \partition}
   \rightarrow
-  \alpha_p
+  {\color{blue}\alpha \bigl(b_p^{p \in P_x}\bigr)}
   \\
   \left[
     \bigwedge R(\tau(x))\bigl[\nicefrac{b_p}{p}\bigr]
@@ -2374,19 +2379,36 @@ connector $x \in \gamma$.  Then, \addSB{the interaction model defined by $\gamma
     \right]
   \,,
 \end{multline}
-%% \noteSB{Ought to group ports by components in
-%%   $\Tuple{p\bigl(\export[A](p),\export[A]'(p),b_p\bigr)}^{p \in P_x}$...
-%%   \newline
-%%   Will probably restrict interactions to one port per component
-%%   throughout the paper to simplify.
-%% }
 %
-with $b_p$ a fresh Boolean variable, $\alpha_p$ a fresh name, $\tau :
+with $b_p^{p \in P_x}$ fresh Boolean variables, $\alpha$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
 \cru(P_A)$ the two mappings defined in \app{transformations} and
 illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
 the substitution that replaces in the expression that preceeds it
-all occurrences of $p$ by $b_p$.
+all occurrences of all $p$ by corresponding variables $b_p$.
+
+\addSB{%
+%
+For the sake of clarity, we simplify the case study encoding in
+\fig{FailureTimer:pNet} by reusing the port names of the original
+architecture instead of fresh names $\alpha$.  This is made
+possible by the fact that each synchronisation vector involves at
+most one action of interest (see the properties in
+\app{properties}).
+%% In the general encoding, the global actions of the
+%% synchronisation vectors should be fresh action names.
+%% However,
+%% for the properties considered in our case study, we only need to
+%% exhibit the actions of the holes.  Furthermore, each
+%% synchronisation vector involves at most one such action.
+%% This
+%% allows us to reuse them as the global actions of the
+%% synchronisation vectors, simplifying the translation of
+%% properties to be verified (\cf \app{properties}).
+%
+}\noteLH{ce
+  paragraphe sonne vraiment note de rapport de recherche, tu
+  arrives a lui donner un peu d'abstraction/de recul?}\noteSB{Est-ce que c'est mieux comme \c{c}a ? OUI -- Ludo}
 
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
@@ -2438,42 +2460,45 @@ all occurrences of $p$ by $b_p$.
 %% \subsection{Encoding with the maximal progress priority model}
 %% \label{secn:enc:maxprog}
 
-\bigskip
-In order to encode the maximal progress priority model, one has to
-introduce an additional Boolean variable, for each port, for which we
-have introduced one in $\nopri[A, \partition]$.  Intuitively, the
-variables introduced above determine whether the original transition
-labeled by the port is executed (\true), or rather the corresponding
+\paragraph{Encoding of the maximal progress}
+We only present the key idea, which consists in
+introducing an additional Boolean variable, for each port, for which we
+have introduced one in $\nopri[A, \partition]$.  Intuitively, 
+the Boolean
+variables introduced for the encoding of interaction models
+determine whether it is the original transition
+labeled by the port that is executed (\true), or rather the corresponding
 self-loop, introduced by the encoding (\false).  The new variables
 determine whether \emph{there is an original transition labelled by
   $p$ that could be executed from the same state}, \ie[,] with $b_p$
 the variable introduced above for the encoding without maximal
 progress, $q \goesto{p(\true, b_p)} q'$ iff $\exists q'': q
 \goesto{p(b_p)} q''$ with $b_p = \true$ in $\nopri[A, \partition]$.
-Then, in the SV guard, we have to check whether \emph{all ports
+In the SV guard, we have to check whether \emph{all ports
   leading to $p$ in the causal tree $\tau(x)$ can be fired} (see
 \app{transformations}).  If so, then $p$ must be fired, \ie
-$p(\false)$ must be blocked.  %% This is pretty much straightforward, but
+$p(\false)$ must be blocked.
+%% This is pretty much straightforward, but
 %% care must be taken when doing this in the general case, since causal
 %% interaction trees can get pretty tricky due to $\oplus$ (see
 %% \app{trees}).}
 %****************************************************************
 %****************************************************************
 
-% \subsection{SMT encoding of open pNets}
+%% \subsection{SMT encoding of open pNets}
 % \label{secn:smt}
 
 
 
-\section{Case study}
-\label{secn:case-study}
+%% \section{Case study}
+%% \label{secn:case-study}
 
-%****************************************************************
+%% %****************************************************************
 
 %% \subsection{Verification of the characteristic properties}
 %% Eric: je pense que ce soutitre est inutile...
 
-\label{secn:arch:verif}
+%% \label{secn:arch:verif}
 
 %% \begin{figure}[t]
 %%   \centering
@@ -2486,100 +2511,103 @@ $p(\false)$ must be blocked.  %% This is pretty much straightforward, but
   \centering
   \includegraphics[width=0.9\columnwidth]{TimerOADetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA}
+  \label{fig:ArchFailure:OA}
 \end{figure}
 
-In \cite{HMZ-FORTE2016QBMZ-AVOCS18}, we have described an algorithm
-and a tool that 
-computes the open automaton encoding the semantics of an open
-pNet. This tool computes open transitions from the combinations of all
-possible behaviours and synchronisation vectors of the pNet, then makes
-use of an SMT engine to check satisfiability of the open transition
-predicates, and minimize the size of the resulting automaton.
+%\bigskip
 
+\paragraph{Practical experiments}\noteSB{J'ai repris ce paragraphe}
+\noteLH{j ai nomme ce paragraphe}
+The above encoding provides a mechanism for the symbolic verification
+of architectures using our existing tool
+\cite{HMZ-FORTE2016QBMZ-AVOCS18} to compute the open automaton
+semantics of an open pNet. This tool computes open transitions from
+pLTS behaviours and synchronisation vectors of the pNet, then uses an
+SMT engine to check satisfiability of their predicates, minimizing the
+size of the resulting automaton.
 %% The encoding into the SMT language involves the definition of the
 %% action and data domains and operators, and the axiomatisation of
 %% domain-dependant properties, to allow the SMT engine to be as precise
 %% as possible (even if it cannot be complete).
-
 %% The resulting open automaton will later be subject to (symbolic)
 %% model-checking and equivalence checking algorithms, themselves
 %% requiring automatic proof assistance. \todoEM{trop flou pour le
 %%   moment, mais je n'ose pas dire des trucs trop precis... meme si on a
 %%   deja une implem de la FH-bisim, elle n'est pas validee!}
 
-In Figure~\ref{schema:ArchFailure:OA} we show the full open automaton
-obtained from our pNet. For reasons of space, we have not shown the
-detail of the open transition, but only the assignments of state
-variables, some usefull parts of the predicates, and the resulting
-action; you can find the full details in 
-Appendix \ref{secn:full-results}. As an example, $OT_3$ is the one
-explained in Example~\ref{Example:TimerOT3} page~\pageref{Example:TimerOT3}
-
+In \fig{ArchFailure:OA} we show the full open automaton
+obtained from the pNet in \fig{FailureTimer:pNet}.  Due to space limitations, we do not show the
+details of the open transitions, but only the assignments of state
+variables, some useful parts of the predicates, and the resulting
+action; full details can be found in 
+\app{full-results}.
+%
+\noteSB{Removed ``As an example...'', since that \ex{TimerOT3} was
+  simplified and does not correspond to the real OT.}
+%% As an example, $OT_3$ is the one
+%% explained in \ex{TimerOT3} (page~\pageref{ex:TimerOT3}).
 This automaton has 12 transitions, including those encoding various
 possible firing of some interactions (e.g. OT 2 and 3 for
-$fail$). At first sight, it appears the rough behaviour is
+{\PortFail}). \add{It looks like} the rough behaviour is
 reasonable, although a detailed study shows that the property stated
 in page~\pageref{property:reset} does not hold, because of the
-$fail$ loops on states $11$ and $12$. This is because we did not use
-the maximal progress assumption here. If we do, we get the corrected
-behaviour in Fig~\ref{schema:ArchFailure:OA-MaxProgress}
-(\app{full-results}), in which $OT_7$ has 
-disappeared, and $OT_2$ and $OT_{10}$ have been restricted to
-$b0=false$. This one verifies all the properties listed in
-\app{properties}. 
+{\PortFail} loops on states $11$ and $12$. This is because we did not
+use the maximal progress assumption here. If we do, we get the
+corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
+(\app{full-results}), in which $OT_7$ has disappeared, and $OT_2$ and
+$OT_{10}$ have been restricted to $b0=\false$. This one verifies all
+the properties listed in \app{properties}.
 
 
-%****************************************************************
+%% %****************************************************************
 
-\subsection{Composition of architectures}
-\label{secn:arch:composition}
+%% \subsection{Composition of architectures}
+%% \label{secn:arch:composition}
 
-We now consider a system comprising two components $B_1$ and $B_2$
-with the corresponding interfaces $\tuple{V_i, P_i,
-  \export[i]}_{i=1,2}$, such that $\listset{\PortFail_i,
-  \PortResume_i} \subseteq P_i$, for $i = 1,2$.
+%% We now consider a system comprising two components $B_1$ and $B_2$
+%% with the corresponding interfaces $\tuple{V_i, P_i,
+%%   \export[i]}_{i=1,2}$, such that $\listset{\PortFail_i,
+%%   \PortResume_i} \subseteq P_i$, for $i = 1,2$.
 
-Assuming that the associated system requirements comprise the
-capability of monitoring the failure events corresponding to ports
-$\PortFail_1$ and $\PortFail_2$ of the two components, we would like
-to apply two instances of the Failure Monitor architecture.  However,
-we impose an additional constraint: only one timer coordinator is
-allowed, for example because it must eventually be implemented by a
-hardware component.
+%% Assuming that the associated system requirements comprise the
+%% capability of monitoring the failure events corresponding to ports
+%% $\PortFail_1$ and $\PortFail_2$ of the two components, we would like
+%% to apply two instances of the Failure Monitor architecture.  However,
+%% we impose an additional constraint: only one timer coordinator is
+%% allowed, for example because it must eventually be implemented by a
+%% hardware component.
 
-We consider two architecture instances $A_i = \tuple{\cC_i, V_{A_i},
-  P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$, with all their
-constituting elements cloned from the Failure Monitor architecture of
-the previous examples while substituting each entity $X$ by $X^i$.
-For instance, the initialisation of the $\mathit{zone}$ variable is
-transformed into $\IntervalInit[1]$ and $\IntervalInit[2]$,
-respectively.  The only exception to this cloning procedure are the
-sets of coordinating components: $\cC^i = \listset{\NameTimer,
-  \NameCtrl^i}$, \ie the $\NameTimer$ component is shared, while
-components $\NameCtrl^1$ and $\NameCtrl^2$ are obtained by making two
-copies of $\NameCtrl$ as above.
+%% We consider two architecture instances $A_i = \tuple{\cC_i, V_{A_i},
+%%   P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$, with all their
+%% constituting elements cloned from the Failure Monitor architecture of
+%% the previous examples while substituting each entity $X$ by $X^i$.
+%% For instance, the initialisation of the $\mathit{zone}$ variable is
+%% transformed into $\IntervalInit[1]$ and $\IntervalInit[2]$,
+%% respectively.  The only exception to this cloning procedure are the
+%% sets of coordinating components: $\cC^i = \listset{\NameTimer,
+%%   \NameCtrl^i}$, \ie the $\NameTimer$ component is shared, while
+%% components $\NameCtrl^1$ and $\NameCtrl^2$ are obtained by making two
+%% copies of $\NameCtrl$ as above.
 
-In order to apply both architectures, we must verify that they are
-upwards compatible and compute the combined interaction model $\Gamma$
-in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
-  P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$
-(see \defn{arch:composition}).
+%% In order to apply both architectures, we must verify that they are
+%% upwards compatible and compute the combined interaction model $\Gamma$
+%% in $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2, V_{A_1} \cup V_{A_2},
+%%   P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$
+%% (see \defn{arch:composition}).
 
-\todoSBin{Complete this section}
+%% \todoSBin{Complete this section}
 
 %****************************************************************
 %****************************************************************
 
 \section{Related work}
 \label{secn:related}
-Previous works on pNets and BIP architectures have been mentioned at the beginning of the paper. Consequently, we  review here the closest related works outside the scope of pNets and BIP architectures. Among those, we focus on existing approaches for the compositional and parameterized verification of systems, and on alternative verification engines???
-\noteLH{not sure about this classification ; to be refined}
+Previous works on pNets and BIP architectures have been mentioned at the beginning of the paper. We  review here the closest related works outside the scope of pNets and BIP architectures, with a particular focus on compositional and parameterized verification.
 
 %%A few tracks, pas r\'edig\'es...
 
 %%% compositional verification
-approaches by typing interfaces/protocols == Simon
+%approaches by typing interfaces/protocols == Simon
 
 %% infinite/parametrized model checking? == ERIC (listes ci-dessous)  + Simon
 
@@ -2597,20 +2625,21 @@ respect to these, we use symbolic representations not only to get a
 finite representation of infinite spaces, but also to express the
 (data-sensitive) synchronisations with the environment, making our
 models suitable for compositional verification.
-
 Among these works, several have shown the capacity of the SMT engines
 (either Z3 or Yikes) as servers for solving verification conditions of
 the algorithms, for large case-studies
-(e.g. \cite{DBLP:journals/corr/CimattiGMT13,DBLP:journals/corr/abs-1806-11459}).
+(e.g. \cite{DBLP:journals/corr/CimattiGMT13,DBLP:journals/corr/abs-1806-11459}). Also 
 %% SMT on an application not using component structure. is there a strong Z3 example == Eric
 
-As compositional proof of safety is difficult, some approaches rely on theorem proving to ensure the safety of component operations. Coqots and Pycots\cite{BCDLM:CBSE2014} even allow to prove the safety of reconfiguration procedures which are known to be highly difficult to verify, and massively parametrised. unfortunately the approach relies on a high expertise and significant efforts from the component user as (s)he must prove manually the safety of the reconfiguration process. In this paper, we rely on automatic encoding into a SMT solver making the proof of properties much more automatic, but we cannot prove the safety of the reconfiguration procedure.
+As compositional proof of safety is difficult, some approaches rely on theorem proving to ensure the safety of component operations. Coqots and Pycots~\cite{BCDLM:CBSE2014} even manage to prove the safety of reconfiguration procedures which are known to be highly difficult to verify, and massively parametrised. The approach relies on a high expertise and significant efforts from the user. Here, we rely on automatic verification thanks to the SMT solver but we cannot prove the safety of the reconfiguration procedure.
 
 
 
 
 In~\cite{DDJO:JLAMP2012}, the authors propose a compositional proof system for distributed objects that is suitable for implementation within the KeY framework~\cite{BHS:Key2007} and uses a Hoare logic approach.
-The approach relies on history invariant for each object, separating local reasoning for proving object invariant from global reasoning that relies on well-formedness of traces. Compared to this  approach, we do not  deal with complex history-based specifications because we use interaction specification and SMT-reasoning instead of Hoare logic. Also the correctness of the composition is given by the properties of architectures which allows for more flexibility than well-formedness of traces.
+%The approach relies on history invariant for each object, separating local reasoning for proving object invariant from global reasoning that relies on well-formedness of traces. 
+Compared to this  approach, we do not  deal with complex history-based specifications and use interaction specification and SMT-reasoning instead of Hoare logic. 
+%Also the correctness of the composition is given by the properties of architectures which allows for more flexibility than well-formedness of traces.
 
 
 
@@ -2624,15 +2653,30 @@ The approach relies on history invariant for each object, separating local reaso
 \section{Conclusion}
 \label{secn:conclusion}
 
-What have we done.
 
-Discussion:
-
-- what did we lern about comparison of the coordination models ?
-
-- extension to other priority features
-
-- proof of correctness ?
+BIP architectures are composition tools that enforce safety properties; the composition of architectures entails the composition of the associated properties.
+We have extended architectures with data-sensitive interactions, and proved that this extension still guarantees the preservation of safety properties by architecture composition, under reasonable assumptions. This extends the original compositional methodology offered by BIP architectures. Then we use pNets as a semantic formalism to encode architectures with data. pNet is a low level coordination model for open systems, in which composition preserves bisimulation equivalences. pNet is equipped with tools computing its behavioural semantics in terms of symbolic automata, allowing model-checking and equivalence checking with algorithms relying on SMT engines.
+As a result, we obtain automatic and compositional guarantees of safety properties with data where compositionality is given by the BIP architectures, and pNet tools provide automatic verification of the properties of each architecture.
+%
+%The automatic checking of properties given by the pNet framework
+%
+%Discussion…:
+%-	What did we learn about comparison of the coordination models ? Worth mentioning architectures are flat, so we don’t use the power of hierschical pNets (as providinh=g encapsulation mechanism) ?
+%-	What about liveness, fairness ?
+%-	Extension to other kind of priorities ?
+%-	Shall we make a full proof of correctness of the encoding?
+%-	Tooling = implementation of the encoding from BIP arch editing tools + tracing back verification diagnoses to the BIP level.
+%
+%
+%What have we done.
+%
+%Discussion:
+%
+%- what did we lern about comparison of the coordination models ?
+%
+%- extension to other priority features
+%
+%- proof of correctness ?
 
 %****************************************************************
 %****************************************************************
@@ -2644,6 +2688,530 @@ Discussion:
 %****************************************************************
 \appendix
 \clearpage
+
+\noindent
+\add{The following appendices are included for convenience and would be integrated into a research report if the paper is accepted for publication. The first appendix provides previously published complementary information, whereas the subsequent ones give additional formal details complementing architecture definitions, proofs of theorems, and the case study.}
+
+\section{Algebraic representations of the interaction model}
+\label{secn:algebras}
+
+This section presents some material that has already been published in earlier work but is essential for understanding the encoding in \secn{encoding}.
+It is condensed from
+\cite[Section~4]{BarBliu15-offer-scico} and recalls briefly the syntax
+and semantics of the algebras used to represent BIP interaction models
+\emph{disregarding variables and data transfer}.
+
+All the algebras are
+parameterised by a set $P$ of all the ports in a given system.  The
+semantics of the Algebra of Interactions $\ai(P)$ is given in terms of
+sets of interactions by a function $\intsem{\cdot}: \ai(P) \rightarrow
+2^{2^P}$.  The corresponding equivalence relation on $\ai(P)$ is
+defined as follows: two terms $x,y \in \ai(P)$ are {\em equivalent} $x
+\simeq y$ iff $\intsem{x} = \intsem{y}$.  For any other algebra
+$\cA(P)$ among those appearing in this section, we define its
+semantics by the function $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$.
+A function $\intsem{\cdot}: \cA(P) \rightarrow 2^{2^P}$ is obtained by
+composing $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$ and
+$\intsem{\cdot}: \ai(P) \rightarrow 2^{2^P}$.  The axiomatisation of
+$\ai(P)$ given in \cite{BliSif07-acp-emsoft} is sound and complete
+with respect to $\simeq$.  Hence, for other algebras, the equivalences
+induced by $\intsem{\cdot}$ and $\aisem{\cdot}$ coincide.
+
+Below, we assume that a set of ports $P$ is given, such that $0,1\not\in
+P$.
+
+For any set $X$ of propositional variables, we denote by $\sB[X]$ the
+corresponding Boolean algebra generated by $X$.  For presentation
+clarity, we will often omit the conjunction operator and write $a \lor
+bc$ instead of $a \lor (b \land c)$.
+
+
+% *********************************************************************
+
+\subsection{Algebra of Interactions}
+\label{secn:ai}
+
+The Algebra of Interactions is used to define the interaction semantics of other algebras. The elements of this algebra can be bijectively mapped to interaction models, \ie subsets of $2^P$.
+
+\begin{syntax}
+The syntax of the {\em Algebra of Interactions}, $\ai(P)$, is defined by
+the following grammar
+%
+\begin{equation} \label{eq:apsynt}
+  \begin{array}{rc*{4}{l@{\ |\ }}l}
+    x & ::= & 0 & 1 & p \in P & x\cdot x & x + x \,,\\
+  \end{array}
+\end{equation}
+%
+where `$+$' and `$\cdot$' are binary operators, respectively called
+{\em union} and {\em synchronisation}.  Synchronisation binds stronger
+than union.
+\end{syntax}
+%
+As follows from the interaction semantics given below, the additive
+identity element $0$ represents blocking, since it does not authorise
+any interaction.  The multiplicative identity element $1$ corresponds
+to the empty interaction, which represents idling (see the discussion
+in \cite{BarBliu15-offer-scico}).
+
+\begin{semantics}
+The semantics of $\ai(P)$ is given by the function $\|\cdot\| : \ai(P)
+\rightarrow 2^{2^P}$, defined by
+%
+\begin{equation} \label{eq:apsem}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{array}{lcl}
+    \lefteqn{\|0\|\ =\ \emptyset,\quad \|1\|\ =\ \{\emptyset\},\quad
+      \|p\|\ =\ \Big\{\{p\}\Big\},}\\
+    \|x_1 + x_2\| &=& \|x_1\| \cup \|x_2\|,\\
+    \|x_1 \cdot x_2\| &=& 
+    \Big\{a_1 \cup a_2\,\Big|\, a_1\in \|x_1\|, a_2\in \|x_2\| \Big\},
+  \end{array}
+\end{equation}
+for $p\in P$, $x_1,x_2\in\ai(P)$.  Terms of $\ai(P)$ represent sets of
+interactions between the ports $P$.
+\end{semantics}
+
+A sound and complete axiomatisation of $\ai(P)$ with respect to the
+semantic equivalence is provided in \cite{BliSif07-acp-emsoft}.  In a
+nutshell, $(\ai(P), +, \cdot, 0, 1)$ is a commutative semiring,
+idempotent in both $+$ and $\cdot$.
+
+
+% *********************************************************************
+
+\subsection{Algebra of Connectors}
+\label{secn:ac}
+
+The Algebra of Connectors provides an algebraic formalisation for
+structuring the interaction models.  It underlies the graphical
+notation (\eg \fig{connectors}) and the syntax for connectors used in the BIP language.
+
+\begin{syntax}
+The syntax of the {\em Algebra of Connectors}, $\ac(P)$, is defined by the
+following grammar
+%
+\begin{equation} \label{eq:acsynt}
+  \renewcommand{\arraystretch}{1.5}
+  \begin{array}{lcll}
+    s & ::= & [0]\ |\ [1]\ |\ [p]\ |\ [x] \:\:\:\:\:\:\:\:\:(synchrons)\\
+    t & ::= & [0]'\ |\ [1]'\ |\ [p]'\ |\ [x]'  \:\:\:\:\:\:   (triggers)\\
+    x & ::= & s\ |\ t\ |\ x\cdot x\ |\ x + x\,, 
+  \end{array}
+\end{equation}
+for $p\in P$, and where `$+$' is a binary operator called {\em union},
+`$\cdot$' is a binary operator called {\em fusion}, and brackets
+`$[\cdot]$' and `$[\cdot]'$' are unary {\em typing} operators.  Fusion
+binds stronger than union.
+
+Union has the same meaning as union in $\ai(P)$. Fusion is a
+generalisation of the synchronisation in $\ai(P)$.  Typing is used to
+form typed connectors: `$[\cdot]$' defines {\em synchrons} (need
+synchronisation with other ports in order to interact) and
+`$[\cdot]'$' defines {\em triggers} (can initiate an interaction).
+\end{syntax}
+
+In order to simplify notation, we will omit brackets on 0, 1, and
+ports $p \in P$, as well as `$\cdot$' for the fusion operation.
+
+\begin{definition}
+ In a system with a set of ports $P$, connectors are elements of $\ac(P)$.
+\end{definition} 
+
+The operations of the Algebra of Connectors satisfy the following
+axioms.
+\begin{itemize}
+\item Union `$+$' is associative, commutative, idempotent and has the identity element 0.
+\item Fusion `$\cdot$' is associative, commutative and has the identity element 1. It is idempotent on monomial connectors, \ie[,] for any $x \in \ac(P)$, not involving the union operation, we have $x\cdot x = x$.
+\item Typing `$[\cdot]^*$' satisfies the following axioms, for $x,y,z
+  \in \ac(P)$ and $[\cdot]^\alpha,[\cdot]^\beta \in \bigl\{[\cdot]', [\cdot]\bigr\}$ arbitrary typings (trigger or synchron):
+  \begin{enumerate}
+  \item $[0] = [0]'$,
+  \item $[[x]^\alpha]^\beta = [x]^\beta$,
+  \item $[x + y]^\alpha = [x]^\alpha + [y]^\alpha$,
+  \item $[x]'[y]' = [x]'[y] + [x][y]'$.
+  \end{enumerate}
+\end{itemize}
+Complete axiomatisation of $\ac(P)$ with respect to the semantic
+equivalence is provided in \cite{BliSif08-acp-tc}.
+
+\begin{semantics}
+The semantics of $\ac(P)$ is given by the function $|\cdot| : \ac(P)
+\rightarrow \ai(P)$ (we use the $\sum$ and $\prod$ notation for,
+respectively, the union and fusion of multiple terms of $\ac(P)$):
+%
+\begin{align}
+  \label{eq:acap}
+  |[p]| & = p\,,
+  & |x_1 + x_2| & = |x_1| + |x_2|\,,x
+  & \left|\prod_{i=1}^n [x_i]\,\right| & = \prod_{i=1}^n |x_k|\,,
+  \\
+  \label{eq:acaptrig}
+  && \hspace{-2cm}\left|\prod_{i=1}^n [x_i]' \prod_{j=1}^m [y_j]\,\right| = 
+  \sum_{i=1}^n |x_i| & \lefteqn{\left(
+  \prod_{k\not=i}\Big(1 + |x_k|\Big)\ \prod_{j=1}^m \Big(1 + |y_j|\Big)\right)}\,
+\end{align}
+%
+for $n > 0$, $m \geq 0$, $x_1,\dots,x_n,y_1,\dots,y_m \in \ac(P)$ and
+$p\in P\cup \{0,1\}$.
+\end{semantics}
+
+\fig{connectors} shows four basic examples of the graphical
+representation of connectors.  Triggers are denoted by triangles,
+whereas synchrons are denoted by bullets.  The interaction semantics
+of the four connectors is given in the sub-figure captions.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{0.18\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/rdv.pspdftex}
+    \caption{\centering Rendezvous~$pqr$
+      $\intsem{pqr} = \{pqr\}$}
+    \label{fig:connectors:rdv}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.24\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/broadcast.pspdftex}
+    \caption{\centering Broadcast~$p'qr$
+      $\intsem{p'qr} = \{p, pq, pr, pqr\}$}
+    \label{fig:connectors:bdc}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.24\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/atomic-bdc.pspdftex}
+    \caption{\centering Atomic broadcast~$p'[qr]$
+      $\intsem{p'[qr]} = \{p, pqr\}$}
+    \label{fig:connectors:atomic}
+  \end{subfigure}%
+  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
+  %(or a blank line to force the subfigure onto a new line)
+  \begin{subfigure}[b]{0.23\textwidth}
+    %% \rule{\textwidth}{0.5pt}
+    \centering
+    \input{figures/causal-chain.pspdftex}
+    \caption{\centering Causal chain~$p'[q'r]$
+      $\intsem{p'[q'r]} = \{p, pq, pqr\}$}
+    \label{fig:connectors:causal}
+  \end{subfigure}%
+  \caption{Basic connector examples}
+  \label{fig:connectors}
+\end{figure}
+
+The semantic equivalence $\simeq$ is not a congruence for $\ac(P)$.
+We denote by $\cong$ the largest congruence relation contained in
+$\simeq$.
+
+\begin{property}[\cite{BliSif08-acp-tc}]
+  \label{prop:cong}
+  For any $x, y \in \ac(P)$, we have $[x]'[y]' \cong \bigl[[x]'[y]'\bigr]'$.
+\end{property}
+
+%*********************************************************************
+
+\subsection{Algebra of Causal Interaction Trees}
+\label{secn:trees}
+
+The Algebra of Causal Interaction Trees serves as a pivot for
+transformations between all other algebraic representations.  It makes
+explicit the causal dependencies between ports contributing to the
+interactions defined by a connector.  
+
+\begin{syntax}
+The syntax of the \emph{Algebra of Causal Interaction Trees}, $\ct(P)$, is
+given by
+\begin{equation} \label{eq:ctsyn}
+  t ::= a \,|\, a \rightarrow t \,|\, t\oplus t\,,
+\end{equation}
+where $a \in \ai(P)$ is an interaction, \ie $0$, $1$ or a
+synchronisation of ports (without the use of the union operator), and
+`$\rightarrow$' and `$\oplus$' are respectively the {\em causality}
+and the {\em parallel composition} operators.  Causality binds
+stronger than parallel composition.  Notice that a causal interaction
+tree can have several roots.
+\end{syntax}
+
+``Atomic'' strongly synchronised interactions in the nodes of a causal
+interaction tree are the building blocks for the interactions provided
+by the connector.  The causality operator defines a dependency between
+two interactions: $a \rightarrow b$ means that for $b$ to
+participate in the overall interaction, $a$ must also participate.
+The parallel composition allows one to combine interactions without
+introducing dependencies: any combination of $a$
+and $b$ can participate in $a \oplus b$.
+
+The causality operator is right- (but not left-) associative: for
+interactions $a_1,\dots,a_n$, we have $a_1 \rightarrow (a_2
+\rightarrow (\dots \rightarrow a_n)\dots)) = a_1 \rightarrow a_2
+\rightarrow \dots \rightarrow a_n$.  We call this construction a {\em
+  causal chain}.
+
+\begin{semantics}
+The semantics of $\ct(P)$ is given by the function $|\cdot|: \ct(P)
+\rightarrow \ai(P)$
+\begin{align}
+  \label{eq:ctsem}
+  |a| & = a\,,
+  & |a \rightarrow t| & = a\Big(1 + |t|\Big)\,,
+  & |t_1 \oplus t_2| & = |t_1| + |t_2| + |t_1|\,|t_2|\,,
+\end{align}
+where $a\in 2^P \cup \{0,1\}$ is an interaction and $t, t_1, t_2 \in \ct(P)$.
+\end{semantics}
+
+A sound axiomatisation of $\ct(P)$ is provided in
+\cite{BliSif10-causal-fmsd}. 
+
+% *********************************************************************
+
+\subsection{Systems of Causal Rules}
+\label{secn:rules}
+
+Systems of causal rules represent an intermediate structure between
+causal interaction trees and arbitrary Boolean formulas.  They
+directly encode the causality information explicit in the causal
+interaction trees, by transforming causality relations into dual Horn
+clauses. %%  Apart from supporting connector synthesis, they provide a
+%% convenient way for expressing properties to be enforced by the glue
+%% operators (see \secn{example} for some examples).  Causal rules
+%% have also served as basis for the macro-notation used to specify
+%% the glue in Dy-BIP\mdash a dynamic flavour of BIP \cite{dybip}.
+
+\begin{definition}
+  A {\em causal rule} is a Boolean formula in $\sB[P]$ of the form $E
+  \Rightarrow C$.  The \emph{effect} $E$ is either the constant
+  $\true$ or a port variable $p \in P$.  The \emph{cause} $C$ is
+  either a constant, $\true$ or $\false$, or a disjunction of
+  interactions, \ie $\bigvee_{i=1}^n a_i$ where, for all $i\in [1,n]$,
+  $a_i$ are conjunctions of positive port variables.
+\end{definition}
+
+\begin{note} \label{rem:absorption}
+  Notice that $a_1 \lor a_1\,a_2 = a_1$, and therefore causal rules
+  can be simplified by replacing $p \Rightarrow a_1 \lor a_1\,a_2$
+  with $p \Rightarrow a_1)$.  We assume that all the causal rules are
+  simplified by this absorption rule.
+\end{note}
+
+\begin{definition}
+  A \emph{system of causal rules} is a set $R = \{p \Rightarrow
+  x_p\}_{p\in P\cup \{\true\}}$.  An interaction $a \in 2^P$ satisfies
+  the system $R$ (denoted $a \models R$), iff the characteristic
+  valuation of $a$ on $P$ satisfies the formula $\bigwedge_{p\in P\cup
+    \{\true\}} (p \Rightarrow x_p)$.  We denote by
+  $|R|\ \bydef{=}\ \sum_{a \models R} a$ the union (in terms of the
+  Algebra of Interactions) of the interactions satisfying $R$.  Thus
+  we have $|\cdot| : \cru(P) \rightarrow \ai(P)$, where $\cru(P)$ is
+  the set of all systems of causal rules over the set of port
+  variables $P$.
+\end{definition}
+
+%*********************************************************************
+
+\subsection{Transformations between algebraic representations of interaction models}
+\label{secn:transformations}
+
+Transformations $\ac(P)
+\overset{\tau}{\underset{\sigma}{\rightleftarrows}} \ct(P)$, $\ct(P)
+\overset{R}{\rightleftarrows} \cru(P)$ and $\cru(P) \rightleftarrows
+\sB[P]$ were defined in \cite{BliSif10-causal-fmsd} and have been
+shown to respect $\simeq$.  Below, we recall only the transformations
+that are used in this paper.
+
+We define the function $\tau : \ac(P) \rightarrow \ct(P)$, associating
+a causal interaction tree with a connector.  By \prop{cong}, and the
+associativity of both fusion in $\ac(P)$ and parallel composition in
+$\ct(P)$, the following equations are sufficient to define $\tau$:
+%
+\begin{align}
+  \label{eq:contree:p}
+  \tau(p) &= p
+  \,,\\
+  \label{eq:contree:trigsynch}
+  \tau\left(
+  [x]'\prod_{i=1}^n [y_i]
+  \right) &=
+  \tau(x) \rightarrow \bigoplus_{i=1}^n \tau(y_i)
+  \,,\\
+  \label{eq:contree:trig}
+  \tau\bigl([x_1]'[x_2]'\bigr) &= \tau(x_1) \oplus \tau(x_2)
+  \,,\\
+  \label{eq:contree:sync}  
+  \tau\bigl([y_1][y_2]\bigr) &=
+  \bigoplus_{i = 1}^{m_1}\bigoplus_{j = 1}^{m_2} a_i^1 a_j^2
+  \rightarrow (t_i^1 \oplus t_j^2)
+  \,,
+\end{align}
+%
+where $x, x_1, x_2, y_1,\dots, y_n \in \ac(P)$, $p \in P \cup \{0,1\}$
+and, in \eq{contree:sync}, we assume $\tau(y_k) = \bigoplus_{i =
+  1}^{m_k} a_i^k \rightarrow t_i^k$, for $k = 1,2$.
+
+%% $\sigma : \ct(P) \rightarrow \ac(P)$ is defined recursively by putting
+%% %
+%% \begin{align}
+%%   \label{eq:treecon}
+%%   \sigma(a) & = [a]\,,
+%%   & \sigma(a \rightarrow t) & = [a]'\,[\sigma(t)]\,,
+%%   & \sigma(t_1 \oplus t_2)  & = [\sigma(t_1)]'\,[\sigma(t_2)]'\,.
+%% \end{align}
+
+We define $R: \ct(P) \rightarrow \cru(P)$ by putting
+%
+\begin{equation} 
+  \label{eq:trees2rules}
+  R(t)\ =\ \{p \Rightarrow c_p(t)\}_{p\in P\cup\{\true\}}\,,
+\end{equation}
+where the function $c_p : \ct(P) \rightarrow \sB[P]$ is defined recursively
+as follows.  For $a\in 2^P$ (with $p\not\in a$) and $t,t_1,t_2 \in \ct(P)$,
+we put
+%
+\begin{align*}
+  c_p(0) & = \false\,, 
+  & c_{\true}(0) & = \false\,,\\
+  c_p(p \rightarrow t) & = \true\,,
+  & c_{\true}(1 \rightarrow t) & = \true\,,\\
+  c_p(pa \rightarrow t) & = a\,,\\
+  c_p(a \rightarrow t) & = a \land c_p(t)\,,
+  & c_{\true}(a \rightarrow t) & = a\,,\\
+  c_p(t_1 \oplus t_2) & = c_p(t_1) \lor c_p(t_2)\,, 
+  & c_{\true}(t_1 \oplus t_2) & = c_{\true}(t_1) \lor c_{\true}(t_2)\,.
+\end{align*}
+
+Observe that this transformation associates to each port $p \in P$ a
+causal rule $p \Rightarrow C$, where $C$ is the disjunction of all
+prefixes leading from roots of $t$ to some node containing $p$,
+including the ports of this node other than $p$.
+
+%*********************************************************************
+%*********************************************************************
+
+\section{Additional definitions for the theory of architectures}
+\label{secn:arch:appendix}
+
+This section provides the formal definitions related to priority
+models, which are omitted from the main body of the paper due to size
+limitations.
+
+\begin{definition}[Priority model]
+  \label{defn:priority}
+  A \emph{priority model} over a component interface $(V, P,
+  \export)$\footnote{%
+%
+    Notice that the export function $\export$ has no impact on the
+    priority model definition.
+%
+  } is a strict partial order on interactions: $\pi
+  \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
+
+  We write $\alpha \prec_\pi \beta$, for $(\alpha, \beta) \in \pi$, and 
+   $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
+    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$, for the set of
+  interactions that have higher priority than $\alpha$.
+\end{definition}
+
+\begin{definition}[Application of priority]
+  \label{defn:priority:sem}
+  The application of a priority model $\pi$ over $(V, P, \export)$
+  to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
+  is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
+  \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
+  relation satisfying the rule (we denote
+  $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
+  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
+  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$)
+%
+  \begin{equation*}
+    \label{eq:priority:sem}
+%
+    \infer{
+      \alpha = (a, g, u)
+      \and
+      q \goesto{a, g, u} q'
+      \and
+      \textstyle
+      g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
+    }{
+      q \goesto[\pi]{a, g', u} q'
+    }\,.
+  \end{equation*}
+%
+  %% \todoSBin{Add the intuitive explanation}
+\end{definition}
+
+\begin{definition}[Upwards compatibility]
+  \label{defn:up:compat}
+  Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
+  \export[A_i], \Gamma_i}$, for $i = 1,2$.
+%
+  We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
+  any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
+  \cap P_{A_2} = a_2 \cap P_{A_1}$ (\ie they agree on the common ports
+  of the two architectures), we have 1)~for any interaction $(b_1,
+  h_1, f_1) \in \Gamma_1$, such that $a_1 \varsubsetneq b_1$, there
+  exists an interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \subseteq b_2$, $b_1 \cap P_{A_2} = b_2 \cap P_{A_1}$ and the 
+  implication  
+%
+  \begin{multline*}
+    \left(
+    \exists (q^1_C)^{C \in \supp{b_1} \cap \cC_1}:
+    \exists (q^2_C)^{C \in \supp{a_2} \cap \cC_2}:
+    \bigwedge_{
+      \begin{multlined}
+        \scriptstyle
+        C \in \supp{b_1} \cap \cC_1 \cap
+        \\
+        \scriptstyle
+        \supp{a_2} \cap \cC_2
+      \end{multlined}
+    }
+    q^1_C = q^2_C
+    \ \land
+    \right.
+    \\
+    \begin{aligned}
+      \exists \bigl(q^1_C \goesto{b_1 \cap P_C, g^{b_1}_C, f^{b_1}_C}\bigr)^{C \in \supp{b_1} \cap \cC_1}:
+      & \quad \left.
+      h_1 \land \bigwedge_{C \in \supp{b_1} \cap \cC_1} g^{b_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^1_C \goesto{a_1 \cap P_C, g^{a_1}_C, e^{b_1}_C}\bigr)^{C \in \supp{a_1} \cap \cC_1}:
+      & \quad \left.
+      g_1 \land \bigwedge_{C \in \supp{a_1} \cap \cC_1} g^{a_1}_C
+      \ \land \right.
+      \\
+      \exists \bigl(q^2_C \goesto{a_2 \cap P_C, g^{a_2}_C, e^{a_2}_C}\bigr)^{C \in \supp{a_2} \cap \cC_2}:
+      & \quad
+      \left.
+      g_2 \land \bigwedge_{C \in \supp{a_2} \cap \cC_2} g^{a_2}_C
+      \right) \implies 
+    \end{aligned}
+  \end{multline*}
+%
+  \begin{multline*}
+    \left(
+    \exists (q^2_C)^{C \in (\supp{b_2}\setminus\supp{a_2}) \cap \cC_2}:
+            {\color{white}\bigwedge_{C \in \cC_1}}\right. % Fake bigwedge to make the parenthesis the right size
+            \\
+            \left.
+            \exists \bigl(q^2_C \goesto{b_2 \cap P_C, g^{b_2}_C, f^{b_2}_C}\bigr)^{C \in \supp{b_2} \cap \cC_2}:
+            h_2 \land
+            \bigwedge_{C \in \supp{b_2} \cap \cC_2} g^{b_2}_C
+            \right)
+  \end{multline*}
+%  
+  holds for all valuations $\val{}{1} : V_{A_1} \rightarrow \data$
+  and $\val{}{2} : V_{A_2} \rightarrow \data$; and 2)~symmetrically
+  for any interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
+  \varsubsetneq b_2$.
+\end{definition}
 
 %****************************************************************
 %****************************************************************
@@ -3271,7 +3839,7 @@ Discussion:
 %*********************************************************************
 %*********************************************************************
 %
-%\section{pNets additional definitions}
+%%\section{pNets additional definitions}
 %\label{secn:pNets:additional}
 %
 %\begin{definition}[Sorts, Holes, Leaves of pNets]
@@ -3327,522 +3895,6 @@ Discussion:
 
 %*********************************************************************
 %*********************************************************************
-
-\section{Algebraic representations of the interaction model}
-\label{secn:algebras}
-
-In this section condensed from
-\cite[Section~4]{BarBliu15-offer-scico}, we briefly recall the syntax
-and semantics of the algebras used to represent BIP interaction models
-\emph{disregarding variables and data transfer}.  All the algebras are
-parameterised by a set $P$ of all the ports in a given system.  The
-semantics of the Algebra of Interactions $\ai(P)$ is given in terms of
-sets of interactions by a function $\intsem{\cdot}: \ai(P) \rightarrow
-2^{2^P}$.  The corresponding equivalence relation on $\ai(P)$ is
-defined as follows: two terms $x,y \in \ai(P)$ are {\em equivalent} $x
-\simeq y$ iff $\intsem{x} = \intsem{y}$.  For any other algebra
-$\cA(P)$ among those appearing in this section, we define its
-semantics by the function $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$.
-A function $\intsem{\cdot}: \cA(P) \rightarrow 2^{2^P}$ is obtained by
-composing $\aisem{\cdot}: \cA(P) \rightarrow \ai(P)$ and
-$\intsem{\cdot}: \ai(P) \rightarrow 2^{2^P}$.  The axiomatisation of
-$\ai(P)$ given in \cite{BliSif07-acp-emsoft} is sound and complete
-with respect to $\simeq$.  Hence, for other algebras, the equivalences
-induced by $\intsem{\cdot}$ and $\aisem{\cdot}$ coincide.
-
-Below, we assume that a set of ports $P$ is given, such that $0,1\not\in
-P$.
-
-For any set $X$ of propositional variables, we denote by $\sB[X]$ the
-corresponding Boolean algebra generated by $X$.  For presentation
-clarity, we will often omit the conjunction operator and write $a \lor
-bc$ instead of $a \lor (b \land c)$.
-
-
-% *********************************************************************
-
-\subsection{Algebra of Interactions}
-\label{secn:ai}
-
-The Algebra of Interactions is used to define the interaction semantics of other algebras. The elements of this algebra can be bijectively mapped to interaction models, \ie subsets of $2^P$.
-
-\begin{syntax}
-The syntax of the {\em Algebra of Interactions}, $\ai(P)$, is defined by
-the following grammar
-%
-\begin{equation} \label{eq:apsynt}
-  \begin{array}{rc*{4}{l@{\ |\ }}l}
-    x & ::= & 0 & 1 & p \in P & x\cdot x & x + x \,,\\
-  \end{array}
-\end{equation}
-%
-where `$+$' and `$\cdot$' are binary operators, respectively called
-{\em union} and {\em synchronisation}.  Synchronisation binds stronger
-than union.
-\end{syntax}
-%
-As follows from the interaction semantics given below, the additive
-identity element $0$ represents blocking, since it does not authorise
-any interaction.  The multiplicative identity element $1$ corresponds
-to the empty interaction, which represents idling (see the discussion
-in \cite{BarBliu15-offer-scico}).
-
-\begin{semantics}
-The semantics of $\ai(P)$ is given by the function $\|\cdot\| : \ai(P)
-\rightarrow 2^{2^P}$, defined by
-%
-\begin{equation} \label{eq:apsem}
-  \renewcommand{\arraystretch}{1.5}
-  \begin{array}{lcl}
-    \lefteqn{\|0\|\ =\ \emptyset,\quad \|1\|\ =\ \{\emptyset\},\quad
-      \|p\|\ =\ \Big\{\{p\}\Big\},}\\
-    \|x_1 + x_2\| &=& \|x_1\| \cup \|x_2\|,\\
-    \|x_1 \cdot x_2\| &=& 
-    \Big\{a_1 \cup a_2\,\Big|\, a_1\in \|x_1\|, a_2\in \|x_2\| \Big\},
-  \end{array}
-\end{equation}
-for $p\in P$, $x_1,x_2\in\ai(P)$.  Terms of $\ai(P)$ represent sets of
-interactions between the ports $P$.
-\end{semantics}
-
-A sound and complete axiomatisation of $\ai(P)$ with respect to the
-semantic equivalence is provided in \cite{BliSif07-acp-emsoft}.  In a
-nutshell, $(\ai(P), +, \cdot, 0, 1)$ is a commutative semiring,
-idempotent in both $+$ and $\cdot$.
-
-
-% *********************************************************************
-
-\subsection{Algebra of Connectors}
-\label{secn:ac}
-
-The Algebra of Connectors provides an algebraic formalisation for
-structuring the interaction models.  It underlies the graphical
-notation (\eg \fig{connectors}) and the syntax for connectors used in the BIP language.
-
-\begin{syntax}
-The syntax of the {\em Algebra of Connectors}, $\ac(P)$, is defined by the
-following grammar
-%
-\begin{equation} \label{eq:acsynt}
-  \renewcommand{\arraystretch}{1.5}
-  \begin{array}{lcll}
-    s & ::= & [0]\ |\ [1]\ |\ [p]\ |\ [x] \:\:\:\:\:\:\:\:\:(synchrons)\\
-    t & ::= & [0]'\ |\ [1]'\ |\ [p]'\ |\ [x]'  \:\:\:\:\:\:   (triggers)\\
-    x & ::= & s\ |\ t\ |\ x\cdot x\ |\ x + x\,, 
-  \end{array}
-\end{equation}
-for $p\in P$, and where `$+$' is a binary operator called {\em union},
-`$\cdot$' is a binary operator called {\em fusion}, and brackets
-`$[\cdot]$' and `$[\cdot]'$' are unary {\em typing} operators.  Fusion
-binds stronger than union.
-
-Union has the same meaning as union in $\ai(P)$. Fusion is a
-generalisation of the synchronisation in $\ai(P)$.  Typing is used to
-form typed connectors: `$[\cdot]$' defines {\em synchrons} (need
-synchronisation with other ports in order to interact) and
-`$[\cdot]'$' defines {\em triggers} (can initiate an interaction).
-\end{syntax}
-
-In order to simplify notation, we will omit brackets on 0, 1, and
-ports $p \in P$, as well as `$\cdot$' for the fusion operation.
-
-\begin{definition}
- In a system with a set of ports $P$, connectors are elements of $\ac(P)$.
-\end{definition} 
-
-The operations of the Algebra of Connectors satisfy the following
-axioms.
-\begin{itemize}
-\item Union `$+$' is associative, commutative, idempotent and has the identity element 0.
-\item Fusion `$\cdot$' is associative, commutative and has the identity element 1. It is idempotent on monomial connectors, \ie[,] for any $x \in \ac(P)$, not involving the union operation, we have $x\cdot x = x$.
-\item Typing `$[\cdot]^*$' satisfies the following axioms, for $x,y,z
-  \in \ac(P)$ and $[\cdot]^\alpha,[\cdot]^\beta \in \bigl\{[\cdot]', [\cdot]\bigr\}$ arbitrary typings (trigger or synchron):
-  \begin{enumerate}
-  \item $[0] = [0]'$,
-  \item $[[x]^\alpha]^\beta = [x]^\beta$,
-  \item $[x + y]^\alpha = [x]^\alpha + [y]^\alpha$,
-  \item $[x]'[y]' = [x]'[y] + [x][y]'$.
-  \end{enumerate}
-\end{itemize}
-Complete axiomatisation of $\ac(P)$ with respect to the semantic
-equivalence is provided in \cite{BliSif08-acp-tc}.
-
-\begin{semantics}
-The semantics of $\ac(P)$ is given by the function $|\cdot| : \ac(P)
-\rightarrow \ai(P)$ (we use the $\sum$ and $\prod$ notation for,
-respectively, the union and fusion of multiple terms of $\ac(P)$):
-%
-\begin{align}
-  \label{eq:acap}
-  |[p]| & = p\,,
-  & |x_1 + x_2| & = |x_1| + |x_2|\,,x
-  & \left|\prod_{i=1}^n [x_i]\,\right| & = \prod_{i=1}^n |x_k|\,,
-  \\
-  \label{eq:acaptrig}
-  && \hspace{-2cm}\left|\prod_{i=1}^n [x_i]' \prod_{j=1}^m [y_j]\,\right| = 
-  \sum_{i=1}^n |x_i| & \lefteqn{\left(
-  \prod_{k\not=i}\Big(1 + |x_k|\Big)\ \prod_{j=1}^m \Big(1 + |y_j|\Big)\right)}\,
-\end{align}
-%
-for $n > 0$, $m \geq 0$, $x_1,\dots,x_n,y_1,\dots,y_m \in \ac(P)$ and
-$p\in P\cup \{0,1\}$.
-\end{semantics}
-
-\fig{connectors} shows four basic examples of the graphical
-representation of connectors.  Triggers are denoted by triangles,
-whereas synchrons are denoted by bullets.  The interaction semantics
-of the four connectors is given in the sub-figure captions.
-
-\begin{figure}
-  \centering
-  \begin{subfigure}[b]{0.18\textwidth}
-    %% \rule{\textwidth}{0.5pt}
-    \centering
-    \input{figures/rdv.pspdftex}
-    \caption{\centering Rendezvous~$pqr$
-      $\intsem{pqr} = \{pqr\}$}
-    \label{fig:connectors:rdv}
-  \end{subfigure}%
-  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
-  %(or a blank line to force the subfigure onto a new line)
-  \begin{subfigure}[b]{0.24\textwidth}
-    %% \rule{\textwidth}{0.5pt}
-    \centering
-    \input{figures/broadcast.pspdftex}
-    \caption{\centering Broadcast~$p'qr$
-      $\intsem{p'qr} = \{p, pq, pr, pqr\}$}
-    \label{fig:connectors:bdc}
-  \end{subfigure}%
-  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
-  %(or a blank line to force the subfigure onto a new line)
-  \begin{subfigure}[b]{0.24\textwidth}
-    %% \rule{\textwidth}{0.5pt}
-    \centering
-    \input{figures/atomic-bdc.pspdftex}
-    \caption{\centering Atomic broadcast~$p'[qr]$
-      $\intsem{p'[qr]} = \{p, pqr\}$}
-    \label{fig:connectors:atomic}
-  \end{subfigure}%
-  \hfill %add desired spacing between images, e. g. ~, \quad, \qquad etc.
-  %(or a blank line to force the subfigure onto a new line)
-  \begin{subfigure}[b]{0.23\textwidth}
-    %% \rule{\textwidth}{0.5pt}
-    \centering
-    \input{figures/causal-chain.pspdftex}
-    \caption{\centering Causal chain~$p'[q'r]$
-      $\intsem{p'[q'r]} = \{p, pq, pqr\}$}
-    \label{fig:connectors:causal}
-  \end{subfigure}%
-  \caption{Basic connector examples}
-  \label{fig:connectors}
-\end{figure}
-
-The semantic equivalence $\simeq$ is not a congruence for $\ac(P)$.
-We denote by $\cong$ the largest congruence relation contained in
-$\simeq$.
-
-\begin{property}[\cite{BliSif08-acp-tc}]
-  \label{prop:cong}
-  For any $x, y \in \ac(P)$, we have $[x]'[y]' \cong \bigl[[x]'[y]'\bigr]'$.
-\end{property}
-
-%*********************************************************************
-
-\subsection{Algebra of Causal Interaction Trees}
-\label{secn:trees}
-
-The Algebra of Causal Interaction Trees serves as a pivot for
-transformations between all other algebraic representations.  It makes
-explicit the causal dependencies between ports contributing to the
-interactions defined by a connector.  
-
-\begin{syntax}
-The syntax of the \emph{Algebra of Causal Interaction Trees}, $\ct(P)$, is
-given by
-\begin{equation} \label{eq:ctsyn}
-  t ::= a \,|\, a \rightarrow t \,|\, t\oplus t\,,
-\end{equation}
-where $a \in \ai(P)$ is an interaction, \ie $0$, $1$ or a
-synchronisation of ports (without the use of the union operator), and
-`$\rightarrow$' and `$\oplus$' are respectively the {\em causality}
-and the {\em parallel composition} operators.  Causality binds
-stronger than parallel composition.  Notice that a causal interaction
-tree can have several roots.
-\end{syntax}
-
-``Atomic'' strongly synchronised interactions in the nodes of a causal
-interaction tree are the building blocks for the interactions provided
-by the connector.  The causality operator defines a dependency between
-two interactions: $a \rightarrow b$ means that for $b$ to
-participate in the overall interaction, $a$ must also participate.
-The parallel composition allows one to combine interactions without
-introducing dependencies: any combination of $a$
-and $b$ can participate in $a \oplus b$.
-
-The causality operator is right- (but not left-) associative: for
-interactions $a_1,\dots,a_n$, we have $a_1 \rightarrow (a_2
-\rightarrow (\dots \rightarrow a_n)\dots)) = a_1 \rightarrow a_2
-\rightarrow \dots \rightarrow a_n$.  We call this construction a {\em
-  causal chain}.
-
-\begin{semantics}
-The semantics of $\ct(P)$ is given by the function $|\cdot|: \ct(P)
-\rightarrow \ai(P)$
-\begin{align}
-  \label{eq:ctsem}
-  |a| & = a\,,
-  & |a \rightarrow t| & = a\Big(1 + |t|\Big)\,,
-  & |t_1 \oplus t_2| & = |t_1| + |t_2| + |t_1|\,|t_2|\,,
-\end{align}
-where $a\in 2^P \cup \{0,1\}$ is an interaction and $t, t_1, t_2 \in \ct(P)$.
-\end{semantics}
-
-A sound axiomatisation of $\ct(P)$ is provided in
-\cite{BliSif10-causal-fmsd}. 
-
-% *********************************************************************
-
-\subsection{Systems of Causal Rules}
-\label{secn:rules}
-
-Systems of causal rules represent an intermediate structure between
-causal interaction trees and arbitrary Boolean formulas.  They
-directly encode the causality information explicit in the causal
-interaction trees, by transforming causality relations into dual Horn
-clauses. %%  Apart from supporting connector synthesis, they provide a
-%% convenient way for expressing properties to be enforced by the glue
-%% operators (see \secn{example} for some examples).  Causal rules
-%% have also served as basis for the macro-notation used to specify
-%% the glue in Dy-BIP\mdash a dynamic flavour of BIP \cite{dybip}.
-
-\begin{definition}
-  A {\em causal rule} is a Boolean formula in $\sB[P]$ of the form $E
-  \Rightarrow C$.  The \emph{effect} $E$ is either the constant
-  $\true$ or a port variable $p \in P$.  The \emph{cause} $C$ is
-  either a constant, $\true$ or $\false$, or a disjunction of
-  interactions, \ie $\bigvee_{i=1}^n a_i$ where, for all $i\in [1,n]$,
-  $a_i$ are conjunctions of positive port variables.
-\end{definition}
-
-\begin{note} \label{rem:absorption}
-  Notice that $a_1 \lor a_1\,a_2 = a_1$, and therefore causal rules
-  can be simplified by replacing $p \Rightarrow a_1 \lor a_1\,a_2$
-  with $p \Rightarrow a_1)$.  We assume that all the causal rules are
-  simplified by this absorption rule.
-\end{note}
-
-\begin{definition}
-  A \emph{system of causal rules} is a set $R = \{p \Rightarrow
-  x_p\}_{p\in P\cup \{\true\}}$.  An interaction $a \in 2^P$ satisfies
-  the system $R$ (denoted $a \models R$), iff the characteristic
-  valuation of $a$ on $P$ satisfies the formula $\bigwedge_{p\in P\cup
-    \{\true\}} (p \Rightarrow x_p)$.  We denote by
-  $|R|\ \bydef{=}\ \sum_{a \models R} a$ the union (in terms of the
-  Algebra of Interactions) of the interactions satisfying $R$.  Thus
-  we have $|\cdot| : \cru(P) \rightarrow \ai(P)$, where $\cru(P)$ is
-  the set of all systems of causal rules over the set of port
-  variables $P$.
-\end{definition}
-
-%*********************************************************************
-
-\subsection{Transformations between algebraic representations of interaction models}
-\label{secn:transformations}
-
-Transformations $\ac(P)
-\overset{\tau}{\underset{\sigma}{\rightleftarrows}} \ct(P)$, $\ct(P)
-\overset{R}{\rightleftarrows} \cru(P)$ and $\cru(P) \rightleftarrows
-\sB[P]$ were defined in \cite{BliSif10-causal-fmsd} and have been
-shown to respect $\simeq$.  Below, we recall only the transformations
-that are used in this paper.
-
-We define the function $\tau : \ac(P) \rightarrow \ct(P)$, associating
-a causal interaction tree with a connector.  By \prop{cong}, and the
-associativity of both fusion in $\ac(P)$ and parallel composition in
-$\ct(P)$, the following equations are sufficient to define $\tau$:
-%
-\begin{align}
-  \label{eq:contree:p}
-  \tau(p) &= p
-  \,,\\
-  \label{eq:contree:trigsynch}
-  \tau\left(
-  [x]'\prod_{i=1}^n [y_i]
-  \right) &=
-  \tau(x) \rightarrow \bigoplus_{i=1}^n \tau(y_i)
-  \,,\\
-  \label{eq:contree:trig}
-  \tau\bigl([x_1]'[x_2]'\bigr) &= \tau(x_1) \oplus \tau(x_2)
-  \,,\\
-  \label{eq:contree:sync}  
-  \tau\bigl([y_1][y_2]\bigr) &=
-  \bigoplus_{i = 1}^{m_1}\bigoplus_{j = 1}^{m_2} a_i^1 a_j^2
-  \rightarrow (t_i^1 \oplus t_j^2)
-  \,,
-\end{align}
-%
-where $x, x_1, x_2, y_1,\dots, y_n \in \ac(P)$, $p \in P \cup \{0,1\}$
-and, in \eq{contree:sync}, we assume $\tau(y_k) = \bigoplus_{i =
-  1}^{m_k} a_i^k \rightarrow t_i^k$, for $k = 1,2$.
-
-%% $\sigma : \ct(P) \rightarrow \ac(P)$ is defined recursively by putting
-%% %
-%% \begin{align}
-%%   \label{eq:treecon}
-%%   \sigma(a) & = [a]\,,
-%%   & \sigma(a \rightarrow t) & = [a]'\,[\sigma(t)]\,,
-%%   & \sigma(t_1 \oplus t_2)  & = [\sigma(t_1)]'\,[\sigma(t_2)]'\,.
-%% \end{align}
-
-We define $R: \ct(P) \rightarrow \cru(P)$ by putting
-%
-\begin{equation} 
-  \label{eq:trees2rules}
-  R(t)\ =\ \{p \Rightarrow c_p(t)\}_{p\in P\cup\{\true\}}\,,
-\end{equation}
-where the function $c_p : \ct(P) \rightarrow \sB[P]$ is defined recursively
-as follows.  For $a\in 2^P$ (with $p\not\in a$) and $t,t_1,t_2 \in \ct(P)$,
-we put
-%
-\begin{align*}
-  c_p(0) & = \false\,, 
-  & c_{\true}(0) & = \false\,,\\
-  c_p(p \rightarrow t) & = \true\,,
-  & c_{\true}(1 \rightarrow t) & = \true\,,\\
-  c_p(pa \rightarrow t) & = a\,,\\
-  c_p(a \rightarrow t) & = a \land c_p(t)\,,
-  & c_{\true}(a \rightarrow t) & = a\,,\\
-  c_p(t_1 \oplus t_2) & = c_p(t_1) \lor c_p(t_2)\,, 
-  & c_{\true}(t_1 \oplus t_2) & = c_{\true}(t_1) \lor c_{\true}(t_2)\,.
-\end{align*}
-
-Observe that this transformation associates to each port $p \in P$ a
-causal rule $p \Rightarrow C$, where $C$ is the disjunction of all
-prefixes leading from roots of $t$ to some node containing $p$,
-including the ports of this node other than $p$.
-
-\section{Additional material for the theory of architectures}
-\label{secn:arch:appendix}
-
-This section provides the formal definitions related to priority
-models, which are omitted from the main body of the paper due to size
-limitations.
-
-\begin{definition}[Priority model]
-  \label{defn:priority}
-  A \emph{priority model} over a component interface $(V, P,
-  \export)$\footnote{%
-%
-    Notice that the export function $\export$ has no impact on the
-    priority model definition.
-%
-  } is a strict partial order on interactions: $\pi
-  \subseteq \bigl(2^P \times \guards{V} \times \updates{V} \bigr)^2$.
-
-  We write $\alpha \prec_\pi \beta$, for $(\alpha, \beta) \in \pi$, and 
-   $\filter{\alpha} \bydef{=} \bsetdef{\beta \in (2^P \times
-    \guards{V} \times \updates{V})}{\alpha \prec_\pi \beta}$, for the set of
-  interactions that have higher priority than $\alpha$.
-\end{definition}
-
-\begin{definition}[Application of priority]
-  \label{defn:priority:sem}
-  The application of a priority model $\pi$ over $(V, P, \export)$
-  to a component $B = \tuple{Q, q^0, V, \val{0}{}, P, \export, \goesto{}}$
-  is the component $\pi(B) = \tuple{Q, q^0, V, \val{0}{}, P, \export,
-  \goesto[\pi]{}}$, where $\goesto[\pi]{}$ is the minimal transition
-  relation satisfying the rule (we denote
-  $\filter[q]{\alpha} \bydef{=} %% \filter{\alpha} \cap
-  %% \bsetdef{\beta \in (2^P \times \guards{V} \times \updates{V})}
-  \setdef{\beta \in \filter{\alpha}}{q \goesto{\beta}}$)
-%
-  \begin{equation*}
-    \label{eq:priority:sem}
-%
-    \infer{
-      \alpha = (a, g, u)
-      \and
-      q \goesto{a, g, u} q'
-      \and
-      \textstyle
-      g' = g \land \bigwedge_{(b, h, w) \in \filter[q]{\alpha}} \lnot h
-    }{
-      q \goesto[\pi]{a, g', u} q'
-    }\,.
-  \end{equation*}
-%
-  %% \todoSBin{Add the intuitive explanation}
-\end{definition}
-
-\begin{definition}[Upwards compatibility]
-  \label{defn:up:compat}
-  Consider two architectures $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i},
-  \export[A_i], \Gamma_i}$, for $i = 1,2$.
-%
-  We say that $A_1$ and $A_2$ are \emph{upwards compatible} iff, for
-  any two interactions $(a_i, g_i, e_i) \in \Gamma_i$, such that $a_1
-  \cap P_{A_2} = a_2 \cap P_{A_1}$ (\ie they agree on the common ports
-  of the two architectures), we have 1)~for any interaction $(b_1,
-  h_1, f_1) \in \Gamma_1$, such that $a_1 \varsubsetneq b_1$, there
-  exists an interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
-  \subseteq b_2$, $b_1 \cap P_{A_2} = b_2 \cap P_{A_1}$ and the 
-  implication  
-%
-  \begin{multline*}
-    \left(
-    \exists (q^1_C)^{C \in \supp{b_1} \cap \cC_1}:
-    \exists (q^2_C)^{C \in \supp{a_2} \cap \cC_2}:
-    \bigwedge_{
-      \begin{multlined}
-        \scriptstyle
-        C \in \supp{b_1} \cap \cC_1 \cap
-        \\
-        \scriptstyle
-        \supp{a_2} \cap \cC_2
-      \end{multlined}
-    }
-    q^1_C = q^2_C
-    \ \land
-    \right.
-    \\
-    \begin{aligned}
-      \exists \bigl(q^1_C \goesto{b_1 \cap P_C, g^{b_1}_C, f^{b_1}_C}\bigr)^{C \in \supp{b_1} \cap \cC_1}:
-      & \quad \left.
-      h_1 \land \bigwedge_{C \in \supp{b_1} \cap \cC_1} g^{b_1}_C
-      \ \land \right.
-      \\
-      \exists \bigl(q^1_C \goesto{a_1 \cap P_C, g^{a_1}_C, e^{b_1}_C}\bigr)^{C \in \supp{a_1} \cap \cC_1}:
-      & \quad \left.
-      g_1 \land \bigwedge_{C \in \supp{a_1} \cap \cC_1} g^{a_1}_C
-      \ \land \right.
-      \\
-      \exists \bigl(q^2_C \goesto{a_2 \cap P_C, g^{a_2}_C, e^{a_2}_C}\bigr)^{C \in \supp{a_2} \cap \cC_2}:
-      & \quad
-      \left.
-      g_2 \land \bigwedge_{C \in \supp{a_2} \cap \cC_2} g^{a_2}_C
-      \right) \implies 
-    \end{aligned}
-  \end{multline*}
-%
-  \begin{multline*}
-    \left(
-    \exists (q^2_C)^{C \in (\supp{b_2}\setminus\supp{a_2}) \cap \cC_2}:
-            {\color{white}\bigwedge_{C \in \cC_1}}\right. % Fake bigwedge to make the parenthesis the right size
-            \\
-            \left.
-            \exists \bigl(q^2_C \goesto{b_2 \cap P_C, g^{b_2}_C, f^{b_2}_C}\bigr)^{C \in \supp{b_2} \cap \cC_2}:
-            h_2 \land
-            \bigwedge_{C \in \supp{b_2} \cap \cC_2} g^{b_2}_C
-            \right)
-  \end{multline*}
-%  
-  holds for all valuations $\val{}{1} : V_{A_1} \rightarrow \data$
-  and $\val{}{2} : V_{A_2} \rightarrow \data$; and 2)~symmetrically
-  for any interaction $(b_2, h_2, f_2) \in \Gamma_2$, such that $a_2
-  \varsubsetneq b_2$.
-\end{definition}
-
 
 \section{Additional material for the case study}
 
@@ -4055,14 +4107,14 @@ INFO  BIPArchFailureTimerMax - Total Time: 1293 ms
 
 Now we list the full set of OTs, in latex form, for better
 readability. This comes as a complement to the open automaton in
-Fig. \ref{schema:ArchFailure:OA-annex}, in which we only have a partial view
+\fig{ArchFailure:OA-annex}, in which we only have a partial view
 of the OTs details.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{TimerOAFullDetailed}
   \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{schema:ArchFailure:OA-annex}
+  \label{fig:ArchFailure:OA-annex}
 \end{figure}
 
 
@@ -4176,12 +4228,12 @@ $
 
   \subsubsection{Properties}
 
-  In Fig. \ref{schema:ArchFailure:OA-annex}, you can see that some
+  In \fig{ArchFailure:OA-annex}, you can see that some
   properties from appendix \app{properties} do not hold.
 
   In particular, the first safety property \eq{prop:reset:can}:
   \begin{equation*}
-    \AG \bigl(\PortFail(true) \rightarrow \EU[]{\lnot \PortFail(true)}{\PortReset}\bigr).
+    \AG \bigl(\PortFail(true) \rightarrow \EX \EU[]{\lnot \PortFail(true)}{\PortReset}\bigr).
   \end{equation*}
 is not true, because the $OT_2$ loop on state $\ostate{11}$ stays in
 state 11 where you need another $\PortFail(true)$ before enabling a
@@ -4223,14 +4275,14 @@ pLTS: Control
 - Transition: s3---reset-->s1, {}
 \end{verbatim}
 
-  The new OA is shown in figure \ref{schema:ArchFailure:OA-MaxProgress}.
+  The new OA is shown in \fig{ArchFailure:OA-MaxProgress}.
 
   \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{TimerOAMaxProgress}
   \caption{The open Automaton of the Failure Monitor Architecture,
     with Maximal Progress}
-  \label{schema:ArchFailure:OA-MaxProgress}
+  \label{fig:ArchFailure:OA-MaxProgress}
 \end{figure}
 
 \begin{itemize}
@@ -4327,7 +4379,7 @@ INFO  BIPArchFailureTimerMaxV4X2 - Total Time: 9111 ms
 \end{verbatim}
 
 \bigskip
-Fig. \ref{schema:ArchFailure:OA-TimerV4X2} shows the open automata of
+\Fig{ArchFailure:OA-TimerV4X2} shows the open automata of
 this composed architecture.
 Note that e..g. the open transition labelled ``$fail(*,tt)$'' stands for
 ``$fail(b01,b02)$'', where  $b01'$ can be arbitrarily true or
@@ -4339,7 +4391,7 @@ should be replaced by ``$ff$''.
   \centering
   \includegraphics[width=0.8\columnwidth]{TimerV4X2}
   \caption{The open Automaton of the composed system}
-  \label{schema:ArchFailure:OA-TimerV4X2}
+  \label{fig:ArchFailure:OA-TimerV4X2}
 \end{figure}
 
 \end{document}
