@@ -136,6 +136,7 @@
 \newcommand{\ex}[1]{Ex.~\ref{ex:#1}}
 \newcommand{\exs}[2]{Ex.~\ref{ex:#1} and~\ref{ex:#2}}
 \newcommand{\secn}[1]{Sect.~\ref{secn:#1}}
+\newcommand{\Secn}[1]{Section~\ref{secn:#1}}
 \newcommand{\app}[1]{App.~\ref{secn:#1}}
 \newcommand{\rem}[1]{Note~\ref{rem:#1}}
 \newcommand{\lem}[1]{Lem.~\ref{lem:#1}}
@@ -381,9 +382,10 @@ architectures preserves their characteristic safety properties.
 To verify that individual architectures do enforce their associated
 properties, we provide an encoding into open pNets, an intermediate
 model  that supports SMT-based verification.
-Additionally, the translation into  open pNet  \noteEM{ICI}{gives
-us a strong insight and a comparison of the coordination mechanisms
-provided by the two frameworks}.  The approach is illustrated by a case
+%% Additionally, the translation into  open pNet  \noteEM{ICI}{gives
+%% us a strong insight and a comparison of the coordination mechanisms
+%% provided by the two frameworks}.
+The approach is illustrated by a case
 study based on a previously developed BIP model of a nanosatellite
 on-board software.
 
@@ -426,39 +428,41 @@ coordinator components and modifying the
 synchronisation patterns between components.
 In~\cite{AttieBBJS16-architectures-faoc}, it was shown that
 application of architectures is compositional \wrt safety properties,
-\ie if two architectures guarantee two properties, their composition ensure the conjunction of the properties.
+\ie if two architectures guarantee two properties, their composition ensures the conjunction of the properties.
 %
 %several architectures are applied, each enforcing a safety
 %property, the resulting system satisfies their conjunction.
 
 This article goes one step further in the proof of properties and in the compositionality of architectures, but this step is a significant one: the compositional verification. To prove properties of BIP architectures
 it is necessary to have a representation of the BIP architecture in a verifiable format. 
-The verification problem has two unbounded parameters: 1) By nature, architectures have holes and are meant to interact with the interfaces of the component that will fill the hole; the properties must hold for all (well-typed) components that can be put inside the hole; 2) BIP interactions can transmit data, and properties might be dependent of the data, the domain of the data is generally huge or unbound and the value of transmitted data might have a significant impact on the properties.
-Due to the nature of the problem, we propose to rely on a translation of BIP architectures into pNets, a direct verification of BIP could  be possible but pNets already have verification tools based on a SMT solver, and doing the same work for BIP would require  a large amount of similar development. More interestingly, relying on a translation to pNets \noteEM{LA}{allows us to compare the two models}.
+The verification problem has two unbounded parameters: 1) By nature, architectures have holes and are meant to interact with the interfaces of the component that will fill the hole; the properties must hold for all (well-typed) components that can be put inside the hole; 2) BIP interactions can transmit data, and properties might be dependent of the data, the domain of the data is generally huge or unbounded and the values of transmitted data might have a significant impact on the properties.
+%% Due to the nature of the problem, 
+We propose to rely on a translation of BIP architectures into \emph{open pNets}.  
 
-Parameterised Networks of synchronised automata (pNets) is a formalism for defining behavioural specification of distributed systems based on a parametrised and hierarchical model.
+Parameterised Networks of synchronised automata (pNets) is a formalism for defining behavioural specification of distributed systems based on a parameterised and hierarchical model.
 It inherited from the work of
 Arnold on synchronisation vectors~\cite{Arnold1982}. 
-It has been shown work~\cite{HMZ:PDP15} that pNets can  represent the behavioural semantics
+It has been shown in previous work~\cite{HMZ:PDP15} that pNets can  represent the behavioural semantics
 of a system 
 including value-passing and many kinds of synchronisation methods, including various constructs and
 languages for distributed objects. The VerCors  platform uses pNets to design
 and verify  distributed software components
 \cite{CM:FMCO08,HKM-FASE16}. 
-pNets structure is static, but unbounded,  this allows for model-checking
+The structure of pNets is static but unbounded.  This allows for model-checking
 approaches even for reconfigurable applications.
 Closed pNets were used to encode fully defined programs or systems,
 while open pNets have ``holes'', playing the role of process
 parameters. Such open systems can represent composition operators or structuring architectures.
-It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates value~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. This encoding of open pNets into Z3 that is under development is the starting point of this article. We benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
+It is possible to reason, in an SMT engine, on the symbolic automaton that represents the behaviour of a pNets with holes and that communicates values~\cite{HMZ-FORTE2016QBMZ-AVOCS18}. The encoding of open pNets into Z3 that is under development is the starting point of this article. We benefit from the possibility to reason on a pNet in an SMT engine in order to prove properties on BIP architectures.
 
-We propose   to encode BIP architectures
-into open pNets and to verify, using SMT techniques,
-the properties of the architectures. The encoding also allows us to
-compare BIP architectures and  pNet formalism.  
-Overall, the encoding \noteEM{ET LA}{allows us to precisely compare the coordination
-mechanisms of the two models but also the way component composition is
-expressed in the two formalisms}. 
+%% We propose   to encode BIP architectures
+%% into open pNets and to verify, using SMT techniques,
+%% the properties of the architectures. The encoding also allows us to
+%% compare BIP architectures and  pNet formalism.  
+%% Overall, the encoding allows us to precisely compare the coordination
+%% mechanisms of the two models but also the way component composition is
+%% expressed in the two formalisms.
+
 %This also gives the opportunity
 %to relate two  different visions on compositional verification.
 
@@ -471,10 +475,24 @@ The main contributions of this paper are: 1) The definition of a
 theory of BIP architectures with data, including a theorem about
 preservation of (data dependent) properties by 
 compositions. 2) An encoding of architectures with data into  open pNets, allowing for analysis of their temporal properties using pNet's
-software tools.
+software tools.  
 The  paper is illustrated by a running
 example based on the failure monitor architecture from the CubETH
 nanosatellite on-board software~\cite{CubETH-case-study}.
+%
+This running example also relies on the \emph{maximal progress}
+assumption, whereby larger interactions are preferred to smaller
+ones.  Due to space limitations, we only discuss this
+informally. However, proofs of the results provided in the
+appendix formally account for maximal progress.
+
+The rest of the paper is structured as follows.  In
+\secn{preliminaries}, we present notations and background
+material on pNets.  The theory of architectures with data is
+presented in \secn{archs}.  In \secn{encoding}, we present the
+encoding into open pNets and discuss verification of the running
+example.  \Secn{related} discusses related work.
+\Secn{conclusion} concludes the paper.  
 
 %****************************************************************
 %****************************************************************
@@ -527,7 +545,7 @@ where $\signature$ is the signature of the data and action constructors,
 and $\variables$ a set of \emph{variables}. Within $\Talg$, we distinguish a set of
 \emph{data expressions} $\exprs{\variables}$, $e$ ranges over  expressions; and a set of \emph{Boolean
 expressions} 
-$\boolexprs{\variables}\subseteq\exprs{\variables}$, $g$ (guards) ranges over boolean expressions.
+$\boolexprs{\variables}\subseteq\exprs{\variables}$, $g$ (guards) ranges over Boolean expressions.
 On top of $\exprs{\variables}$ we build the \emph{action algebra}
 $\actions{\variables}$, with $\actions{\variables}\subseteq\Talg$.
 We define $\assigns{\variables}$ as the set of variable assignments of the form: $(x_i := e_i)^{i \in I}$. 
@@ -628,10 +646,10 @@ assignments.
 %suppose that transitions looping to the same state does not do assignments.
 %Note that we make no assumption on the finiteness of the set of states, nor
 %on the finite branching of the transition relation.
-Variables of each state are parwise disjoint.
+Variables of each state are pairwise disjoint.
 We need to introduce input variables to reason about the data flow between actions.
 We  define the set of parameterised actions a pLTS can use ($a$
-ranges over action labels):\\
+ranges over action labels):
 % Action terms are  of the form 
 $\alpha=a(?x_i^{i \in I}, 
 e_j^{j \in J})$, where $?x_i^{i \in I}$ are input variables, $e_j^{j \in J}$ 
@@ -751,23 +769,41 @@ the transition occurs if some predicates hold, and can involve
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transition]
-	\label{defn:OpenTransitions}
-	An \emph{open transition} over a
-	set $J$ of holes  and a set of states $\mathcal{S}$ is 
-	a structure of the form:
-\\[-2ex]	
-	\begin{mathpar}
-	\inferrule*[myfraction=\reddottedrule]
-	{	\beta_j^{j\in J}, \Pred, \Post}
-	{s \OTarrow {{\alpha}}s'}
-	\end{mathpar}
-	Where $s, s'\in\mathcal{S}$ and $\beta_j\in\actions{\variables}$
-        is an action of the hole $j$. $\alpha$ is the resulting global action. \Pred\ is a predicate 
-	over the different variables of the
-	terms, labels, and states  $\beta_j$, $s$, $\alpha$. $\Post\in 
-	\assigns{\variables}$\ is 
-	a set of assignments that are the effects of the transition.
-Open transitions are identified modulo logical equivalence on their predicate.
+  \label{defn:OpenTransitions}
+  An \emph{open transition} over a
+  set 
+
+  \noindent
+  \begin{tabular}[b]{@{}p{0.86\columnwidth}c{}@{}}
+    of holes $J$ and a set of states $\mathcal{S}$ is a structure
+    of the form to the right,
+%
+    &
+%
+    %% \\[-2ex]	
+    %% \begin{mathpar}
+    \raisebox{1mm}[0pt]{
+      $\inferrule*[myfraction=\reddottedrule]
+      {	\beta_j^{j\in J}, \Pred, \Post}
+      {s \OTarrow {{\alpha}}s'}$
+      }
+    %% \end{mathpar}
+%
+    \\
+%
+    \multicolumn{2}{p{\columnwidth}}{%
+%
+    where $s, s'\in\mathcal{S}$;
+    $\beta_j\in\actions{\variables}$ is an action of the hole
+    $j$; $\alpha$ is the resulting global action; {\Pred} is a
+    predicate over the different variables of the terms, labels,
+    and states $\beta_j$, $s$, $\alpha$; and $\Post\in
+    \assigns{\variables}$ is a set of assignments that are the
+    effects of the transition.  Open transitions are identified
+    modulo logical equivalence on their predicate.
+%
+    }
+  \end{tabular}
 \end{definition}
 %\begin{definition}[Open transitions]
 %	\label{def:OpenTransitions}
@@ -1270,7 +1306,7 @@ Component \emph{behaviour} is defined by states %% ($\{\cstate{0},
 and transitions.
 The initial states
 \tstate{0} and \cstate{0}, and valuations $\val{0}{\NameTimer} = \{t
-\mapsto 0, z \mapsto \topinterval\}$
+\mapsto 0, z \mapsto \topinterval\}$,
 $\val{0}{\NameCtrl} =
 \{\mathit{zone} \mapsto [\mathrm{Min}, \mathrm{Max}]\}$ are shown by
 the incoming arrows $\goesto{\TimerInit[]} \tstate{0}$ and
@@ -1896,17 +1932,20 @@ be fused with $b_1$ to form an interaction enabled in the same state.
 %\addSB{%
 %
 \Thm{combining} implies that safe BIP systems can be designed
-\emph{compositionally}.  Indeed, it is sufficient to verify that
+\emph{compositionally}:  it is sufficient to verify that
 1)~the applied architectures do enforce their characteristic
-properties and 2)~that they are pairwise upwards compatible.  To
-a large extent, item~2, \ie verification of the upwards
-compatibility, can be carried out syntactically by analysing the
-structure of the connectors defining the interaction models:
-maximal progress is mostly relevant for connectors involving
-triggers; whenever a trigger port is not common to both
-architectures, upwards \emph{in}compatibility cannot arise.  The
+properties and 2)~they are pairwise upwards compatible.  To
+a large extent, %% item~2, \ie verification of the upwards
+%% compatibility,
+the latter
+can be carried out syntactically by analysing the
+structure of the connectors that define the interaction models.
+%% maximal progress is mostly relevant for connectors involving
+%% triggers; whenever a trigger port is not common to both
+%% architectures, upwards \emph{in}compatibility cannot arise.
+The
 next section is devoted to the encoding of architectures into
-pNets, which addresses item~1 by symbolic verification.
+pNets, addressing item~1 by symbolic verification.
 %
 %}
 
@@ -1950,7 +1989,7 @@ interaction model $\Gamma$ respectively.
 The encoding of a coordinator $C$ is a pLTS with: 1)~an
  initial state and an   
 $\init$ transition that initialises all the variables to those defined
-by the initial valuation $\val{0}{C}$ of $C$, 2)~an action algebra that matches the actions of the coordinator ports but adds, an additional boolean action parameter, and also, for each exported
+by the initial valuation $\val{0}{C}$ of $C$, 2)~an action algebra that matches the actions of the coordinator ports but adds, an additional Boolean action parameter, and also, for each exported
 variable $x$, a corresponding fresh input variable $?x'$ to allow updates during interactions, 3)~pLTS transitions that reflect the original transitions of
 $C$ with $\true$ as parameter and 4)~additional loop transitions marked by
 $\false$.
@@ -2032,7 +2071,7 @@ encoding of the interaction model.
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{FailureTimerPNET-v4}
-  \caption{The open pNET encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the Max Progress priority model}
+  \caption{The open pNet encoding the Failure Monitor architecture (\fig{schema:ArchFailure:BIP}) without the Max Progress priority model}
   \label{fig:FailureTimer:pNet}
 %% %
 %%   \noteSBin{The updated encoding exports more primed variables in the
@@ -2349,7 +2388,7 @@ Boolean guards and with update assignments.  In particular, we assume
 that the guards and update assignments are well-defined for any
 interaction allowed by the connector.  For example, the choice
 $\NameCtrl.\PortFail\ ?\ \NameCtrl.\mathit{zone} : \topinterval$ in
-the update assignement
+the update assignment
 $
 \NameTimer.\mathit{z} := \NameTimer.\mathit{z}
 \cap \bigl(
@@ -2369,10 +2408,10 @@ connector $x \in \gamma$.  Then,
 %\addSB{
 the interaction model defined by $\gamma$ is 
   $\Gamma = \setdef{(a,g,u)}{(x,g,u) \in \gamma, a \in \intsem{x}}$
-and the encoding of $\Gamma$ is
+and the set of synchronisation vectors encoding $\Gamma$ is
 %}
 $\nopri[\Gamma] \bydef{=}
-\setdef{\nopri[x,g,u]}{(x,g,u) \in \gamma}$, where $\nopri[x,g,u]$ is the synchronisation vector defined by
+\setdef{\nopri[x,g,u]}{(x,g,u) \in \gamma}$, with %% $\nopri[x,g,u]$ is the  defined by
 %
 \begin{multline}
   \label{eq:nopri:connector}
@@ -2396,7 +2435,7 @@ with $b_p^{p \in P_x}$ fresh Boolean variables, $\alpha$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
 \cru(P_A)$ the two mappings defined in \app{transformations} and
 illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
-the substitution that replaces in the expression that preceeds it
+the substitution that replaces in the expression that precedes it
 all occurrences of all $p$ by corresponding variables $b_p$.
 
 %\addSB{%
@@ -2535,7 +2574,7 @@ of architectures using our existing tool
 \cite{HMZ-FORTE2016QBMZ-AVOCS18} to compute the open automaton
 semantics of an open pNet. This tool computes open transitions from
 pLTS behaviours and synchronisation vectors of the pNet, then uses an
-SMT engine to check satisfiability of their predicates, minimizing the
+SMT engine to check satisfiability of their predicates, minimising the
 size of the resulting automaton.
 %% The encoding into the SMT language involves the definition of the
 %% action and data domains and operators, and the axiomatisation of
@@ -2614,7 +2653,7 @@ the properties listed in \app{properties}.
 
 \section{Related work}
 \label{secn:related}
-Previous works on pNets and BIP architectures have been mentioned at the beginning of the paper. We  review here the closest related works outside the scope of pNets and BIP architectures, with a particular focus on compositional and parameterized verification.
+%% Aside from previous work on pNets and BIP architectures mentioned in \secn{introduction}. We  review here the closest related works outside the scope of pNets and BIP architectures, with a particular focus on compositional and parameterized verification.
 
 %%A few tracks, pas r\'edig\'es...
 
@@ -2623,16 +2662,32 @@ Previous works on pNets and BIP architectures have been mentioned at the beginni
 
 %% infinite/parametrized model checking? == ERIC (listes ci-dessous)  + Simon
 
-Basic research on behaviour models and verification algorithms for
+The design methodology based on BIP architectures
+is inspired by the notion of design patterns introduced
+in~\cite{gamma94-patterns}.  It is radically different
+insofar as BIP architectures posses formal semantics; their
+composition is well defined and preserves their characteristic
+properties.  This is a relatively novel trend with few comparable
+works, whereof the most relevant is a theory formalising common
+architectural styles, such as \emph{publisher-subscriber} or
+\emph{blackboard}, proposed in \cite{Marmsoler14,Marmsoler18}.
+
+Although direct verification of BIP models is possible
+\cite{Lacra15,DFinder,DFinder2,atva15,wang2015verification}, none of
+these previous works address
+compositional verification of parameterised BIP systems with data
+and maximal progress priorities achieved in the present paper.
+
+From a broader perspective,
+basic research on behaviour models and verification algorithms for
 data-sensitive systems started in the nineties, with the seminal work
-of Hennesy, Lin, and their colleagues on value-passing systems with
+of Hennessy, Lin, and their colleagues on value-passing systems with
 assignments
-\cite{CONCUR::Lin1996,HennessyL1995:353,APSEC::Lin2001}. Later, many
+\cite{HennessyL1995:353,CONCUR::Lin1996,APSEC::Lin2001}. Later, many
 different works addressing various classes of infinite-state systems
-and/or paramaterized topologies have been published, using
+and/or parameterised topologies have been published, using
 combinations of approaches, often including predicate abstraction and
-SMT satisfiability (see
-e.g. \cite{BruniEtAl-Tiles-Concur2000,DBLP:conf/cade/GhilardiNRZ08,DBLP:journals/jsat/AlbertiGPRR12,CimattiEtAl-NUXMV-CAV2014,ChampionEtAl-Kind2-CAV2016}). With
+SMT satisfiability (\eg \cite{DBLP:journals/jsat/AlbertiGPRR12,BruniEtAl-Tiles-Concur2000,CimattiEtAl-NUXMV-CAV2014,ChampionEtAl-Kind2-CAV2016,DBLP:conf/cade/GhilardiNRZ08}). With
 respect to these, we use symbolic representations not only to get a
 finite representation of infinite spaces, but also to express the
 (data-sensitive) synchronisations with the environment, making our
@@ -2640,11 +2695,11 @@ models suitable for compositional verification.
 Among these works, several have shown the capacity of the SMT engines
 (either Z3 or Yikes) as servers for solving verification conditions of
 the algorithms, for large case-studies
-(e.g. \cite{DBLP:journals/corr/CimattiGMT13,DBLP:journals/corr/abs-1806-11459}). %% Also
+(\eg \cite{DBLP:journals/corr/abs-1806-11459,DBLP:journals/corr/CimattiGMT13}). %% Also
 
 %% SMT on an application not using component structure. is there a strong Z3 example == Eric
 
-As compositional proof of safety is difficult, some approaches rely on theorem proving to ensure the safety of component operations. Coqots and Pycots~\cite{BCDLM:CBSE2014} even manage to prove the safety of reconfiguration procedures which are known to be highly difficult to verify, and massively parametrised. The approach relies on a high expertise and significant efforts from the user. Here, we rely on automatic verification thanks to the SMT solver but we cannot prove the safety of the reconfiguration procedure.
+As compositional proof of safety is difficult, some approaches rely on theorem proving to ensure the safety of component operations. Coqots and Pycots~\cite{BCDLM:CBSE2014} even manage to prove the safety of reconfiguration procedures which are known to be highly difficult to verify, and massively parameterised. The approach relies on a high expertise and significant efforts from the user. Here, we rely on automatic verification thanks to the SMT solver but we cannot prove the safety of the reconfiguration procedure.
 
 
 
@@ -2655,22 +2710,22 @@ Compared to this  approach, we do not  deal with complex history-based specifica
 %Also the correctness of the composition is given by the properties of architectures which allows for more flexibility than well-formedness of traces.
 
 
-
-
-
-
 %****************************************************************
-
 %****************************************************************
 
 \section{Conclusion}
 \label{secn:conclusion}
 
-
 BIP architectures are composition tools that enforce safety properties; the composition of architectures entails the composition of the associated properties.
 We have extended architectures with data-sensitive interactions, and proved that this extension still guarantees the preservation of safety properties by architecture composition, under reasonable assumptions. This extends the original compositional methodology offered by BIP architectures. Then we use pNets as a semantic formalism to encode architectures with data. pNet is a low level coordination model for open systems, in which composition preserves bisimulation equivalences. pNet is equipped with tools computing its behavioural semantics in terms of symbolic automata, allowing model-checking and equivalence checking with algorithms relying on SMT engines.
 As a result, we obtain automatic and compositional guarantees of safety properties with data where compositionality is given by the BIP architectures, and pNet tools provide automatic verification of the properties of each architecture.
-%
+
+The translational approach allows us to benefit from the methods
+and tools developed separately in BIP and pNets communities,
+avoiding the additional effort of designing the corresponding
+tools in both contexts from scratch.  
+
+
 %The automatic checking of properties given by the pNet framework
 %
 %Discussion…:
@@ -3318,13 +3373,13 @@ limitations.
     $q_i \goesto{a \cap P_{C_i},\, g_{C_i},\, e_{C_i}} q_i'$
     is a transition in $C_i$, or\\
     $a \cap P_{C_i} = \emptyset$ and $q_i = q_i'$
-    (for covenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in item~\ref{aux1} below);
+    (for convenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in item~\ref{aux1} below);
   \item for $j \in J$,\\
     $a \cap P_{B_j} \neq \emptyset$ and
     $q_j \goesto{a \cap P_{B_j},\, g_{B_j},\, e_{B_j}} q_j'$
     is a transition in $B_j$, or\\
     $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$
-    (for covenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in item~\ref{aux1} below);
+    (for convenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in item~\ref{aux1} below);
   \item\label{ab:end}\label{aux1} $g' = g \land \bigwedge_{i \in I} g_{C_i} \land
     \bigwedge_{j \in J} g_{B_j} \land \varphi_\mu$ and
     $e' = e; e_{C_i}^{i \in I}, e_{B_j}^{j \in J}$, where    
@@ -3356,14 +3411,14 @@ limitations.
     is a transition in $C'$, or\\
     $a \cap P_{C'} = \emptyset$ and $q_i = q_i'$,
     for all $i \in [1,m]$
-    (for covenience, we put $g_{C'} = \true$ and $e_{C'} = \noop$ in
+    (for convenience, we put $g_{C'} = \true$ and $e_{C'} = \noop$ in
     item~\ref{aux2} below);
   \item for $j \in J$,\\
     $a \cap P_{B_j} \neq \emptyset$ and
     $q_j \goesto{a \cap P_{B_j}, g_{B_j}, e_{B_j}} q_j'$
     is a transition in $B_j$, or\\
     $a \cap P_{B_j} = \emptyset$ and $q_j = q_j'$
-    (for covenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in
+    (for convenience, we put $g_{B_j} = \true$ and $e_{B_j} = \noop$ in
     item~\ref{aux2} below);
   \item\label{aux2} $g' = g \land g_{C'} \land
     \bigwedge_{j \in J} g_{B_j} \land \varphi_\mu'$ and
@@ -3385,7 +3440,7 @@ limitations.
     $q_i \goesto{a \cap P_{C_i}, g_{C_i}, e_{C_i}} q_i'$
     is a transition in $C_i$, or\\
     $a \cap P_{C_i} = \emptyset$ and $q_i = q_i'$,
-    (for covenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in
+    (for convenience, we put $g_{C_i} = \true$ and $e_{C_i} = \noop$ in
     item~\ref{aux3} below);
   \item \label{a1b:end} \label{aux3} $g_{C'} = \bigwedge_{i \in I} g_{C_i}$ and
     $e_{C'} = e_{C_i}^{i \in I}$.
@@ -4261,7 +4316,7 @@ reset. This is because without priorities we can have an
 activity on the dangling ``fail'' port without synchronising with the
 others, even if they are available.
   
-This can be sloved by the version with the Max Progress encoding.
+This can be solved by the version with the Max Progress encoding.
 This modifies both the pLTS transitions, and the synchronisation
 vectors, as shown below:
  
