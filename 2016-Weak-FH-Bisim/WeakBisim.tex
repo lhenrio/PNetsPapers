@@ -3954,7 +3954,7 @@ $P\models{\openrule
 				{\Pred^{1a}_p},  
 				{\Post^{1a}_p}}
 			{\ostate{(s_{p l})^{l\in L\setminus L_Q}} \OTarrow {\tau}
-				\ostate{({s}_{(p+1) l})^{l\in L_Q}}}
+				\ostate{({s}_{(p+1) l})^{l\in L_Q\setminus L_Q}}}
 		}$~~and~~ $\ostate{(s_{p})_l^{l\in L_Q}} = \ostate{({s}_{(p+1) l})^{l\in L_Q}} $
 
 \item Similarly, we use the same process on states named $u$.
@@ -4186,19 +4186,17 @@ Q\models{\openrule
 		\gamma_{p j}^{j\in J_p},
 		 \Pred_p,  
 		\Post_p}
-	{\ostate{s_{p i}^{i\in L_p}} \OTWeakarrow {\alpha_p}
+	{\ostate{s_{p i}^{i\in L_Q}} \OTWeakarrow {\alpha_p}
 		\ostate{s_{(p+1) i}^{\, i\in L_Q}}}
 }%\]
 \end{mathpar}
 Let 
 \begin{mathpar}
-J_Q=\bigcup_{\begin{array}{l}
-p\in[0..n]
-\end{array}} J_{p}
-\text{\qquad and\qquad} 
-\Pred\,'=\Pred\land   \!\!\bigwedge_{p\in[0..n]}(\alpha_p=\beta_p\land \Pred_p)
+J_Q=\displaystyle{\bigcup_{p=0}^nJ_{p}}
+\qquad
+\Pred\,'=\Pred\land \bigwedge_{p=0}^{n}(\alpha_p=\beta_p\land \Pred_p)
 \\
-\forall j\in J_p,\,\gamma_j= \mathop{\dot{\bigcup}}_{p\in [0..n]} \gamma_{p j} 
+\forall j\in J_p,\,\gamma_j= \displaystyle{\mybigdotcup_{p=0}^n \gamma_{p j}}\text{\quad and\quad}
 \Post\,'=\Post\uplus\bigotimes_{p=0}^{n}
 		\Post_p 
 \end{mathpar}
@@ -4207,7 +4205,7 @@ Then, we have\\[-2ex]
 	\models
 	{\openrule
 		{
-			\gamma_j^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
 			\Pred\,',  \Post\,'
 			 }
 		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
@@ -4215,8 +4213,97 @@ Then, we have\\[-2ex]
 	}
 	\]
 \end{lemma}
-\TODO{proof}
+\TODO{Proof}
 
+\begin{proof} Suppose we have:
+\begin{mathpar}
+%\[
+P\models{\openrule
+	{
+		\gamma_j^{j\in J}, 
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
+		\ostate{s_i'^{\, i\in L}}}
+}
+\end{mathpar}
+By Lemma \ref{lem-rel-OT-WOT} this implies the following: \\			
+$ \forall i \in [0..n].\openrule
+    {
+       \set{\beta^1_i},\Pred^1_i,\Post^1_i   }
+         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
+\quad
+\openrule
+         {
+           \set{\beta^2},\Pred^2,\Post^2 }
+         {s_0^2 \OTarrow {\alpha} s_1^2} \in \mathcal{T}
+\quad \wedge\\
+\forall i \in [0..m].\openrule
+         {
+           \set{\beta^3_i},\Pred^3_i, \Post^3_i}
+         {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}$ 
+\\
+where for all $l\in L$:\\
+$s_l=s_{0 l} \wedge s_{(m_1+1) l}=t_l \wedge t'_l = u_{0 l} \wedge u_{(m_2+1) l}=s'_l$\\
+$\displaystyle{\gamma_j^{j\in J}=\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta^1_i}} \dotcup  \vis{\set{\beta^2}} \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta^3_i}}}\\
+\Pred=\bigwedge_{i=0}^{m_1}\!\big(\Pred^1_i\bigotimes_{j=0}^{i-1}\subst{\Post_j^1}\big)\land\Pred^2\bigotimes_{i=0}^{m_1}\subst{\Post_i^1}\land \bigwedge_{i=0}^{m_2}\!\Pred_i^3\big(\bigotimes_{j=0}^{i-1}\subst{\Post^3_j}\subst{\Post^2}  \bigotimes_{i=0}^{m_1}\subst{\Post_i^1}\big)\\
+\Post=\bigotimes_{i=0}^{m_2}\Post^3_i\subst{\Post^2}\bigotimes_{j=0}^{m_1}\subst{\Post^1_j}
+$\\
+
+Moreover, we have for all $p\in[0..n]$:
+
+\begin{mathpar}
+Q\models{\openrule
+	{
+		\gamma_{p j}^{j\in J_p},
+		 \Pred_p,  
+		\Post_p}
+	{\ostate{s_{p i}^{i\in L_Q}} \OTWeakarrow {\alpha_p}
+		\ostate{s_{(p+1) i}^{\, i\in L_Q}}}
+}		
+\end{mathpar}
+As well, by Lemma \ref{lem-rel-OT-WOT} this implies the following:\\
+$\forall k\! \in\! [0..m']\,\, Q\models{\openrule
+			{
+				(\beta^1_{kj})^{j\in J\cap\Holes(Q)}, {{\Pred_k^{1b}}},  
+				{{\Post_k^{1b}}}}
+				{\ostate{s_{kl}^{l\in L_Q}} \OTarrow {\tau}
+				\ostate{s_{(k+1)l}^{l\in L_Q}}}
+				}%\]
+,$ 
+$Q\models{\openrule
+			{
+				(\beta^2_j)^{j\in J\cap\Holes(Q)}, {{\Pred^{2b}}},  
+				{{\Post^{2b}}}}
+				{\ostate{s_{l}^{l\in L_Q}} \OTarrow {\alpha'_p}
+				\ostate{s_{l}'^{l\in L_Q}}}
+				}%\]
+$
+and
+$\forall k \in [0..n']\,\, Q\models{\openrule
+			{
+				(\beta^3_{kj})^{j\in J\cap\Holes(Q)}, {{\Pred_p^{3b}}},  
+				{{\Post_p^{3b}}}}
+				{\ostate{s_{kl}^{l\in L_Q}} \OTarrow {\tau}
+				\ostate{s_{(k+1)l}^{l\in L_Q}}}
+				}%\]
+$\\ 
+\TODO{Brouillon idee!}
+knowing that we have $j_0\in J$ and $\gamma_{j_0}=[\beta_0..\beta_n]$:
+
+\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\beta_j^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+			\Pred\land\Pred\,'\land \alpha'_p=\beta_{j_0},  
+			\Post\uplus \Post\,'}
+		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {\alpha}
+			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
+	}
+	\]
+\qed
+\end{proof}
 
 \TODO{prove the 3 theorems for composability of weak bisim or explain why the proof is similar to strong (thanks to the previous lemmas)}
 \newpage
