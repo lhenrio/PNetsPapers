@@ -144,9 +144,9 @@
 \makeatother
 
 %%\usepackage{hyperref}
-\usepackage{macrospNets}
 
 \input{XFIG/macros.tex}         % Definitions of macros used in XFig figures
+\usepackage{macrospNets}
 
 \def\AlgT{\mathcal{T}}
 \def\AlgE{\mathcal{E}}
@@ -163,6 +163,11 @@
 \newcommand{\eg}[1][\ ]{e.g.#1}
 \newcommand{\wrt}[1][\ ]{w.r.t.#1}
 \newcommand{\resp}[1][\ ]{resp.#1}
+\newcommand{\addspace}[1]{#1 }
+\newcommand{\nopri}[1][]{\ensuremath{\mathit{enc}%
+    \ifx#1\relax\else(#1)\fi}}
+\newcommand{\maxprog}[1][]{\ensuremath{\mathit{enc}_\mu%
+    \ifx#1\relax\else(#1)\fi}}
 
 \newcommand{\goesto}[2][]{\ensuremath{\xrightarrow[#1]{#2}}}
 \newcommand{\true}{\ensuremath{\mathit{true}}}
@@ -947,24 +952,25 @@ parametrised actions, but include no guard nor assignments.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} $OT$ over a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in
-	I}$ of LTSs, a
-	set $J$ of holes, %with sorts $Sort_j^{j\in J}$
+	An \emph{open transition} $OT$ over
+        % a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in I}$ of LTSs,
+        a set $J$ of holes, %with sorts $Sort_j^{j\in J}$
         and a set of states $\mathcal{S}$ is a structure of the form:	
 	\begin{mathpar}
 	\inferrule*[myfraction=\reddottedrule]
-	{\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
-		\{\xrightarrow{b_j}_j\}^{j\in J}, \Pred\,, \Post}
+	{%\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
+		\{\xrightarrow{\beta_j}_j\}^{j\in J}, \Pred\,, \Post}
 	{s \xrightarrow {\alpha}s'}\,,
 	\end{mathpar}
-	where $s, s'\in\mathcal{S}$, the $a_i, b_j, \alpha$ are
-        action expressions, $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is
-        a transition of the 
-	LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$, $b_j$
+	where $s, s'\in\mathcal{S}$, the $a_i, \beta_j, \alpha$ are
+        action expressions,
+        % $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the 
+	% LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$
+        $\beta_j$
         is an action of the hole $j$, and $\alpha$ is the resulting action
         of $OT$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
-        $b_j$, $s$, $\alpha$. \Post\ is a set of equations that  
+        $\beta_j$, $s$, $\alpha$. \Post\ is a set of equations that  
 	hold \emph{after the open transition}, represented as a
         substitution $\{x_k\gets e_k\}^{k\in K}$  
 	where $x_k$ are variables of $s'$ and $s'_i$, whereas $e_k$ are
@@ -975,14 +981,14 @@ parametrised actions, but include no guard nor assignments.
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
-	\langle \mathit{LTS}_i^{i\in I},J,\mathcal{S},s_0,\mathcal{T}\rangle$ where:
+	\langle J,\mathcal{S},s_0,\mathcal{T}\rangle$ where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
-		\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
+	%	\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
 		\item[$\bullet$]  $\mathcal{S}$ is a set of states and $s_0 \in \mathcal{S}$ the initial state,
 		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and, for each
 		$t\in \mathcal{T}$, there exist $I'$, $J'$ with $I'\subseteq I$, $J'
-		\subseteq J$, such that $t$ is an open transition over $LTS_i^{i\in I'}$, $J'$,
+		\subseteq J$, such that $t$ is an open transition over $J'$,
 		and  $\mathcal{S}$.
 		
 	\end{itemize}
@@ -1524,7 +1530,7 @@ the translation () is then decoded.
 
 \subsection{Result for the running example}
 \label{section:resultOA}
-
+\noteEM{This is the original example from the Avocs paper}
 For this example, the tool builds 184 open transitions, whereof 173
 are detected unsatisfiable by Z3.  The resulting open automaton, with
 3 reachable global states (out of the possible 6) and 11 open
@@ -1581,6 +1587,62 @@ $\PortReset$ will always be fired.
 %%   architecture, maybe one taken from the original study, and another
 %%   one involving the timer data (number of ticks ?)}
 
+\subsection{Extended version of the FailureTimer BIP Architecture}
+\label{section:resultTimerInterval}
+\noteEM{Here we have extended the FailureTimer architecture using time intervals,
+  that makes more interesting the timeout/reset temporal behavior}
+
+We present here an extended version of the FailureTimer BIP
+architecture, in which the timeout action can occur
+non-deterministicaly during some time interval. This behavior is more
+realistic, but ensuring safety is a bit more complicated, as it
+involves reasonning on the time intervals in the predicates of the
+open automaton.
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v4}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{fig:schema:ArchFailure:BIP}
+\end{figure}
+
+\ref{fig:schema:ArchFailure:BIP} shows components
+$\NameTimer$(imer) and $\NameCtrl$(ontrol), with interfaces
+$\btuple{
+  \{t, z\},
+  \{\PortTick, \PortCancel, \PortTOT\},
+  \bigl\{\!\PortTick \mapsto \{t, z\}\!\bigr\}
+}$,
+and
+$\btuple{
+  \{\mathit{zone}\},
+  \{\PortReset, \PortFail, \PortResume, \PortTOC\},
+  \bigl\{\!\PortFail \mapsto \{\mathit{zone}\}\!\bigr\}
+}$
+respectively.
+Variable $t$ is implicitly assumed to be an integer.  Variables $z$
+and $\mathit{zone}$ are  integer intervals of
+the form $[l,u]$.
+
+\TODO{refer to Research Report (not yet avaialble) or add an appendix,
+  for a full explanation of this example, 
+  and the translation from BIP to pNets}
+
+\ref{fig:FailureTimer:pNet} shows the encoding of the Failure Monitor
+architecture, including the encodings of the two coordinators, \ie
+$\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
+encoding in the figure is slightly optimised: some of the ports do not
+have an associated Boolean value, nor the additional loop transitions.
+We will explain this optimisation after we define the
+encoding of the interaction model.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET-v4}
+  \caption{The open pNet encoding the Failure Monitor architecture (\ref{fig:schema:ArchFailure:BIP}) without the Max Progress priority model}
+  \label{fig:FailureTimer:pNet}
+  \end{figure}
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
