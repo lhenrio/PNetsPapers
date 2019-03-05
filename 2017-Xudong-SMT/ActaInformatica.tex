@@ -1607,7 +1607,7 @@ open automaton.
   \label{fig:schema:ArchFailure:BIP}
 \end{figure}
 
-\ref{fig:schema:ArchFailure:BIP} shows components
+Figure \ref{fig:schema:ArchFailure:BIP} shows components
 $\NameTimer$(imer) and $\NameCtrl$(ontrol), with interfaces
 $\btuple{
   \{t, z\},
@@ -1629,20 +1629,60 @@ the form $[l,u]$.
   for a full explanation of this example, 
   and the translation from BIP to pNets}
 
-\ref{fig:FailureTimer:pNet} shows the encoding of the Failure Monitor
+The safety
+property \emph{``There is always a possibility to reset the system
+  after a single failure''} (\ie without
+  additional failures having to occur in the meantime) enforced by the
+  Failure Monitor architecture can be specified using CTL as
+    $\AG
+\bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
+  \PortReset}\bigr)$.  Additional properties are provided in \ref{RR}.
+
+
+Figure \ref{fig:FailureTimer:pNet} shows the encoding of the Failure Monitor
 architecture, including the encodings of the two coordinators, \ie
-$\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.  Notice that the
-encoding in the figure is slightly optimised: some of the ports do not
-have an associated Boolean value, nor the additional loop transitions.
-We will explain this optimisation after we define the
-encoding of the interaction model.
+$\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.
+
+
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET-v4}
   \caption{The open pNet encoding the Failure Monitor architecture (\ref{fig:schema:ArchFailure:BIP}) without the Max Progress priority model}
   \label{fig:FailureTimer:pNet}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\columnwidth]{TimerOADetailed}
+  \caption{The open Automaton of the Failure Monitor Architecture}
+  \label{fig:ArchFailure:OA}
+\end{figure}
+
+Figure \ref{fig:ArchFailure:OA} shows the open automaton built by our
+algorithm. For reasons of readability, we did not show the full
+details of the open transitions on this figure. Below we list the
+first 3 of them (full details available in \ref{RR}). 
+This automaton has 12 transitions, including those encoding various
+possible firing of some interactions (e.g. OT 2 and 3 for
+{\PortFail}). It looks like the rough behaviour is
+reasonable, although a detailed study shows that the property stated
+above does not hold, because of the
+{\PortFail} loops on states $11$ and $12$. This is because we did not
+use the maximal progress assumption here. If we do, we get the
+corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
+(\app{full-results}), in which $OT_7$ has disappeared, and $OT_2$ and
+$OT_{10}$ have been restricted to $b0=\false$.
+
+  \begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{TimerOAMaxProgress}
+  \caption{The open Automaton of the Failure Monitor Architecture,
+    with Maximal Progress}
+  \label{fig:ArchFailure:OA-MaxProgress}
   \end{figure}
+
+  \TODO{Eric: Explain}
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
