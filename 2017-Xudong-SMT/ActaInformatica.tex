@@ -1095,6 +1095,13 @@ The semantics of pNet in term of open automata has been defined in
 \cite{henrio:Forte2016}, in the form of 2 structural rules, one for
 pLTSs, one for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
 
+\TODO{the proof of the finiteness theorem refers to SOS rules Tr1 and
+  Tr2. So maybe we must include (and explain) these here. One problem
+  is that these rules have been modified/improved with each new
+  publication of pNets papers, so we have to decide which version we
+  use here}
+
+  
 In \cite{henrio:Forte2016} we also proved:
 \begin{theorem}[Finiteness]
   \label{Th:finiteness}
@@ -1108,6 +1115,22 @@ $\mathcal{T}$ with finitely many states and transitions.
   Remark that all the elements of such pNets and open automata being
 symbolic, they can represent many classes of unbounded systems. 
 
+\begin{proof}
+  \noteEM{I tentatively copied the proof here, from RR-8898. We should
+    check if it is sufficient with this version of the algorithm, or
+    if it can be make more precise (some added analysis of the
+    behavior of matching/combining/filetring ?)}
+  The possible set of states of the open-automaton is the cartesian
+  product of the states of its leaves $pLTS_i^{i\in L}$, that is finite by
+  hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
+  iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
+  number of applications of rules Tr2 on the structure of the
+  pNet tree, with a finite number of synchronisation vectors applying
+  at each node the number of global open transition is finite. Similarily rule Tr1 is 
+  applied finitely if the number
+  of transitions of each pLTS is finite. So we get finitely many deduction trees, and
+  open-transitions which ensures that each internal loop of Algorithm 1 terminates.
+  \end{proof}
 
 \section{Generation of Open Automata}
 \label{section:implementation}
@@ -1181,8 +1204,6 @@ into SMTlib assertions, and checked for satisfiability.
 The final open automaton includes all satisfiable OTs, and the set of
 reachable global states.  \TODO{Make this more precise : sat and reachability is computed only at the end...}
 
-\subsection{Computing reachable state space on the fly}
-\TODO{add a high level description of the new strategy, discuss decidability/approximation of the SAT checking, express some ``minimality'' property}
 
 %
 %% Unsatisfiable
@@ -1345,7 +1366,10 @@ is the disjoint union
 of sets of state variables of the individual pLTS states constituting this
 global state.
 %There are some assignment on the variables in each of states of the pLTS (state variables), or just as global states of it (global variables). There is usually not only one assignment for a state variable, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, 
-
+\TODO{these assignment sets collect potential assignments from all OTs
+  in the generated automaton. If we minimize the generated state
+  space, we will get less assignements, and potentialy also get better
+  minimization... }
 
 %% \QIN{
 %% The list we used contains several triples <$v$, $S$, $AssignRH$> to
@@ -1392,6 +1416,8 @@ may depend on the specific theory of the action algebra datatypes.
 The ``Modulo Theory'' part of SMT solvers is important here, so that
 the solver can use specific properties of each action algebra.
 
+\subsection{Computing reachable state space on the fly}
+\TODO{add a high level description of the new strategy, discuss decidability/approximation of the SAT checking, express some ``minimality'' property}
 
 \subsection{Translation to SMTlib}
 
@@ -1645,7 +1671,7 @@ property \emph{``There is always a possibility to reset the system
   Failure Monitor architecture can be specified using CTL as
     $\AG
 \bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
-  \PortReset}\bigr)$.  Additional properties are provided in \ref{RR}.
+  \PortReset}\bigr)$.  Additional properties are provided in \ref{TimerRR}.
 
 
 Figure \ref{fig:FailureTimer:pNet} shows the encoding of the Failure Monitor
@@ -1671,7 +1697,7 @@ $\nopri[\NameTimer]$ and $\nopri[\NameCtrl]$.
 Figure \ref{fig:ArchFailure:OA} shows the open automaton built by our
 algorithm. For reasons of readability, we did not show the full
 details of the open transitions on this figure. Below we list the
-first 3 of them (full details available in \ref{RR}). 
+first 3 of them (full details available in \ref{TimerRR}). 
 This automaton has 12 transitions, including those encoding various
 possible firing of some interactions (e.g. OT 2 and 3 for
 {\PortFail}). It looks like the rough behaviour is
