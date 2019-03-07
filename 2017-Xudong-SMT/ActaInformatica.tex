@@ -1165,7 +1165,7 @@ this algorithm terminates.
   \caption{Open Automaton Generation}
   \label{alg1}
 \begin{algorithmic}[1]
-\Require A pNet $P$ (cannot be a hole)
+\Require A pNet $P$ (can be a pLTS, but not a hole)
         %\qquad \hl{\textbackslash\textbackslash~SB: was `` pn ''}
 \State Initialize sets $U=\{\mathit{InitState}(P)\}$ and $E=\emptyset$,
 for unexplored and explored global states, respectively; $L=\emptyset$ for the resulting OTs;
@@ -1173,17 +1173,15 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 	\State Choose $S$ in $U$; remove $S$ from $U$, add $S$ to $E$;
         %\qquad \hl{\textbackslash\textbackslash~SB: was `` Choose $S$ in $U$ ''}
 	\State $\mathit{OTs} = \mathit{MakeTransitions}(P, S)$;
-%%        \State Store $\mathit{OT}$ in $L$; 
 	\For {each $\mathit{OT} \in \mathit{OTs}$}
-        Check satisfiability of $\mathit{OT}$ using the SMT solver;
-        \IfThen {$SAT(\mathit{OT})$}
-                {\State \{Add $\mathit{OT}$ to $L$;
-                  \State Let $S'$ be the target global state of $\mathit{OT}$
-	          \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
-                  \}}
-	\EndFor
+          \State Add $\mathit{OT}$ to $L$;
+          \State Let $S'$ be the target state of $\mathit{OT}$
+          Add $S'$ to the unexplored states if necessary:
+	  \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
+	  \EndFor
 \EndWhile
-%%\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
+\State \ERIC{Prune the unsatisfiable open transitions in $L$ using the SMT
+solver; only keep reachable global states;}
 \State \Return $\mathit{OA}=(\mathit{InitState}(P),L)$;
 
 \end{algorithmic}  
@@ -1194,6 +1192,14 @@ transitions. Its main loop is a classical residual algorithm: starting
 from the initial global state, it picks a state in an unexplored set, and
 computes all possible OTs, adding their target states in the
 unexplored set, until this set is empty.
+
+\ERIC{Before the SAT checking step, it may contain symbolic transitions that
+do not have valid ground instanciations. This is not logicaly
+incorrect, but is naturaly not an optimal representation. So we prune
+these UNSAT transitions: at the root of the pNet, the predicate of each OT is translated
+into SMTlib assertions, and checked for satisfiability.
+The final open automaton includes all satisfiable OTs, and the set of
+reachable global states.}
 %By construction, due to the
 %satisfiability test in line 6, it only produces the set of states reachable
 %through a sequence of satisfiable open transitions.
@@ -1212,17 +1218,6 @@ matching, to generate the open transitions in a hierarchical manner,
 as shown in Alg.~\ref{alg2}. This method directly manages the
 holes of the node, so \emph{MakeTransitions} is never called on a hole.
 
-At the root of the pNet, the predicate of each OT is translated
-into SMTlib assertions, and checked for satisfiability.
-%
-The final open automaton includes all satisfiable OTs, and the set of
-reachable global states.  \TODO{Make this more precise : sat and reachability is computed only at the end...}
-
-
-%
-%% Unsatisfiable
-%% OTs are pruned, and the final open automaton is computed as the set of
-%% global states reachable by satisfiable OTs. 
 
 %
 %% \noteInSB{Algorithm~\ref{alg2}, as presented below is not
@@ -1431,7 +1426,68 @@ The ``Modulo Theory'' part of SMT solvers is important here, so that
 the solver can use specific properties of each action algebra.
 
 \subsection{Computing reachable state space on the fly}
-\TODO{add a high level description of the new strategy, discuss decidability/approximation of the SAT checking, express some ``minimality'' property}
+\TODO{add a high level description of the new strategy, discuss
+  decidability/approximation of the SAT checking, express some
+  ``minimality'' property}
+
+The basic algorithm from the previous section potentialy explores some
+areas of the global state-space that will not be reachable after
+checking the OTs' predicates for satisfiability. Incorporating the
+satisfiability check inside the residual algorithm will definitely
+save some of these useless computation. More precisely, it will still
+create, and submit to Z3, the OTs at the ``border'' of the state-space, but
+not the transitions issued from non-reachable global states.
+
+\ERIC{But there is more to this. As mentionned above, we collect all
+possible (symbolic) assignments of state variables, in the
+computed open automaton. By avoiding building the OTs coming from
+unreachable states, we also avoid adding the corresponding assignments
+to the variables of their target states. The set of possible
+assignments is an over approximation of possible values of the
+variables of such state, so narrowing it means we get a better
+approximation, and potentialy more informations, that can be used to
+the SAT check of subsequent transitions.}
+\TODO{Beware, I think this is dangerous... Xudong, do we really use
+  assignment information in SAT checking ? In the ``smart'' version, I
+  think we must NOT use it, because we do not yet have collected all
+  possible assignments.}
+
+Algorithm~\ref{alg3} implement this new stategy: ...
+
+\begin{algorithm}[h]
+  \caption{``Smart'' Reachable Open Automaton Generation}
+  \label{alg3}
+\begin{algorithmic}[1]
+\Require A pNet $P$ (cannot be a hole)
+        %\qquad \hl{\textbackslash\textbackslash~SB: was `` pn ''}
+\State Initialize sets $U=\{\mathit{InitState}(P)\}$ and $E=\emptyset$,
+for unexplored and explored global states, respectively; $L=\emptyset$ for the resulting OTs;
+\While{!$\mathit{isEmpty}(U)$}
+	\State Choose $S$ in $U$; remove $S$ from $U$, add $S$ to $E$;
+        %\qquad \hl{\textbackslash\textbackslash~SB: was `` Choose $S$ in $U$ ''}
+	\State $\mathit{OTs} = \mathit{MakeTransitions}(P, S)$;
+%%        \State Store $\mathit{OT}$ in $L$; 
+	\For {each $\mathit{OT} \in \mathit{OTs}$}
+        Check satisfiability of $\mathit{OT}$ using the SMT solver;
+        \IfThen {$SAT(\mathit{OT})$}
+                {\State \{Add $\mathit{OT}$ to $L$;
+                  \State Let $S'$ be the target global state of $\mathit{OT}$
+	          \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
+                  \}}
+	\EndFor
+\EndWhile
+%%\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
+\State \Return $\mathit{OA}=(\mathit{InitState}(P),L)$;
+
+\end{algorithmic}  
+\end{algorithm}
+
+\TODO{Candidate theorems:
+  - All reachable states from algorithm 1 are kept by Algorithm 3\\
+  - Algorithm 3 computes an open automaton that is minimal with
+  respect of SAT checking decidability.\\
+  Of course we have to define this notion of minimality, that may be a
+  little tricky}
 
 \subsection{Translation to SMTlib}
 
