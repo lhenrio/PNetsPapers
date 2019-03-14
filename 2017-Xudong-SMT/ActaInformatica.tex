@@ -1576,8 +1576,6 @@ the translation () is then decoded.
 \label{section:BIParchitectures}
 \label{section:examples}
 
-\TODO{use a simpler running example (e.g. Lotos Enable operator ?), and move the BIP example to a dedicated section at the end}
-
 As a running example we use the Failure Monitor architecture from the
 CubETH nanosatellite on-board software
 case-study~\cite{CubETH-case-study} realised using BIP.
@@ -1585,20 +1583,13 @@ The architecture-based design process in BIP takes as input a set of
 components providing basic functionality of the system and a set of
 temporal properties that must be enforced in the final system.  For
 each property, a corresponding architecture is identified
-%\,\footnote{%
-%
-%  The current approach relies on taxonomies of predefined
-%  architectures.  Future work may include automatic synthesis of
-%  architectures from, \eg CTL~\cite{BaierKatoen2008} formulae.
-%
-  %}
-  and applied to the model, thereby potentially introducing additional
+and applied to the model, thereby potentially introducing additional
 coordinator components and modifying the connectors that define
 synchronisation patterns among ports of components.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.8\columnwidth]{XFIG/BIPspec-ArchFailureTimerMax-v2}
+  \includegraphics[width=\columnwidth]{ActaXFIG/BIPspec-ArchFailureTimer-v2-1a}
   \caption{The BIP specification of the Failure Monitor architecture}
   \label{schema:ArchFailure:BIP}
 \end{figure}
@@ -1608,21 +1599,20 @@ Failure Monitor architecture used in~\cite{CubETH-case-study}.
 Contrary to standard BIP models, architectures comprise one or several
 \emph{operand} components, whereof only the set of \emph{ports} is
 given.  Here, the operand component is $\NameOprnd$ and its interface
-consists of the ports $\PortFinish$, $\PortResume$ and $\PortFail$.
+consists of the ports $\PortResume$ and $\PortFail$.
 The two \emph{coordinator} components\mdash $\NameCtrl$ and
 $\NameTimer$\mdash are standard BIP components insofar as they also
 have their \emph{behaviour} specified by finite automata extended with
 local data variables.  Transitions of these automata are labelled with
 the ports of the corresponding components, Boolean guards and update
 functions on local variables.  For instance the loop transition
-$\tstate{1} \goesto{\PortTick, \GuardTick[], \TimerUpd[]} \tstate{1}$
+$t_1 \goesto{\PortTick, [t < Max], t:=t+1} t_1$
 in the $\NameTimer$ component is labeled by the port $\PortTick$, it
 can be fired only when the current value of the local variable $t$ is
-greater than $0$.  Upon firing, this transition decrements the value
+lower than $Max$.  Upon firing, this transition increments the value
 of $t$ by $1$.  When omitted, the default guard (\resp update
 function) is the constant predicate $\true$ (\resp the $\mathit{skip}$
-operator).  The constant $\mathrm{Max}$, in $\tstate{0}
-\goesto{\PortStart, \TimerInit[]} \tstate{1}$, is a parameter of the
+operator).  The constant $\mathrm{Max}$ above, is a parameter of the
 architecture.
 
 Connectors are hierarchical, tree-like structures with component ports
@@ -1639,12 +1629,12 @@ If at least one of the sub-connectors is a trigger, then any
 interaction consisting of contributions of any set of sub-connectors,
 \emph{involving at least one of the triggers}, can be executed.
 %
-For instance, the two ports $\NameTimer.\PortStart$ and
+For instance, the two ports $\NameTimer.start$ and
 $\NameCtrl.\PortFail$ are always synchronised, since they belong to
 the same binary sub-connector, where they are both synchrons.  In
-particular, this means that whenever the transition $\cstate{0}
-\goesto{\PortFail} \cstate{1}$ is fired, so is the transition
-$\tstate{0} \goesto{\PortStart, \TimerInit[]} \tstate{1}$,
+particular, this means that whenever the transition 
+$c_0 \goesto{\PortFail} c_1$ is fired, so is the transition
+$t_0 \goesto{\PortStart, t:=0} t_1$,
 initialising the timer.  The binary connector $\NameTimer.\PortStart
 \bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameCtrl.\PortFail$ is a
 sub-connector of a hierarchical connector, where the port
@@ -1656,14 +1646,15 @@ interaction.  The composition semantics of BIP systems consists in
 firing exactly one interaction, enabled through at least one of the
 top-level connectors, at each execution round.
 
-Finally, \emph{priorities}\mdash defined by a strict partial order on
-the set of possible interactions\mdash narrow the choice among the
-enabled interactions at any given round.  The default priority is the
-so-called \emph{maximal progress}, whereby among any two interactions
-$a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
-For example, the port $\NameOprnd.\PortFail$ will never fire alone in
-a global state, where both $\NameTimer.\PortStart$ and
-$\NameCtrl.\PortFail$ are enabled.
+%% Finally, \emph{priorities}\mdash defined by a strict partial order on
+%% the set of possible interactions\mdash narrow the choice among the
+%% enabled interactions at any given round.  The default priority is the
+%% so-called \emph{maximal progress}, whereby among any two interactions
+%% $a \subset b$ (as sets of ports), $b$ has higher priority than $a$.
+%% For example, the port $\NameOprnd.\PortFail$ will never fire alone in
+%% a global state, where both $\NameTimer.\PortStart$ and
+%% $\NameCtrl.\PortFail$ are enabled.
+
 %
 %% Adding priorities $\NameOprnd.\PortFinish < \NameCtrl.\PortReset$ and
 %% $\NameOprnd.\PortFinish < \NameOprnd.\PortResume$, ensures that, after
@@ -1678,7 +1669,7 @@ units (more details in Sect.~\ref{section:resultOA}).
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.9\columnwidth]{XFIG/FailureTimerPNET}
+  \includegraphics[width=0.9\columnwidth]{ActaXFIG/FailureTimerPNET-v2-1a}
   \caption{pNet encoding of the Failure Monitor architecture}
   \label{schema:ArchFailure:pNet}
 \end{figure}
@@ -1694,9 +1685,9 @@ involving triggers, we 1)~in the pLTS encoding the coordinator
 components, add loop transitions to ensure that all ports involved in
 such connectors are enabled in all states, 2)~associate a Boolean
 value to each of these ports: the original transitions carry the value
-$\true$ (\eg $\cstate{0} \goesto{\PortFail(\true)} \cstate{1}$), the
-added loops carry the value $\false$ (\eg $\cstate{2}
-\goesto{\PortFail(\false)} \cstate{2}$), 3)~add to the corresponding
+$\true$ (\eg $c_0 \goesto{\PortFail(\true)} c_1$), the
+added loops carry the value $\false$ (\eg $c_2
+\goesto{\PortFail(\false)} c_2$), 3)~add to the corresponding
 synchronisation vectors the Boolean predicate encoding the connector
 structure.  For example, $SV0$ encodes the connector discussed above:
 the predicate $(b1=b2) \land (b1\lor b2 \Rightarrow b0)$ means that the
@@ -1706,33 +1697,30 @@ $\NameOprnd.\PortFail$ must fire also ($b1 \lor b2 \Rightarrow b0$).
 This encoding can be systematically obtained for any hierarchical BIP
 connector~\cite{BliSif10-causal-fmsd}.
 %
-Although, for the sake of brevity, we omit priorities from the
+\noteEM{Decide later if this is still useful}Although, for the sake of brevity, we omit priorities from the
 encoding, this can be easily achieved, by introducing additional
 Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 
 
 
-\paragraph{Variations on the FailureTimer example}
+\paragraph{Computed open automaton}
 
-
-\TODO{This is the original example from the Avocs paper, connectors slightly adapted so that it can be composed. Then Max Progress may be required to ensure properties}
-
-For this example, the tool builds 184 open transitions, whereof 173
+For this example, the tool (using Algorithm 1) builds 218 open transitions, whereof 206
 are detected unsatisfiable by Z3.  The resulting open automaton, with
-3 reachable global states (out of the possible 6) and 11 open
-transitions, is shown in Fig.~\ref{schema:resultOA}.
+4 reachable global states (out of the possible 6) and 12 open
+transitions, is shown in Fig.~\ref{schema:resultOA1}.
 
 \begin{figure}[t]
-  \centerline{\includegraphics[width=12cm]{XFIG/FailureTimerOA}}
+  \centerline{\includegraphics[width=12cm]{ActaXFIG/FailureTimerOA-v2-1a}}
   \caption{Open Automaton for the Failure Monitor architecture}
-  \label{schema:resultOA}
+  \label{schema:resultOA1}
 \end{figure}
 
-To improve the readability of this figure, we used the following conventions:
-we omit the transitions of the two pLTS, and the set of ``working''
-holes; and we directly write the resulting action as first element of
-each OT, rather than including it as an equality inside the
-predicate.
+%% To improve the readability of this figure, we used the following conventions:
+%% we omit the transitions of the two pLTS, and the set of ``working''
+%% holes; and we directly write the resulting action as first element of
+%% each OT, rather than including it as an equality inside the
+%% predicate.
 %
 %Notice, however that the loop transitions
 %$\underline{\mathit{resume}}$ in states $\ostate{s0,t0}$ and
@@ -1782,7 +1770,9 @@ property \emph{``There is always a possibility to reset the system
 %%   architecture, maybe one taken from the original study, and another
 %%   one involving the timer data (number of ticks ?)}
 
+
 \subsection{Composing 2 FailureTimer BIP Architecture}
+\noteInEM{Modifications stopped here}
 \label{section:resultTimerInterval}
 \TODO{Enhanced FailureTimer, 2 instances composed, with duplicated control and Timer}
 
