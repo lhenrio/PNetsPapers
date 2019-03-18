@@ -1776,77 +1776,39 @@ property \emph{``There is always a possibility to reset the system
 \label{section:resultTimerInterval}
 \TODO{Enhanced FailureTimer, 2 instances composed, with duplicated control and Timer}
 
+In the conception of the Nano satellite Software \cite[], the Failure
+Timer architecture was used to control several processes
+communicating on the common bus. Timeout signals (``$ask$''), resets,
+and the passing of time ($tick$) were synchronised in the global
+system.
+
+In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
+of two FailureTimer architectures, with their respective controlled
+processes.
 
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.9\columnwidth]{ActaXFIG/FailureTimerPNET-v2-2}
-  \caption{The open pNet encoding the Failure Monitor architecture (\ref{fig:schema:ArchFailure:BIP})}
-  \label{fig:FailureTimer:pNet}
+  \includegraphics[width=\columnwidth]{ActaXFIG/BIPspec-DoubleArchFailureTimer-v2-2}
+  \caption{The BIP specification of the Failure Monitor architecture}
+  \label{schema:ArchFailure:BIP:Double}
 \end{figure}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.9\columnwidth]{XFIG/TimerOADetailed}
-  \caption{The open Automaton of the Failure Monitor Architecture}
-  \label{fig:ArchFailure:OA}
-\end{figure}
+%% \begin{figure}[t]
+%%   \centering
+%%   \includegraphics[width=0.9\columnwidth]{ActaXFIG/DoubleFailureTimerPNET-v2-2}
+%%   \caption{The open pNet encoding the Failure Monitor architecture (\ref{fig:schema:ArchFailure:BIP})}
+%%   \label{fig:FailureTimer:pNet}
+%% \end{figure}
 
-Figure \ref{fig:ArchFailure:OA} shows the open automaton built by our
-algorithm. For reasons of readability, we did not show the full
-details of the open transitions on this figure. Below we list the
-first 3 of them (full details available in \ref{TimerRR}). 
-This automaton has 12 transitions, including those encoding various
-possible firing of some interactions (e.g. OT 2 and 3 for
-{\PortFail}). It looks like the rough behaviour is
-reasonable, although a detailed study shows that the property stated
-above does not hold, because of the
-{\PortFail} loops on states $11$ and $12$. This is because we did not
-use the maximal progress assumption here. If we do, we get the
-corrected behaviour in Figure \ref{fig:ArchFailure:OA-MaxProgress}, in
-which $OT_7$ has disappeared, and $OT_2$ and 
-$OT_{10}$ have been restricted to $b0=\false$.
-
-\bigskip
-\noindent
-$  OT_1  = \openrule
-{\emptyset, \{t:=0, z:=TopInt, zone:=[minZone,maxZone]\} }
-{\ostate{00} \OTarrow{init} \ostate{11}}
-$
-
-\medskip    
-\noindent
-$  OT_2  = \openrule
-{\{B\mapsto fail(b0)\},\\
-  t<GetMax(z) \land b1=false \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
-  \{z:=z1\} }
-{\ostate{11} \OTarrow{fail} \ostate{11}}
-$
-\medskip
-  
-\noindent
-  $  OT_3  = \openrule
-  {\{B\mapsto fail(b0)\},\\
-    t<GetMax(z) \land b1=true \land b1=>b0 \land z1= (z \cap (b1?zone;TopInt)+t),\\
-    \{z:=z1\} }
-  {\ostate{11} \OTarrow{fail} \ostate{12}}
-  $
-  \medskip
+%% \begin{figure}[t]
+%%   \centering
+%%   \includegraphics[width=0.9\columnwidth]{XFIG/DoubleTimerOA-v2-2}
+%%   \caption{The open Automaton of the Failure Monitor Architecture}
+%%   \label{fig:ArchFailure:OA}
+%% \end{figure}
 
 
-  \begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{XFIG/TimerOAMaxProgress}
-  \caption{The open Automaton of the Failure Monitor Architecture,
-    with Maximal Progress}
-  \label{fig:ArchFailure:OA-MaxProgress}
-  \end{figure}
-
-  \TODO{Eric: Explain}
-\begin{itemize}
-\item $OT_2$ and $OT_{10}$ have changed because $b0=true$ is no longer possible
-\item $OT_7$ has disappeared because it is now unsat.
-\end{itemize}
 
 
 \subsection{Benefits from the Smart algorithm}
@@ -1888,31 +1850,27 @@ In each cell of the following table, we display the number of OTs whose predicat
                 844 ms  
 		\\\hline\specialrule{0em}{1pt}{1pt}
 		FailureTimer    			&
-                12/235 OTs           &
-                12/180 OTs
+                12/364 OTs           &
+                12/167 OTs
                 \\\specialrule{0em}{1pt}{1pt} 
 
-                (no Max Progress)&
-                1253 UNSAT           &
-                812 UNSAT
-                \\\specialrule{0em}{1pt}{1pt}
-		&
-                1253 ms 				&
-                812 ms  
+  		&
+                1080 ms 				&
+                563 ms  
 		\\\hline\specialrule{0em}{1pt}{1pt}
 		FailureTimer X 2    			&
-                37/3136 OTs           &
-                37/2416 OTs
+                25/8964 OTs           &
+                25/1255 OTs
                 \\\specialrule{0em}{1pt}{1pt} 
 
 		&
-                8923 ms 				&
-                6798 ms  
+                18088 ms 				&
+                3266 ms  
 
 		\\\hline
 	\end{tabular}
 
-        This shows a significant benefit of the ``smart'' strategy, in the considered use-cases, between 30 to 60\% gain depending on the examples.
+        This shows a significant benefit of the ``smart'' strategy, in the considered use-cases, between 30 to 80\% gain depending on the examples.
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
