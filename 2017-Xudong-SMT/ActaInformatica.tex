@@ -1132,6 +1132,8 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 	  \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
 	  \EndFor
 \EndWhile
+\State \QIN{\texttt{filterUnsatTransition}(L)}
+\State \QIN{\texttt{filterNoPrecursor}(L)}
 \State \TODO{Xudong:Prune the unsatisfiable open transitions in $L$ using the SMT
   solver;
    and add a call to ``compute the reachable sub-automaton'';}
@@ -1158,6 +1160,9 @@ the final open automaton.}
 %satisfiability test in line 6, it only produces the set of states reachable
 %through a sequence of satisfiable open transitions.
 
+\QIN{The function \texttt{filterUnsatTransition}() realizes exactly what described above, completing the open transitions pruning work.}
+
+\QIN{The function \texttt{filterNoPrecursor}() detects the unreachable states which has no precursor states in the pruned automaton and removes them.}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
@@ -1315,15 +1320,19 @@ satisfiability check in the SMT engine.
 
 In a pLTS, there may be several incoming transitions 
 that assign potentially different (symbolic) values to a state variable.
-To handle such cases, the algorithm manages, for each pLTS state, a
-list of expressions collected from the assignments of each state
-variable. %% $v$.
+To handle such cases, the algorithm manages a
+list of assignment expressions for each pLTS state. 
+\QIN{Every time the MakeTransitions
+algorithm is applied on a pLTS, it collects the expressions from the $Post$ in each transition.
+As there is no assignments collecting work on a pNet node, it is not shown in Algorithm~\ref{alg2}.}
+%% $v$.
 %% The list we used contains triples <$v$, $S$, $AssignRH$> 
 %% where $v$ is the variable in pLTS, $S$ is its owner state and
 %% $AssignRH$ is a list of expressions over other variables in the right
 %% hand side of assignments of $v$.
 % As a pragmatic extension to the formal definition, we also manage
 % ``global variables'', defined in all states of the pLTS.
+
 For a global state in the open automaton, the set of state
 variables (which may be used in an outgoing transition) %% will simply be
 is the disjoint union
