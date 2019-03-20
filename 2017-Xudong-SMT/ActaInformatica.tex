@@ -831,12 +831,12 @@ I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
 \end{itemize}
 \end{definition}
 
-In Fig.~\ref{schema:EnableEncodings}, we show examples of these
-constructs, with two pLTSs, one hole and one pNet node encoding our running example.
+In Figures~\ref{schema:enable-pnets},\ref{schema:enable-composed}, we show
+examples of these constructs, with two pLTSs, one hole and one pNet
+node encoding our running example. 
 
 \subsection{Example}
 \label{section:example}
-\TODO{Taken from \cite[Forte]}
 
 \begin{figure}[t]
 \begin{minipage}{6.1cm}
@@ -877,7 +877,7 @@ constructs, with two pLTSs, one hole and one pNet node encoding our running exam
 	state-variable $s_0$, with values in $\{0,1\}$.
 
         In this example we use \emph{synchronised
-          actions}, to express actions that cannot be further synchronised, like the
+          actions}, to express actions that cannot be further synchronised, likesimilar to the
         $\tau$ silent action of CCS. We denote them as any action expression with the text
         underlined, as e.g. $\underline{\delta(x_2)}$. Such
         synchronised actions do not play any special role for defining
@@ -1132,12 +1132,9 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 	  \IfThen{($S' \not\in U \cup E$)}{Add $S'$ into $U$;}
 	  \EndFor
 \EndWhile
-\State \QIN{\texttt{filterUnsatTransition}(L)}
-\State \QIN{\texttt{filterNoPrecursor}(L)}
-\State \TODO{Xudong:Prune the unsatisfiable open transitions in $L$ using the SMT
-  solver;
-   and add a call to ``compute the reachable sub-automaton'';}
-\State \Return $\mathit{OA}=(\mathit{InitState}(P),L)$;
+\State \QIN{$\mathit{L1}$ = \texttt{filterUnsatTransitions}($\mathit{L,Assignements}$)}
+\State \QIN{$\mathit{OA}$ = \texttt{makeReachableSubAutomaton}($\mathit{InitState}(P)$,$\mathit{L1}$)}
+\State \Return $\mathit{OA}$;
 
 \end{algorithmic}  
 \end{algorithm}
@@ -1153,16 +1150,9 @@ do not have valid ground instanciations. This is not logicaly
 incorrect, but is naturaly not an optimal representation. So we prune
 these UNSAT transitions: at the end of the open automaton generation,
 the predicate of each OT is translated 
-into SMTlib assertions, and checked for satisfiability.\\
+into SMTlib assertions, and checked for satisfiability (function \texttt{filterUnsatTransitions}).\\
 Then we compute the set of reachable transitions and states to build
 the final open automaton.}
-%By construction, due to the
-%satisfiability test in line 6, it only produces the set of states reachable
-%through a sequence of satisfiable open transitions.
-
-\QIN{The function \texttt{filterUnsatTransition}() realizes exactly what described above, completing the open transitions pruning work.}
-
-\QIN{The function \texttt{filterNoPrecursor}() detects the unreachable states which has no precursor states in the pruned automaton and removes them.}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
@@ -1322,29 +1312,19 @@ In a pLTS, there may be several incoming transitions
 that assign potentially different (symbolic) values to a state variable.
 To handle such cases, the algorithm manages a
 list of assignment expressions for each pLTS state. 
-\QIN{Every time the MakeTransitions
+\QIN{The only assignments happen on state variables, at pLTS level: every time the MakeTransitions
 algorithm is applied on a pLTS, it collects the expressions from the $Post$ in each transition.
-As there is no assignments collecting work on a pNet node, it is not shown in Algorithm~\ref{alg2}.}
-%% $v$.
-%% The list we used contains triples <$v$, $S$, $AssignRH$> 
-%% where $v$ is the variable in pLTS, $S$ is its owner state and
-%% $AssignRH$ is a list of expressions over other variables in the right
-%% hand side of assignments of $v$.
-% As a pragmatic extension to the formal definition, we also manage
-% ``global variables'', defined in all states of the pLTS.
+% As there is no assignments collecting work on a pNet node, it is not
+% shown in Algorithm~\ref{alg2}.
+}
 
 For a global state in the open automaton, the set of state
-variables (which may be used in an outgoing transition) %% will simply be
+variables (which may be used in an outgoing transition) 
 is the disjoint union
 of sets of state variables of the individual pLTS states constituting this
-global state.
-\TODO{Xudong: speciy more precisely what is done, and at which point
-  in the MakeTransitions algo}
-%There are some assignment on the variables in each of states of the pLTS (state variables), or just as global states of it (global variables). There is usually not only one assignment for a state variable, miss of them may drop the unsatisfiable results. In order to avoid such mistakes, 
-\TODO{Eric: these sets of assignment collect potential assignments from all OTs
-  in the generated automaton. If we prune the generated state
-  space, we will get less assignements, and potentialy also get better
-  minimization... May be move this to ``smart'' section}
+global state. \ERIC{The final assignment sets are assembled when building the
+open automaton from the reachable transitions.}
+
 
 %% \QIN{
 %% The list we used contains several triples <$v$, $S$, $AssignRH$> to
@@ -1392,42 +1372,44 @@ The ``Modulo Theory'' part of SMT solvers is important here, so that
 the solver can use specific properties of each action algebra.
 
 \subsection{Computing reachable state space on the fly}
-\TODO{add a high level description of the new strategy, discuss
-  decidability/approximation of the SAT checking, express some
-  ``minimality'' property}
 
-The basic algorithm from the previous section potentialy explores some
+\ERIC{The basic algorithm from the previous section potentialy explores some
 areas of the global state-space that will not be reachable after
 checking the OTs' predicates for satisfiability. Incorporating the
 satisfiability check inside the residual algorithm will definitely
 save some of these useless computation. More precisely, it will still
 create, and submit to Z3, the OTs at the ``border'' of the state-space, but
-not the transitions issued from non-reachable global states.
+not the transitions issued from non-reachable global states. We use
+this idea to create our ``smart'' algorithm.}
 
-\ERIC{But there is more to this. As mentionned above, we collect all
+But there is more to this. Due to the symbolic nature of the
+  transitions, reachability is not as easy to define as in standard
+  models. As mentionned above, we collect all
 possible (symbolic) assignments of state variables, in the
 computed open automaton. By avoiding building the OTs coming from
-unreachable states, we also avoid adding the corresponding assignments
+some unreachable states, we also avoid adding the corresponding assignments
 to the variables of their target states. The set of possible
-assignments is an over approximation of possible values of the
+assignments computed by the algorithm is an over approximation of
+possible values of the 
 variables of such state, so narrowing it means we get a better
-approximation, and potentialy more informations, that can be used to
-the SAT check of subsequent transitions. But we \emph{cannot} use this
+approximation, and potentialy more information, that can be used to
+the SAT checking of subsequent transitions. But we \emph{cannot} use this
 assignment information in the ``on-the-fly'' SAT checking, because
 they cannot be complete before exploring (at least) all the reachable
-state space. So the smart algorithm performs in to steps: during the
-first step, the SAT check is done without using any assignment set
+state space. So the smart algorithm performs in two steps: during the
+first step, the SAT checking is done without using any assignment set
 information. Then after completion of this step, we perform another
-SAT check of all transitions from step1, but this time using the
+SAT checking of all transitions from step1, but this time using the
 assignment information. This may reduce the reachable state space. If
 we want to be sure the obtained automaton is minimal, we should
 iterate this step until a fix-point is reached. But in practical cases, very
-little will be gained, and leaving some UNSAT transitions in the
-symbolic automaton is still logicaly correct.}
+little will be gained, so the default implementation does only one
+step. Leaving some UNSAT transitions in the
+symbolic automaton is still logicaly correct.
 
-
-Algorithm~\ref{alg3} implement this new stategy: \TODO{Explain
-  significant detials}
+\TODO{Yuxin: I can add an example showing in detail why we cannot use
+  the assignment information on the fly. Do you think this is useful,
+  or id the explanation above sufficient ?}
 
 \begin{algorithm}[h]
   \caption{``Smart'' Reachable Open Automaton Generation}
@@ -1452,10 +1434,27 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 	\EndFor
 \EndWhile
 %%\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
-\State \Return $\mathit{OA}=(\mathit{InitState}(P),L)$;
-
+\IfThenElse {(NonEmptyAssignmentSet($\mathit{L}$))}
+        {\State $\mathit{L1}$=filterUnsatTransitions($\mathit{L,Assignments}$);
+          \State \Return $\mathit{OA}$=makeAutomaton($\mathit{InitState}(P),L)$;}
+        {\State \Return $\mathit{OA}$=makeReachableSubAutomaton($\mathit{InitState}(P),L1)$};
 \end{algorithmic}  
 \end{algorithm}
+
+Algorithm~\ref{alg3} implement this new stategy: in line 5, it runs
+the satisfiability check on each OT generated from this global
+state. This check is done without using the assignment information, as
+discussed above. Only the OTs found SAT from this check will be added
+to $L$, and the corresponding target global state added to $U$ if
+necessary. This ensures that all explored global states are
+effectively reachable by a chain of SAT OTs.
+
+Then at the end of the residual loop, we do another traversal of the
+automaton, this time using the assignment information collected that
+far, and compute the final reachable sub-automaton. This step,
+naturaly, is only useful if there are some assignments.
+
+
 
 \TODO{Candidate theorems: Xudong: state the theorems, and sketch the proofs}
 
@@ -1474,7 +1473,7 @@ the same open automaton as algorithm 1.
 
 \ERIC{But in presence of assignments, we need to collect all of them
   before using the assignment information to refine the SAT
-  checking. Still the smart strategy will explore a reduced state
+  checking. Still, the smart strategy will explore a reduced state
   space, but not the minimal one (discussion later)}
   
 \begin{theorem}[Correctness without assignments]
@@ -1486,7 +1485,7 @@ the same open automaton as algorithm 1.
 
 \TODO{Xudong: proof}
 
-\TODO{Eric : provide counter-example for smart with unsing incomplete
+\TODO{Eric : Eventually provide counter-example for smart with unsing incomplete
   assignment sets}
 
 
