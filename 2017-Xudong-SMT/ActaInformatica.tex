@@ -266,7 +266,7 @@
 
 \newcommand{\orcid}[1]{\href{https://orcid.org/#1}{ORCID:~{#1}}}
 
-\title{Using an SMT engine to generate Symbolic Automata%
+\title{SMT-Based Generation of Symbolic Automata
 %
   \thanks{This work was partially funded by the Associated Team FM4CPS
     between INRIA and ECNU, Shanghai}%
@@ -334,62 +334,58 @@
 %\subsection{}
 
 
-\abstract{Open pNets are used to model the behaviour of open systems, both
-synchronous or asynchronous, expressed in various calculi or
-languages. They are endowed with a symbolic operational semantics in
-terms of so-called ``Open Automata''. This allows us to check properties of
-such systems in a compositional manner. 
-We implement an algorithm computing these semantics,
-building predicates expressing the synchronization conditions
-between the events of the pNet sub-systems. Checking such
-predicates requires symbolic reasoning over first order logics, but
-also over application-specific data. We use the Z3 SMT engine to check
-satisfiability of the predicates, and prune the open automaton of its
-unsatisfiable transitions.
-As an industrial oriented use-case, we use so-called ``architectures''
-for BIP systems, that have been used in the framework of an ESA project and to specify the control software of
-a nanosatellite at the EPFL Space Engineering Center. We use pNets to encode a BIP architecture
-extended with explicit data, and compute its
-open automaton semantics. This automaton may be used to prove
-behavioural properties; we give 2 examples, a safety and a liveness
-property.
+\abstract{Open pNets are formal models that can express the behaviour of open systems, either
+	synchronous, asynchronous, or heterogeneous. They are endowed with a symbolic operational semantics in
+	terms of open automata, which allows us to check properties of
+	such systems in a compositional manner. 
+	We propose and implement an algorithm computing these semantics,
+	building predicates expressing the synchronisation conditions
+	between the events of the pNet sub-systems. Checking such
+	predicates requires symbolic reasoning about first order logics and application-specific data. We use the Z3 SMT engine to check
+	satisfiability of the predicates.
+	%As an industrial oriented use-case, %we use so-called ``architectures''
+	%for BIP systems, that have been used in the framework of an ESA project and to specify the control software of a nanosatellite at the EPFL Space Engineering Center. 
+	We also present several use-cases, in particular, encoding a BIP architecture
+	extended with explicit data and computing its
+	open automaton semantics. This automaton may be used to prove
+	behavioural properties such as safety and liveness.
 \TODO{Add new contrib}
 \todoMargin{Should we remove Min ?}
-\keywords{Networks of Synchronised Automata, Symbolic Behavioral Semantics, Compositional Analysis of Software Components, SMT}
+\keywords{pNets, software components, symbolic semantics, SMT
+	%Networks of Synchronised Automata, Symbolic Behavioral Semantics, Compositional Analysis of Software Components, SMT}
 }
 
 
 
 \section{Introduction}
-
 In the nineties, several 
 works extended the basic behavioural models based on labelled
-transition systems to address value-passing or parameterized systems, using
+transition systems to formalise value-passing or parameterised systems, using
 various symbolic encodings of the
 transitions~\cite{deSimone85,Larsen87,HennessyLin:TCS95,Linconcur96}. 
-In \cite{Linconcur96}, H.M. Lin addressed value-passing calculi, for which he
-developed a symbolic behavioural semantics, and proved algebraic properties.
-Separately J. Rathke~\cite{HennessyRathke:TCS98} defined another
+In \cite{Linconcur96}, Lin considered value-passing CCS \cite{Milner89}, for which he
+developed a symbolic behavioural semantics, and developed algorithms for checking symbolic bisimulations.
+Separately, Rathke~\cite{HennessyRathke:TCS98} defined another
 symbolic semantics for 
-a parameterized broadcast calculus, together with strong and weak bisimulation
+a parameterised broadcast calculus, together with strong and weak bisimulation
 equivalences, and developed a symbolic model-checker based on a tableau
-method for these processes. Thirty years later, no
-practical verification approach and no verification platform are
-using this kind of approaches to provide proof methods for
+method for these processes. 
+Later on, symbolic semantics were extended to the $\pi$-calculus \cite{Milner99} and decision algorithms for various symbolic bisimulations were proposed \cite{Li99,Deng2001}. However, no
+practical verification platform has been developed to use this kind of approaches to provide proof methods for
 value-passing processes or open process expressions. 
 
-Parameterized Networks of Synchronized Automata (pNets) were proposed
+Parameterised Networks of Synchronised Automata (pNets) were proposed
 to give a behavioural specification formalism for distributed
 systems, synchronous, asynchronous, or heterogeneous. They are used in
 VerCors~\cite{HKLM:Foclasa14}, a platform for designing and 
 verifying distributed systems, as the intermediate language for various
-high-level languages. The high-level languages in VerCors formalize
-each component of the distributed system and their composition.
+high-level languages. The high-level languages in VerCors formalise
+each component of a distributed system and their composition. The model of
 pNets provides the core low-level semantic formalism for VerCors, and
 is made of a hierarchical composition of (value-passing) automata,
-called parameterized labelled transition systems (pLTS), where each
-hierarchical level defines the possible synchronization of the lower levels.
-Traditionally, pNets have been used to formalize fully
+called parameterised labelled transition systems (PLTS), where each
+hierarchical level defines the possible synchronisation of the lower levels.
+Traditionally, pNets have been used to formalise fully
 defined systems or softwares. But we want also to define and reason
 about incompletely defined systems, like program skeletons, operators,
 or open expressions of process calculi.
@@ -399,57 +395,57 @@ The pNet model was developed in a series of
 papers~\cite{HMZ:PDP15,henrio:Forte2016} in which many examples have been
 introduced showing its ability to encode the operators from some
 other algebras or  program skeletons.
-The operational semantics of an (open) pNet is defined as an
-Open Automaton in which Open Transitions contain logical predicates
-expressing the relations between the behaviour of the holes, and the
-global behaviour of the system. In the previous publication,
-only a sketch of a procedure allowing to compute these semantics was
+The operational semantics of an open pNet is defined as an
+open automaton in which open transitions contain logical predicates
+expressing the relations between the behaviour of the holes and the
+global behaviour of a system. In previous work,
+only a sketch of a procedure allowing for computing these semantics was
 presented, together with a proof of finiteness of the open automaton, under
 reasonable hypotheses on the pNet structure.
 
 Implementing these semantics raised several challenges, in order:
 \begin{itemize}
-  \item to get a tool that could be applied to pNets representing
-    various languages, in particular various actions algebras,
-    with their specific decision theories,
-  \item to separate clearly the 
-      algorithm generating the transitions of the open automaton from
-      combination of all possible (symbolic) behaviours, from
-      the symbolic reasoning part, specifically here using an SMT
-      engine to check the
-      satisfiability of the predicates generated by our algorithm,
-  \item to build a prototype and validate the approach on our basic
-    case-studies, and understand the efficiency of the interaction
-    with the SMT solver.
+	\item to obtain a tool that could be applied to pNets representing
+	various languages, in particular various action algebras,
+	with their specific decision theories;
+	\item to separate clearly the 
+	algorithm generating the transitions of the open automaton from
+	combination of all possible (symbolic) behaviours, and from
+	the symbolic reasoning part, specifically here using an SMT
+	engine to check the
+	satisfiability of the predicates generated by our algorithm;
+	\item to build a prototype and validate the approach on our basic
+	case-studies, and understand the efficiency of the interaction
+	with the SMT solver.
 \end{itemize}
 
-In the long term, we want to be able to check the equivalence between
+In the long term, we would like to check the equivalence between
 open systems encoded as pNets. The equivalence between pNets is
 ``FH-bisimulation'' \cite{henrio:Forte2016}, a dedicated version of
 symbolic bisimulation taking the  
 predicate of the open transitions into account when matching such
 open transitions. We foresee that the interplay with the SMT solver
 that we use here for satisfiability of open transitions will be
-similar with what we need when proving (symbolic) equivalence between open
+similar to what we need when proving (symbolic) equivalence between open
 transitions. 
 
 \paragraph{Contribution}
-In the article we show how:
+In the current work we contribute in the following aspects.
 \begin{itemize}
-\item We define the open automaton generation algorithm. We
-  implemented a full working prototype, within the 
-  VerCors platform. In the process, we improved the
-  semantics rules from~\cite{henrio:Forte2016}, and add features in
-  the algorithm to deal with the full 
-  model, including management of variables and assignments.
-\item We implement the interaction between our algorithm and the Z3
-    SMT solver, for checking satisfiability of the transitions
-    generated by the algorithm.
-    \item \ERIC{we define a strategy checking satisfiability of open transitions in the course the residual algorithm, and show that this ensures that we still generate the reachable part of the open automaton, and that what is generated is minimal with respect to the decidability of predicate satisfiability} 
-\item We show the interest of this approach \ERIC{on various use-cases from different settings}, including an
-    industry-inspired case-study, namely one architectural pattern
-    extracted (and extended) from the BIP specification of a nanosatellite on-board
-    software.
+	\item We present an open automaton generation algorithm. We
+	implement a full working prototype, within the 
+	VerCors platform. In the process, we improve the
+	semantics rules from~\cite{henrio:Forte2016}, and add features in
+	the algorithm to deal with the full 
+	model, including management of variables and assignments.
+	\item We implement the interaction between our algorithm and the Z3
+	SMT solver, for checking satisfiability of the transitions
+	generated by the algorithm.
+	\item We define a strategy checking satisfiability of open transitions in the course of the residual algorithm, and show that  the reachable part of the open automaton can be generated and it is minimal with respect to the decidability of predicate satisfiability.
+	\item We show the usage of this approach on various use-cases from different settings, including an
+	industry-inspired case-study, namely one architectural pattern
+	extracted (and extended) from the BIP specification of a nanosatellite on-board
+	software.
 \end{itemize}
 
 
@@ -468,17 +464,15 @@ In the article we show how:
 
 
 %% There is not much research work towards trying 
-Very few attempts were made to develop symbolic bisimulation approaches
-for the value-passing process algebras and languages\mdash our long-term goals\mdash
-especially, there is no algorithmic treatment of the symbolic systems developed by
+As mentioned above, early attempts were made by Lin and others to define symbolic bisimulations for process calculi such as value-passing CCS and the $\pi$-calculus, and design algorithms to compute the most general condition under which two processes are bisimilar. However, there is no algorithmic treatment of the symbolic systems developed by
 interacting with automatic theorem provers. The closest work is the
-one already mentioned from J. Rathke~\cite{HennessyRathke:TCS98},
+one already mentioned by Rathke~\cite{HennessyRathke:TCS98},
 who developed the symbolic bisimulation for a
-calculus of broadcasting system (CBS). CBS is similar with classic
+calculus of broadcasting system (CBS). CBS is similar to classic
 process calculi such as CCS and CSP, but communicating by broadcasting
 values, %one-to-many communication instead of one-to-one communication and
 transmitting values without blocking. That makes the definition of
-the symbolic semantic and bisimulation equivalence different from the
+the symbolic semantics and bisimulation equivalence different from the
 classic works.
 
 For other applications, such as the analysis of 
@@ -492,7 +486,7 @@ already integrated several provers, like Z3, as modules for proving
 the proof obligations generated from a user model. 
 The prover we use, which also happens to be Z3, is developed by Microsoft Research
 based on the satisfiability modulo 
-theories framework (SMT), is mainly applied in extended static checking, test case
+theories framework (SMT), and is mainly applied in extended static checking, test case
 generation, and predicate abstraction.
 In a similar way, there are several ATPs/ITPs we could consider to use for
 result pruning and bisimulation checking in our algorithm, as an
@@ -500,14 +494,14 @@ alternative to Z3, such as CVC4~\cite{barrett:CAV2011},
 Coq~\cite{armand:CPP2011} or others. 
 
 BIP
-(Behaviour-Interaction-Priority)~\cite{bip} is a framework for the
+(Behaviour-Interaction-Priority)~\cite{bip} is a framework for 
 component-based design of concurrent software and systems.  In
 particular, the BIP tool-set comprises compilers for generating C/C++
 code, executable by linking with one of the dedicated engines, which
 implement the BIP operational semantics~\cite{BarBliu15-offer-scico}.  This
 approach ensures that any property, shown to hold on a given BIP
 model, will also hold by construction on the generated code.
-BIP Architectures~\cite{AttieBBJS16-architectures-faoc} formalise
+BIP architectures~\cite{AttieBBJS16-architectures-faoc} formalise
 design patterns, which enforce global properties 
 characterising the coordination among the components of the
 system. They provide a compositional approach, ensuring
@@ -522,76 +516,67 @@ data-sensitive interaction constraints. Using an encoding of
 architectures, extended with data-dependant interactions, into open
 pNets was an interesting alternative to a direct extension to the
 architecture semantics.
- 
+
 \paragraph{Structure.}
-In section
+In Section
 \ref{section:pnets} we give a description and a formal definition of
-the pNet model, as found in previous publications, and present a
-running example based on Lotos ``Enable'' operator.
-Section \ref{section:op-semantics} recalls briefly the operational semantics
-of pNet.
-Section \ref{section:implementation} explains in details the algorithm
-used to compute this semantics, including the interaction with Z3, and
-shows the full result of the semantic computation on the running
-example.
-In section \ref{section:use-cases} we show the result of the study of
-our running example, then explain a bigger use-case based on a BIP
-architecture from the nano-satellite case-study. We show the benefits
-drawn from the smart algorithm.
+the pNet model. 
+In Section \ref{section:op-semantics} we briefly recall  the operational semantics
+of pNets.
+In Section \ref{section:implementation} we present an algorithm to compute this semantics, including the interaction with Z3.
+In Section~\ref{sec:cases} we give a few use-cases, in particular, a BIP
+architecture from the nano-satellite case-study. 
 Finally we conclude and discuss perspectives in Section
 \ref{section:conclusion}. 
 
 
 
 
-\section{Background: pNets definition}
+\section{Preliminaries}
 \label{section:pnets}
 
-This section introduces pNets and the notations we will use in
-this paper. Then it gives the formal definition of pNet structures,
-together with an operational semantics for open pNets.
+We first introduce pNets and some notations, then give the formal definition of pNet structures, together with an operational semantics for open pNets.
 
-pNets are tree-like structures, where the leaves are either
-\emph{parameterized labelled transition systems (pLTSs)}, expressing the
+A pNet has a tree-like structure, where the leaves are either
+\emph{parameterised labelled transition systems (PLTSs)}, expressing the
 behaviour of basic processes, or \emph{holes}, used as placeholders
 for unknown processes, of which we only specify their set of possible
 actions, named \emph{sort}.
-Nodes of the tree (pNet nodes) are synchronizing artifacts, using a
-set of \emph{synchronization vectors} that express the possible
-synchronization between the parameterized actions of a subset of the
+Nodes of the tree (pNet nodes) are synchronising artifacts, using a
+set of \emph{synchronisation vectors} that express the possible
+synchronisation between the parameterised actions of a subset of the
 sub-trees.
 
 
 %\smallskip\noindent
-\paragraph*{Notations.}
+\paragraph*{Notations.} \
 We extensively use indexed structures
 over some countable indexed sets, which are equivalent to mappings over
 the countable set. % . The indexes will usually be
 % integers, bounded or not. Such an indexed family is
 %denoted
 %follows:
-$a_i^{i\in I}$
+The symbol $a_i^{i\in I}$
 denotes a family of elements $a_i$ indexed over the
 set $I$.
-When this is not
-ambiguous, we shall use notations for sets, and typically write
-``indexed set over I'' when formally we should speak of multisets, and
-write $x\in a_i^{i\in I}$ to mean $\exists i\in I.\, x=a_i$.  An empty
-family is denoted $\emptyset$. We
+When this is unambiguous, we shall use notations for sets, and typically write
+``indexed sets over I'' which formally means multisets, and
+write $x\in a_i^{i\in I}$ to mean $x=a_i$ for some $i\in I$.  An empty
+family is written $\emptyset$. We
 denote classically $\overline{a}$ a family when the indexing set is
-irrelevant.  $\uplus$ is the disjoint union on indexed sets.
+irrelevant. The symbol $\uplus$ stands for the disjoint union of indexed sets.
 
-\paragraph*{Term algebra.}
-Our models rely on a notion of parameterized actions that are
+\paragraph*{Term algebra.} \
+Our models rely on a notion of parameterised actions that are
 symbolic expressions using data types and variables. As we want to encode
 the low-level behaviour of possibly very different
-programming languages, we do not want to impose one specific algebra
+programming languages, we do not impose one specific algebra
 for denoting actions, nor any specific communication mechanism. So we
 leave unspecified the constructors of the algebra that will allow building
 expressions and actions. Moreover, we use a generic {\em action interaction}
 mechanism, based on unification between two or more action
-expressions. This will be used in the semantics of synchronization
-vectors to express various kinds of communication or synchronization mechanisms.
+expressions. This will be used in the semantics of synchronisation
+vectors to express various kinds of communication or synchronisation mechanisms.
 
 \renewcommand{\P}{\mathcal V}
 \def\Talg{\mathcal{T}_{\Sigma,\P}}
@@ -614,94 +599,94 @@ but it also allows
 for more general mechanisms, like gate negotiation in Lotos~\cite{LotosISO89}, or broadcast
 communications.
 
-\paragraph*{Algebra presentations.}
-In practice, the parameterization of the pNet model by some specific
-action algebra is realized by the definition of a many-sorted ``algebra
-presentation''. It will be used to check the
+\paragraph*{Algebra presentations.}\
+In practice, the parameterisation of the pNet model by some specific
+action algebra is realised by the definition of a many-sorted algebra
+presentation. It will be used to check the
 well-formedness of a pNet system, and to define the translation of the pNet
 semantics into the SMT engine input language (\cite{BarFT-RR-17}).
 
 \def\APres{\mathcal{P}}
 \begin{definition}
-  An \emph{algebra presentation} is a triple $\APres=\langle\mathit{Sorts},\mathit{Constrs},\mathit{Ops}\rangle$, where
-
-  \begin{itemize}
-  \item $Sorts$ is a set of data \emph{sorts}
-    % \noteSB{Commented out a footnote here\mdash check if still necessary.}
-    %% \footnote{Later we may want to extend this with Sort constructors,
-    %%   like Array or Pair, but this is not needed now}
-  \item $\mathit{Constrs}$ is a set of \emph{constructor operators}: for each $\mathit{Con} \in \mathit{Constrs}$, $arity(Con)=n \in \mathbb{N}$ is its arity 
-    and '$Con : (\mathit{sel}_1,\mathit{sort}_1), \dots, (\mathit{sel}_n,\mathit{sort}_n) \rightarrow \mathit{sort}$' is its signature with the associated selectors.
-    For each argument, the pair $(\mathit{sel}_i,\mathit{sort}_i)$ defines an auxiliary
-    operator of name $\mathit{sel}_i$ with signature $\mathit{sel}_i : \mathit{sort} \rightarrow \mathit{sort}_i$.
-    \item $Ops$ is a set of \emph{auxiliary operators}, with their
-      arity and signature, of the form: $Op : \mathit{sort}_1, \dots,  \mathit{sort}_n \rightarrow
-      \mathit{sort}$
-      \item $\mathit{Constrs}(\mathit{sortname})$ and $\mathit{Sels}(\mathit{sortname})$ are, respectively, the sets of
-        constructors and selectors of the sort $\mathit{sortname}$
-  \end{itemize}
-%  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
-  Constructors of arity 0 are called \emph{constants}, and denoted $\mathit{Consts}(\APres)$.
-%  $\mathit{Consts}(\APres) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
+	An \emph{algebra presentation} is a triple $\APres=\langle\mathit{Sorts},\mathit{Constrs},\mathit{Ops}\rangle$, where
+	
+	\begin{itemize}
+		\item $Sorts$ is a set of data sorts.
+		% \noteSB{Commented out a footnote here\mdash check if still necessary.}
+		%% \footnote{Later we may want to extend this with Sort constructors,
+		%%   like Array or Pair, but this is not needed now}
+		\item $\mathit{Constrs}$ is a set of \emph{constructor operators}: for each $\mathit{Con} \in \mathit{Constrs}$, $arity(Con)=n \in \mathbb{N}$ is its arity 
+		and '$Con : (\mathit{sel}_1,\mathit{sort}_1), \dots, (\mathit{sel}_n,\mathit{sort}_n) \rightarrow \mathit{sort}$' is its signature with the associated selectors.
+		For each argument, the pair $(\mathit{sel}_i,\mathit{sort}_i)$ defines an auxiliary
+		operator of name $\mathit{sel}_i$ with signature $\mathit{sel}_i : \mathit{sort} \rightarrow \mathit{sort}_i$.
+		\item $Ops$ is a set of \emph{auxiliary operators}, with their
+		arity and signature, of the form: $Op : \mathit{sort}_1, \dots,  \mathit{sort}_n \rightarrow
+		\mathit{sort}$.
+		\item $\mathit{Constrs}(\mathit{sortname})$ and $\mathit{Sels}(\mathit{sortname})$ are, respectively, the sets of
+		constructors and selectors of the sort $\mathit{sortname}$.
+	\end{itemize}
+	%  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
+	Constructors of arity 0 are called \emph{constants}, and denoted $\mathit{Consts}(\APres)$.
+	%  $\mathit{Consts}(\APres) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
 \end{definition}
 
 
 Sorts \texttt{Bool} and \texttt{Int} are predefined with standard operators.
-Sort \texttt{Action} also, with a constructor \texttt{Synchro} denoting
-a synchronized action, i.e. an ``internal'' action that cannot be
-further synchronized with the environment. It also comes with an
+Sort \texttt{Action} is similar, with a constructor \texttt{Synchro} denoting
+a synchronised action, i.e. an ``internal'' action that cannot be
+further synchronised with the environment. It also comes with an
 overloaded \texttt{FUN} constructor, used to build actions with
-arguments, that will be instantiated to the required sorts for a given
+arguments, which will be instantiated to the required sorts for a given
 pNet.
 
-The definition of an Algebra Presentation, and a set of variables
-$\P$ fixes the Term algebra elements $\Talg, \AlgB_{\P}, \AlgA_\P$.
+The definition of an algebra presentation and a set of variables
+$\P$ fix the term algebra elements $\Talg, \AlgB_{\P}, \AlgA_\P$.
 
 \begin{table}[t]\caption{\label{table:BIPalgebra}\leftline{Algebra
-      Presentation: predefined Sorts and Operators}}
+			Presentation: predefined Sorts and Operators}}
 	\begin{tabular}{p{3cm}p{3cm}p{6cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
 		Sort & Constructors & Auxiliary Operators
-                \\\specialrule{0em}{1pt}{1pt}
+		\\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Bool    			&
-                $\texttt{true},\ \texttt{false}$&
-                $\land,\ \lor,\ \neg,\ \implies,\ =,\ \ne$
-                \\\specialrule{0em}{1pt}{1pt} 
-                %               		Action 			&  $\texttt{Synchro},\ \texttt{FUN\_Action\_Bool}$ &
-                Action 			&  $\texttt{Synchro},\ \texttt{FUN}$ &
-                \\\specialrule{0em}{1pt}{1pt}
+		$\texttt{true},\ \texttt{false}$&
+		$\land,\ \lor,\ \neg,\ \implies,\ =,\ \ne$
+		\\\specialrule{0em}{1pt}{1pt} 
+		%               		Action 			&  $\texttt{Synchro},\ \texttt{FUN\_Action\_Bool}$ &
+		Action 			&  $\texttt{Synchro},\ \texttt{FUN}$ &
+		\\\specialrule{0em}{1pt}{1pt}
 		Int 				&
-                ${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
-                $- \texttt{(unary)},\ +,\ -
-                \texttt{(binary)},\ \times,\ \div \text{ \etc}$
-%                \\\specialrule{0em}{1pt}{1pt}
-%                \textsl{for any sort} & & $=,\ \ne$
+		${0, \{i, -i\}_{i \in \texttt{Nat}}}$  &
+		$- \texttt{(unary)},\ +,\ -
+		\texttt{(binary)},\ \times,\ \div \text{ \etc}$
+		%                \\\specialrule{0em}{1pt}{1pt}
+		%                \textsl{for any sort} & & $=,\ \ne$
 		\\\hline\specialrule{0em}{1pt}{1pt}
-\multicolumn{3}{l}{\sl Extension for the BIP use-case of Fig.~\ref{schema:ArchFailure:pNet}}
+		\multicolumn{3}{l}{\sl Extension for the BIP use-case of Figure~\ref{schema:ArchFailure:pNet}}
 		\\\hline\specialrule{0em}{1pt}{1pt}
-                Action & \multicolumn{2}{l} \texttt{FUN\_Action\_Bool}, \texttt{}fail, resume, timeout, reset, start, tick, ask 
+		Action & \multicolumn{2}{l} \texttt{FUN\_Action\_Bool}, \texttt{}fail, resume, timeout, reset, start, tick, ask 
 		\\\hline
 	\end{tabular}
-
+	
 \end{table}
 
-\subsection{The (open) pNets Core Model}
+\subsection{The (Open) pNets Core Model}
 \label{section:pNets}
 
 
-A pLTS is a labelled transition system with variables, which can be
+A PLTS is a labelled transition system with variables, which can be
 manipulated, defined, or accessed inside states, actions, guards, and
 assignments. 
 %
-%Without loss of generality and to simplify the formalization, we suppose 
+%Without loss of generality and to simplify the formalisation, we suppose 
 %here that variables are local to 
 %state: each state has its set of variables disjoint from the others. Transmitting 
 %variable values from one state to the other can be done by explicit assignment. 
 %
 Each state has its set of variables called \emph{state variables}, 
 which can only be modified by the assignment in transitions targeting this state. 
-A global state variable of a pLTS is a state variable defined in all states.
+A global state variable of a PLTS is a state variable defined in all states.
 % $x$ satisfying $\forall s\!\in\! S .\, x\!\in\! \vars(s)$. 
 %
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
@@ -709,14 +694,14 @@ A global state variable of a pLTS is a state variable defined in all states.
 Note that we make no assumptions on finiteness of the set of states, nor
 on finite branching of the transition relation.
 
-We first define the set of actions a pLTS can use.  Let $a$
+We first define the set of actions a PLTS can use.  Let $a$
 range over action labels, $\symb{op}$ are operators, and $x_i$ range over
 variable names. Action terms are:
 \[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
-  \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
-  p_i&::=& ~\symb{Expr}&\text{parameters}\\
-  \symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,\dots,\symb{Expr}_n)&\text{expressions}
+\alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
+p_i&::=& ~\symb{Expr}&\text{parameters}\\
+\symb{Expr}&::=& \symb{Value}~|~x~|~\symb{op}(\symb{Expr}_1,\dots,\symb{Expr}_n)&\text{expressions}
 \end{array}
 \]
 %\[
@@ -727,51 +712,51 @@ variable names. Action terms are:
 %\end{array}
 %\]
 
-\begin{definition}[pLTS]
-\label{pLTS}
-%\noteSB{It's a bit strange that algebra presentations are not referred to here}
-Given a term algebra $\Talg$, a pLTS is a tuple
-$pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
-\begin{itemize}
-\item[$\bullet$]
-$S$ is a set of \emph{states}, with $s_0 \in S$ the \emph{initial state}.
-\item[$\bullet$] $\to \subseteq S \times L \times S$ is the \emph{transition relation}, with
-$L$ the set of labels of the form
-$\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
-  where $\alpha \in\AlgA_{\P}$ is a parameterized action,
-    $e_b \in \AlgB_{\P}$ is a guard, and
-    expressions  $\AlgE_{\P}\cup\AlgA_{P}$ are assigned to $x_j$.
-If 
-$s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
-		J}\rangle} s'$ then 
-                $\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
+\begin{definition}[PLTS]
+	\label{PLTS}
+	%\noteSB{It's a bit strange that algebra presentations are not referred to here}
+	Given a term algebra $\Talg$, a PLTS is a tuple
+	$PLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
+	\begin{itemize}
+		\item[$\bullet$]
+		$S$ is a set of \emph{states}, with $s_0 \in S$ the \emph{initial state}.
+		\item[$\bullet$] $\to \subseteq S \times L \times S$ is the \emph{transition relation}, with
+		$L$ the set of labels of the form
+		$\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
+		where $\alpha \in\AlgA_{\P}$ is a parameterised action,
+		$e_b \in \AlgB_{\P}$ is a guard, and
+		expressions  $\AlgE_{\P}\cup\AlgA_{P}$ are assigned to $x_j$.
+		If 
+		$s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+				J}\rangle} s'$ then 
+		$\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
 		$\forall j\!\in\! J .\,\vars(e_j)\!\subseteq\! \vars(s)\land 
-x_j\!\in\!\vars(s')$.
-%\item[$\bullet$]
-%The $x_j$ are \emph{state variables} of %% the state $s'$. 
-\end{itemize}
+		x_j\!\in\!\vars(s')$.
+		%\item[$\bullet$]
+		%The $x_j$ are \emph{state variables} of %% the state $s'$. 
+	\end{itemize}
 \end{definition}
 
 Now, we define
 pNet nodes as constructors for hierarchical structures.
-A pNet node has a set of sub-pNets that can be either pNets or pLTSs, and a
+A pNet node has a set of sub-pNets that can be either pNets or PLTSs, and a
 set of \emph{holes}, playing the role of process parameters
 (i.e. unknown in the environment).
 
 A composite pNet consists of a set of sub-pNets, each exposing
 a set of actions. %% , each of them triggering internal actions in each of
 %% the sub-pNets.
-The relation between actions of a pNet and those of its sub-pNets
+The relation between the actions of a pNet and those of its sub-pNets
 %% internal actions is
-are given by  \emph{synchronization vectors}, which %% : a
-%% synchronization vector 
-synchronize one or several internal actions, and
+is given by  \emph{synchronisation vectors}, which %% : a
+%% synchronisation vector 
+synchronise one or several internal actions, and
 expose a single resulting global action.
 
 
 %% \begin{definition}[pNets]\label{def-pnets}
-%% A pNet is a hierarchical structure, whereof the leaves are pLTSs and holes:
-%% $\pNet::= pLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$,
+%% A pNet is a hierarchical structure, whereof the leaves are PLTSs and holes:
+%% $\pNet::= PLTS~|~\mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle$,
 %% where
 %% \begin{itemize}
 %% \item[$\bullet$] %\noteEM{Pire que ca, $\I$ n'est pas
@@ -784,12 +769,12 @@ expose a single resulting global action.
 %% \item[$\bullet$] $S_j \subseteq \AlgA$ is a set of action terms,
 %%   denoting the $\Sort$\footnote{The definition of $Sorts$ (the
 %%     set of actions of a Hole  
-%%   or pNet), and also of $Leaves$ and $Holes$ (respectively all pLTSs
+%%   or pNet), and also of $Leaves$ and $Holes$ (respectively all PLTSs
 %%   and all holes in a pNet), can be found in \cite{henrio:Forte2016}.}
 %%   of hole $j$. 
 
 %% \item[$\bullet$] $\symb{SV}_k^{k\in K}$, with $K\in\I_\P$, is a set of
-%%   synchronization vectors: for each $k\!\in\! K$,
+%%   synchronisation vectors: for each $k\!\in\! K$,
 %%   $\symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k$ where
 %%   $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
 %%   $\forall i\!\in\! I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$
@@ -804,35 +789,35 @@ expose a single resulting global action.
 %% \end{definition}
 
 
-  \begin{definition}[pNets]\label{def-pnets}
-    A pNet is a hierarchical structure where leaves are pLTSs and holes:
-   %%  \footnote{Typing can 
-%% be added to pNets by defining and checking their interfaces, called 
-%% sort~\cite{HMZ-FORTE2016}}
-$\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
-K}\myrangle$, with $I, J, K$ potentialy infinite,
-where
-\begin{itemize}
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
-%  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
-%sub-pNets are indexed.
-
-\item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
-$I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
-%\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
-%\emph{sort} of
-%hole $j$.
-
-\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
-  synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
-  \symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$, where
-  $\alpha'_k\in \actions{\variables}$, $I_k\subseteq I$, $J_k\subseteq J$, and 
-  $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
-  J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
-$\alpha'_k$. The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in 
-I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
-
-\end{itemize}
+\begin{definition}[pNets]\label{def-pnets}
+	A pNet is a hierarchical structure where leaves are PLTSs and holes:
+	%%  \footnote{Typing can 
+	%% be added to pNets by defining and checking their interfaces, called 
+	%% sort~\cite{HMZ-FORTE2016}}
+	$\pNet\triangleq PLTS~|~\mylangle \pNet_i^{i\in I}, J, \symb{SV}_k^{k\in 
+		K}\myrangle$, with $I, J, K$ potentialy infinite,
+	where
+	\begin{itemize}
+		\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets;
+		%  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which 
+		%sub-pNets are indexed.
+		
+		\item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
+		$I$ and $J$ are \emph{disjoint}: $I\!\cap\! J=\emptyset$,  $I\!\cup\! J\neq\emptyset$
+		%\item[$\bullet$] $\Sort_j \subseteq \AlgAS$ is a set of action terms, denoting the 
+		%\emph{sort} of
+		%hole $j$.
+		
+		\item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
+		synchronisation vectors ($K\in\I_\P$). $\forall k\!\in\! K,
+		\symb{SV}_k\!=\!\alpha_{l}^{l\in I_k \uplus J_k}\to\alpha'_k\,|\,g_k$, where
+		$\alpha'_k\in \actions{\variables}$, $I_k\subseteq I$, $J_k\subseteq J$, and 
+		$\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
+			J_k}{\vars({\alpha_l})}$. The global action of a vector $\symb{SV}_k$ is
+		$\alpha'_k$. The Boolean expression $g_k $, such that $\vars(g_k)\subseteq \bigcup_{l\in 
+			I_k\uplus J_k}{\vars({\alpha_l})}$, is a guard associated to the vector.
+		
+	\end{itemize}
 \end{definition}
 
 In Figures~\ref{schema:enable-pnets},\ref{schema:enable-composed}, we show
@@ -859,57 +844,57 @@ node encoding our running example.
 \end{figure}
 
 	To give simple intuitions of the open pNet model and its semantics, we use
-	here a simple example based on the ``Enable'' operator of the LOTOS language.
-	In Fig. \ref{schema:enable-pnets}, we show 2 possible encodings of the  
-	``Enable'' operator.
-	In the Enable expression ``P>>Q'', an \texttt{exit} statement within P
-	terminates the current process, carrying a value $x$ that
-	is captured by the \texttt{accept} statement of Q. 
-	
-	We use a simple action algebra,
-	containing two constructors $\delta(x)$ and $acc(x)$, for any
-	possible data type of the variable $x$, corresponding to the
-	statements \texttt{exit} and \texttt{accept}. Both $\delta(x)$
-	and $acc(x)$ actions are
-	implicitly included in the sorts of all processes.
-	We need no specific predicate over the action expressions, apart
-	from equality of actions. 
-	In the first encoding $EnableState$, in the upper part of
-	Fig. \ref{schema:enable-pnets}, we use a controller $CState$ with two
-	states, and simple control actions $l, r, \delta$. The second encoding
-	$EnableData$ uses a data-oriented style, with a single state controller $CData$, and a
-	state-variable $v$, with values in $\{0,1\}$.
+here a simple example based on the ``Enable'' operator of the LOTOS language.
+In Figure \ref{schema:enable-pnets}, we show two possible encodings of the  
+``Enable'' operator.
+In the Enable expression ``P>>Q'', an \texttt{exit(x)} statement within P
+terminates the current process, carrying a value $x$ that
+is captured by the \texttt{accept(x)} statement of Q. 
 
-        In this example we use \emph{synchronised
-          actions}, to express actions that cannot be further synchronised, similar to the
-        $\tau$ silent action of CCS. We denote them as any action expression with the text
-        underlined, as e.g. $\underline{\delta(x_2)}$. Such
-        synchronised actions do not play any special role for defining
-        the semantics of pNets, but as one can expect, will be crucial
-        for defining weak equivalences.
-	
-	Note that synchronisation vectors are defined in a parameterised
-	manner:  the first and third lines represent one vector
-	for each parameterised action in the Sort of hole $P$
-	(resp. $Q$). This notation can also use predicates, as in the first
-	case, in which we want the vector to apply to any action of $P$
-	except $\delta(z)$.
-	
-	In Fig. \ref{schema:enable-composed}, we enrich our example by
-	composing 2 occurences of the EnableState pNet. In section
-        \ref{section:use-case:Enable} we show how these encodings can
-        be use to prove properties of the Enable operator.
+We use a simple action algebra,
+containing two constructors $\delta(x)$ and $acc(x)$, for any
+possible data type of the variable $x$, corresponding to the
+statements \texttt{exit(x)} and \texttt{accept(x)}. Both $\delta(x)$
+and $acc(x)$ actions are
+implicitly included in the sorts of all processes.
+We need no specific predicate over the action expressions, apart
+from equality of actions. 
+In the first encoding $Enable1$, in the upper part of
+Figure \ref{schema:enable-pnets}, we use a controller $C_1$ with two
+states, and simple control actions $l, r, \delta$. The second encoding
+$Enable2$ uses a data-oriented style, with a single state controller, and a
+state-variable $s_0$, with values in $\{0,1\}$.
 
+In this example we use \emph{synchronised
+	actions}, to express actions that cannot be further synchronised, like the
+silent action $\tau$ of CCS. We denote them as any action expression with the text
+underlined, as e.g. $\underline{\delta(x_2)}$. Such
+actions do not play any special role for defining
+the semantics of pNets, but as one can expect, will be crucial
+for defining weak equivalences.
 
+Note that synchronisation vectors are defined in a parameterised
+manner:  the first and third lines represent one vector
+for each parameterised action in the Sort of hole $P$
+(resp. $Q$). This notation can also use predicates, as in the first
+case, in which we want the vector to apply to any action of $P$
+except $\delta(z)$.
+
+In Figure \ref{schema:enable-composed}, we enrich our example by
+composing two occurences of the EnableState pNet. %For simplicity, we only represent one instance of the synchronisation vector set, and of the controller.
+In Section~\ref{section:use-case:Enable} we show how these encodings can
+        be used to prove properties of the Enable operator.
 
 
-\section{Operational Semantics for Open pNets}
+
+
+\section{Operational Semantics of Open pNets}
 \label{section:op-semantics}
 
 The semantics of open pNets will be defined as an open automaton, that
 is an automaton where each transition composes transitions 
 of several
-% \noteSB{These should all be pLTSs, right? Or did I miss
+% \noteSB{These should all be PLTSs, right? Or did I miss
 %  something?}\noteEM{Hum, nor really, something intermediate; the actions there can be
 %  parameterised actions, but the label has no guard and no
 %  assignments}
@@ -917,34 +902,34 @@ LTSs with the actions of some holes; the transition occurs if some predicates ho
 and can involve a set of state modifications. Each state of an open
 automaton has a set of \emph{state variables} that can be assigned by
 incoming transitions. Strictly speaking, the LTSs at the leaves of the
-open automaton are a restricted form of pLTSs, where labels are
-parametrised actions, but include no guard nor assignments.
+open automaton are a restricted form of PLTSs, where labels are
+parametrised actions, but include neither guard nor assignments.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
 	An \emph{open transition} $OT$ over
-        % a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in I}$ of LTSs,
-        a set $J$ of holes, %with sorts $Sort_j^{j\in J}$
-        and a set of states $\mathcal{S}$ is a structure of the form:	
+	% a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in I}$ of LTSs,
+	a set $J$ of holes %with sorts $Sort_j^{j\in J}$
+	and a set of states $\mathcal{S}$ is a structure of the form:	
 	\begin{mathpar}
-	\inferrule*[myfraction=\reddottedrule]
-	{%\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
-		\{\xrightarrow{\beta_j}_j\}^{j\in J}, \Pred\,, \Post}
-	{s \xrightarrow {\alpha}s'}\,,
+		\inferrule*[myfraction=\reddottedrule]
+		{%\{s_i~{\xrightarrow{a_i}}_i ~s_i^{\prime}\}^{i\in I},
+			\{\xrightarrow{\beta_j}_j\}^{j\in J}, \Pred\,, \Post}
+		{s \xrightarrow {\alpha}s'}\,,
 	\end{mathpar}
 	where $s, s'\in\mathcal{S}$, the $a_i, \beta_j, \alpha$ are
-        action expressions,
-        % $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the 
+	action expressions,
+	% $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the 
 	% LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$
-        $\beta_j$
-        is an action of the hole $j$, and $\alpha$ is the resulting action
-        of $OT$. \Pred\ is a predicate
+	$\beta_j$
+	is an action of the hole $j$, and $\alpha$ is the resulting action
+	of $OT$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
-        $\beta_j$, $s$, $\alpha$. \Post\ is a set of equations that  
+	$\beta_j$, $s$, $\alpha$. \Post\ is a set of equations that  
 	hold \emph{after the open transition}, represented as a
-        substitution $\{x_k\gets e_k\}^{k\in K}$  
-	where $x_k$ are variables of $s'$ and $s'_i$, whereas $e_k$ are
-        expressions over the other variables of the open transition.
+	substitution $\{x_k\gets e_k\}^{k\in K}$  
+	where $x_k$ is a variable of $s'$ or $s'_i$, whereas $e_k$ is an
+	expression over other variables of the open transition.
 \end{definition}
 
 
@@ -954,21 +939,21 @@ parametrised actions, but include no guard nor assignments.
 	\langle J,\mathcal{S},s_0,\mathcal{T}\rangle$ where:
 	\begin{itemize}
 		\item[$\bullet$]  $I$ and $J$ are  sets of indices,
-	%	\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
+		%	\item[$\bullet$]  $LTS_i^{i\in I}$ is a family of LTSs,
 		\item[$\bullet$]  $\mathcal{S}$ is a set of states and $s_0 \in \mathcal{S}$ the initial state,
 		\item[$\bullet$] $\mathcal{T}$ is a set of open transitions and, for each
 		$t\in \mathcal{T}$, there exist $I'$, $J'$ with $I'\subseteq I$, $J'
-		\subseteq J$, such that $t$ is an open transition over $J'$,
+		\subseteq J$, such that $t$ is an open transition over $J'$
 		and  $\mathcal{S}$.
 		
 	\end{itemize}
 \end{definition}
-	
+
 
 %
 %Then the semantics of a pNet is characterized by a set of {\em open
 %transitions}, where the hypotheses on process parameters are
-%replaced by 1) transitions of the pLTSs at the leaves, and 2) formal
+%replaced by 1) transitions of the PLTSs at the leaves, and 2) formal
 %hypotheses on the transitions of the holes. A {\em predicate} is used
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
@@ -980,14 +965,14 @@ of an open automaton representing the semantics of a pNet
 have the following specific structure.
 
 \paragraph{States of open pNets.}\label{def-states}
-  A state of an open pNet is a tuple of the
-  states of its leaves (in which we denote tuples
-  in structured states as $\triangleleft\ldots\triangleright$).
-  For any pNet p, let $\overline{\mathit{Leaves}} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of pLTS at its leaves,
-  then $\mathit{States}(p) = \{\ostate{s_i^{i\in L}}
-  |\, \forall i\in L. s_i \in S_i\}$.
-A pLTS being its own single leave:
-  $\mathit{States}(\mylangle S,s_0, \to\myrangle) = \{\ostate{s}|\, s \in S\}$.
+A state of an open pNet is a tuple of the
+states of its leaves (in which we denote tuples
+in structured states as $\triangleleft\ldots\triangleright$).
+For any pNet p, let $\overline{\mathit{Leaves}} = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be the set of PLTSs at its leaves,
+then $\mathit{States}(p) = \{\ostate{s_i^{i\in L}}
+|\, \forall i\in L. s_i \in S_i\}$.
+A PLTS could be its own single leave:
+$\mathit{States}(\mylangle S,s_0, \to\myrangle) = \{\ostate{s}|\, s \in S\}$.
 The initial state is defined as:
 $\mathit{InitState}(p) = \ostate{{{s_i}_0}^{i\in L}}$.
 
@@ -1000,17 +985,17 @@ $\mathit{InitState}(p) = \ostate{{{s_i}_0}^{i\in L}}$.
 \paragraph{Predicates.}
 Let
 $\mylangle\overline{\pNet},J,\symb{SV}_k^{k\in K} \myrangle$
-be a pNet. Consider a synchronization vector $SV_k$, for $k\in K$. We build a
+be a pNet. Consider a synchronisation vector $SV_k$, for $k\in K$. We build a
 predicate $\MkPred$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
 \begin{multline*}
-  \MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Longleftrightarrow
-  %% \begin{array}{l}
-  \exists {(a'_i)}^{i\in I},
-          {(b'_j)}^{j\in J},v'.\\
-          SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
-          \land
-          \forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+	\MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Longleftrightarrow
+	%% \begin{array}{l}
+	\exists {(a'_i)}^{i\in I},
+	{(b'_j)}^{j\in J},v'.\\
+	SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+	\land
+	\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
 \end{multline*}
 
 %% \end{array}
@@ -1023,9 +1008,9 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 
 \begin{example}[Open transitions]
   Transition $OT_1$ of the pNet $EnableStateCompLeft$ is generated by
-  combination of the first vector of its root node, with
-  the second vector of its $2^{nd}$ node. Its generated predicate is
-  trivialy true. The global states shows that controler $CState1$ has
+  combining the first vector of its root node with
+  the second vector of its second node. Its generated predicate is
+  trivially true. The global states shows that controler $CState1$ has
     changed from state 0 to 1.
 
   \label{OT:example-1}
@@ -1040,7 +1025,7 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
 	\end{mathpar}
 
 If we use the data-oriented pNet $EnableData$ from Figure
-\ref{schema:enable-pnets} to building a similar $EnableDataCompLeft$
+\ref{schema:enable-pnets} to build a similar $EnableDataCompLeft$
 ``P>>(Q>>R)'' expression, the corresponding open transition would be:
 
   \label{OT:example-2}
@@ -1063,22 +1048,22 @@ If we use the data-oriented pNet $EnableData$ from Figure
 
 
 \paragraph{Structural Semantic Rules:}
-The semantics of pNet in term of open automata has been defined in
-\cite{henrio:Forte2016}, in the form of 2 structural rules, one for
-pLTSs, one for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
+The semantics of pNet in terms of open automata has been defined in
+\cite{henrio:Forte2016}, in the form of two structural rules, one for
+pLTSs, and the other for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
   
 In \cite{henrio:Forte2016} we also proved:
 \begin{theorem}[Finiteness]
   \label{Th:finiteness}
-  Given an open pNet $pnet=\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $l_i^{i\in I}$ and holes $h_j^{j\in
-  J}$, if the sets $I$ and $J$ are finite, if the synchronisation vectors of all pNets 
-  included in  $pnet$   are finite, and if
-$\forall i \in L.\, finite{(states(l_i))} \text{ and } l_i$
-has a finite number of state variables, then its semantics is an open automaton 
-$\mathcal{T}$ with finitely many states and transitions.
+   Let $pnet=\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ be an open pNet  with leaves $l_i^{i\in I}$ and holes $h_j^{j\in
+ 	J}$, where the sets $I$ and $J$ are finite. Suppose the synchronisation vectors of all pNets 
+ included in  $pnet$   are finite, and 
+ % $\forall i \in L.\, finite{(states(l_i))} \text{ and } l_i$ 
+ $l_i $ has a finite number of state variables for each $i\in I$. Then the semantics of $pnet$ is an open automaton 
+ %$\mathcal{T}$ 
+ with finitely many states and transitions.
 \end{theorem}
-  Remark that all the elements of such pNets and open automata being
-symbolic, they can represent many classes of unbounded systems. 
+  Remark that all the elements of such pNets and open automata are symbolic, and they can represent many classes of unbounded systems. 
 
 \begin{proof}
   \TODO{I tentatively copied the proof here, from RR-8898.
@@ -1103,8 +1088,7 @@ the proof of the finiteness theorem refers to SOS rules Tr1 and
 \section{Generation of Open Automata}
 \label{section:implementation}
 In this section we describe the algorithm implementing the pNet
-semantics, the interaction with the Z3 SMT solver, and we show the
-result on our example. Under the hypotheses of Theorem \ref{Th:finiteness}
+semantics and the interaction with the Z3 SMT solver. Under the hypotheses of Theorem \ref{Th:finiteness}
 this algorithm terminates. 
 
 %% \noteSB{
@@ -1143,30 +1127,30 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 
 Algorithm~\ref{alg1} starts with an open pNet, and builds its set of open
 transitions. Its main loop is a classical residual algorithm: starting
-from the initial global state, it picks a state in an unexplored set, and
-computes all possible OTs, adding their target states in the
+from the initial global state, it picks a state in an unexplored set, 
+computes all possible OTs, and adds the target states in the
 unexplored set, until this set is empty.
 
 \ERIC{Before the SAT checking step, it may contain symbolic transitions that
-do not have valid ground instanciations. This is not logicaly
+do not have valid ground instanciations. This is not logically
 incorrect, but is naturaly not an optimal representation. So we prune
 these UNSAT transitions: at the end of the open automaton generation,
 the predicate of each OT is translated 
-into SMTlib assertions, and checked for satisfiability (function \texttt{filterUnsatTransitions}).\\
+into SMTlib assertions, and checked for satisfiability (function \texttt{filterUnsatTransitions}).
 Then we compute the set of reachable transitions and states to build
 the final open automaton.}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
-When applied to a pLTSs at the leaves, we simply take the pLTS transitions of the
+When applying a rule to a PLTS at the leaves, we simply take the PLTS transitions of the
 corresponding local state and use the semantic rule to build the OT\footnote{%
-%
-  We omit detailed presentation of this case for the sake of brevity.
-%
+	%
+	We omit detailed presentation of this case for the sake of brevity.
+	%
 }.
-When applied to a pNet node we use two methods, combining and
+When applying a rule to a pNet node we use two methods, combining and
 matching, to generate the open transitions in a hierarchical manner,
-as shown in Alg.~\ref{alg2}. This method directly manages the
+as shown in Algorithm~\ref{alg2}. This method directly manages the
 holes of the node, so \emph{MakeTransitions} is never called on a hole.
 
 
@@ -1241,11 +1225,11 @@ Assume that there is a collection of $n$ subnets.
 %%   set $L$ in Alg.~\ref{alg2}, on one hand, and control states $s_i$ of
 %%   the subnets, on the other.}
 %% \st{$L = {s_1, s_2, ...,  s_n}$;}
-We denote $\overline{ot}_i$ the set of open
+We denote by $\overline{ot}_i$ the set of open
 transitions of the $i$-th
 subnet (obtained in line~3 of the algorithm); %% $s_i$ and 
 ``$-$'' means that the subnet is not involved.
-The combination $\overline{comb}$, a set of n-tuples, is the
+The combination $\overline{comb}$, a set of $n$-tuples, is the
 cartesian product:  
 $\overline{comb} = (\inactive\cup \overline{ot}_1) \times (\inactive\cup \overline{ot}_2)\times \dots \times (\inactive\cup \overline{ot}_n)$.
 
@@ -1265,10 +1249,8 @@ For each synchronisation vector and each possible
 combination of behaviours of the subnets, as generated by the \emph
 {Combining} method, it builds the corresponding open transition.
 Here, we only detail the construction of the predicate.
-From a synchronization vector
-$sv = \left((a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'\right) \in SV$
-and its guard $G_k$; a tuple of open transitions
-$C = ({ot}_i)^{i \in [1,n]} \in \overline{comb}$, such that, for each $i \in [1,n]$, either $ot_i = -$, or the result action of $ot_i$ is $a_i$; the hole behaviours $\mathit{Hole} = (b_j)^{j \in J}$; and a fresh variable $v$, representing the result action of the OT under construction, we build the predicate:
+Suppose that $sv = \left((a'_i)^{i\in I} (b'_j)^{j\in J}\rightarrow v'\right) \in SV$ is a synchronisation vector, $G_k$ is its guard, and
+$C = ({ot}_i)^{i \in [1,n]} \in \overline{comb}$ is a tuple of open transitions such that, for each $i \in [1,n]$, either $ot_i = -$, or the result action of $ot_i$ is $a_i$. Suppose futher that $\mathit{hole} = (b_j)^{j \in J}$ is the hole behaviour and $v$ is a fresh variable, representing the result action of the OT under construction. Then we can  build the predicate:
 %
 \begin{multline*}
   \mathit{MkPred}(sv, C, \overline{\mathit{hole}}) = 
@@ -1303,19 +1285,19 @@ incompatibility involving the guards. In our algorithm, we choose to
 apply only the simplest filter inside the \emph{Matching} method
 (before applying the predicate and OT construction). Matching and
 unification  will be checked later, together with the guards collected
-from synchronisation vectors and from pLTS transtions, using the
+from synchronisation vectors and from PLTS transtions, using the
 satisfiability check in the SMT engine.
 
 
-\subsection{Management of state variable assignments}
+\subsection{Management of State Variable Assignments}
 
 
-In a pLTS, there may be several incoming transitions 
+In a PLTS, there may be several incoming transitions 
 that assign potentially different (symbolic) values to a state variable.
 To handle such cases, the algorithm manages a
-list of assignment expressions for each pLTS state. 
-\QIN{The only assignments happen on state variables, at pLTS level: every time the MakeTransitions
-algorithm is applied on a pLTS, it collects the expressions from the $Post$ in each transition.
+list of assignment expressions for each PLTS state. 
+\QIN{The only assignments for state variables that happen at the PLTS level are as follows: every time the MakeTransitions
+algorithm is applied on a PLTS, it collects the expressions from the $Post$ in each transition.
 % As there is no assignments collecting work on a pNet node, it is not
 % shown in Algorithm~\ref{alg2}.
 }
@@ -1323,7 +1305,7 @@ algorithm is applied on a pLTS, it collects the expressions from the $Post$ in e
 For a global state in the open automaton, the set of state
 variables (which may be used in an outgoing transition) 
 is the disjoint union
-of sets of state variables of the individual pLTS states constituting this
+of sets of state variables of the individual PLTS states constituting this
 global state. \ERIC{The final assignment sets are assembled when building the
 open automaton from the reachable transitions.}
 
@@ -1339,7 +1321,7 @@ open automaton from the reachable transitions.}
 %% all the possible (symbolic) value of the variables when computing open transitions.
 %% }
 
-\subsection{Pruning the unsatisfiable results}
+\subsection{Pruning the Unsatisfiable Results}
 \label{section:pruning}
 
 \begin{figure}[t]
@@ -1361,12 +1343,12 @@ the predicates express incompatible constraints. Even if having an
 unsatisfiable (symbolic) transition would not be incorrect,
 we choose to minimize the open automaton (\ie its number of
 transitions and states), by checking the predicates for satisfiability.
-In Fig.~\ref{schema:unsat-ot}, we show an 
+In Figure~\ref{schema:unsat-ot}, we show an 
 unsatisfiable open transition 
 from the open automaton of our running example. \TODO{change the text}It shows the case where
 the failure controller performs a ``$\PortFail$'' action, while the timer
-executes a ``$\PortResume$''. The chosen synchronization
-vector (SV0 from Fig.~\ref{schema:ArchFailure:pNet}) does not match
+executes a ``$\PortResume$''. The chosen synchronisation
+vector (SV0 from Figure~\ref{schema:ArchFailure:pNet}) does not match
 with these actions, since it expects $\NameTimer.\PortStart$. This
   mismatch is materialised by the predicate
 fragment ``$\mathit{resume}(\false)=\mathit{start}(b_2)$''. 
@@ -1374,12 +1356,12 @@ fragment ``$\mathit{resume}(\false)=\mathit{start}(b_2)$''.
 Checking satisfiability requires some symbolic computation
 on the action expressions and the predicates, which
 may depend on the specific theory of the action algebra datatypes. 
-The ``Modulo Theory'' part of SMT solvers is important here, so that
-the solver can use specific properties of each action algebra.
+The ``Modulo Theory'' part of SMT solvers is important here, as
+the solvers can use specific properties of each action algebra.
 
-\subsection{Computing reachable state space on the fly}
+\subsection{Computing Reachable State Space on the Fly}
 
-\ERIC{The basic algorithm from the previous section potentialy explores some
+\ERIC{The basic algorithm from the previous section potentially explores some
 areas of the global state-space that will not be reachable after
 checking the OTs' predicates for satisfiability. Incorporating the
 satisfiability check inside the residual algorithm will definitely
@@ -1404,18 +1386,19 @@ assignment information in the ``on-the-fly'' SAT checking, because
 they cannot be complete before exploring (at least) all the reachable
 state space. So the smart algorithm performs in two steps: during the
 first step, the SAT checking is done without using any assignment set
-information. Then after completion of this step, we perform another
+information. Then after the completion of this step, we perform another
 SAT checking of all transitions from step1, but this time using the
 assignment information. This may reduce the reachable state space. If
-we want to be sure the obtained automaton is minimal, we should
-iterate this step until a fix-point is reached. But in practical cases, very
+we want to be sure that the obtained automaton is minimal, we should
+iterate this step until a fixed point is reached. But in practical cases, very
 little will be gained, so the default implementation does only one
 step. Leaving some UNSAT transitions in the
-symbolic automaton is still logicaly correct.
+symbolic automaton is still logically correct.
 
 \TODO{Yuxin: I can add an example showing in detail why we cannot use
   the assignment information on the fly. Do you think this is useful,
   or id the explanation above sufficient ?}
+{\color{green} Yuxin: I think the explanation above is sufficient. What's more important is to give formal proofs for the three theorems.}
 
 \begin{algorithm}[h]
   \caption{``Smart'' Reachable Open Automaton Generation}
@@ -1447,7 +1430,7 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 \end{algorithmic}  
 \end{algorithm}
 
-Algorithm~\ref{alg3} implement this new stategy: in line 5, it runs
+Algorithm~\ref{alg3} implements this new stategy: in line 5, it runs
 the satisfiability check on each OT generated from this global
 state. This check is done without using the assignment information, as
 discussed above. Only the OTs found SAT from this check will be added
@@ -1455,17 +1438,17 @@ to $L$, and the corresponding target global state added to $U$ if
 necessary. This ensures that all explored global states are
 effectively reachable by a chain of SAT OTs.
 
-Then at the end of the residual loop, we do another traversal of the
+At the end of the residual loop, we do another traversal of the
 automaton, this time using the assignment information collected that
-far, and compute the final reachable sub-automaton. This step,
-naturaly, is only useful if there are some assignments.
+far, and compute the final reachable sub-automaton. 
+Naturally, this step is only useful if there are some assignments.
 
 
 The easy case is when the system does not contain assignments to state
-variables. This does not mean ``data-independancy'': we can still have
-guards in the pLTS transitions and in the synchronisation vectors,
+variables. This does not mean ``data-independency'': we can still have
+guards in the PLTS transitions and in the synchronisation vectors,
 making the behaviour depending on the value of input variables. But
-the open automaton need not collect the set of possible values deal
+the open automaton need not to collect the set of possible values dealing
 with the values of local variables, so we can directly compute the
 reachable part of the automaton using the on-the-fly algorithm.
 
@@ -1473,21 +1456,21 @@ reachable part of the automaton using the on-the-fly algorithm.
   \label{Th:CorrectnessWithoutAssignments}
 If a pNet contains no assignment to state variables, then the smart
 algorithm, without final reachability computation, computes exactly
-the same open automaton as algorithm 1.
+the same open automaton as Algorithm 1.
   \end{theorem}
 
 \TODO{Xudong: proof}
 
-But in presence of assignments, we need to collect all of them
+But in the presence of assignments, we need to collect all of them
   before using the assignment information to refine the SAT
   checking. Still, the smart strategy will explore a reduced state
-  space, but not the minimal one (discussion later).
+  space, not necessarily the minimal one (discussion later).
   
 \begin{theorem}[Correctness without assignments]
   \label{Th:CorrectnessWithAssignments}
-In the general case, then the smart
+In the general case, the smart
 algorithm, with a final reachability computation, computes exactly
-the same open automaton as algorithm 1.
+the same open automaton as Algorithm 1.
 \end{theorem}
 
 \TODO{Xudong: proof}
@@ -1508,17 +1491,16 @@ section, we describe the translation of the algebra presentation, of
 assignments, and of the predicates.
 
 Our implementation submits satisfiability requests to
-Z3 using its JAVA API. Here, for readability, we
+Z3 using its Java API. Here, for readability, we
 show the Z3 code using its SMT-LIB input language.
 Note that in the previous sections, the OTs were displayed in a
-  simplified, human readable form. The input and output of our tool, and
-  also the generated SMTlib fragments, are
-  slightly more difficult to read, in 
+simplified, human readable form. The input and output of our tool, and
+also the generated SMTlib fragments, are
+slightly more difficult to read, in 
 particular because of structured names for the fresh variables generated
-by the algorithm, allowing tracability of the result~\cite{Avocs-RR}.
+by the algorithm, allowing for tracability of the result~\cite{Avocs-RR}.
 
-Figure~\ref{schema:smt-lib} shows the translation of the
-transition of Fig.~\ref{schema:unsat-ot}
+Figure~\ref{schema:smt-lib} shows the translation of  Figure~\ref{schema:unsat-ot}
 in the SMTlib syntax.
 \TODO{Change the text}It contains the declaration
 of the BIP action algebra sorts 
@@ -1527,7 +1509,7 @@ predicate to be checked, encoded as a set of assertions.
 Here the behavior of the hole ``B'' appears as a variable
 ``|hb\_B:13:1|'', and line 10 shows the constraint that matching with
 a synchronisation vector has imposed on the behavior of ``B''.
-Here we display also the diagnosis (``sat'' or ``unsat'') generated by Z3.
+We also display  the diagnosis (``sat'' or ``unsat'') generated by Z3.
 
 \begin{figure}[t]
   %  \centerline{\includegraphics[width=12cm]{XFIG/SMTLIB2}}
@@ -1535,16 +1517,16 @@ Here we display also the diagnosis (``sat'' or ``unsat'') generated by Z3.
   \caption{Checking one Open Transition in Z3}  \label{schema:smt-lib}
 \end{figure}
 
-By lack of space, we have only shown here a use-case with boolean data
+For simplicity, we have only shown here a use-case with boolean data
 parameters, so we only require the basic SAT capability of the Z3
 engine. It should be clear that more involved examples will require
-reasonning on predicates of various data types. Z3 provides theories for reasonning
-on integers, bitstrings, enumerated types, arrays, etc.
+reasoning about predicates of various data types. Z3 provides theories for reasonning
+about integers, bitstrings, enumerated types, arrays, etc.
 We also need to deal with some universal quantification on free
-variables occuring in the guards of synch vectors.
-For other data structures usual in such models, like records, or
+variables occuring in the guards of synchronisation vectors.
+For other data structures  in such models, like records, or
 recursive structures, the user will have to develop its own theories.
-Decidability of these theories will condition the completeness of the
+Decidability of these theories will condition on the completeness of the
 satisfiability check, and the decidability of model-checking or
 bisimulation checking.
 
@@ -1565,10 +1547,10 @@ variable assignments into Z3 (Java-API) calls.
 \emph{Translation of action algebra presentation.}
 In~\cite{Avocs-RR}, we  define the translation of an algebra presentation into
 SMTlib declarations (\texttt{declare-datatypes} and
-\texttt{declare-fun}). We also formalize a condition of well-formedness of pNets ensures that the generated code is correct,
+\texttt{declare-fun}). We also formalise a condition of well-formedness of pNets to ensure that the generated code is correct,
 and will not raise runtime errors in the SMT engine. Note that the
 \texttt{declare-datatypes} command comprises both the action
-constructors from table \ref{table:BIPalgebra} and also the constant action
+constructors from Table~\ref{table:BIPalgebra} and also the constant action
 names from our example.
 Additionally, we will include axiomatisation of any required functions
 and predicates of the presentation data-types.
@@ -1578,7 +1560,7 @@ and predicates of the presentation data-types.
 %% State variable assignments that were collected during the open
 %% automaton are used when generating the SMTlib asserts (see
 %% App.~\ref{appendix:translating-assignments}). \noteSB{I am not an expert of Z3 or SMT-LIB, but the clause '\texttt{(= t (- t 1))}' looks very suspicious to me.}\hl{This appears in
-%% line 10 of Fig.~\ref{schema:smt-lib}, which encodes possible values of
+%% line 10 of Figure~\ref{schema:smt-lib}, which encodes possible values of
 %% the variable $t$ of the timer.}
 
 %The assignments are also taken into account when checking the
@@ -1615,11 +1597,11 @@ In~\cite{Avocs-RR} we formally define all steps of the translation of each
 open transition, including:
 %
 \begin{itemize}
-\item collect all variables in the transition, and declare them (using \texttt{declare-const})
-\item check well-formedness and correct typing of expressions,
-\item translate the predicate into a conjunction of assertions,
-\item if present in the source state, translate the state-variable
-  assignments into a disjunctive assertion.
+	\item to collect all variables in the transition, and declare them (using \texttt{declare-const})
+	\item to check the well-formedness and correct typing of expressions,
+	\item to translate the predicate into a conjunction of assertions,
+	\item to translate the state-variable
+	assignments into a disjunctive assertion, if the assignments are present in the source state.
 \end{itemize}
 %
 This translation ensures that no runtime error will occur
@@ -1631,11 +1613,11 @@ inequality, or a guard.
 The result (sat or unsat) of the final \texttt{check-sat} command in
 the translation () is then decoded.
 
-\section{Use-cases}
+\section{Use-Cases}
 \label{section:use-cases}
 \TODO{new section here, showing various features on different examples}
 
-\subsection{Enable operator} in Lotos, with (equivalent) state-based
+\subsection{Enable Operator} in Lotos, with (equivalent) state-based
 and data-based encodings; Associativity of Enable;
 \label{section:use-case:Enable}
 
@@ -1686,7 +1668,7 @@ prove that these two automata are bismilar.
 Now 
 %%\subsection{simple communication protocol} specification and implementation;
 
-\subsection{BIP FailureTimer architecture}
+\subsection{BIP FailureTimer Architecture}
 \label{section:FailureTimerMax}
 
 As a running example we use the Failure Monitor architecture from the
@@ -1718,9 +1700,9 @@ $\NameTimer$\mdash are standard BIP components insofar as they also
 have their \emph{behaviour} specified by finite automata extended with
 local data variables.  Transitions of these automata are labelled with
 the ports of the corresponding components, Boolean guards and update
-functions on local variables.  For instance the loop transition
+functions on local variables.  For instance, the loop transition
 $t_1 \goesto{\PortTick, [t < Max], t:=t+1} t_1$
-in the $\NameTimer$ component is labeled by the port $\PortTick$, it
+in the $\NameTimer$ component is labelled by the port $\PortTick$. It
 can be fired only when the current value of the local variable $t$ is
 lower than $Max$.  Upon firing, this transition increments the value
 of $t$ by $1$.  When omitted, the default guard (\resp update
@@ -1731,10 +1713,10 @@ architecture.
 Connectors are hierarchical, tree-like structures with component ports
 at the leaves.  They define sets of \emph{interactions}, based on the
 attributes of the connected ports~\cite{BliSif08-acp-tc}, which may be
-either \emph{trigger} (triangles in Fig.~\ref{schema:ArchFailure:BIP})
-or \emph{synchron} (bullets in Fig.~\ref{schema:ArchFailure:BIP}).
+either \emph{triggers} (triangles in Figure~\ref{schema:ArchFailure:BIP})
+or \emph{synchrons} (bullets in Figure~\ref{schema:ArchFailure:BIP}).
 %
-If all sub-connectors of a connector are synchrons, then an
+If all the sub-connectors of a connector are synchrons, then an
 interaction may be executed by the connector only if each subconnector
 can contribute.
 %
@@ -1742,7 +1724,7 @@ If at least one of the sub-connectors is a trigger, then any
 interaction consisting of contributions of any set of sub-connectors,
 \emph{involving at least one of the triggers}, can be executed.
 %
-For instance, the two ports $\NameTimer.start$ and
+For instance, the two ports $\NameTimer.\PortStart$ and
 $\NameCtrl.\PortFail$ are always synchronised, since they belong to
 the same binary sub-connector, where they are both synchrons.  In
 particular, this means that whenever the transition 
@@ -1789,16 +1771,16 @@ units (more details in Sect.~\ref{section:resultOA}).
 
 Figure~\ref{schema:ArchFailure:pNet} shows a pNet encoding of the
 above Failure Monitor architecture.  This encoding is structural: each
-coordinator component is encoded as a pLTS, the operand
-component\mdash as a hole; connectors of the BIP model are encoded as
+coordinator component is encoded as a PLTS and the operand
+component as a hole; connectors of the BIP model are encoded as
 synchronisation vectors.  Each connector that does not involve
 triggers is trivially encoded by a synchronisation vector comprising
 the same ports.  In order to encode the semantics of the connectors
-involving triggers, we 1)~in the pLTS encoding the coordinator
+involving triggers, we 1)~in the PLTS encoding the coordinator
 components, add loop transitions to ensure that all ports involved in
 such connectors are enabled in all states, 2)~associate a Boolean
 value to each of these ports: the original transitions carry the value
-$\true$ (\eg $c_0 \goesto{\PortFail(\true)} c_1$), the
+$\true$ (\eg $c_0 \goesto{\PortFail(\true)} c_1$) and the
 added loops carry the value $\false$ (\eg $c_2
 \goesto{\PortFail(\false)} c_2$), 3)~add to the corresponding
 synchronisation vectors the Boolean predicate encoding the connector
@@ -1821,7 +1803,7 @@ Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 For this example, the tool (using Algorithm 1) builds 258 open transitions, whereof 248
 are detected unsatisfiable by Z3.  The resulting open automaton, with
 3 reachable global states (out of the possible 6) and 10 open
-transitions, is shown in Fig.~\ref{schema:resultOA1}.
+transitions, is shown in Figure~\ref{schema:resultOA1}.
 
 \begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{ActaXFIG/FailureTimerOA-v2-2}}
@@ -1838,7 +1820,7 @@ transitions, is shown in Fig.~\ref{schema:resultOA1}.
 %Notice, however that the loop transitions
 %$\underline{\mathit{resume}}$ in states $\ostate{s0,t0}$ and
 %$\ostate{s2,t0}$, corresponding, respectively, to open transitions
-%$ot_2$ and $ot_9$ in Fig.~\ref{schema:ots} of
+%$ot_2$ and $ot_9$ in Figure~\ref{schema:ots} of
 %App.~\ref{appendix:fullOutput}, involve $\OTvar{resume(false)}$ from
 %the two pLTS, \ie only the hole, corresponding to the operand
 %component of the Failure Monitor architecture, executes $\PortResume$.
@@ -1884,13 +1866,12 @@ property \emph{``There is always a possibility to reset the system
 %%   one involving the timer data (number of ticks ?)}
 
 
-\subsection{Composing 2 FailureTimer BIP Architectures}
+\subsection{Composing Two FailureTimer BIP Architectures}
 \noteInEM{Modifications stopped here}
 \label{section:use-case:Double}
 \TODO{Enhanced FailureTimer, 2 instances composed, with duplicated control and Timer}
 
-In the conception of the Nano satellite Software \cite[], the Failure
-Timer architecture was used to control several processes
+In the conception of the nanosatellite software \cite[], the FailureTimer architecture was used to control several processes
 communicating on the common bus. Timeout signals (``$ask$''), resets,
 and the passing of time ($tick$) were synchronised in the global
 system.
@@ -1899,7 +1880,7 @@ In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
 of two FailureTimer architectures, with their respective controlled
 processes.
 In Figure~\ref{schema:ArchFailure:Double:OA} we show the resulting
-open automaton. Remark that it shows that th etwo timers are forced to
+open automaton. It indicates that the two timers are forced to
 be synchronous: each can only tick after the other has also started,
 and then they will tick, and timeout, synchrounously.
 
@@ -1935,9 +1916,9 @@ and then they will tick, and timeout, synchrounously.
 
 
 
-\subsection{Benefits from the Smart algorithm}
+\subsection{Benefits from the Smart Algorithm}
 
-In each cell of the following table, we display the number of OTs whose predicates were founSAT/UNSAT by the SMT engine, and the overall time spent for the whole algorithm execution.
+In each cell of the following table, we display the number of OTs whose predicates were founSAT/UNSAT by the SMT engine, and the overall time spent for the execution of the whole algorithm.
 
 	\begin{tabular}{p{4cm}p{3cm}p{3cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
@@ -1994,24 +1975,24 @@ In each cell of the following table, we display the number of OTs whose predicat
 		\\\hline
 	\end{tabular}
 
-        This shows a significant benefit of the ``smart'' strategy, in the considered use-cases, between 30 to 80\% gain depending on the examples.
+        This shows a significant benefit of the ``smart'' strategy, in the considered use-cases, between 30\% and 80\% gain depending on the examples.
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
 
 The formal definitions and properties of the open pNets model were
-published in \cite{henrio:Forte2016}. In this new work we describe an implementation of
+given in \cite{henrio:Forte2016}. In the current work we describe an implementation of
 the model and its semantics construction, including its interaction
 with the Z3 SMT engine.
-The implementation has two parts: the first is a finitary algorithm
+The implementation has two parts: the first is an algorithm
 that builds all possible combinations of synchronisations through the
 pNet hierarchical structure. The result is a so-called
-\emph{open-automaton}, which transitions contains predicates relating
+\emph{open automaton}, whose transitions contain predicates relating
 the actions of the pNet holes and controllers. Some of the open
-transitions obtained at this step,  may
+transitions obtained at this step  may
 contain predicates which do not represent any possible concrete
 instantiations. 
-In the second part of the tool we use the SMT solver Z3 for checking the
+In the second part of the tool we use the SMT solver Z3 to check the
 satisfiability of the predicate in each open transition. 
 To this end, we encode into Z3 the representations of the action algebra and
 the predicates before submitting them to the
@@ -2024,8 +2005,9 @@ architecture from an earlier nanosatellite case
 study~\cite{CubETH-case-study}.  This example shows that
 open-automata-based semantics can be instrumental in verifying the
 properties enforced by the architectures through an encoding into open
-pNets.  This encoding\mdash which we intend to formalise and prove
-correct in a separate paper\mdash also opens the way for an extension
+pNets.  This encoding %\mdash which we intend to formalise and prove
+% correct in a separate paper\mdash 
+also opens the way for an extension
 of BIP architectures with the transfer of data among variables of
 different components.  Indeed, such data transfer can be easily
 encoded using the predicates associated to synchronisation vectors in
@@ -2062,17 +2044,17 @@ movements of the encoded process expressions.
 %%   systems are under development}
 %
 Naturally, our next goals after the generation of the open automata
-will be to model-check logical properties, and to check equivalence of pNets. While
+will be to model-check logical properties, and to check equivalences of pNets. While
 model-checking open automata  seems easy to define, equivalence
 checking is more challenging. 
 In~\cite{henrio:Forte2016}, we
-have already found the FH-bisimulation, %inspired
+have already found the FH-bisimulation %inspired
 %by~\cite{deSimone85},
 to be a
 suitable definition. But weak equivalences, or refinements, will
 definitely be useful when comparing different pNets with
 different structure. For bisimulation, we foresee that SMT methods
-will be the basis for comparison of open transitions. 
+will be the basis for comparing open transitions. 
 %However, the usual approach of computing bisimulation by partition
 %% refinement does not work easily with symbolic transitions. In a first
 %% step we may want instead to define and implement an algorithm for
@@ -2089,10 +2071,8 @@ will be the basis for comparison of open transitions.
 attack the complexity of verification of realistic systems by a
 compositional and parametric approach. Still one may wonder if the price
 for analysing our symbolic transitions will not make the approach too expensive
-in term of computing time. We tried a
-slighly bigger example, assembling 2 Failure controllers. In~\cite{Avocs-RR}, we show that Z3 can check the
+in terms of computing time. In~\cite{Avocs-RR}, we show that, for a slighly bigger example of assembling two failure controllers, Z3 can check the
 satisfiablility of a 90K open transitions in a couple of minutes.
-
 
 
 \bibliographystyle{spmpsci}
@@ -2833,7 +2813,7 @@ $\{(sel_i, sort_i)\}_{i\in[1..n]}$.
 \end{example}
 
 \begin{example}
-  For our BIP use-case, we have built (see Fig.\ref{schema:smt-lib}):
+  For our BIP use-case, we have built (see Figure\ref{schema:smt-lib}):
   \begin{lstlisting}
   (declare-datatypes ()
       ((Action (fail) (resume) (timeout) (reset) (start) (tick) (ask)
@@ -2937,7 +2917,7 @@ in its premisses: the list of transitions of pLTSs and actions of
 holes, the predicate, the Post assignements. In the conclusion the
 transition labelled by a fresh ``result'' variable.
 
-In Fig.~\ref{schema:ots} we display the same OTs in a more human friendly format (but manualy translated into latex).
+In Figure~\ref{schema:ots} we display the same OTs in a more human friendly format (but manualy translated into latex).
 
 \begin{figure}[h]
 $\begin{array}{r@{}l}
@@ -3104,7 +3084,7 @@ OT ---------------------------------------------------------------------------
 \end{figure}
 
 We build a larger system by composing several subsystems. In the
-example here (Fig.~\ref{schema:scaleup}), we use two Failure
+example here (Figure~\ref{schema:scaleup}), we use two Failure
 Monitoring modules. 
 To compose them, a new controller is added for managing the reset
 function of the whole system.  
