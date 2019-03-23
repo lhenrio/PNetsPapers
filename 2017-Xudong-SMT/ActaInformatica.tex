@@ -300,6 +300,8 @@
   Universit\'e C\^ote d'Azur, Inria, CNRS, I3S, 06902 Sophia
   Antipolis, France,\\
   \email{eric.madelaine@inria.fr}
+  \qquad
+  \orcid{0000-0002-5552-5993}
 }
   
 %% \author{ Xudong Qin\inst{1},
@@ -345,10 +347,23 @@
 	satisfiability of the predicates.
 	%As an industrial oriented use-case, %we use so-called ``architectures''
 	%for BIP systems, that have been used in the framework of an ESA project and to specify the control software of a nanosatellite at the EPFL Space Engineering Center. 
-	We also present several use-cases, in particular, encoding a BIP architecture
-	extended with explicit data and computing its
-	open automaton semantics. This automaton may be used to prove
-	behavioural properties such as safety and liveness.
+%	We also present several use-cases, in particular, encoding a BIP architecture
+%	extended with explicit data and computing its
+%	open automaton semantics. This automaton may be used to prove
+%	behavioural properties such as safety and liveness.
+\ERIC{We also propose and implement an optimised
+	algorithm that performs part of the pruning on-the-fly, and show how
+	this new algorithm is correct with respect to the original one.
+	We illustrate the approach using two use-cases: the first one is a
+	classical process-algebra operator for which we provide several
+	encodings, and prove basic properties. The second is  industry-oriented and based on the so-called ``BIP architectures'', which have
+	been used to specify the
+	control software of a nanosatellite at the EPFL Space Engineering
+	Center. We use pNets to encode a BIP architecture
+	extended with explicit data, compute its semantics and discuss its
+	properties, and then show how our algorithms scale up, using a
+	composition of two such architectures.}}
+
 \TODO{Add new contrib}
 \todoMargin{Should we remove Min ?}
 \keywords{pNets, software components, symbolic semantics, SMT
@@ -825,7 +840,7 @@ examples of these constructs, with two pLTSs, one hole and one pNet
 node encoding our running example. 
 
 \subsection{Example}
-\label{section:example}
+\label{section:running-example}
 
 \begin{figure}[t]
 \begin{minipage}{6.1cm}
@@ -844,45 +859,43 @@ node encoding our running example.
 \end{figure}
 
 	To give simple intuitions of the open pNet model and its semantics, we use
-here a simple example based on the ``Enable'' operator of the LOTOS language.
-In Figure \ref{schema:enable-pnets}, we show two possible encodings of the  
-``Enable'' operator.
-In the Enable expression ``P>>Q'', an \texttt{exit(x)} statement within P
-terminates the current process, carrying a value $x$ that
-is captured by the \texttt{accept(x)} statement of Q. 
+	here a simple example based on the ``Enable'' operator of the LOTOS language.
+	In the Enable expression ``P>>Q'', an \texttt{exit} statement within P
+	terminates the current process, carrying a value $x$ that
+	is captured by the \texttt{accept} statement of Q. 	
+	We use a simple action algebra,
+	containing two constructors $\delta(x)$ and $acc(x)$, for any
+	possible data type of the variable $x$, corresponding to the
+	statements \texttt{exit} and \texttt{accept}. 
+	We need no specific predicate over the action expressions, apart
+	from equality of actions.
+        
+	In Figure \ref{schema:enable-pnets}, we show two possible encodings of the  
+	``Enable'' operator.
+        In the first encoding $EnableState$, in the upper part of
+	Figure \ref{schema:enable-pnets}, we use a controller $CState$ with two
+	states, and simple control actions $l, r, \delta$. The second encoding
+	$EnableData$ uses a data-oriented style, with a single state controller $CData$, and a
+	state-variable $v$, with values in $\{0,1\}$.
 
-We use a simple action algebra,
-containing two constructors $\delta(x)$ and $acc(x)$, for any
-possible data type of the variable $x$, corresponding to the
-statements \texttt{exit(x)} and \texttt{accept(x)}. Both $\delta(x)$
-and $acc(x)$ actions are
-implicitly included in the sorts of all processes.
-We need no specific predicate over the action expressions, apart
-from equality of actions. 
-In the first encoding $Enable1$, in the upper part of
-Figure \ref{schema:enable-pnets}, we use a controller $C_1$ with two
-states, and simple control actions $l, r, \delta$. The second encoding
-$Enable2$ uses a data-oriented style, with a single state controller, and a
-state-variable $s_0$, with values in $\{0,1\}$.
-
-In this example we use \emph{synchronised
-	actions}, to express actions that cannot be further synchronised, like the
-silent action $\tau$ of CCS. We denote them as any action expression with the text
-underlined, as e.g. $\underline{\delta(x_2)}$. Such
-actions do not play any special role for defining
-the semantics of pNets, but as one can expect, will be crucial
-for defining weak equivalences.
-
-Note that synchronisation vectors are defined in a parameterised
-manner:  the first and third lines represent one vector
-for each parameterised action in the Sort of hole $P$
-(resp. $Q$). This notation can also use predicates, as in the first
-case, in which we want the vector to apply to any action of $P$
-except $\delta(z)$.
-
-In Figure \ref{schema:enable-composed}, we enrich our example by
-composing two occurences of the EnableState pNet. %For simplicity, we only represent one instance of the synchronisation vector set, and of the controller.
-In Section~\ref{section:use-case:Enable} we show how these encodings can
+        In this example we use \emph{synchronised
+          actions}, to express actions that cannot be further synchronised, similar to the
+         silent action $\tau$ of CCS. We denote them as any action expression with the text
+        underlined, as e.g. $\underline{\delta(x_2)}$. Such
+        synchronised actions do not play any special role for defining
+        the semantics of pNets, but as one can expect, will be crucial
+        for defining weak equivalences.
+	
+	Note that synchronisation vectors are defined in a parameterised
+	manner:  the first and third lines represent one vector
+	for each possible action of hole $P$
+	(resp. $Q$). This notation can also use predicates, as in the first
+	case, in which we want the vector to apply to any action of $P$
+	except $\delta(z)$.
+	
+	In Figure \ref{schema:enable-composed}, we enrich our example by
+	composing two occurences of the EnableState pNet. In Section
+        \ref{section:use-case:Enable} we will show how these encodings can
         be used to prove properties of the Enable operator.
 
 
@@ -892,7 +905,7 @@ In Section~\ref{section:use-case:Enable} we show how these encodings can
 \label{section:op-semantics}
 
 The semantics of open pNets will be defined as an open automaton, that
-is an automaton where each transition composes transitions 
+is an automaton where each transition represents the composition transitions 
 of several
 % \noteSB{These should all be PLTSs, right? Or did I miss
 %  something?}\noteEM{Hum, nor really, something intermediate; the actions there can be
@@ -901,9 +914,11 @@ of several
 LTSs with the actions of some holes; the transition occurs if some predicates hold,
 and can involve a set of state modifications. Each state of an open
 automaton has a set of \emph{state variables} that can be assigned by
-incoming transitions. Strictly speaking, the LTSs at the leaves of the
-open automaton are a restricted form of PLTSs, where labels are
-parametrised actions, but include neither guard nor assignments.
+incoming transitions.
+%Strictly speaking, the LTSs at the leaves of the
+%open automaton are a restricted form of pLTSs, where labels are
+%parametrised actions, but include no guard nor assignments.
+
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
@@ -917,9 +932,9 @@ parametrised actions, but include neither guard nor assignments.
 			\{\xrightarrow{\beta_j}_j\}^{j\in J}, \Pred\,, \Post}
 		{s \xrightarrow {\alpha}s'}\,,
 	\end{mathpar}
-	where $s, s'\in\mathcal{S}$, the $a_i, \beta_j, \alpha$ are
-	action expressions,
-	% $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the 
+	where $s, s'\in\mathcal{S}$, the $\beta_j, \alpha$ are
+        action expressions,
+        % $s_i{\xrightarrow{a_i}}_i s_i^{\prime}$ is a transition of the 
 	% LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$
 	$\beta_j$
 	is an action of the hole $j$, and $\alpha$ is the resulting action
@@ -948,8 +963,6 @@ parametrised actions, but include neither guard nor assignments.
 		
 	\end{itemize}
 \end{definition}
-
-
 %
 %Then the semantics of a pNet is characterized by a set of {\em open
 %transitions}, where the hypotheses on process parameters are
@@ -958,7 +971,6 @@ parametrised actions, but include neither guard nor assignments.
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-% \TODO{Relate to the algorithm, or even move to section 5}
 The \emph{states} and the shape of \emph{predicates} in the
 transitions
 of an open automaton representing the semantics of a pNet
@@ -1010,9 +1022,8 @@ the actions of the involved sub-pNets and the resulting actions. This predicate 
   Transition $OT_1$ of the pNet $EnableStateCompLeft$ is generated by
   combining the first vector of its root node with
   the second vector of its second node. Its generated predicate is
-  trivially true. The global states shows that controler $CState1$ has
-    changed from state 0 to 1.
-
+  trivially true. The global states show that controler $CState1$ is
+  changing from state 0 to 1.
   \label{OT:example-1}
         \begin{mathpar}
 	  OT_1  =
@@ -1048,11 +1059,12 @@ If we use the data-oriented pNet $EnableData$ from Figure
 
 
 \paragraph{Structural Semantic Rules:}
-The semantics of pNet in terms of open automata has been defined in
+The semantics of pNets in terms of open automata has been defined in
 \cite{henrio:Forte2016}, in the form of two structural rules, one for
-pLTSs, and the other for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
+PLTSs, and the other for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
   
-In \cite{henrio:Forte2016} we also proved:
+In \cite{henrio:Forte2016} we also proved the following result, that
+ensure that the termination of our semantic construction algorithm:
 \begin{theorem}[Finiteness]
   \label{Th:finiteness}
    Let $pnet=\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ be an open pNet  with leaves $l_i^{i\in I}$ and holes $h_j^{j\in
@@ -1070,11 +1082,11 @@ In \cite{henrio:Forte2016} we also proved:
 the proof of the finiteness theorem refers to SOS rules Tr1 and
   Tr2. Yuxin, I agree this proof is NOT required in this paper. But for the
   sake of reviewing process, (and if I find enough time), I will try
-  to add an appendix with the semantic rules (constructing open
+  to add an appendix with the semantic rules (Tr1 and Tr2, constructing open
   transitions from pNets) and the proof of finiteness below }
   
   The possible set of states of the open-automaton is the cartesian
-  product of the states of its leaves $pLTS_i^{i\in L}$, that is finite by
+  product of the states of the pNet $pLTS_i^{i\in L}$, that is finite by
   hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
   iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
   number of applications of rules Tr2 on the structure of the
@@ -1088,8 +1100,9 @@ the proof of the finiteness theorem refers to SOS rules Tr1 and
 \section{Generation of Open Automata}
 \label{section:implementation}
 In this section we describe the algorithm implementing the pNet
-semantics and the interaction with the Z3 SMT solver. Under the hypotheses of Theorem \ref{Th:finiteness}
-this algorithm terminates. 
+semantics, its new ``on-the-fly'' version, and the interaction with the
+Z3 SMT solver. Under the hypotheses of Theorem \ref{Th:finiteness} 
+both algorithms terminate. 
 
 %% \noteSB{
 %% line 11: Would it not be better to prune unsatisfiable transitions
@@ -1136,53 +1149,20 @@ do not have valid ground instanciations. This is not logically
 incorrect, but is naturaly not an optimal representation. So we prune
 these UNSAT transitions: at the end of the open automaton generation,
 the predicate of each OT is translated 
-into SMTlib assertions, and checked for satisfiability (function \texttt{filterUnsatTransitions}).
+into SMTlib assertions (see Section~\ref{section:pruning}), and checked for
+satisfiability (function \texttt{filterUnsatTransitions}).\\ 
 Then we compute the set of reachable transitions and states to build
 the final open automaton.}
 
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
 When applying a rule to a PLTS at the leaves, we simply take the PLTS transitions of the
-corresponding local state and use the semantic rule to build the OT\footnote{%
-	%
-	We omit detailed presentation of this case for the sake of brevity.
-	%
-}.
+corresponding local state and use the semantic rule to build the OT.
 When applying a rule to a pNet node we use two methods, combining and
 matching, to generate the open transitions in a hierarchical manner,
 as shown in Algorithm~\ref{alg2}. This method directly manages the
 holes of the node, so \emph{MakeTransitions} is never called on a hole.
 
-
-%
-%% \noteInSB{Algorithm~\ref{alg2}, as presented below is not
-%%   well-defined: when we reach the leaves, a pLTS does not have any
-%%   subnets, hence the loop in lines 2--4 is empty and so is the list
-%%   $l$. $\mathit{Combining}(l)$ is then called on an empty list...}
-
-%\noteInSB{Line 2: Tr1 and Tr2 are the semantic rules, right?}
-
-%% \noteInSB{Line 6: Nothing in the assignment $\overline{comb} =
-%%   \mathit{Combining}(l)$ depends on $sv$.  Hence, this should probably
-%%   be done outside of the loop.}
-
-%% \noteSB{Line 7: There are two type mismatches here: $ot$ is an open
-%%   transition, whereas $\mathit{Matching}$ is a predicate\mdash one
-%%   cannot assign a predicate to an open transition.  Furthermore, in
-%%   the definition of $\mathit{Matching}$, below, $C_n$ is an open
-%%   transition, whereas $\overline{comb}$ is a {\em set} of open
-%%   transitions, so this call does not type either. There is probably
-%%   another inner loop over all tuples of OTs in $\overline{comb}$; even
-%%   so the open transition has to be defined completely, not just the
-%%   predicate\mdash what is the value of $Post$ for the new transition?
-%%   Maybe $\mathit{Matching}$ should not be a predicate, but an OT?
-%%   Finally, how is $\mathit{hole}$? (I have removed $v$\mdash here and
-%%   in the parameters of the definition of the $\mathit{Matching}$
-%%   predicate, because the text in the paragraph ``Matching'' says that
-%%   $v$ is fresh.)}
-%% \noteEM{Done, please check the new version}
-
-%\noteInSB{Line 8: When is $\mathit{Filter}(ot)$ called?}
 
 \begin{algorithm}[h]
 \caption{MakeTransitions() \em{for a pNet node}}
@@ -1324,19 +1304,6 @@ open automaton from the reachable transitions.}
 \subsection{Pruning the Unsatisfiable Results}
 \label{section:pruning}
 
-\begin{figure}[t]
-        \begin{mathpar}
-	  OT_{19}  =
-          \inferrule*[myfraction=\reddottedrule]
-	{\{\xrightarrow{\delta(x2)}_P ~~
-          \xrightarrow{acc(x2)}_R \} ~~
-          [\forall z. \delta(x2) \neq \delta(z) \neq
-            \delta(x2)]
-        }
-	{\ostate{2,0} \xrightarrow {\underline{\delta(x2)}} \ostate{3,0}}
-	\end{mathpar}
-\caption{One of the unsatisfiable open transitions}  \label{schema:unsat-ot}
-\end{figure}
 
 Our matching/filtering strategy builds some transitions where
 the predicates express incompatible constraints. Even if having an
@@ -1352,6 +1319,20 @@ vector (SV0 from Figure~\ref{schema:ArchFailure:pNet}) does not match
 with these actions, since it expects $\NameTimer.\PortStart$. This
   mismatch is materialised by the predicate
 fragment ``$\mathit{resume}(\false)=\mathit{start}(b_2)$''. 
+
+\begin{figure}[h]
+        \begin{mathpar}
+	  OT_{19}  =
+          \inferrule*[myfraction=\reddottedrule]
+	{\{\xrightarrow{\delta(x2)}_P ~~
+          \xrightarrow{acc(x2)}_R \} ~~
+          [\forall z. \delta(x2) \neq \delta(z) \neq
+            \delta(x2)]
+        }
+	{\ostate{2,0} \xrightarrow {\underline{\delta(x2)}} \ostate{3,0}}
+	\end{mathpar}
+\caption{\TODO{Eric: check, it looks wrong}One of the unsatisfiable open transitions}  \label{schema:unsat-ot}
+\end{figure}
 
 Checking satisfiability requires some symbolic computation
 on the action expressions and the predicates, which
@@ -1545,7 +1526,7 @@ variable assignments into Z3 (Java-API) calls.
 % The $presentation$ and the predicates are translated separately. 
 
 \emph{Translation of action algebra presentation.}
-In~\cite{Avocs-RR}, we  define the translation of an algebra presentation into
+In~\cite{AVOCS18}, we  define the translation of an algebra presentation into
 SMTlib declarations (\texttt{declare-datatypes} and
 \texttt{declare-fun}). We also formalise a condition of well-formedness of pNets to ensure that the generated code is correct,
 and will not raise runtime errors in the SMT engine. Note that the
@@ -1615,13 +1596,19 @@ the translation () is then decoded.
 
 \section{Use-Cases}
 \label{section:use-cases}
-\TODO{new section here, showing various features on different examples}
+In this section we present the results of open automata construction
+for several examples, starting with three constructions from
+Section~\ref{section:running-example} using the Enable operator.
+Then we give detailed results for the Failure Controller that was
+presented in \cite{AVOCS18}, and show how this sort of BIP Architectures
+can be composed together.
+Finaly we give some figures illustrating the benefits from the smart
+algorithm on these examples.
 
-\subsection{Enable Operator} in Lotos, with (equivalent) state-based
-and data-based encodings; Associativity of Enable;
+\subsection{Enable operator} 
 \label{section:use-case:Enable}
 
-\begin{figure}[~tb]
+\begin{figure}[ht]
 \centerline{ 
   \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1-aut}
   \hspace{25mm}
@@ -1660,16 +1647,17 @@ $  \begin{array}{@{}r@{}l@{}}
   \label{schema:enable-OAs}
 \end{figure}
 
-The open automata generated for the 2 encodings of Enable in
+The open automata generated for the two encodings of Enable in
 Figure~\ref{schema:enable-pnets} are displayed in
-Figure~\ref{schema:enable-OAs}. We have shown in \ref{Forte} how to
+Figure~\ref{schema:enable-OAs}. We have shown in \cite{henrio:Forte2016} how to
 prove that these two automata are bismilar.
-
-Now 
+ 
 %%\subsection{simple communication protocol} specification and implementation;
 
+
 \subsection{BIP FailureTimer Architecture}
-\label{section:FailureTimerMax}
+\label{section:FailureTimer}
+
 
 As a running example we use the Failure Monitor architecture from the
 CubETH nanosatellite on-board software
@@ -1760,7 +1748,7 @@ top-level connectors, at each execution round.
 Application of the Failure Monitor architecture ensures that, whenever
 a failure is registered in the operand component, the system will be
 reset, unless a resumption is registered within $\mathrm{Max}$ time
-units (more details in Sect.~\ref{section:resultOA}).
+units (more details in Sect.~\ref{section:FailureTimer}).
 
 \begin{figure}[t]
   \centering
@@ -1859,7 +1847,7 @@ property \emph{``There is always a possibility to reset the system
   Failure Monitor architecture can be specified using CTL as
     $\AG
 \bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
-  \PortReset}\bigr)$.  Additional properties are provided in \cite{TimerRR}.
+  \PortReset}\bigr)$.  Additional properties are provided in~\cite{Avocs-RR}.
 
 %% \TODO{it would be good to express here maybe 2 properties of the
 %%   architecture, maybe one taken from the original study, and another
@@ -1867,11 +1855,9 @@ property \emph{``There is always a possibility to reset the system
 
 
 \subsection{Composing Two FailureTimer BIP Architectures}
-\noteInEM{Modifications stopped here}
 \label{section:use-case:Double}
-\TODO{Enhanced FailureTimer, 2 instances composed, with duplicated control and Timer}
 
-In the conception of the nanosatellite software \cite[], the FailureTimer architecture was used to control several processes
+In the conception of the nanosatellite software \cite{CubETH-case-study}, the FailureTimer architecture was used to control several processes
 communicating on the common bus. Timeout signals (``$ask$''), resets,
 and the passing of time ($tick$) were synchronised in the global
 system.
@@ -1887,14 +1873,14 @@ and then they will tick, and timeout, synchrounously.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{ActaXFIG/BIPspec-DoubleArchFailureTimer-v2-2}
+  \includegraphics[width=0.9\columnwidth]{ActaXFIG/BIPspec-DoubleArchFailureTimer-v2-2}
   \caption{The BIP specification of two composed Failure Monitor architectures}
   \label{schema:ArchFailure:BIP:Double}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[ht]
   \centering
-  \includegraphics[width=\columnwidth]{ActaXFIG/Double-OA}
+  \includegraphics[width=0.9\columnwidth]{ActaXFIG/Double-OA}
   \caption{The resulting automaton}
   \label{schema:ArchFailure:Double:OA}
 \end{figure}
@@ -1918,7 +1904,12 @@ and then they will tick, and timeout, synchrounously.
 
 \subsection{Benefits from the Smart Algorithm}
 
-In each cell of the following table, we display the number of OTs whose predicates were founSAT/UNSAT by the SMT engine, and the overall time spent for the execution of the whole algorithm.
+In each cell of the following table, we display the number of OTs whose predicates were found SAT/UNSAT by the SMT engine, and the overall time spent for the execution of the whole algorithm.
+
+All tests are run on HP xxx laptop under Windows 10 x64, with a Intel quad-Core i7-6600U
+processor, and 32Gb of RAM. The software platform is VerCors\footnote{Available at \url{https://team.inria.fr/scale/software/vercors/}.}, running on top of
+Eclipse Equinox, with Java 1.8.
+
 
 	\begin{tabular}{p{4cm}p{3cm}p{3cm}}
 		\hline\specialrule{0em}{1pt}{1pt}
@@ -1926,39 +1917,53 @@ In each cell of the following table, we display the number of OTs whose predicat
                 \\\specialrule{0em}{1pt}{1pt}
 		\hline\specialrule{0em}{3pt}{3pt}
 		Enable operator   			&
+                3/6 OTs           &
+                3/6 OTs
+                \\\specialrule{0em}{1pt}{1pt} 
+                State-based 		&
+                125 ms 				&
+                110 ms  
+		\\\hline\specialrule{0em}{3pt}{3pt}
+		Enable operator   			&
+                3/6 OTs           &
+                3/6 OTs
+                \\\specialrule{0em}{1pt}{1pt} 
+                Data-based 		&
+                141 ms 				&
+                205 ms  
+		\\\hline\specialrule{0em}{3pt}{3pt}
+		Enable Composition   			&
                 5/55 OTs           &
                 5/42 OTs
                 \\\specialrule{0em}{1pt}{1pt} 
+                ``P<<(Q<<R)'' State-based		&
+                359 ms 				&
+                297 ms  
+		%% \\\hline\specialrule{0em}{3pt}{3pt}
+		%% SimpleProt    			&
+                %% 7/260 OTs           &
+                %% 7/57 OTs
+                %% \\\specialrule{0em}{1pt}{1pt} 
 
-                ``(P>Q)>R'' 		&
-                376 ms 				&
-                344 ms  
-		\\\hline\specialrule{0em}{3pt}{3pt}
-		SimpleProt    			&
-                7/260 OTs           &
-                7/57 OTs
-                \\\specialrule{0em}{1pt}{1pt} 
-
-                (no holes)&
-                1536 ms 				&
-                359 ms  
+                %% (no holes)&
+                %% 1536 ms 				&
+                %% 359 ms  
 %                \\\specialrule{0em}{1pt}{1pt}
 %                \textsl{for any sort} & & $=,\ \ne$
-		\\\hline\specialrule{0em}{1pt}{1pt}
-		SimpleProt    			&
-                19/836 OTs           &
-                19/185 OTs
-                \\\specialrule{0em}{1pt}{1pt} 
+		%% \\\hline\specialrule{0em}{1pt}{1pt}
+		%% SimpleProt    			&
+                %% 19/836 OTs           &
+                %% 19/185 OTs
+                %% \\\specialrule{0em}{1pt}{1pt} 
 
-                (with 2 client holes)&
-                2496 ms 				&
-                844 ms  
+                %% (with 2 client holes)&
+                %% 2496 ms 				&
+                %% 844 ms  
 		\\\hline\specialrule{0em}{1pt}{1pt}
 		FailureTimer    			&
                 12/396 OTs           &
                 12/192 OTs
                 \\\specialrule{0em}{1pt}{1pt} 
-
   		&
                 1220 ms 				&
                 687 ms  
@@ -1967,15 +1972,23 @@ In each cell of the following table, we display the number of OTs whose predicat
                 25/8964 OTs           &
                 25/1255 OTs
                 \\\specialrule{0em}{1pt}{1pt} 
-
 		&
                 18088 ms 				&
                 3266 ms  
-
 		\\\hline
 	\end{tabular}
 
-        This shows a significant benefit of the ``smart'' strategy, in the considered use-cases, between 30\% and 80\% gain depending on the examples.
+        \medskip
+        In the basic cases (EnableState, EnableData) there is no
+        benefit, and even an overhead in the case of EnableData,
+        because of the extra step of checking SAT at the end of the
+        algorithm.
+But as soon as there are more OTs in the system and not all
+states are reachable, these tests show a significant benefit of the ``smart'' strategy, in
+the considered use-cases, with 50\% of time saving for the FailureTimer,
+over to 80\% for the composition, depending
+        on the nature of the examples, but increasing significantly
+        with their complexity.
 
 \section{Conclusion and Discussion}
 \label{section:conclusion}
@@ -2071,7 +2084,9 @@ will be the basis for comparing open transitions.
 attack the complexity of verification of realistic systems by a
 compositional and parametric approach. Still one may wonder if the price
 for analysing our symbolic transitions will not make the approach too expensive
-in terms of computing time. In~\cite{Avocs-RR}, we show that, for a slighly bigger example of assembling two failure controllers, Z3 can check the
+in terms of computing time. We tried a
+slightly bigger example, assembling two Failure
+controllers. In~\cite{Avocs-RR}, we show that Z3 can check the 
 satisfiablility of a 90K open transitions in a couple of minutes.
 
 
