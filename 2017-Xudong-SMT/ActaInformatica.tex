@@ -1442,6 +1442,35 @@ the same open automaton as that of Algorithm 1.
 
 \TODO{Xudong: proof}
 
+\begin{proof}
+
+Intuitively, $\forall \ostate{\tilde{s}}\in\textit{Explored}=State(L)\text{, there must exist a transition}\ostate{\tilde{s_i}}\xrightarrow{v_i}\ostate{\tilde{s}}\text{ and }\forall \ostate{\tilde{s}}\in\textit{Explored}_{Smart}=State(L_{Smart})\text{, }\exists\ostate{\tilde{pre(s)}}\text{, }\ostate{\tilde{pre(s)}}\xrightarrow{v}\ostate{\tilde{s}}\text{ where \textit{Pred} is satisfiable and the state}\ostate{\tilde{pre(s)}}\text{ has two cases:}$
+\begin{enumerate}
+	\item[(1)] $\ostate{\tilde{pre(s)}}=\ostate{\tilde{s}}$
+	\item[(2)] $\ostate{\tilde{pre(s)}}\in\textit{Explored}\text{-}\{\ostate{\tilde{s}}\}$
+\end{enumerate}
+By induction, there must exists a sequence $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s}}$ where all the $\textit{Pred}_i$ are satisfiable.
+
+Then $\forall\ostate{\tilde{t}}\textit{Explored}=State(L)$, there are also two cases:
+\begin{enumerate}
+	\item[(1)] $\ostate{\tilde{t}}\in State(L1)$
+	
+	By definition of reachability, there exists a sequence $\ostate{\tilde{s_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where all the $\textit{Pred}_j$ are satisfiable.
+	
+	$\Rightarrow \ostate{\tilde{t}}\in State(L_{Smart})$
+	\item[(2)] $\ostate{\tilde{t}}\in State(L)\text{-}State(L1)$, then $\forall \ostate{\tilde{u}}\in\textit{Explored}-\{\ostate{\tilde{t}}\}$,
+	\begin{enumerate}
+		\item[(1)] $\ostate{\tilde{u}}\in State(L)\text{-}State(L1)$.
+		\item[(2)] $\ostate{\tilde{u}}\in State(L1)$, but there is no transition $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{t}}$.
+		\item[(3)] $\ostate{\tilde{u}}\in State(L1)$, there exists transition $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{t}}$, but the $\textit{Pred}_u$ is unsatisfiable.
+	\end{enumerate}
+	By induction, there is no sequence from $\ostate{\tilde{s_0}}$ to $\ostate{\tilde{t}}$.
+	
+	$\Rightarrow \ostate{\tilde{t}}\notin State(L_{Smart})$
+\end{enumerate}
+Overall, $State(L1)$ is equal to $State(L_{Smart})$.
+\end{proof}
+
 But in the presence of assignments, we need to collect all of them
   before using the assignment information to refine the SAT
   checking. Still, the smart strategy will explore a reduced state
@@ -1455,6 +1484,19 @@ the same open automaton as that of Algorithm 1.
 \end{theorem}
 
 \TODO{Xudong: proof}
+
+\begin{proof}
+In Theorem 2, we have already proved the result set of global states of two algorithm are the same without the assignments.
+
+If there exists assignments in the open transitions. 
+
+In Algorithm 3, $\forall\ostate{\tilde{t}}\notin State(L_{Smart})$, if there is a transition $\ostate{\tilde{t}}\xrightarrow{v_t}\ostate{\tilde{t'}}$ contains an assignment $\textit{Post}_t$, and in following transitions $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$, we need to check $\textit{Pred}\and\bigwedge\textit{Post}_i$ where $\textit{Post}_i \notin \{\textit{Post}_t\}$.
+
+In Algorithm 1, the same state $\ostate{\tilde{t}}\notin State(L1)$, also has a transition $\ostate{\tilde{t}}\xrightarrow{v_t}\ostate{\tilde{t'}}$ contains an assignment $\textit{Post}_t$, and in following transitions $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$, what need to check is $\textit{Pred}\and\bigwedge\textit{Post}_i$.
+As $b_1\and b_2\rightarrow b_1$, if $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$ exists in the result of Algorithm 3, it is also contained in the original result.
+
+After the final reachability computation, $\{\textit{Post}_t\}$ is removed from $\{\textit{Post}_i\}$ then the assertions to check become the same, then the transitions of the result are also the same. So the result open automaton of Algorithm 3 is exactly the same as that of  Algorithm 1.
+\end{proof}
 
 \TODO{Eric : Eventually provide counter-example for smart with unsing incomplete
   assignment sets}
@@ -1610,9 +1652,9 @@ algorithm on these examples.
 
 \begin{figure}[ht]
 \centerline{ 
-  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1-aut}
+  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1}
   \hspace{25mm}
-  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2-aut}}
+  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2}}
   \begin{minipage}{5.7cm}
 $  \begin{array}{@{}r@{}l@{}}
     ot_1  = &\openrule{\{ \xrightarrow{a1}_P \},\\ [\forall x1. a1\neq\delta(x1)]}
