@@ -364,9 +364,9 @@
 	properties, and then show how our algorithms scale up, using a
 	composition of two such architectures.}}
 
-\TODO{Add new contrib}
-\todoMargin{Should we remove Min ?}
-\keywords{pNets, software components, symbolic semantics, SMT
+%% \TODO{Add new contrib}
+%% \todoMargin{Should we remove Min ?}
+\keywords{Networks of synchronised automata, software components, symbolic semantics, SMT
 	%Networks of Synchronised Automata, Symbolic Behavioral Semantics, Compositional Analysis of Software Components, SMT}
 }
 
@@ -678,9 +678,9 @@ $\P$ fix the term algebra elements $\Talg, \AlgB_{\P},$ and $\AlgA_\P$.
 		%                \\\specialrule{0em}{1pt}{1pt}
 		%                \textsl{for any sort} & & $=,\ \ne$
 		\\\hline\specialrule{0em}{1pt}{1pt}
-		\multicolumn{3}{l}{\sl Extension for the BIP use-case of Figure~\ref{schema:ArchFailure:pNet}}
+		\multicolumn{3}{l}{\sl Extension for the Enable use-case of Section~\ref{section:running-example}}
 		\\\hline\specialrule{0em}{1pt}{1pt}
-		Action & \multicolumn{2}{l} \texttt{FUN\_Action\_Bool}, \texttt{}fail, resume, timeout, reset, start, tick, ask 
+		Action & \texttt{ACT}, \texttt{delta, acc}  &
 		\\\hline
 	\end{tabular}
 	
@@ -1061,7 +1061,7 @@ If we use the data-oriented pNet $EnableData$ from Figure
 \paragraph{Structural Semantic Rules.}
 The semantics of pNets in terms of open automata has been defined in
 \cite{henrio:Forte2016}, in the form of two structural rules, one for
-PLTSs, and the other for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR}).
+PLTSs, and the other for pNet nodes. These rules are slightly improved, adding guards in the synchronisation vectors and syntax for universal quantifier in the guards (see~\cite{Avocs-RR})\footnote{For convenience, we provide these rules and the proof of the finiteness theorem in Appendix~\ref{appendix:semRules}}. 
   
 In \cite{henrio:Forte2016} we also proved the following result, which
 ensures the termination of our semantic construction algorithm.
@@ -1077,25 +1077,6 @@ ensures the termination of our semantic construction algorithm.
 \end{theorem}
   Remark that all the elements of such pNets and open automata are symbolic, and they can represent many classes of unbounded systems. 
 
-\begin{proof}
-  \TODO{I tentatively copied the proof here, from RR-8898.
-the proof of the finiteness theorem refers to SOS rules Tr1 and
-  Tr2. Yuxin, I agree this proof is NOT required in this paper. But for the
-  sake of reviewing process, (and if I find enough time), I will try
-  to add an appendix with the semantic rules (Tr1 and Tr2, constructing open
-  transitions from pNets) and the proof of finiteness below }
-  
-  The possible set of states of the open-automaton is the cartesian
-  product of the states of the pNet $pLTS_i^{i\in L}$, that is finite by
-  hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
-  iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
-  number of applications of rules Tr2 on the structure of the
-  pNet tree, with a finite number of synchronisation vectors applying
-  at each node the number of global open transitions is finite. Similarily rule Tr1 is 
-  applied finitely if the number
-  of transitions of each pLTS is finite. So we get finitely many deduction trees, and
-  open-transitions which ensures that each internal loop of Algorithm 1 terminates.
-  \end{proof}
 
 \section{Generation of Open Automata}
 \label{section:implementation}
@@ -1312,26 +1293,24 @@ we choose to minimize the open automaton (\ie its number of
 transitions and states), by checking the predicates for satisfiability.
 In Figure~\ref{schema:unsat-ot}, we show an 
 unsatisfiable open transition 
-from the open automaton of our running example. \TODO{change the text}It shows the case where
-the failure controller performs a ``$\PortFail$'' action, while the timer
-executes a ``$\PortResume$''. The chosen synchronisation
-vector (SV0 from Figure~\ref{schema:ArchFailure:pNet}) does not match
-with these actions, since it expects $\NameTimer.\PortStart$. This
+from the open automaton of our running example.
+
+It shows the case where processes $P$ and $R$ ``try'' to communicate directly, $P$, but this is made impossible by the combination of chosen synchronisation vectors and their guards. This
   mismatch is materialised by the predicate
-fragment ``$\mathit{resume}(\false)=\mathit{start}(b_2)$''. 
+fragment ``$a1 = \delta(x2) \land \forall z. a1 \neq \delta(z)$''. In Section~\ref{section:TranslationToSMTlib} we will show how this is encoded and checked using the SMT engine.
+
 
 \begin{figure}[h]
         \begin{mathpar}
 	  OT_{19}  =
           \inferrule*[myfraction=\reddottedrule]
-	{\{\xrightarrow{\delta(x2)}_P ~~
+	{\{\xrightarrow{a1}_P ~~
           \xrightarrow{acc(x2)}_R \} ~~
-          [\forall z. \delta(x2) \neq \delta(z) \neq
-            \delta(x2)]
+          [a1 = \delta(x2) \land \forall z. a1 \neq \delta(z)]
         }
 	{\ostate{2,0} \xrightarrow {\underline{\delta(x2)}} \ostate{3,0}}
 	\end{mathpar}
-\caption{\TODO{Eric: check, it looks wrong}One of the unsatisfiable open transitions}  \label{schema:unsat-ot}
+\caption{One of the unsatisfiable open transitions}  \label{schema:unsat-ot}
 \end{figure}
 
 Checking satisfiability requires some symbolic computation
@@ -1375,11 +1354,6 @@ iterate this step until a fixed point is reached. But in practical cases, very
 little will be gained, so the default implementation does only one
 step. Leaving some UNSAT transitions in the
 symbolic automaton is still logically correct.
-
-\TODO{Yuxin: I can add an example showing in detail why we cannot use
-  the assignment information on the fly. Do you think this is useful,
-  or id the explanation above sufficient ?}
-{\color{green} Yuxin: I think the explanation above is sufficient. What's more important is to give formal proofs for the three theorems.}
 
 \begin{algorithm}[h]
   \caption{``Smart'' Reachable Open Automaton Generation}
@@ -1440,7 +1414,11 @@ algorithm, without final reachability computation, computes exactly
 the same open automaton as that of Algorithm 1.
   \end{theorem}
 
-\TODO{Xudong: proof}
+\TODO{Need to refine theorem, and to check the proof... To answer
+  Yuxin question about ``exactly the same'', indeed it is not
+  correct... But not for states: state labels will be exactly the
+  same. But transitions will not, because of the mechanism for
+  generating fresh variables; so we may need to reword as ``bijective''}
 
 \begin{proof}
 
@@ -1483,7 +1461,7 @@ algorithm, with a final reachability computation, computes exactly
 the same open automaton as that of Algorithm 1.
 \end{theorem}
 
-\TODO{Xudong: proof}
+\TODO{Xudong: proof - to be checked}
 
 \begin{proof}
 In Theorem 2, we have already proved the result set of global states of two algorithm are the same without the assignments.
@@ -1498,11 +1476,9 @@ As $b_1\and b_2\rightarrow b_1$, if $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{
 After the final reachability computation, $\{\textit{Post}_t\}$ is removed from $\{\textit{Post}_i\}$ then the assertions to check become the same, then the transitions of the result are also the same. So the result open automaton of Algorithm 3 is exactly the same as that of  Algorithm 1.
 \end{proof}
 
-\TODO{Eric : Eventually provide counter-example for smart with unsing incomplete
-  assignment sets}
-
 
 \subsection{Translation to SMTlib}
+\label{section:TranslationToSMTlib}
 
 We check the satisfiability of each open transitions
 using the SMT solver Z3.
@@ -1525,13 +1501,16 @@ by the algorithm, allowing for tracability of the result~\cite{Avocs-RR}.
 
 Figure~\ref{schema:smt-lib} shows the translation of  Figure~\ref{schema:unsat-ot}
 in the SMTlib syntax.
-\TODO{Change the text}It contains the declaration
-of the BIP action algebra sorts 
+\TODO{Change the text: DONE}It contains the declaration
+of the relevent part of the Lotos action algebra sorts 
 and constructors, then the declaration of variables, and finally the
 predicate to be checked, encoded as a set of assertions.
-Here the behavior of the hole ``B'' appears as a variable
-``|hb\_B:13:1|'', and line 10 shows the constraint that matching with
-a synchronisation vector has imposed on the behavior of ``B''.
+
+Here the behavior of the hole ``P'' ($a1$ in Figure~\ref{schema:unsat-ot}) , after matching with the synchronisation vectors, appears as a variable
+``|a1:sva\_SVA0:15:1|'', and ``R'' ($acc(x2)$) as ``|(ACT delta
+|x:sva\_SV4:1:2|''. Line 16 requires that $a1 = \delta(x2)$ to match
+the second synchronisation vector of the root pNet node, and lines
+17-18 that $a1$ does not match $\delta(x1)$ for any $x1$. 
 We also display  the diagnosis (``sat'' or ``unsat'') generated by Z3.
 
 \begin{figure}[t]
@@ -1540,8 +1519,7 @@ We also display  the diagnosis (``sat'' or ``unsat'') generated by Z3.
   \caption{Checking one Open Transition in Z3}  \label{schema:smt-lib}
 \end{figure}
 
-For simplicity, we have only shown here a use-case with boolean data
-parameters, so we only require the basic SAT capability of the Z3
+For simplicity, we have only shown here a use-case with boolean conditions, so we only require the basic SAT capability of the Z3
 engine. It should be clear that more involved examples will require
 reasoning about predicates of various data types. Z3 provides theories for reasonning
 about integers, bitstrings, enumerated types, arrays, etc.
@@ -1695,11 +1673,12 @@ Figure~\ref{schema:enable-OAs}. We have shown in \cite{henrio:Forte2016} how to
 prove that these two automata are bisimilar.
  
 %%\subsection{simple communication protocol} specification and implementation;
-
+\TODO{Eric: more results: enable associativity}
 
 \subsection{BIP FailureTimer Architecture}
 \label{section:FailureTimer}
 
+\TODO{Simon: reduce...}
 
 As a running example we use the Failure Monitor architecture from the
 CubETH nanosatellite on-board software
@@ -1912,6 +1891,7 @@ open automaton. It indicates that the two timers are forced to
 be synchronous: each can only tick after the other has also started,
 and then they will tick, and timeout, synchronously.
 
+\TODO{Eric: try reorganise the figures. Add properties ?}
 
 \begin{figure}[t]
   \centering
@@ -2074,7 +2054,9 @@ availability of theories can guide the definition of such an extension.
 Our case-studies show that our encoding
 successfully identifies the unsatisfiable open transitions and that
 the resulting automata correctly reflect the expected 
-movements of the encoded process expressions.   
+movements of the encoded process expressions.
+
+\TODO{add the novelties...}
 
 %% Among the questions that have arised during this work, an important one is the
 %% efficiency of Z3 for our needs. Z3 is famous for being very fast in
@@ -2133,11 +2115,189 @@ satisfiablility of  90K open transitions in a couple of minutes.
 
 
 \bibliographystyle{spmpsci}
-
-% \bibliography{oasis,biblio}
 \bibliography{biblio}
 
 
+\appendix
+
+\section{pNet semantic rules}
+\label{appendix:semRules}
+
+\paragraph{Note:} For convenience, we have included here the semantic rules for pNets,
+that were already published in \cite{henrio:Forte2016}.
+
+We build the semantics of an open pNet as an open automaton where
+LTSs are the pLTSs at 
+the pNet leaves, and the states are structured as in
+the previous section. 
+To build an open transition one first
+ projects the global state into states of the leaves, then applies
+pLTS transitions on these states, and compose them with actions of
+holes using synchronisation vectors. 
+
+The semantics   regularly instantiates \emph{fresh} variables, and uses a
+\emph{clone} operator that clones a term replacing each variable with a
+fresh one.
+The variables in each synchronization vector are considered local:
+for a given pNet expression, we must have fresh local variables for
+each occurrence of a vector (= each time we instantiate rule
+Tr2). Similarly the state variables of each copy of a
+given pLTS in the system, must be distinct, and those created for each
+application of Tr2 have to be fresh and all distinct. 
+
+
+\begin{definition}[Operational semantics of open pNets]
+  \label{def:operationalSemantics}
+  The semantics of a pNet $p$ is an open automaton $A = <Leaves(p),J,\mathcal{S}, s_0,
+  \mathcal{T}>$ where:
+  \begin{itemize}
+    \item $J$ is the indices of the holes: $Holes(p)= H_j^{j\in J}$.
+    %  \item $\overline{L}^L = Leaves(p), \overline{H}^J = Holes(p)$
+    \item $\overline{\mathcal{S}} = States(p)$ and $s_0 = InitState(p)$
+    \item $\mathcal{T}$ is the smallest set of open transitions
+    satisfying the rules below:
+  \end{itemize}
+  
+  The rule ({\bf Tr1}) for a pLTS $p$  checks that the guard 
+  is verified and transforms assignments into post-conditions:
+  
+  \begin{description}
+    \item[{\bf Tr1:}]
+    $\inferrule
+    { s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+          J}\rangle} s'\in \to  \\
+      {\tt fresh}(v) \\
+      Pred = ~e_b \land (v = \alpha)
+    }
+    { p = \mylangle  S,s_0, \to \myrangle
+      \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s \xrightarrow{\alpha}_p s'\} ,\emptyset ,
+      Pred,\left\{x_j\gets e_j\right\}^{j\in J}}
+      {\ostate{s} \xrightarrow{v} \ostate{s'}}
+    }
+    $
+  \end{description}
+  
+  The second rule ({\bf Tr2}) deals with pNet nodes: for each possible
+  synchronization vector applicable to the rule subject, the premisses
+  include one {\em open transition} for each sub-pNet involved, one possible
+  {\em action} for each Hole involved, and the predicate relating these
+  with the resulting action of the vector.
+  A key to understand this rule is that the open transitions are
+  expressed in terms of the leaves and holes of the pNet structure,
+  i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
+  Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+  are disjoint subsets of $L$.
+  
+  \begin{description}
+    \item[{\bf Tr2:}]
+  \end{description}
+  
+  \noindent
+    $\inferrule
+    {k\!\in\! K \\ SV\!\!= \!clone(SV_k) \!=\! \alpha_m^{m \in I_k\uplus J_k} \!\to\! 
+    \alpha'_k, G_k \\
+      Leaves(p) \!=\! \pLTS_l^{l\in L} \\     
+      \forall m\in I_k.
+      \pNet_m \models
+      \inferrule*[myfraction=\reddottedrule]
+      {\{s_{i}\xrightarrow{a_{i}}_i s_{i}'\}^{i\in I_m^\prime},
+      \{\xrightarrow{b_{j}}_j\}^{j\in J'_m}, \Pred_m, \Post_m}
+      {\ostate{s_{i}^{i \in L_m}} \xrightarrow {v_m}
+        \ostate{s_{i}^{\prime\ i \in L_m}}}
+      %\land
+      %Leaves(\pNet_m) = \overline{pLTS}^{L_k})
+      \\
+      I' = \biguplus_{m\in I_k}\!\! I_m'
+      \\ J' = \biguplus_{m\in I_k}\!\! J'_m \uplus J_k  \\
+      \Pred = \bigwedge_{m\in I_k}\!\! \Pred_m \land
+      \MkPred(SV,v_m^{m\in I_k},b_j^{j\in J_k},v)\\
+      \forall j\!\!\in\!\! J_k. {\tt 
+        fresh}(b_j) \\ {\tt fresh}(v) \\ 
+      \forall i\in
+      L\backslash I'.\,s'_i=s_i 
+    }
+    {p = \mylangle \pNet_i^{i\in I}, S_j^{j\in J}, \symb{SV}_k^{k\in K}\myrangle
+      \models
+      {\inferrule*[myfraction=\reddottedrule]
+        {\{s_i\xrightarrow{a_i}_i s_i^{\prime}\}^{i\in I^\prime},
+        \{\xrightarrow{b_j}_j\}^{j\in J^\prime}, \Pred, \uplus_{m\in I_k} 
+        \Post_m}
+        {\ostate{s_i^{i\in L}} \xrightarrow {v}
+          \ostate{s_i^{\prime i\in L}}}
+      }
+    }
+    $
+
+  \medskip  
+\end{definition}
+
+In rule TR2, the generated predicate is composed of the conjunction of
+the predicates of the subnets' OTs, with the additional part encoding
+the application of the chosen synchronisation vector.
+In \cite{henrio:Forte2016} this last part is defined as:
+\[\MkPred(SV_k, a_i^{i\in I}, b_j^{j\in J}, v)\Leftrightarrow
+\begin{array}{l}
+\exists {(a'_i)}^{i\in I},
+{(b'_j)}^{j\in J},v'.\, SV_k={(a'_i)}^{i\in I}, {(b'_j)}^{j\in J}\rightarrow v'
+\\~~\land
+\forall i\in I.\, a_i=a'_i\land \forall j \in J.\, b_j=b'_j \land v=v'
+\end{array}\]
+
+%% This definition is not constructive, but the existentialy quantified
+%% variable sets here correspond the subsets of subnets and holes that
+%% are effectively involved in vector $SV_k$.
+%% Within our algorithm, these subsets have been computed by $Combining$ and
+%% passed as arguments to the $Matching$ method, so
+%% we can construct this predicate fragment as:
+
+%% \[\Pred(SV, \overline{\pNet},\overline{S}, v) = 
+%% \begin{array}{l}
+%% \forall {(a'_i)}^{i\in I},
+%% {(b'_j)}^{j\in J},v'.
+%% \\
+%% v_m=a'_i\land \, b_j=b'_j \land v=v' \land G_k
+%% \end{array}\]
+%% \TODO{Eric: to be checked}
+
+Within our algorithm, these subsets have been computed by the
+$Combining$ method and passed as arguments to the $Matching$ method
+(see section~\ref{section:implementation}) 
+
+\paragraph{Termination.} To have some practical interest, it is important to know when this
+algorithm terminates. The following theorem shows that an open-pNet
+with finite synchronization sets, finitely many leaves and
+holes, and each pLTS at leaves having a finite number of states and
+(symbolic) transitions, has a finite automaton. The proof can be found
+in \cite{henrio:Forte2016}. 
+
+
+\begin{theorem}[Finiteness of open-automata.]\\
+Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in I}$ and holes $Hole_j^{j\in
+  J}$, if the sets $I$ and $J$ are finite, if the synchronization vectors of all pNets 
+  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
+  are finite, and if
+$\forall i \in I.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
+has a finite number of state variables, then Algorithm 1 terminates
+and produces an open automaton 
+$\mathcal{T}$ with finitely many states and transitions.
+
+\end{theorem}
+
+
+\begin{proof}
+  The possible set of states of the open-automaton is the cartesian
+  product of the states of the pNet $pLTS_i^{i\in I}$, that is finite by
+  hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
+  iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
+  number of applications of rules Tr2 on the structure of the
+  pNet tree, with a finite number of synchronisation vectors applying
+  at each node the number of global open transitions is finite. Similarily rule Tr1 is 
+  applied finitely if the number
+  of transitions of each pLTS is finite. So we get finitely many deduction trees, and
+  open-transitions which ensures that each internal loop of Algorithm 1 terminates.
+  \end{proof}
 
 \end{document}
 
