@@ -340,7 +340,7 @@
 	synchronous, asynchronous, or heterogeneous. They are endowed with a symbolic operational semantics in
 	terms of open automata, which allows us to check properties of
 	such systems in a compositional manner. 
-	We propose and implement an algorithm computing these semantics,
+	We present an algorithm computing these semantics,
 	building predicates expressing the synchronisation conditions
 	between the events of the pNet sub-systems. Checking such
 	predicates requires symbolic reasoning about first order logics and application-specific data. We use the Z3 SMT engine to check
@@ -351,9 +351,9 @@
 %	extended with explicit data and computing its
 %	open automaton semantics. This automaton may be used to prove
 %	behavioural properties such as safety and liveness.
-\ERIC{We also propose and implement an optimised
+We also propose and implement an optimised
 	algorithm that performs part of the pruning on-the-fly, and show 
-	this new algorithm is correct with respect to the original one.
+	its correctness with respect to the original one.
 	We illustrate the approach using two use-cases: the first one is a
 	classical process-algebra operator for which we provide several
 	encodings, and prove some basic properties. The second is  industry-oriented and based on the so-called ``BIP architectures'', which have
@@ -362,7 +362,7 @@
 	Center. We use pNets to encode a BIP architecture
 	extended with explicit data, compute its semantics and discuss its
 	properties, and then show how our algorithms scale up, using a
-	composition of two such architectures.}}
+	composition of two such architectures.}
 
 %% \TODO{Add new contrib}
 %% \todoMargin{Should we remove Min ?}
@@ -922,7 +922,7 @@ incoming transitions.
 
 \begin{definition}[Open transitions]
 	\label{def:OpenTransitions}
-	An \emph{open transition} $OT$ over
+	An \emph{open transition} ($OT$) over
 	% a set  $\langle S_i,s_{0 i}, \rightarrow_i\rangle^{i\in I}$ of LTSs,
 	a set $J$ of holes %with sorts $Sort_j^{j\in J}$
 	and a set of states $\mathcal{S}$ is a structure of the form:	
@@ -938,7 +938,7 @@ incoming transitions.
 	% LTS $\langle S_i,s_{0 i}, \rightarrow_i\rangle$
 	$\beta_j$
 	is an action of the hole $j$, and $\alpha$ is the resulting action
-	of $OT$. \Pred\ is a predicate
+	of the $OT$. \Pred\ is a predicate
 	over the variables of the terms, labels, and states $s_i$,
 	$\beta_j$, $s$, $\alpha$. \Post\ is a set of equations that  
 	hold \emph{after the open transition}, represented as a
@@ -1410,8 +1410,8 @@ reachable part of the automaton using the on-the-fly algorithm.
 \begin{theorem}[Correctness without assignments]
   \label{Th:CorrectnessWithoutAssignments}
 If a pNet contains no assignment to state variables, then the smart
-algorithm, without final reachability computation, computes exactly
-the same open automaton as that of Algorithm 1.
+algorithm, without a final reachability computation, computes 
+the same open automaton as that of Algorithm 1 up to a renaming of  variables in the transitioin labels.
   \end{theorem}
 
 \TODO{Need to refine theorem, and to check the proof... To answer
@@ -1494,8 +1494,8 @@ But in the presence of assignments, we need to collect all of them
 \begin{theorem}[Correctness with assignments]
   \label{Th:CorrectnessWithAssignments}
 In the general case, the smart
-algorithm, with a final reachability computation, computes exactly
-the same open automaton as that of Algorithm 1.
+algorithm, with a final reachability computation, computes 
+the same open automaton as that of Algorithm 1 up to a renaming of  variables in the transitioin labels.
 \end{theorem}
 
 \TODO{Xudong: proof - to be checked}
@@ -2157,29 +2157,27 @@ satisfiablility of  90K open transitions in a couple of minutes.
 
 \appendix
 
-\section{pNet semantic rules}
+\section{Semantic Rules of pNets }
 \label{appendix:semRules}
 
-\paragraph{Note:} For convenience, we have included here the semantic rules for pNets,
-that were already published in \cite{henrio:Forte2016}.
+To facilitate the understanding of the two algorithms, we briefly recall the semantic rules of pNets, more details can be found in \cite{henrio:Forte2016}.
 
 We build the semantics of an open pNet as an open automaton where
-LTSs are the pLTSs at 
-the pNet leaves, and the states are structured as in
-the previous section. 
-To build an open transition one first
- projects the global state into states of the leaves, then applies
-pLTS transitions on these states, and compose them with actions of
+LTSs are the PLTSs at 
+the pNet leaves, and the states of the automaton are structured. 
+To build an open transition we first
+ projects the global state into states of the leaves, then apply
+PLTS transitions on these states, and compose them with actions of
 holes using synchronisation vectors. 
 
 The semantics   regularly instantiates \emph{fresh} variables, and uses a
 \emph{clone} operator that clones a term replacing each variable with a
 fresh one.
-The variables in each synchronization vector are considered local:
+The variables in each synchronisation vector are considered local:
 for a given pNet expression, we must have fresh local variables for
-each occurrence of a vector (= each time we instantiate rule
-Tr2). Similarly the state variables of each copy of a
-given pLTS in the system, must be distinct, and those created for each
+each occurrence of a vector. %(= each time we instantiate rule Tr2). 
+Similarly, the state variables of each copy of a
+given PLTS in the system must be distinct, and those created for each
 application of Tr2 have to be fresh and all distinct. 
 
 
@@ -2195,7 +2193,7 @@ application of Tr2 have to be fresh and all distinct.
     satisfying the rules below:
   \end{itemize}
   
-  The rule ({\bf Tr1}) for a pLTS $p$  checks that the guard 
+  The first rule ({\bf Tr1}) for a PLTS $p$  checks that the guard 
   is verified and transforms assignments into post-conditions:
   
   \begin{description}
@@ -2217,14 +2215,13 @@ application of Tr2 have to be fresh and all distinct.
   \end{description}
   
   The second rule ({\bf Tr2}) deals with pNet nodes: for each possible
-  synchronization vector applicable to the rule subject, the premisses
+  synchronisation vector applicable to the rule subject, the premisses
   include one {\em open transition} for each sub-pNet involved, one possible
-  {\em action} for each Hole involved, and the predicate relating these
+  {\em action} for each hole involved, and the predicate relating these
   with the resulting action of the vector.
   A key to understand this rule is that the open transitions are
   expressed in terms of the leaves and holes of the pNet structure,
-  i.e. a flatten view of the pNet: e.g. $L$ is the index set of the
-  Leaves, $L_k$ the index set of the leaves of one subnet, so all $L_k$
+  i.e. a flatten view of the pNet. For example, in the rule, $L$ is the index set of the leaves of the open pNet, $L_k$ is the index set of the leaves of one subnet, thus all $L_k$
   are disjoint subsets of $L$.
   
   \begin{description}
@@ -2298,42 +2295,38 @@ In \cite{henrio:Forte2016} this last part is defined as:
 %% \end{array}\]
 %% \TODO{Eric: to be checked}
 
-Within our algorithm, these subsets have been computed by the
+Within Algorithm~\ref{alg1}, these subsets have been computed by the
 $Combining$ method and passed as arguments to the $Matching$ method
-(see section~\ref{section:implementation}) 
+(cf. Section~\ref{section:implementation}) 
 
-\paragraph{Termination.} To have some practical interest, it is important to know when this
-algorithm terminates. The following theorem shows that an open-pNet
-with finite synchronization sets, finitely many leaves and
-holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton. The proof can be found
-in \cite{henrio:Forte2016}. 
+To have some practical interest, it is important to know when Algorithm~\ref{alg1} terminates. The following theorem shows that if an open pNet
+has finite synchronisation sets, finitely many leaves and
+holes, and each PLTS at its leaves has a finite number of states and
+(symbolic) transitions, then Algorithm~\ref{alg1} terminates and the operational semantics of the open pNet is a finite automaton. 
 
-
-\begin{theorem}[Finiteness of open-automata.]\\
-Given an open pNet $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ with leaves $pLTS_i^{i\in I}$ and holes $Hole_j^{j\in
-  J}$, if the sets $I$ and $J$ are finite, if the synchronization vectors of all pNets 
-  included in  $\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ 
-  are finite, and if
-$\forall i \in I.\, finite{(states(pLTS_i))} \text{ and } pLTS_i$
-has a finite number of state variables, then Algorithm 1 terminates
-and produces an open automaton 
-$\mathcal{T}$ with finitely many states and transitions.
-
-\end{theorem}
-
-
+\medskip
+\begin{theorem*}
+\noindent\textbf{Theorem 1 (Finiteness) }\cite{henrio:Forte2016}
+	Let $pnet=\mylangle \overline{\pNet},\overline{S}, \symb{SV}_k^{k\in K}\myrangle$ be an open pNet  with leaves $l_i^{i\in I}$ and holes $h_j^{j\in
+		J}$, where the sets $I$ and $J$ are finite. Suppose the synchronisation vectors of all pNets 
+	included in  $pnet$   are finite, and 
+	% $\forall i \in L.\, finite{(states(l_i))} \text{ and } l_i$ 
+	$l_i $ has a finite number of state variables for each $i\in I$. Then the semantics of $pnet$ is an open automaton 
+	%$\mathcal{T}$ 
+	with finitely many states and transitions.
+\end{theorem*}
 \begin{proof}
-  The possible set of states of the open-automaton is the cartesian
-  product of the states of the pNet $pLTS_i^{i\in I}$, that is finite by
+  The possible set of states of the open automaton is the cartesian
+  product of the states of the pNet $PLTS_i^{i\in I}$, which is finite by
   hypothesis. So the top-level residual loop of Algorithm 1 terminates provided each 
-  iteration terminates. The enumeration of open-transitions in step 2b is bounded by the
-  number of applications of rules Tr2 on the structure of the
-  pNet tree, with a finite number of synchronisation vectors applying
-  at each node the number of global open transitions is finite. Similarily rule Tr1 is 
-  applied finitely if the number
-  of transitions of each pLTS is finite. So we get finitely many deduction trees, and
-  open-transitions which ensures that each internal loop of Algorithm 1 terminates.
+  iteration terminates. The enumeration of open-transitions in line 5 of Algorithm~\ref{alg1} is bounded by the
+  number of applications of rule Tr2 on the structure of the
+  pNet tree. Since a finite number of synchronisation vectors are applied
+  at each node, the number of global open transitions is finite. Similarily, if the number
+  of transitions of each PLTS is finite, rule Tr1 is 
+  applied a finite finite number of times. Therefore, each internal loop of Algorithm~1 terminates, and we obtain finitely many deduction trees and
+  open transitions.
+  \hfill \qed
   \end{proof}
 
 \end{document}
