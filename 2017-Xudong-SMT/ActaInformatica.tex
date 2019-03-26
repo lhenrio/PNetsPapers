@@ -1135,8 +1135,8 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 	  \EndFor
 \EndWhile
 \State \QIN{$\mathit{L1}$ = \texttt{filterUnsatTransitions}($\mathit{L,Assignements}$)}
-\State \QIN{$\mathit{OA}$ = \texttt{makeReachableSubAutomaton}($\mathit{InitState}(P)$,$\mathit{L1}$)}
-\State \Return $\mathit{OA}$;
+\State \QIN{$\mathit{OA1}$ = \texttt{makeReachableSubAutomaton}($\mathit{InitState}(P)$,$\mathit{L1}$)}
+\State \Return $\mathit{OA1}$;
 
 \end{algorithmic}  
 \end{algorithm}
@@ -1272,25 +1272,26 @@ from synchronisation vectors and from PLTS transtions, using the
 satisfiability check in the SMT engine.
 
 
-\subsection{Management of State Variable Assignments}
+\subsection{Management of State Variables and Assignments}
 
 
 In a PLTS, there may be several incoming transitions 
 that assign potentially different (symbolic) values to a state variable.
 To handle such cases, the algorithm manages a
 list of assignment expressions for each PLTS state. 
-\QIN{The only assignments for state variables that happen at the PLTS level are as follows: every time the MakeTransitions
-algorithm is applied on a PLTS, it collects the expressions from the $Post$ in each transition.
+The only assignments for state variables that happen at the PLTS level
+are as follows: every time the MakeTransitions 
+algorithm is applied on a PLTS, it collects the expressions from the
+$Post$ in each transition. 
 % As there is no assignments collecting work on a pNet node, it is not
 % shown in Algorithm~\ref{alg2}.
-}
 
 For a global state in the open automaton, the set of state
 variables (which may be used in an outgoing transition) 
 is the disjoint union
 of the sets of state variables of the individual PLTS states constituting this
 global state. \ERIC{The final assignment sets are assembled when building the
-open automaton from the reachable transitions.}
+open automaton from the reachable transitions, see below.}
 
 
 %% \QIN{
@@ -1306,6 +1307,7 @@ open automaton from the reachable transitions.}
 
 \subsection{Pruning the Unsatisfiable Results}
 \label{section:pruning}
+
 
 
 Our matching/filtering strategy builds some transitions where
@@ -1341,42 +1343,76 @@ may depend on the specific theory of the action algebra datatypes.
 The ``Modulo Theory'' part of SMT solvers is important here, as
 the solvers can use specific properties of each action algebra.
 
+Function \texttt{filterUnsatTransitions}, in line 11 of
+Algorithm\ref{alg1} makes use of the Z3 engine to implement the
+satisfiability checking, for all the OTs computed that far, and
+returns the set $L1$ of satisfiable OTs. 
+
+\subsection{Building the Open Automaton}
+
+\ERIC{The set $L1$ may contain unreachable transitions, the last step of the
+algorithm builds the final Open Automaton as a traversal of $L1$,
+starting at the initial state $InitState(p)$ as defined in
+page~\pageref{def-states}. More precisely, this is a residual
+algorithm building a graph from transitions in $L1$, and states are
+the set of target states of transitions in $L1$, plus the initial
+states. Each state in the graph is decorated with a set of its local
+variables, and a list of their possible assignments,
+gathered during the traversal using the ``Post'' parts of the
+OTs.}
+
+\ERIC{A further reduction may now be gained by using the information from
+these sets of possible assignments: adding this information when
+checking satisfiability of transitions leaving a given state may
+result in more Unsat transitions: the set of possible
+assignments computed by the algorithm is an over approximation of
+possible values of the 
+variables of such state, so narrowing it means we get a better
+approximation, and potentially more information, which can be used in
+the SAT checking of subsequent transitions. In turn this may reduce the possible
+assignments of the corresponding target states. In theory we should
+iterate this procedure, each iteration reducing the set of
+transitions, and the sets of assignments; the final Open Automaton
+would be the fix point of this iteration. In practice this would be
+expensive, and it is not incorrect to leave some Unsat OTs in the
+result; in practical cases, very little will be gained computing the
+fixpoint, so we only perform one step. Further algorithms 
+(e.g. model-checking or equivalence checking) will be able to use the
+full information from the predicates and the assignment sets.}
+
 \subsection{Computing Reachable State Space on the Fly}
 
-\ERIC{The basic algorithm from the previous section potentially explores some
+The basic algorithm from the previous section potentially explores some
 areas of the global state-space that will not be reachable after
 checking the OTs' predicates for satisfiability. Incorporating the
 satisfiability check inside the residual algorithm will definitely
 save some of these useless computation. More precisely, it will still
 create, and submit to Z3, the OTs at the ``border'' of the state-space, but
 not the transitions issued from non-reachable global states. We use
-this idea to create our ``smart'' algorithm.}
+this idea to create our ``smart'' algorithm.
 
 But there is more to this. Due to the symbolic nature of the
   transitions, reachability is not as easy to define as in standard
-  models. As mentionned above, we collect all
-possible (symbolic) assignments of state variables, in the
-computed open automaton. By avoiding building the OTs coming from
-some unreachable states, we also avoid adding the corresponding assignments
-to the variables of their target states. The set of possible
-assignments computed by the algorithm is an over approximation of
-possible values of the 
-variables of such state, so narrowing it means we get a better
-approximation, and potentially more information, which can be used in
-the SAT checking of subsequent transitions. But we \emph{cannot} use this
+  models, as illustrated by the definition above. By avoiding building
+  the OTs coming from some unreachable states, we also avoid adding
+  the corresponding assignments to the variables of their target states.
+But we \emph{cannot} use the
 assignment information in the ``on-the-fly'' SAT checking, because
 they cannot be complete before exploring (at least) all the reachable
-state space. So the smart algorithm proceeds in two steps: during the
+state space. We first need to compute a first over-approximation of
+the reachable state space, and assignment sets; this corresponds to
+the set of OTs $L2$ in Algorithm~\ref{alg3}, line 15.
+So the smart algorithm proceeds in two steps: during the
 first step, the SAT checking is done without using any assignment set
 information. Then after the completion of this step, we perform another
-SAT checking of all transitions from step1, but this time using the
-assignment information. This may reduce the reachable state space. If
-we want to be sure that the obtained automaton is minimal, we should
-iterate this step until a fixed point is reached. But in practical cases, very
-little will be gained, so the default implementation does only one
-step. Leaving some UNSAT transitions in the
-symbolic automaton is still logically correct.
+SAT checking of all transitions from step1, using the
+assignment information, in the same way it is done at the end of
+Algorithm~\ref{alg1}.
 
+There is one case much simpler, that is when the pNets contains no
+state variable assignment. Then the set of transitions computed
+on-the-fly is already guaranted to be the final reachable set (line 13).
+ 
 \begin{algorithm}[h]
   \caption{``Smart'' Reachable Open Automaton Generation}
   \label{alg3}
@@ -1401,9 +1437,9 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 \EndWhile
 %%\State Prune the unsatisfiable open transitions in $L$ using the SMT solver;
 \IfThenElse {(NonEmptyAssignmentSet($\mathit{L}$))}
-        {\State \quad\ \Return $\mathit{OA}$=makeAutomaton($\mathit{InitState}(P),L)$;}
-        {\State \quad\ $\mathit{L1}$=filterUnsatTransitions($\mathit{L,Assignments}$);
-         \State \quad\ \Return $\mathit{OA}$=makeReachableSubAutomaton($\mathit{InitState}(P),L1)$};
+        {\State \quad\ \Return $\mathit{OA2}$=makeAutomaton($\mathit{InitState}(P),L)$;}
+        {\State \quad\ $\mathit{L2}$=filterUnsatTransitions($\mathit{L,Assignments}$);
+         \State \quad\ \Return $\mathit{OA2}$=makeReachableSubAutomaton($\mathit{InitState}(P),L2)$};
 \end{algorithmic}  
 \end{algorithm}
 
@@ -1423,7 +1459,7 @@ Naturally, this step is only useful if there are some assignments.
 
 The easy case is when the system does not contain assignments to state
 variables. This does not mean ``data-independency'': we can still have
-guards in the PLTS transitions and in the synchronisation vectors,
+guards in the pLTS transitions and in the synchronisation vectors,
 making the behaviour depending on the value of input variables. But
 the open automaton needs not to collect the set of possible values dealing
 with the values of local variables, so we can directly compute the
@@ -1439,6 +1475,40 @@ variables in the transition labels.
 
 
 \begin{proof}
+  Let $pn=<...>$ be a pNet. The set of states 
+  managed by the two algorithms both are subsets of the cartesian
+  product of the pLTS states, as defined in \pageref{def-states}. In a
+  similar way, the set of state variables are also the same. Comparing
+  transitions requires a little more care, because within the
+  MakeTransitions function, fresh variables are created everytime a
+  synchronisation vector is used (this occurs within the $MkPred$ and
+  $matching$ functions). However, given a global state, the call of
+  $MakeTransitions$ will always returns the same set of OTs, up to
+  renaming of these fresh variables.
+
+  Let us define the following sets of OTs, as computed by the 2
+  algorithms:
+  \begin{itemize}
+    \item $L$ = original set of transitions by Algorithm 1, before pruning
+      (i.e. before line 11),
+    \item $L1-reach$ = final set of OTs of Algorithm 1, as computed
+        by line 12.
+      \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
+          by line 13.
+  \end{itemize}
+
+  For each of these, define $States : OT^* -> State^*$ the function
+  computing the set of target states of a set of OTs.
+
+  We want to prove that $L1-reach = L2-reach$ (upto renaming of fresh
+  variables) and $States(L1-reach) = States(L2-reach)$.
+
+  
+  
+
+  Now remark that without assignments,
+  Theorem~\ref{Th:CorrectnessWithoutAssignments} boils to proving 
+  
 Let $L$, $L1$, $L_{Smart}$ respectively mean the result open transition set of original algorithm before pruning, original algorithm after pruning and smart algorithm. Similarly, $State(L)$, $State(L1)$, $State(L_{Smart})$ mean the result global state set of them. According to the algorithm, there has $L_{Smart}\in L$ and $State(L_{Smart})\in State(L)$.
 
 Suppose that $f$: $State(L1)\rightarrow State(L_{Smart})$.
@@ -1507,12 +1577,14 @@ Then as the function $f$ is both surjective and injective, it is a bijective fun
 But in the presence of assignments, we need to collect all of them
   before using the assignment information to refine the SAT
   checking. Still, the smart strategy will explore a reduced state
-  space, not necessarily the minimal one (discussion later).
+  space, not necessarily the minimal one (discussion later). In the
+  following theorem, both algorithm are considered in their complete
+  version, meaning the reachability (with assignments) step is
+  iterated up to fixpoint.
   
 \begin{theorem}[Correctness with assignments]
   \label{Th:CorrectnessWithAssignments}
-In the general case, the smart
-algorithm, with a final reachability computation, computes 
+In the general case, the smart algorithm computes 
 the same open automaton as that of Algorithm 1 up to a renaming of  variables in the transition labels.
 \end{theorem}
 
