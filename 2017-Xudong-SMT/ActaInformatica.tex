@@ -1474,27 +1474,36 @@ the same open automaton as that of Algorithm 1 up to a renaming of
 variables in the transition labels.  
   \end{theorem}
 
+\ERIC{Sketch of the proof:}
 
 \begin{proof}
   Let $pn=<...>$ be a pNet. The set of states 
   managed by the two algorithms both are subsets of the cartesian
   product of the pLTS states, as defined in \pageref{def-states}. In a
-  similar way, the set of state variables are also the same. Comparing
+  similar way, the set of state variables are also equal. Comparing
   transitions requires a little more care, because within the
   MakeTransitions function, fresh variables are created everytime a
   synchronisation vector is used (this occurs within the $MkPred$ and
   $matching$ functions). However, given a global state, the call of
-  $MakeTransitions$ will always returns the same set of OTs, up to
-  renaming of these fresh variables.
+  $MakeTransitions$ will always returns exactly the same set of OTs, up to
+  renaming of these fresh variables\footnote{I think this does not
+    need any specific proof, given that it is the same function,
+    called with the same arguments}.
 
   Let us define the following sets of OTs, as computed by the 2
   algorithms:
+  \ERIC{not sure whether all these sets are useful, but it's good to
+    have them precisely defined for the moment}
   \begin{itemize}
-    \item $L$ = original set of transitions by Algorithm 1, before pruning
-      (i.e. before line 11),
+    \item $L1$ = original set of transitions by Algorithm 1
+      (i.e. before line 11), 
+    \item $L1-sat$ = original set of transitions by Algorithm 1, after
+      satisfiability check (i.e. after line 11),
     \item $L1-reach$ = final set of OTs of Algorithm 1, as computed
-        by line 12.
-      \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
+      by line 12.
+    \item $L2-sat$ = original set of transitions by Algorithm 2
+      (i.e. before line 13), 
+    \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
           by line 13.
   \end{itemize}
 
@@ -1504,15 +1513,22 @@ variables in the transition labels.
   We want to prove that $L1-reach = L2-reach$ (upto renaming of fresh
   variables) and $States(L1-reach) = States(L2-reach)$.
 
+  From the structure of the main loops of the algorithms, we know that
+  $L1-sat \subset L2-sat$ and subsequently $States(L1-sat) \subset       
+  States(L2-sat)$.
+  \qed
+\end{proof}
   
-  
+    \medskip
+  \noteInEM{I keep below the original proof draft from Xudong, though
+    I'm not sure if parts of it can be reused}
+\begin{proof}
+%% Let $L$, $L1$, $L_{Smart}$ respectively mean the result open transition set of original algorithm before pruning, original algorithm after pruning and smart algorithm. Similarly, $State(L)$, $State(L1)$, $State(L_{Smart})$ mean the result global state set of them. According to the algorithm, there has $L_{Smart}\in L$ and $State(L_{Smart})\in State(L)$.
 
-  Now remark that without assignments,
-  Theorem~\ref{Th:CorrectnessWithoutAssignments} boils to proving 
-  
-Let $L$, $L1$, $L_{Smart}$ respectively mean the result open transition set of original algorithm before pruning, original algorithm after pruning and smart algorithm. Similarly, $State(L)$, $State(L1)$, $State(L_{Smart})$ mean the result global state set of them. According to the algorithm, there has $L_{Smart}\in L$ and $State(L_{Smart})\in State(L)$.
-
-Suppose that $f$: $State(L1)\rightarrow State(L_{Smart})$.
+We will construct a mapping $f$: $State(L1-reach)\rightarrow
+State(L2-reach)$.
+\ERIC{I do not understand this, as states are identical. You would
+  rather need mapping betwen transitions ?}
 \begin{enumerate}
 \setlength{\itemindent}{3.5em}
 	\item[(Surjective)] If $\ostate{\tilde{s_0}}=Initial(p)$ then $f(\ostate{\tilde{s}})=\ostate{\tilde{t_0}}=Initial(p)$ must exists, the transitions started from them fulfill that
@@ -1548,31 +1564,6 @@ Suppose that $f$: $State(L1)\rightarrow State(L_{Smart})$.
 
 Then as the function $f$ is both surjective and injective, it is a bijective function. The theorem is proved.
 
-%Intuitively, $\forall \ostate{\tilde{s}}\in\textit{Explored}=State(L)\text{, there must exist a transition}\ostate{\tilde{s_i}}\xrightarrow{v_i}\ostate{\tilde{s}}\text{ and }\forall \ostate{\tilde{s}}\in\textit{Explored}_{Smart}=State(L_{Smart})\text{, }\exists\ostate{\tilde{pre(s)}}\text{, }\ostate{\tilde{pre(s)}}\xrightarrow{v}\ostate{\tilde{s}}\text{ where \textit{Pred} is satisfiable and the state}\ostate{\tilde{pre(s)}}\text{ has two cases:}$
-%\begin{enumerate}
-%	\item[(1)] $\ostate{\tilde{pre(s)}}=\ostate{\tilde{s}}$
-%	\item[(2)] $\ostate{\tilde{pre(s)}}\in\textit{Explored}\text{-}\{\ostate{\tilde{s}}\}$
-%\end{enumerate}
-%By induction, there must exists a sequence $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s}}$ where all the $\textit{Pred}_i$ are satisfiable.
-%
-%Then $\forall\ostate{\tilde{t}}\textit{Explored}=State(L)$, there are also two cases:
-%\begin{enumerate}
-%	\item[(1)] $\ostate{\tilde{t}}\in State(L1)$
-%	
-%	By definition of reachability, there exists a sequence $\ostate{\tilde{s_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where all the $\textit{Pred}_j$ are satisfiable.
-%	
-%	$\Rightarrow \ostate{\tilde{t}}\in State(L_{Smart})$
-%	\item[(2)] $\ostate{\tilde{t}}\in State(L)\text{-}State(L1)$, then $\forall \ostate{\tilde{u}}\in\textit{Explored}-\{\ostate{\tilde{t}}\}$,
-%	\begin{enumerate}
-%		\item[(1)] $\ostate{\tilde{u}}\in State(L)\text{-}State(L1)$.
-%		\item[(2)] $\ostate{\tilde{u}}\in State(L1)$, but there is no transition $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{t}}$.
-%		\item[(3)] $\ostate{\tilde{u}}\in State(L1)$, there exists transition $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{t}}$, but the $\textit{Pred}_u$ is unsatisfiable.
-%	\end{enumerate}
-%	By induction, there is no sequence from $\ostate{\tilde{s_0}}$ to $\ostate{\tilde{t}}$.
-%	
-%	$\Rightarrow \ostate{\tilde{t}}\notin State(L_{Smart})$
-%\end{enumerate}
-%Overall, $State(L1)$ is equal to $State(L_{Smart})$.
 \end{proof}
 
 But in the presence of assignments, we need to collect all of them
@@ -1589,8 +1580,60 @@ In the general case, the smart algorithm computes
 the same open automaton as that of Algorithm 1 up to a renaming of  variables in the transition labels.
 \end{theorem}
 
-\TODO{Xudong: proof - to be checked}
+\TODO{Formalize the proof}
 
+\ERIC{Proof sketch:}
+  
+  \begin{itemize}
+   \item $L1$ = original set of transitions by Algorithm 1, after
+      satisfiability check (i.e. after line 11), using assignments
+      from the whole state space.
+   \item $L2$ = original set of transitions by Algorithm 1, after
+      satisfiability check (i.e. after line 11), using assignments
+      from the original on-the-fly search.
+
+    \item $L1-reach$ = final set of OTs of Algorithm 1, as computed
+        by an iterative application of makeReachableSubAutomaton (line
+        12) up to fixpoint.
+      \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
+          by line 13, as computed
+        by an iterative application of makeReachableSubAutomaton (line
+        16) up to fixpoint.
+  \end{itemize}
+
+  Proof similar to the previous case still apply here, but adapted as
+  we are building a different starting point :
+  
+  - Define the function $States$ as before, and  $Assignments : OT^* \# State -> $ the function
+  computing the set of assignments of a global state from a given set of OTs.
+
+  - The structure implicitely computed by the algorithm (comprised in
+  the structure of an Open Automaton) is a triple $ Aut= <States, OTs,
+  Assigns>$.
+
+  - when building $L1$ and $L2$ the 2 algorithms compute the initial
+  $Aut_0$ structures, without using previous assignments, as
+  explained in section~\ref{section:implementation}.
+  
+  - The function $Refine : Aut->Aut$, implemented as
+  $makeReachableSubAutomaton(S0,OTs)$, uses the assignments of the
+  previous step to refine the computed reachable space, reducing all 3
+  components of the triple: by pruning some Unsat OTs, it potentialy
+  removes the corresponding assignments, and their target states.
+
+  - the whole computation takes place within a finite domain: Global
+  states are within the cartesian product of the pLTS states; OTs are
+  always subsets of $L1$, and Assignments are a fixed finite set of
+  symbolic assignements of expressions to state variables,
+  syntacticaly contained in the OTs in $L1$; so the fixpoint
+  computation terminates.
+
+  - the result $Aut$ contains all reachable OTs and States from $L1$,
+  and only these (proof should be similar to that of Th2).
+
+  \medskip
+  \noteInEM{I keep below the original proof draft from Xudong, though
+    think it does not apply any more}
 \begin{proof}
 In Theorem 2, we have already proved the result set of global states of two algorithm are the same without the assignments.
 
