@@ -2025,9 +2025,9 @@ Boolean variables for relevant ports~\cite{BarBliu15-offer-scico}.
 
 \paragraph{Computed open automaton}
 
-For this example, the tool (using Algorithm 1) builds 258 open transitions, whereof 248
+For this example, the tool (using Algorithm 1) builds 408 open transitions, whereof 396
 are detected unsatisfiable by Z3.  The resulting open automaton, with
-3 reachable global states (out of the possible 6) and 10 open
+3 reachable global states (out of the possible 6) and 12 open
 transitions, is shown in Figure~\ref{schema:resultOA1}.
 
 \begin{figure}[t]
@@ -2098,18 +2098,11 @@ In the conception of the nanosatellite software \cite{CubETH-case-study}, the Fa
 communicating on the common bus. Timeout signals (``$ask$''), resets,
 and the passing of time ($tick$) were synchronised in the global
 system.
+In this section, we use a combination of 2 FailureTimer architectures
+to demonstrate how the encoding works, and as a slightly larger
+example to show how the approach scales up.
 
-In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
-of two FailureTimer architectures, with their respective controlled
-processes.
-In Figure~\ref{schema:ArchFailure:Double:OA} we show the resulting
-open automaton. It indicates that the two timers are forced to
-be synchronous: each can only tick after the other has also started,
-and then they will tick, and timeout, synchronously.
-
-\TODO{Eric: try reorganise the figures. Add properties ?}
-
-\begin{figure}[t]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=0.9\columnwidth]{ActaXFIG/BIPspec-DoubleArchFailureTimer-v2-2}
   \caption{The BIP specification of two composed Failure Monitor architectures}
@@ -2123,19 +2116,18 @@ and then they will tick, and timeout, synchronously.
   \label{schema:ArchFailure:Double:OA}
 \end{figure}
 
-%% \begin{figure}[t]
-%%   \centering
-%%   \includegraphics[width=0.9\columnwidth]{ActaXFIG/DoubleFailureTimerPNET-v2-2}
-%%   \caption{The open pNet encoding the Failure Monitor architecture (\ref{fig:schema:ArchFailure:BIP})}
-%%   \label{fig:FailureTimer:pNet}
-%% \end{figure}
+In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
+of two FailureTimer architectures, with their respective controlled
+processes.
+In Figure~\ref{schema:ArchFailure:Double:OA} we show the resulting
+open automaton. It indicates that the two timers are forced to
+be synchronous: each can only tick after the other has also started,
+and then they will tick, reset, and timeout, synchronously.
 
-%% \begin{figure}[t]
-%%   \centering
-%%   \includegraphics[width=0.9\columnwidth]{XFIG/DoubleTimerOA-v2-2}
-%%   \caption{The open Automaton of the Failure Monitor Architecture}
-%%   \label{fig:ArchFailure:OA}
-%% \end{figure}
+This is a very strong assumption, and we are working on a more
+flexible specification (at BIP level) to release this hypothesis while
+keeping the safety properties of the composition.
+
 
 
 
@@ -2144,7 +2136,7 @@ and then they will tick, and timeout, synchronously.
 
 In each cell of the following table, we display the number of OTs whose predicates were found SAT/UNSAT by the SMT engine, and the overall time spent for the execution of the whole algorithm.
 
-All tests are run on HP xxx laptop under Windows 10 x64, with an Intel quad-Core i7-6600U
+All tests are run on HP EliteBook 840 laptop under Windows 10 x64, with an Intel quad-Core i7-6600U
 processor, and 32Gb of RAM. The software platform is VerCors\footnote{Available at \url{https://team.inria.fr/scale/software/vercors/}.}, running on top of
 Eclipse Equinox, with Java 1.8.
 
@@ -2251,83 +2243,48 @@ Z3 solver.
 %
 %\hl{%
 %
-In this paper, we used a running example, based on a BIP
-architecture from an earlier nanosatellite case
-study~\cite{CubETH-case-study}.  This example shows that
+We have used a running example based on two possible
+encodings of the Enable operator of Lotos. The automata computed with
+the algorithm can be used to prove equational properties of the
+operator.
+
+Then we define a ``smart'' version of the algorithm that explores, as
+much as possible, only the reachable part of the open automaton. The
+handling of assignments makes the reachable computation more
+challenging. We show that the result is equivalent to the original
+algorithm. 
+
+We validate the approach on two larger examples, 
+based on a BIP architecture taken from an earlier nanosatellite case
+study~\cite{CubETH-case-study}. We also show how such architectures
+can be composed, and how our approach scales.
+This example shows that
 open-automata-based semantics can be instrumental in verifying the
 properties enforced by the architectures through an encoding into open
-pNets.  This encoding %\mdash which we intend to formalise and prove
-% correct in a separate paper\mdash 
-also opens the way for an extension
-of BIP architectures with the transfer of data among variables of
-different components.  Indeed, such data transfer can be easily
-encoded using the predicates associated to synchronisation vectors in
-open pNets.  The encoding of open transitions into SMTlib and the
-availability of theories can guide the definition of such an extension.
-%
-%}
-%
-Our case-studies show that our encoding
-successfully identifies the unsatisfiable open transitions and that
-the resulting automata correctly reflect the expected 
-movements of the encoded process expressions.
+pNets.
+We also compare the practical performances of the 2 algorithms and
+show the benefit gained using the smart approach.
 
-\TODO{add the novelties...}
-
-%% Among the questions that have arised during this work, an important one is the
-%% efficiency of Z3 for our needs. Z3 is famous for being very fast in
-%% solving very large sets of assertions. %% , which could be important for
-%% %% us
-%% However, we encountered problems during the implementation of the
-%% checking method. %% using Z3. 
-%% For example, if the $\mathit{functions}$ and the
-%% $\mathit{datatypes}$ part of the algebra presentation that we submit to the solver
-%% are independent from each other, then checking the $\mathit{assertions}$ is 
-%% simple. However, $\mathit{functions}$ on recursive $\mathit{datatypes}$ make it
-%% more complex. Special rules might be defined by the user for the
-%% induction.  We need more evidence that dealing with more complex
-%% action algebras, which would involve axiomatizing their data structures
-%% as Z3 theories, will allow us to decide validity of
-%% predicates.
-%% We may also try other automatic theorem provers, depending on the structure of the proofs we need.
-
-%% \todoMargin{Change perspective: we are working on the formal extension of
-%%   BIP architectures, and their semantics in terms of pNets. Then
-%%   bisimulation and model-checking principles adapted to open pNet
-%%   systems are under development}
-%
 Naturally, our next goals after the generation of the open automata
-will be to model-check logical properties, and to check equivalences of pNets. While
-model-checking open automata  seems easy to define, equivalence
-checking is more challenging. 
+will be to model-check logical properties, and to check equivalences
+of pNets. While model-checking open automata seems easy to define,
+equivalence checking is more challenging. 
 In~\cite{henrio:Forte2016}, we
-have already found the FH-bisimulation %inspired
-%by~\cite{deSimone85},
-to be a
-suitable definition. But weak equivalences, or refinements, will
+have already found the FH-bisimulation 
+to be a suitable definition. But weak equivalences, or refinements, will
 definitely be useful when comparing different pNets with
-different structures. For bisimulation, we foresee that SMT methods
+different structures. For both model-checking and bisimulation, SMT methods
 will be the basis for comparing open transitions. 
-%However, the usual approach of computing bisimulation by partition
-%% refinement does not work easily with symbolic transitions. In a first
-%% step we may want instead to define and implement an algorithm for
-%% checking that a given equivalence relation between open automata 
-%% states is indeed a FH-Bisimulation. Finding automatically a
-%% bisimulation relation or the most general bisimulation will be more
-%% challenging.
-%% It appears also that when comparing different pNets with
-%% different structure, strong bisimulation will be too strong a notion,
-%% and that we will have to define proper notions of weak equivalence or
-%% refinements. 
 
-\emph{Scaling up.} One important motivation of this work is to
-attack the complexity of verification of realistic systems by a
-compositional and parametric approach. Still one may wonder if the price
-for analysing our symbolic transitions will not make the approach too expensive
-in terms of computing time. We tried a
-slightly bigger example, assembling two Failure
-controllers. In~\cite{Avocs-RR}, we show that Z3 can check the 
-satisfiablility of  90K open transitions in a couple of minutes.
+
+%% \emph{Scaling up.} One important motivation of this work is to
+%% attack the complexity of verification of realistic systems by a
+%% compositional and parametric approach. Still one may wonder if the price
+%% for analysing our symbolic transitions will not make the approach too expensive
+%% in terms of computing time. We tried a
+%% slightly bigger example, assembling two Failure
+%% controllers. In~\cite{Avocs-RR}, we show that Z3 can check the 
+%% satisfiablility of  90K open transitions in a couple of minutes.
 
 
 \bibliographystyle{spmpsci}
