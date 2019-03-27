@@ -1238,7 +1238,6 @@ $C = ({ot}_i)^{i \in [1,n]} \in \overline{comb}$ is a tuple of open transitions 
 %
 \begin{multline*}
   \mathit{MkPred}(sv, C, \overline{\mathit{hole}}) = 
-  \\
   (\forall i\in I, a_i=a'_i) \land
 %  (\forall i \not\in I, ot_i = -) \land
   (\forall j\in J, b_j=b'_j) \land
@@ -1476,94 +1475,130 @@ variables in the transition labels.
 
 \ERIC{Sketch of the proof:}
 
+%\begin{proof}
+%  Let $pn=<...>$ be a pNet. The set of states 
+%  managed by the two algorithms both are subsets of the cartesian
+%  product of the pLTS states, as defined in \pageref{def-states}. In a
+%  similar way, the set of state variables are also equal. Comparing
+%  transitions requires a little more care, because within the
+%  MakeTransitions function, fresh variables are created everytime a
+%  synchronisation vector is used (this occurs within the $MkPred$ and
+%  $matching$ functions). However, given a global state, the call of
+%  $MakeTransitions$ will always returns exactly the same set of OTs, up to
+%  renaming of these fresh variables\footnote{I think this does not
+%    need any specific proof, given that it is the same function,
+%    called with the same arguments}.
+%
+%  Let us define the following sets of OTs, as computed by the 2
+%  algorithms:
+%  \ERIC{not sure whether all these sets are useful, but it's good to
+%    have them precisely defined for the moment}
+%  \begin{itemize}
+%    \item $L1$ = original set of transitions by Algorithm 1
+%      (i.e. before line 11), 
+%    \item $L1-sat$ = original set of transitions by Algorithm 1, after
+%      satisfiability check (i.e. after line 11),
+%    \item $L1-reach$ = final set of OTs of Algorithm 1, as computed
+%      by line 12.
+%    \item $L2-sat$ = original set of transitions by Algorithm 2
+%      (i.e. before line 13), 
+%    \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
+%          by line 13.
+%  \end{itemize}
+%
+%  For each of these, define $States : OT^* -> State^*$ the function
+%  computing the set of target states of a set of OTs.
+%
+%  We want to prove that $L1-reach = L2-reach$ (upto renaming of fresh
+%  variables) and $States(L1-reach) = States(L2-reach)$.
+%
+%  From the structure of the main loops of the algorithms, we know that
+%  $L1-sat \subset L2-sat$ and subsequently $States(L1-sat) \subset       
+%  States(L2-sat)$.
+%  \qed
+%\end{proof}
+%  
+%    \medskip
+%  \noteInEM{I keep below the original proof draft from Xudong, though
+%    I'm not sure if parts of it can be reused}
 \begin{proof}
-  Let $pn=<...>$ be a pNet. The set of states 
-  managed by the two algorithms both are subsets of the cartesian
-  product of the pLTS states, as defined in \pageref{def-states}. In a
-  similar way, the set of state variables are also equal. Comparing
-  transitions requires a little more care, because within the
-  MakeTransitions function, fresh variables are created everytime a
-  synchronisation vector is used (this occurs within the $MkPred$ and
-  $matching$ functions). However, given a global state, the call of
-  $MakeTransitions$ will always returns exactly the same set of OTs, up to
-  renaming of these fresh variables\footnote{I think this does not
-    need any specific proof, given that it is the same function,
-    called with the same arguments}.
-
-  Let us define the following sets of OTs, as computed by the 2
-  algorithms:
-  \ERIC{not sure whether all these sets are useful, but it's good to
-    have them precisely defined for the moment}
-  \begin{itemize}
+Let
+ \begin{itemize}
     \item $L1$ = original set of transitions by Algorithm 1
       (i.e. before line 11), 
-    \item $L1-sat$ = original set of transitions by Algorithm 1, after
+    \item $L1_{sat}$ = original set of transitions by Algorithm 1, after
       satisfiability check (i.e. after line 11),
-    \item $L1-reach$ = final set of OTs of Algorithm 1, as computed
+    \item $L1_{reach}$ = final set of OTs of Algorithm 1, as computed
       by line 12.
-    \item $L2-sat$ = original set of transitions by Algorithm 2
+    \item $L2_{sat}$ = original set of transitions by Algorithm 2
       (i.e. before line 13), 
-    \item $L2-reach$ = final set of OTs of Algorithm 2, as computed
+    \item $L2_{reach}$ = final set of OTs of Algorithm 2, as computed
           by line 13.
-  \end{itemize}
+\end{itemize}
+When the pNets contains no assignment, there is no need for the last filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
 
-  For each of these, define $States : OT^* -> State^*$ the function
-  computing the set of target states of a set of OTs.
+For each of these, define $States: <OT> \rightarrow <State>$ which is the function computing the set of states in a set of OTs. Between two transitions sets of the
+algorithms, define $Rename:  L1_{reach} \rightarrow L2_{reach}$ which is the function renaming fresh variables.
 
-  We want to prove that $L1-reach = L2-reach$ (upto renaming of fresh
-  variables) and $States(L1-reach) = States(L2-reach)$.
+According to the rules Tr1 and Tr2 in \pageref{def-states}, the global state $\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of n pLTS states $s_{i}^{i\in [0,n]}$.
 
-  From the structure of the main loops of the algorithms, we know that
-  $L1-sat \subset L2-sat$ and subsequently $States(L1-sat) \subset       
-  States(L2-sat)$.
-  \qed
-\end{proof}
-  
-    \medskip
-  \noteInEM{I keep below the original proof draft from Xudong, though
-    I'm not sure if parts of it can be reused}
-\begin{proof}
-%% Let $L$, $L1$, $L_{Smart}$ respectively mean the result open transition set of original algorithm before pruning, original algorithm after pruning and smart algorithm. Similarly, $State(L)$, $State(L1)$, $State(L_{Smart})$ mean the result global state set of them. According to the algorithm, there has $L_{Smart}\in L$ and $State(L_{Smart})\in State(L)$.
+From the structure of the main loop of the algorithms, we can get $States(L2_{reach})\subseteq  States(L1)$, then
+\[\forall \ostate{\tilde{u}}\in States(L2_{reach}), \exists\ostate{\tilde{t}}\in States(L1), \ostate{\tilde{t}}=\ostate{\tilde{a_0...a_n}}=\ostate{\tilde{u}}.\]
 
-We will construct a mapping $f$: $State(L1-reach)\rightarrow
-State(L2-reach)$.
-\ERIC{I do not understand this, as states are identical. You would
-  rather need mapping betwen transitions ?}
-\begin{enumerate}
-\setlength{\itemindent}{3.5em}
-	\item[(Surjective)] If $\ostate{\tilde{s_0}}=Initial(p)$ then $f(\ostate{\tilde{s}})=\ostate{\tilde{t_0}}=Initial(p)$ must exists, the transitions started from them fulfill that
-	\[\forall \ostate{\tilde{t_0'}}, \ostate{\tilde{t_0}}\xrightarrow{v_j}\ostate{\tilde{t_0'}}\in L_{Smart},\quad \exists\ostate{\tilde{s'}},\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}\in L.\]
-	The state $\ostate{\tilde{t'}}\in State(L_{Smart})$ and as $Pred_j$ of $\ostate{\tilde{t}}\xrightarrow{v_j}\ostate{\tilde{t_0'}}$ is satisfiable, then if the $Pred_i$ of $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}$ is also satisfiable, the state $\ostate{\tilde{s_0'}}$ is reachable in the original open automaton s.t. $\ostate{\tilde{s_0'}}\in State(L1)$, we can construct the mapping
-	\[f(\ostate{\tilde{s_0'}})=\ostate{\tilde{t_0'}}.\]
-	If the $Pred_i$ of $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}$ is not satisfiable then two transitions are not matched and $\ostate{\tilde{s_0'}}\notin State(L1)$.
-	
-	Let $\textit{Explored}$, $\textit{Explored}_{Smart}$ respectively mean the explored states set of original algorithm and smart algorithm.
-	
-	Suppose that  $\ostate{\tilde{s}}\in \textit{Explored}$ there is $\ostate{\tilde{t}}\in \textit{Explored}_{Smart}$ where $f(\ostate{\tilde{s}})=\ostate{\tilde{t}}$, there exists a sequence of transitions $\ostate{\tilde{s_0}}...\xrightarrow{v_i}...\ostate{\tilde{s}}$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$. 
-	
-	The transitions $\ostate{\tilde{s}}\xrightarrow{v}\ostate{\tilde{s'}}$ and $\ostate{\tilde{t}}\xrightarrow{v}\ostate{\tilde{t'}}$ have several cases:
-	\begin{enumerate}
-		\item[(1)] $\ostate{\tilde{t'}}\in \textit{Explored}_{Smart}$
-		
-		We can find that 
-		 \[\exists\ostate{\tilde{s'}}\in \textit{Explored},\quad \ostate{\tilde{s}}\xrightarrow{v}\ostate{\tilde{s'}}\quad where\quad f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}.\]
-		\item[(2)] $\ostate{\tilde{t'}}\notin \textit{Explored}_{Smart}$
-		
-		There must has 
-		\[\exists\ostate{\tilde{s'}}\notin \textit{Explored},\quad \ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}.\]
-		If the $Pred_i$ of $\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$ is satisfiable then there exists a sequence of transitions $\ostate{\tilde{s_0}}...\xrightarrow{v_i}...\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$. So the $\ostate{\tilde{s'}}$ is reachable in the original open automaton, we can construct the mapping
-		\[f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}.\]
-		If the $Pred_i$ of $\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$ is not satisfiable then two transitions are not matched and $\ostate{\tilde{s'}}\notin State(L1)$.
-	\end{enumerate}	
-	Overall, \[\forall \ostate{\tilde{t}}\in State(L_{Smart}),\quad \exists\ostate{\tilde{s}}\in State(L1), f(\ostate{\tilde{s}})=\ostate{\tilde{t}}.\]
-	\item[(Injective)] If there is a pair of states $\ostate{\tilde{s}} and \ostate{\tilde{t}}$ constructs the mapping $f(\ostate{\tilde{s}})=\ostate{\tilde{t}}$. We can know that $\ostate{\tilde{s}}\in \textit{Explored},\ostate{\tilde{t}}\in \textit{Explored}_{Smart}$.
-	
-	As when there is $\ostate{\tilde{t'}}\in \textit{Explored}_{Smart}$, the state is must be $\ostate{\tilde{s'}}\in \textit{Explored}$ where $f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}$.
-	So it is a one-to-one mapping.
-\end{enumerate}
+Suppose that  $\ostate{\tilde{t}}\in States(L1_{reach})$, it is reachable in the result automaton of Algorithm 1, so there exists a sequence of transitions $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t}}$ where $Pred_i$ are all satisfiable. And there exists $\ostate{\tilde{u}}\in States(L2_{reach})$ where $\ostate{\tilde{t}}=\ostate{\tilde{u}}$.
 
-Then as the function $f$ is both surjective and injective, it is a bijective function. The theorem is proved.
+Similarly, from the structure of the algorithms, 
+\[\forall \ostate{\tilde{u}}\in States(L2_{reach}), \exists\ostate{\tilde{t}}\in States(L1), \ostate{\tilde{t}}=\ostate{\tilde{u}}\]
+\[s.t.\quad OT_t = \ostate{\tilde{t}}\xrightarrow{v}\ostate{\tilde{t'}}\in L1, OT_u = \ostate{\tilde{u}}\xrightarrow{v}\ostate{\tilde{u'}}\in L2_{reach}, Rename(OT_t) = OT_u.\]
+where $Pred_t$ and $Pred_u$ are satisfiable.
 
+Then we can get a new longer sequence $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t'}}$ implying that $\ostate{\tilde{t'}}\in States(L1_{reach}),OT_t\in L1_{reach}$. So 
+$States(L2_{reach})\subseteq  States(L1_{reach})$.
+
+Moreover,
+\[\forall OT_u\notin L2_{reach}, \exists OT_t\in L1, Rename(OT_t) = OT_u\]
+where $Pred_t$ and $Pred_u$ are not satisfiable. Then according to the pruning function in Algorithm 1, $OT_t\notin L1_{reach}$. 
+
+As a result, we get that $L1_{reach}=L2_{reach}$, and subsequently, $States(L1_{reach})=States(L2_{reach})$.
+%We will construct a mapping $f$: $State(L1-reach)\rightarrow
+%State(L2-reach)$.
+%\ERIC{I do not understand this, as states are identical. You would
+%  rather need mapping betwen transitions ?}
+%\begin{enumerate}
+%\setlength{\itemindent}{3.5em}
+%	\item[(Surjective)] If $\ostate{\tilde{s_0}}=Initial(p)$ then $f(\ostate{\tilde{s}})=\ostate{\tilde{t_0}}=Initial(p)$ must exists, the transitions started from them fulfill that
+%	\[\forall \ostate{\tilde{t_0'}}, \ostate{\tilde{t_0}}\xrightarrow{v_j}\ostate{\tilde{t_0'}}\in L_{Smart},\quad \exists\ostate{\tilde{s'}},\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}\in L.\]
+%	The state $\ostate{\tilde{t'}}\in State(L_{Smart})$ and as $Pred_j$ of $\ostate{\tilde{t}}\xrightarrow{v_j}\ostate{\tilde{t_0'}}$ is satisfiable, then if the $Pred_i$ of $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}$ is also satisfiable, the state $\ostate{\tilde{s_0'}}$ is reachable in the original open automaton s.t. $\ostate{\tilde{s_0'}}\in State(L1)$, we can construct the mapping
+%	\[f(\ostate{\tilde{s_0'}})=\ostate{\tilde{t_0'}}.\]
+%	If the $Pred_i$ of $\ostate{\tilde{s_0}}\xrightarrow{v_i}\ostate{\tilde{s_0'}}$ is not satisfiable then two transitions are not matched and $\ostate{\tilde{s_0'}}\notin State(L1)$.
+%	
+%	Let $\textit{Explored}$, $\textit{Explored}_{Smart}$ respectively mean the explored states set of original algorithm and smart algorithm.
+%	
+%	Suppose that  $\ostate{\tilde{s}}\in \textit{Explored}$ there is $\ostate{\tilde{t}}\in \textit{Explored}_{Smart}$ where $f(\ostate{\tilde{s}})=\ostate{\tilde{t}}$, there exists a sequence of transitions $\ostate{\tilde{s_0}}...\xrightarrow{v_i}...\ostate{\tilde{s}}$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$. 
+%	
+%	The transitions $\ostate{\tilde{s}}\xrightarrow{v}\ostate{\tilde{s'}}$ and $\ostate{\tilde{t}}\xrightarrow{v}\ostate{\tilde{t'}}$ have several cases:
+%	\begin{enumerate}
+%		\item[(1)] $\ostate{\tilde{t'}}\in \textit{Explored}_{Smart}$
+%		
+%		We can find that 
+%		 \[\exists\ostate{\tilde{s'}}\in \textit{Explored},\quad \ostate{\tilde{s}}\xrightarrow{v}\ostate{\tilde{s'}}\quad where\quad f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}.\]
+%		\item[(2)] $\ostate{\tilde{t'}}\notin \textit{Explored}_{Smart}$
+%		
+%		There must has 
+%		\[\exists\ostate{\tilde{s'}}\notin \textit{Explored},\quad \ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}.\]
+%		If the $Pred_i$ of $\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$ is satisfiable then there exists a sequence of transitions $\ostate{\tilde{s_0}}...\xrightarrow{v_i}...\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$. So the $\ostate{\tilde{s'}}$ is reachable in the original open automaton, we can construct the mapping
+%		\[f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}.\]
+%		If the $Pred_i$ of $\ostate{\tilde{s}}\xrightarrow{v'}\ostate{\tilde{s'}}$ is not satisfiable then two transitions are not matched and $\ostate{\tilde{s'}}\notin State(L1)$.
+%	\end{enumerate}	
+%	Overall, \[\forall \ostate{\tilde{t}}\in State(L_{Smart}),\quad \exists\ostate{\tilde{s}}\in State(L1), f(\ostate{\tilde{s}})=\ostate{\tilde{t}}.\]
+%	\item[(Injective)] If there is a pair of states $\ostate{\tilde{s}} and \ostate{\tilde{t}}$ constructs the mapping $f(\ostate{\tilde{s}})=\ostate{\tilde{t}}$. We can know that $\ostate{\tilde{s}}\in \textit{Explored},\ostate{\tilde{t}}\in \textit{Explored}_{Smart}$.
+%	
+%	As when there is $\ostate{\tilde{t'}}\in \textit{Explored}_{Smart}$, the state is must be $\ostate{\tilde{s'}}\in \textit{Explored}$ where $f(\ostate{\tilde{s'}})=\ostate{\tilde{t'}}$.
+%	So it is a one-to-one mapping.
+%\end{enumerate}
+%
+%Then as the function $f$ is both surjective and injective, it is a bijective function. The theorem is proved.
+%
 \end{proof}
 
 But in the presence of assignments, we need to collect all of them
@@ -1799,9 +1834,9 @@ algorithm on these examples.
 
 \begin{figure}[ht]
 \centerline{ 
-  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1-aut}
+  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1}
   \hspace{25mm}
-  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2-aut}}
+  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2}}
   \begin{minipage}{5.7cm}
 $  \begin{array}{@{}r@{}l@{}}
     ot_1  = &\openrule{\{ \xrightarrow{a1}_P \},\\ [\forall x1. a1\neq\delta(x1)]}
