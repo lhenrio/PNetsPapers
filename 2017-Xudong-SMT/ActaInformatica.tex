@@ -1626,8 +1626,8 @@ computing the set of assignments of a global state from a given set of OTs.
 The structure implicitely computed by the algorithm (comprised in
 the structure of an Open Automaton) is a triple $ Aut= \langle OTs, States, Assigns\rangle$.
 
-Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and $OA_2$ is $Assignments(L2_{reach}, States(L2_{reach}))$. The computed triples are 
-\[Aut_1 = \langle L1_{reach}, States(L1_{reach}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{reach}, States(L2_{reach}), Assignments(L2_{reach}, States(L2_{reach}))\rangle\]
+Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and $OA_2$ is $Assignments(L2_{sat}, States(L2_{sat}))$. The computed triples are 
+\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), Assignments(L2_{sat}, States(L2_{sat}))\rangle\]
 
 Based on the notation of the triple, define the function $Refine : Aut \rightarrow Aut$ refining the result automaton together with the assignments,
 \begin{align*}
@@ -1639,29 +1639,29 @@ where $OT' = OT - OT_{unsat}$, $OT_{unsat}$ is the set of transitions checked un
 Given that every iteration will remove some unsatisfiable transitions, $Refine$ is a monotone function. There exists a sequence $Aut^n = Refine(Aut^{n-1})$ s.t. $|Aut^n|\le |Aut^{n-1}|$.
 Let $Aut''$ contains the $OT''$ which has no more unsatisfiable transition, then there is $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
 
-Let the fixed point of $OA_1$ to be $Aut''_1$ and the fixed point of $OA_2$ to be $Aut''_2$.
+Let the fixed points $Refine(Aut''_1) = Aut''_1$, $Refine(Aut''_2) = Aut''_2$.
 
-For the transitions set in $Aut''_1$ and $Aut''_2$, $L1_{reach}''$ and $L2''_{reach}$, we need to check their equivalence.
-At the first iteration, the unsatisfiable transitions in $OA_1$ has only one case.
+For the transitions set in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
+At the first iteration, the unsatisfiable transitions in $OA_1$ has only one case according to the relation between the assertions to check,
 \begin{align*}
-&\quad Pred\and \bigwedge_i Assignments_i(L1, States(L1) \text{ is false}\\
-&\quad\rightarrow Pred \and \bigwedge_j Assignments_j(L2_{reach}, States(L2_{reach})\text{ is false}\\
-&\Rightarrow \forall t\in L1_{unsat} \rightarrow t\in L2_{unsat}\\
+&\quad Pred\wedge \bigvee_i Assignments_i(L1, States(L1) \text{ is false}\\
+&\quad\longrightarrow Pred\wedge \bigvee_j Assignments_j(L2_{sat}, States(L2_{sat})\text{ is false}\\
+&\Rightarrow \forall t\in L1_{unsat} \longrightarrow t\in L2_{unsat}\\
 &\Rightarrow L1_{unsat}\subseteq L2_{unsat}.
 \end{align*}
-However, its reverse direction is not fulfilled. Recall that $L1_{reach}=L2_{reach}$, these relation can imply that,
+However, its reverse direction is not fulfilled. Recall that $L1_{sat}=L2_{sat}$, these relations can imply that,
 \begin{align*}
-Assignments(L1, &States(L1)\supseteq Assignments(L2_{reach}, States(L2_{reach})\\
-&\supseteq Assignments(L1_{reach}-L1_{unsat}, States(L1_{reach}-L1_{unsat}))\\
-&\supseteq Assignments(L2_{reach}-L2_{unsat}, States(L2_{reach}-L2_{unsat}))
+Assignments(L1, &States(L1))\supseteq Assignments(L2_{sat}, States(L2_{sat}))\\
+&\supseteq Assignments(L1_{sat}-L1_{unsat}, States(L1_{sat}-L1_{unsat}))\\
+&\supseteq Assignments(L2_{sat}-L2_{unsat}, States(L2_{sat}-L2_{unsat}))
 \end{align*}
-So after the first iteration, the unsatisfiable transitions in $OA_1$ has two cases.
+So after the first iteration, the unsatisfiable transitions in $OA_1$ has two cases,
 \begin{align*}
-&\forall t\in L1'_{unsat} \rightarrow t\in L2'_{unsat}\\
-\text{ or }&\forall t\in L1'_{unsat} \rightarrow t\notin L2'_{reach}.
+&\forall t\in L1'_{unsat} \longrightarrow t\in L2'_{unsat}\\
+\text{ or }&\forall t\in L1'_{unsat} \longrightarrow t\notin L2'_{sat}.
 \end{align*}
-By induction, after removing all the transitions not in the $L2''_{reach}$, we can get that $L1''_{reach}=L2''_{reach}$, subsequently, $States(L1''_{reach})=States(L2''_{reach})$,
-$Assignments\\(L1''_{reach},States''_{L1_{reach}})=Assignments(L2''_{reach},States''_{L2_{reach}})$.
+By induction, after removing all the transitions not in the $L2''_{sat}$, we can get that $L1_{reach}=L2_{reach}$, subsequently, $States_{L1_{reach}}=States_{L2_{reach}}$,
+$Assignments\\(L1_{reach},States_{L1_{reach}})=Assignments(L2_{reach},States_{L2_{reach}})$.
 \end{proof}
 
 \ERIC{Proof sketch:}
