@@ -1467,7 +1467,8 @@ reachable part of the automaton using the on-the-fly algorithm.
 
 \begin{theorem}[Correctness without assignments]
   \label{Th:CorrectnessWithoutAssignments}
-If a pNet contains no assignment to state variables, then the smart
+If a pNet verifying the finiteness conditions of theorem 1, and
+containing no assignment to state variables, then the smart  
 algorithm, without a final reachability computation, computes 
 the same open automaton as that of Algorithm 1 up to a renaming of
 variables in the transition labels.  
@@ -1521,7 +1522,8 @@ variables in the transition labels.
 %    \medskip
 %  \noteInEM{I keep below the original proof draft from Xudong, though
 %    I'm not sure if parts of it can be reused}
-\begin{proof}
+\begin{proof of Theorem \ref{Th:CorrectnessWithoutAssignments}}
+  
 Let
  \begin{itemize}
     \item $L1$ = original set of transitions by Algorithm 1
@@ -1535,19 +1537,39 @@ Let
     \item $L2_{reach}$ = final set of OTs of Algorithm 2, as computed
           by line 13.
 \end{itemize}
-When the pNets contains no assignment, there is no need for the last filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
 
-For each of these, define $States: \langle OT\rangle\rightarrow\langle State\rangle$ which is the function computing the set of states in a set of OTs. Between two transitions sets of the
-algorithms, define $Rename:  L1_{reach} \rightarrow L2_{reach}$ which is the function renaming fresh variables.
+For each of these, define $States: \langle OT\rangle\rightarrow\langle
+State\rangle$ which is the function computing the set of states in a
+set of OTs. Between two transitions sets of the algorithms, define
+$Rename:  L1_{reach} \rightarrow L2_{reach}$ which is the function
+renaming fresh variables. 
 
-According to the rules Tr1 and Tr2 in \pageref{def-states}, the global state $\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of n pLTS states $s_{i}^{i\in [0,n]}$.
+When the pNets contains no assignment, there is no need for the last
+filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$. 
+
+
+According to the definition of global states in
+page~\pageref{def-states}, the global state
+$\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of n
+pLTS states $s_{i}^{i\in [0,n]}$. 
 
 From the structure of the main loop of the algorithms, we can get $States(L2_{reach})\subseteq  States(L1)$, then
 \[\forall \ostate{\tilde{u}}\in States(L2_{reach}), \exists\ostate{\tilde{t}}\in States(L1), \ostate{\tilde{t}}=\ostate{\tilde{a_0...a_n}}=\ostate{\tilde{u}}.\]
+\noteInEric{I don't agree with the previous statement: the main loop
+  constructs L1 (resp $L2_{sat}$), note the sets of states, so this
+  argument would give you 
+  
+The reachability function $computeReachableSubAutomaton$ being called
+with the same initial state $\ostate{\tilde{t_0}}$, this state is the
+initial state of both $L1_{reach})$ and $L2_{reach})$.
 
-If there is an initial state $\ostate{\tilde{t_0}}\in States(L2_{reach})$ then the initial state of the original automaton $\ostate{\tilde{t_0}}\in States(L1_{reach})$ must exists.
+%  If there is an initial state $\ostate{\tilde{t_0}}\in States(L2_{reach})$ then the initial state of the original automaton $\ostate{\tilde{t_0}}\in States(L1_{reach})$ must exists.
 
-Suppose that  $\ostate{\tilde{t}}\in States(L2_{reach})$, it is reachable in the result automaton of Algorithm 2, so there exists a sequence of transitions $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where $Pred_j$ are all satisfiable. Then there exists the same state $\ostate{\tilde{t}}\in States(L1_{reach})$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t}}$ where $Pred_i$ are all satisfiable.
+\noteInEM{What you are doing below is a proof by recursion on the
+  length of the path reaching a given OT, isn't it ? I suggest you
+  explicite this and conclude $L2_{reach}\subseteq  L1_{reach}$.}
+
+  Suppose that  $\ostate{\tilde{t}}\in States(L2_{reach})$, it is reachable in the result automaton of Algorithm 2, so there exists a sequence of transitions $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where $Pred_j$ are all satisfiable. Then there exists the same state $\ostate{\tilde{t}}\in States(L1_{reach})$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t}}$ where $Pred_i$ are all satisfiable.
 From the structure of the algorithms, 
 \[\forall \ostate{\tilde{t}}\in States(L2_{reach}), OT = \ostate{\tilde{t}}\xrightarrow{v}\ostate{\tilde{t'}}\in L2_{reach}\]
 \[\exists OT' = \ostate{\tilde{t}}\xrightarrow{v'}\ostate{\tilde{t'}}\in L1 \quad s.t.\quad Rename(OT') = OT.\]
@@ -1556,7 +1578,8 @@ where $Pred$ and $Pred'$ are satisfiable.
 Then we can get a new longer sequence $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t'}}\xrightarrow{v'}\ostate{\tilde{t'}}$ implying that $\ostate{\tilde{t'}}\in States(L1_{reach}),OT'\in L1_{reach}$. So 
 $L2_{reach}\subseteq  L1_{reach}$.
 
-Moreover,
+%Moreover,
+Conversely,
 \[\forall OT\notin L2_{reach}, \exists OT'\in L1, Rename(OT') = OT\]
 where $Pred$ and $Pred'$ are not satisfiable. Then according to the pruning function in Algorithm 1, $OT'\notin L1_{reach}$. 
 
