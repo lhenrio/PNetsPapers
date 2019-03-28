@@ -1537,7 +1537,7 @@ Let
 \end{itemize}
 When the pNets contains no assignment, there is no need for the last filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
 
-For each of these, define $States: <OT> \rightarrow <State>$ which is the function computing the set of states in a set of OTs. Between two transitions sets of the
+For each of these, define $States: \langle OT\rangle\rightarrow\langle State\rangle$ which is the function computing the set of states in a set of OTs. Between two transitions sets of the
 algorithms, define $Rename:  L1_{reach} \rightarrow L2_{reach}$ which is the function renaming fresh variables.
 
 According to the rules Tr1 and Tr2 in \pageref{def-states}, the global state $\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of n pLTS states $s_{i}^{i\in [0,n]}$.
@@ -1612,11 +1612,57 @@ But in the presence of assignments, we need to collect all of them
   
 \begin{theorem}[Correctness with assignments]
   \label{Th:CorrectnessWithAssignments}
-In the general case, the smart algorithm computes 
-the same open automaton as that of Algorithm 1 up to a renaming of  variables in the transition labels.
+In the general case, if a pNet contains some assignments to state variables, the smart algorithm computes 
+the same open automaton as that of Algorithm 1 up to a renaming of variables in the transition labels.
 \end{theorem}
 
 \TODO{Formalize the proof}
+\begin{proof}
+In Theorem 2, we have already proved the result automaton $OA_1$ and $OA_2$ of two algorithm are the same without the assignments.
+
+Define the function $States$ as before, and  $Assignments : \langle OT\rangle\times\langle State\rangle\rightarrow\langle Assign\rangle$ the function
+computing the set of assignments of a global state from a given set of OTs.
+
+The structure implicitely computed by the algorithm (comprised in
+the structure of an Open Automaton) is a triple $ Aut= \langle OTs, States, Assigns\rangle$.
+
+Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and $OA_2$ is $Assignments(L2_{reach}, States(L2_{reach}))$. The computed triples are 
+\[Aut_1 = \langle L1_{reach}, States(L1_{reach}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{reach}, States(L2_{reach}), Assignments(L2_{reach}, States(L2_{reach}))\rangle\]
+
+Based on the notation of the triple, define the function $Refine : Aut \rightarrow Aut$ refining the result automaton together with the assignments,
+\begin{align*}
+Refine(Aut) &=\langle OT', States(OT'), Assignments(OT', States(OT'))\rangle \\
+&=Aut'
+\end{align*}
+where $OT' = OT - OT_{unsat}$, $OT_{unsat}$ is the set of transitions checked unsatisfiable in this iteration.
+
+Given that every iteration will remove some unsatisfiable transitions, $Refine$ is a monotone function. There exists a sequence $Aut^n = Refine(Aut^{n-1})$ s.t. $|Aut^n|\le |Aut^{n-1}|$.
+Let $Aut''$ contains the $OT''$ which has no more unsatisfiable transition, then there is $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
+
+Let the fixed point of $OA_1$ to be $Aut''_1$ and the fixed point of $OA_2$ to be $Aut''_2$.
+
+For the transitions set in $Aut''_1$ and $Aut''_2$, $L1_{reach}''$ and $L2''_{reach}$, we need to check their equivalence.
+At the first iteration, the unsatisfiable transitions in $OA_1$ has only one case.
+\begin{align*}
+&\quad Pred\and \bigwedge_i Assignments_i(L1, States(L1) \text{ is false}\\
+&\quad\rightarrow Pred \and \bigwedge_j Assignments_j(L2_{reach}, States(L2_{reach})\text{ is false}\\
+&\Rightarrow \forall t\in L1_{unsat} \rightarrow t\in L2_{unsat}\\
+&\Rightarrow L1_{unsat}\subseteq L2_{unsat}.
+\end{align*}
+However, its reverse direction is not fulfilled. Recall that $L1_{reach}=L2_{reach}$, these relation can imply that,
+\begin{align*}
+Assignments(L1, &States(L1)\supseteq Assignments(L2_{reach}, States(L2_{reach})\\
+&\supseteq Assignments(L1_{reach}-L1_{unsat}, States(L1_{reach}-L1_{unsat}))\\
+&\supseteq Assignments(L2_{reach}-L2_{unsat}, States(L2_{reach}-L2_{unsat}))
+\end{align*}
+So after the first iteration, the unsatisfiable transitions in $OA_1$ has two cases.
+\begin{align*}
+&\forall t\in L1'_{unsat} \rightarrow t\in L2'_{unsat}\\
+\text{ or }&\forall t\in L1'_{unsat} \rightarrow t\notin L2'_{reach}.
+\end{align*}
+By induction, after removing all the transitions not in the $L2''_{reach}$, we can get that $L1''_{reach}=L2''_{reach}$, subsequently, $States(L1''_{reach})=States(L2''_{reach})$,
+$Assignments\\(L1''_{reach},States''_{L1_{reach}})=Assignments(L2''_{reach},States''_{L2_{reach}})$.
+\end{proof}
 
 \ERIC{Proof sketch:}
   
@@ -1670,19 +1716,6 @@ the same open automaton as that of Algorithm 1 up to a renaming of  variables in
   \medskip
   \noteInEM{I keep below the original proof draft from Xudong, though
     think it does not apply any more}
-\begin{proof}
-In Theorem 2, we have already proved the result set of global states of two algorithm are the same without the assignments.
-
-If there exists assignments in the open transitions. 
-
-In Algorithm 3, $\forall\ostate{\tilde{t}}\notin State(L_{Smart})$, if there is a transition $\ostate{\tilde{t}}\xrightarrow{v_t}\ostate{\tilde{t'}}$ contains an assignment $\textit{Post}_t$, and in following transitions $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$, we need to check $\textit{Pred}\and\bigwedge\textit{Post}_i$ where $\textit{Post}_i \notin \{\textit{Post}_t\}$.
-
-In Algorithm 1, the same state $\ostate{\tilde{t}}\notin State(L1)$, also has a transition $\ostate{\tilde{t}}\xrightarrow{v_t}\ostate{\tilde{t'}}$ contains an assignment $\textit{Post}_t$, and in following transitions $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$, what need to check is $\textit{Pred}\and\bigwedge\textit{Post}_i$.
-As $b_1\and b_2\rightarrow b_1$, if $\ostate{\tilde{u}}\xrightarrow{v_u}\ostate{\tilde{u'}}$ exists in the result of Algorithm 3, it is also contained in the original result.
-
-After the final reachability computation, $\{\textit{Post}_t\}$ is removed from $\{\textit{Post}_i\}$ then the assertions to check become the same, then the transitions of the result are also the same. So the result open automaton of Algorithm 3 is exactly the same as that of  Algorithm 1.
-\end{proof}
-
 
 \subsection{Translation to SMTlib}
 \label{section:TranslationToSMTlib}
