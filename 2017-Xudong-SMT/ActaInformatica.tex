@@ -356,7 +356,7 @@ We also propose and implement an optimised
 	its correctness with respect to the original one.
 	We illustrate the approach using two use-cases: the first one is a
 	classical process-algebra operator for which we provide several
-	encodings, and prove some basic properties. The second is  industry-oriented and based on the so-called ``BIP architectures'', which have
+	encodings, and prove some basic properties. The second one is  industry-oriented and based on the so-called ``BIP architectures'', which have
 	been used to specify the
 	control software of a nanosatellite at the EPFL Space Engineering
 	Center. We use pNets to encode a BIP architecture
@@ -1350,13 +1350,13 @@ returns the set $L1$ of satisfiable OTs.
 
 \subsection{Building the Open Automaton}
 
-\ERIC{The set $L1$ may contain unreachable transitions, the last step of the
-algorithm builds the final Open Automaton as a traversal of $L1$,
+\ERIC{The set $L1$ may contain unreachable transitions. To remove those transitions, the last step of the
+algorithm builds the final open automaton via a traversal of $L1$,
 starting at the initial state $InitState(p)$ as defined in
 page~\pageref{def-states}. More precisely, this is a residual
-algorithm building a graph from transitions in $L1$, and states are
-the set of target states of transitions in $L1$, plus the initial
-states. Each state in the graph is decorated with a set of its local
+algorithm building a graph from the reachable transitions in $L1$. 
+%and states are the set of target states of the transitions. 
+Each state in the graph is decorated with a set of its local
 variables, and a list of their possible assignments,
 gathered during the traversal using the ``Post'' parts of the
 OTs.}
@@ -1364,19 +1364,19 @@ OTs.}
 \ERIC{A further reduction may now be gained by using the information from
 these sets of possible assignments: adding this information when
 checking satisfiability of transitions leaving a given state may
-result in more Unsat transitions: the set of possible
+result in more Unsat transitions. The set of possible
 assignments computed by the algorithm is an over approximation of
 possible values of the 
 variables of such state, so narrowing it means we get a better
 approximation, and potentially more information, which can be used in
-the SAT checking of subsequent transitions. In turn this may reduce the possible
-assignments of the corresponding target states. In theory we should
+the SAT checking of subsequent transitions. In turn, this may reduce the possible
+assignments of the corresponding target states. In theory, we should
 iterate this procedure, each iteration reducing the set of
-transitions, and the sets of assignments; the final Open Automaton
-would be the fix point of this iteration. In practice this would be
+transitions and the sets of assignments; the final open automaton
+would be the fixed point of this iteration. In practice, this would be
 expensive, and it is not incorrect to leave some Unsat OTs in the
-result; in practical cases, very little will be gained computing the
-fixpoint, so we only perform one step. Further algorithms 
+result. From a  practical point of view, very little will be gained to compute the
+fixed point, so we only perform one step of iteration. Further algorithms 
 (e.g. model-checking or equivalence checking) will be able to use the
 full information from the predicates and the assignment sets.}
 
@@ -1476,7 +1476,7 @@ variables in the transition labels.
 
 \ERIC{Sketch of the proof:}
 
-%\begin{proof}
+\begin{proof}
 %  Let $pn=<...>$ be a pNet. The set of states 
 %  managed by the two algorithms both are subsets of the cartesian
 %  product of the pLTS states, as defined in \pageref{def-states}. In a
@@ -1524,23 +1524,23 @@ variables in the transition labels.
 %    I'm not sure if parts of it can be reused}
 \begin{proof of Theorem \ref{Th:CorrectnessWithoutAssignments}}
   
-Let
+Let us first define some notations.
  \begin{itemize}
-    \item $L1$ = original set of transitions by Algorithm 1
+    \item $L1$: the original set of transitions by Algorithm 1
       (i.e. before line 11), 
-    \item $L1_{sat}$ = original set of transitions by Algorithm 1, after
+    \item $L1_{sat}$:  the original set of transitions by Algorithm 1, after
       satisfiability check (i.e. after line 11),
-    \item $L1_{reach}$ = final set of OTs of Algorithm 1, as computed
+    \item $L1_{reach}$: the final set of OTs of Algorithm 1, as computed
       by line 12.
-    \item $L2_{sat}$ = original set of transitions by Algorithm 2
+    \item $L2_{sat}$: the original set of transitions by Algorithm 3
       (i.e. before line 13), 
-    \item $L2_{reach}$ = final set of OTs of Algorithm 2, as computed
+    \item $L2_{reach}$: the final set of OTs of Algorithm 2, as computed
           by line 13.
 \end{itemize}
 
 For each of these, define $States: \langle OT\rangle\rightarrow\langle
 State\rangle$ which is the function computing the set of states in a
-set of OTs. Between two transitions sets of the algorithms, define
+set of OTs. Between two transition sets of the algorithms, define
 $Rename:  L1_{reach} \rightarrow L2_{reach}$ which is the function
 renaming fresh variables. 
 
@@ -1550,8 +1550,8 @@ filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
 
 According to the definition of global states in
 page~\pageref{def-states}, the global state
-$\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of n
-pLTS states $s_{i}^{i\in [0,n]}$. 
+$\ostate{\tilde{s}}=\ostate{\tilde{s_0...s_n}}$ is a composition of $n$
+PLTS states $s_{i}^{i\in [0,n]}$. 
 
 From the structure of the main loop of the algorithms, we can get $States(L2_{reach})\subseteq  States(L1)$, then
 \[\forall \ostate{\tilde{u}}\in States(L2_{reach}), \exists\ostate{\tilde{t}}\in States(L1), \ostate{\tilde{t}}=\ostate{\tilde{a_0...a_n}}=\ostate{\tilde{u}}.\]
@@ -1569,7 +1569,7 @@ initial state of both $L1_{reach})$ and $L2_{reach})$.
   length of the path reaching a given OT, isn't it ? I suggest you
   explicite this and conclude $L2_{reach}\subseteq  L1_{reach}$.}
 
-  Suppose that  $\ostate{\tilde{t}}\in States(L2_{reach})$, it is reachable in the result automaton of Algorithm 2, so there exists a sequence of transitions $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where $Pred_j$ are all satisfiable. Then there exists the same state $\ostate{\tilde{t}}\in States(L1_{reach})$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t}}$ where $Pred_i$ are all satisfiable.
+  Suppose that  $\ostate{\tilde{t}}\in States(L2_{reach})$. It is reachable in the result automaton of Algorithm 3, so there exists a sequence of transitions $\ostate{\tilde{t_0}}...\xrightarrow{v_j}...\ostate{\tilde{t}}$ where $Pred_j$ are all satisfiable. Then there exists the same state $\ostate{\tilde{t}}\in States(L1_{reach})$ and $\ostate{\tilde{t_0}}...\xrightarrow{v_i}...\ostate{\tilde{t}}$ where $Pred_i$ are all satisfiable.
 From the structure of the algorithms, 
 \[\forall \ostate{\tilde{t}}\in States(L2_{reach}), OT = \ostate{\tilde{t}}\xrightarrow{v}\ostate{\tilde{t'}}\in L2_{reach}\]
 \[\exists OT' = \ostate{\tilde{t}}\xrightarrow{v'}\ostate{\tilde{t'}}\in L1 \quad s.t.\quad Rename(OT') = OT.\]
@@ -1582,7 +1582,6 @@ $L2_{reach}\subseteq  L1_{reach}$.
 Conversely,
 \[\forall OT\notin L2_{reach}, \exists OT'\in L1, Rename(OT') = OT\]
 where $Pred$ and $Pred'$ are not satisfiable. Then according to the pruning function in Algorithm 1, $OT'\notin L1_{reach}$. 
-
 As a result, we get that $L1_{reach}=L2_{reach}$, and subsequently, $States(L1_{reach})=States(L2_{reach})$.
 %We will construct a mapping $f$: $State(L1-reach)\rightarrow
 %State(L2-reach)$.
@@ -1623,6 +1622,7 @@ As a result, we get that $L1_{reach}=L2_{reach}$, and subsequently, $States(L1_{
 %
 %Then as the function $f$ is both surjective and injective, it is a bijective function. The theorem is proved.
 %
+\hfill\qed
 \end{proof}
 
 But in the presence of assignments, we need to collect all of them
@@ -1641,30 +1641,29 @@ the same open automaton as that of Algorithm 1 up to a renaming of variables in 
 
 \TODO{Formalize the proof}
 \begin{proof}
-In Theorem 2, we have already proved the result automaton $OA_1$ and $OA_2$ of two algorithm are the same without the assignments.
+In Theorem 2, we have already proved the result automata $OA_1$ and $OA_2$ of the two algorithm are the same without the assignments.
 
 Define the function $States$ as before, and  $Assignments : \langle OT\rangle\times\langle State\rangle\rightarrow\langle Assign\rangle$ the function
 computing the set of assignments of a global state from a given set of OTs.
 
-The structure implicitely computed by the algorithm (comprised in
-the structure of an Open Automaton) is a triple $ Aut= \langle OTs, States, Assigns\rangle$.
+The structure implicitely computed by the algorithm is a triple $ Aut= \langle OTs, States, Assigns\rangle$.
 
-Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and $OA_2$ is $Assignments(L2_{sat}, States(L2_{sat}))$. The computed triples are 
-\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), Assignments(L2_{sat}, States(L2_{sat}))\rangle\]
+Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and that of $OA_2$ is $Assignments(L2_{sat}, States(L2_{sat}))$. The computed triples are 
+\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), Assignments(L2_{sat}, States(L2_{sat}))\rangle \ . \]
 
-Based on the notation of the triple, define the function $Refine : Aut \rightarrow Aut$ refining the result automaton together with the assignments,
+Based on the notation of the triple, we define the function $Refine : Aut \rightarrow Aut$ refining the result automaton together with the assignments,
 \begin{align*}
 Refine(Aut) &=\langle OT', States(OT'), Assignments(OT', States(OT'))\rangle \\
 &=Aut'
 \end{align*}
 where $OT' = OT - OT_{unsat}$, $OT_{unsat}$ is the set of transitions checked unsatisfiable in this iteration.
 
-Given that every iteration will remove some unsatisfiable transitions, $Refine$ is a monotone function. There exists a sequence $Aut^n = Refine(Aut^{n-1})$ s.t. $|Aut^n|\le |Aut^{n-1}|$.
+Given that every iteration will remove some unsatisfiable transitions, $Refine$ is a monotone function. There exists a sequence $Aut^n = Refine(Aut^{n-1})$ s.t. $|Aut^n| < |Aut^{n-1}|$.
 Let $Aut''$ contains the $OT''$ which has no more unsatisfiable transition, then there is $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
+Let $Aut''_1$ and $Aut''_2$ be the two
+ fixed points with $Refine(Aut''_1) = Aut''_1$, $Refine(Aut''_2) = Aut''_2$.
 
-Let the fixed points $Refine(Aut''_1) = Aut''_1$, $Refine(Aut''_2) = Aut''_2$.
-
-For the transitions set in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
+For the transition sets in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
 At the first iteration, the unsatisfiable transitions in $OA_1$ has only one case according to the relation between the assertions to check,
 \begin{align*}
 &\quad Pred\wedge \bigvee_i Assignments_i(L1, States(L1) \text{ is false}\\
@@ -1683,8 +1682,9 @@ So after the first iteration, the unsatisfiable transitions in $OA_1$ has two ca
 &\forall t\in L1'_{unsat} \longrightarrow t\in L2'_{unsat}\\
 \text{ or }&\forall t\in L1'_{unsat} \longrightarrow t\notin L2'_{sat}.
 \end{align*}
-By induction, after removing all the transitions not in the $L2''_{sat}$, we can get that $L1_{reach}=L2_{reach}$, subsequently, $States_{L1_{reach}}=States_{L2_{reach}}$,
-$Assignments\\(L1_{reach},States_{L1_{reach}})=Assignments(L2_{reach},States_{L2_{reach}})$.
+By induction, after removing all the transitions not in $L2''_{sat}$, we obtain  $L1_{reach}=L2_{reach}$, which implies that $States_{L1_{reach}}=States_{L2_{reach}}$ and
+$$Assignments\\(L1_{reach},States_{L1_{reach}})=Assignments(L2_{reach},States_{L2_{reach}})\ .$$
+\hfill\qed
 \end{proof}
 
 \ERIC{Proof sketch:}
@@ -2354,7 +2354,7 @@ This example shows that
 open-automata-based semantics can be instrumental in verifying the
 properties enforced by the architectures through an encoding into open
 pNets.
-We also compare the practical performances of the 2 algorithms and
+We also compare the practical performances of the two algorithms and
 show the benefit gained using the smart approach.
 
 Naturally, our next goals after the generation of the open automata
