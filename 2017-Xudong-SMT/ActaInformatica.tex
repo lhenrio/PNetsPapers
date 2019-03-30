@@ -2021,6 +2021,10 @@ functions on local variables.  %% For instance, the loop transition
 %% function) is the constant predicate $\true$ (\resp the $\mathit{skip}$
 %% operator).  The constant $\mathrm{Max}$ above, is a parameter of the
 %% architecture.
+Although this is not visible in the figure, below we will assume that
+the dangling ports $\PortFail$ and $\PortResume$ belong to the operand
+component, whereas the dangling ports $\PortTick$, $\PortAsk$ and
+$\PortReset$ represent actions of the environment.  
 
 %% Connectors are hierarchical, tree-like structures with component ports
 %% at the leaves.  They define sets of \emph{interactions}, 
@@ -2075,11 +2079,36 @@ top-level connectors, at each execution round.
 %% a failure, the operation performed by $\NameOprnd$ cannot finish
 %% unless it is explicitly resumed or the system is reset.
 
+Intuitively, application of the Failure Monitor architecture ensures
+that, whenever a failure is registered in the operand component, the
+system will be reset, unless a resumption is registered within
+$\mathrm{Max}$ time units.  Formally, this statement is decomposed
+into several properties, among which 
+%
+1)~the safety property \emph{``There is always a possibility to reset
+  the system after a single failure''} (\ie without additional
+failures having to occur in the meantime) specified using CTL as
+%
+\begin{equation}
+  \label{eq:FM:safety}
+  \AG
+  \bigl(\PortFail \rightarrow
+  \EX \EU[]{\lnot \PortFail}{\PortReset}\bigr)
+\end{equation}
+%
+and 2)~the liveness property \emph{``a reset will be fired when asked
+  for by a timeout''}:
+%
+\begin{equation}
+  \label{eq:FM:liveness}
+  \mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset).
+\end{equation}
+%
+Additional properties are provided in~\cite{Avocs-RR}.
 
-\hl{Application of the Failure Monitor architecture ensures that, whenever
-a failure is registered in the operand component, the system will be
-reset, unless a resumption is registered within $\mathrm{Max}$ time
-units (more details in Section~\ref{section:FailureTimer}).}
+%% \TODO{it would be good to express here maybe 2 properties of the
+%%   architecture, maybe one taken from the original study, and another
+%%   one involving the timer data (number of ticks ?)}
 
 \begin{figure}[t]
   \centering
@@ -2090,17 +2119,20 @@ units (more details in Section~\ref{section:FailureTimer}).}
 
 Figure~\ref{schema:ArchFailure:pNet} shows a pNet encoding of the
 above Failure Monitor architecture.  This encoding is structural: each
-coordinator component is encoded as a PLTS; dangling ports are encoded as actions of the hole;
+coordinator component is encoded as a PLTS; dangling ports belonging
+to the operand component are encoded as actions of the hole; 
 %%  and the operand component as a hole;
-connectors of the BIP model are encoded as synchronisation vectors.
+connectors of the BIP model are encoded as synchronisation vectors,
+\noteSB{Eric, please check whether this is ok.}\hl{with ports
+  representing the actions of the environment used as global actions}.
 Each connector that does not involve triggers is trivially encoded by
 a synchronisation vector comprising the same ports ($SV2$, $SV3$ and
 $SV4$).  In order to encode the semantics of the connectors involving
-triggers, we use the classical approach where non-participation of a
-port in an interaction is simulated by an additional loop
-transition~\cite{milner83-calculi}.  To this end, we consider an
-action algebra involving additional Boolean variables: the effective
-transitions carry the value $\true$ (\eg $\cstate{0}
+triggers, we use (in $SV0$ and $SV1$) the classical approach where
+non-participation of a port in an interaction is simulated by an
+additional loop transition~\cite{milner83-calculi}.  To this end, we
+consider an action algebra involving additional Boolean variables: the
+effective transitions carry the value $\true$ (\eg $\cstate{0}
 \goesto{\PortFail(\true)} \cstate{1}$), whereas the added loops carry
 the value $\false$ (\eg $\cstate{2} \goesto{\PortFail(\false)}
 \cstate{2}$).  In the synchronisation vectors, we use these variables
@@ -2125,7 +2157,7 @@ for relevant ports~\cite{BarBliu15-offer-scico}.
 For this example, the tool (using Algorithm 1) builds 408 open transitions, whereof 396
 are detected unsatisfiable by Z3.  The resulting open automaton, with
 3 reachable global states (out of the possible 6) and 12 open
-transitions, is shown in Figure~\ref{schema:resultOA1}.
+transitions, is shown in Figure~\ref{schema:resultOA1}.\noteSB{Eric, in the state 20, $b0$ should always be $false$: $\PortFail(true)$ is not possible in Control, and the safety property (\ref{eq:FM:safety}) does not hold otherwise.}
 
 \begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{ActaXFIG/FailureTimerOA-v2-2}}
@@ -2147,57 +2179,32 @@ transitions, is shown in Figure~\ref{schema:resultOA1}.
 %the two PLTS, \ie only the hole, corresponding to the operand
 %component of the Failure Monitor architecture, executes $\PortResume$.
 
-Failure Monitor enforces \noteEM{NO!!!}1)~the safety property \emph{``the
-  system reset never happens, unless asked for by a timeout
-  following a failure''}, formalised in CTL by
-%
-\[
-\varphi \land \mathtt{AG} (\PortReset \rightarrow \varphi),
-\quad\text{where}\
-%
-\varphi = \mathtt{A} [\lnot \PortReset\ \mathtt{W}\ \PortAsk]
-\land \mathtt{A} [\lnot \PortAsk\ \mathtt{W}\ \PortFail],
-\]
-%
-($\mathtt{W}$ being the \emph{weak until} operator) and 2)~the
-liveness property \emph{``a reset will be fired when asked for by
-  a timeout''}:
-%
-$\mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset)$.
-%
-The satisfaction of the safety property could be established by
-applying symbolic model checking techniques.  However, in this
-example, it is obvious by inspection of the open automaton.  The
-satisfaction of the liveness property relies on the above observation
+The satisfaction of the safety property (\ref{eq:FM:safety}) could be
+established by applying symbolic model checking techniques.  However,
+in this example, it is obvious by inspection of the open automaton.
+The satisfaction of the liveness property relies on the observation
 that in the state $\ostate{s2,t0}$ only the reset transition involves
 $\NameCtrl$.  Therefore, under resonable scheduling assumptions,
 $\PortReset$ will always be fired.
 
-
-The safety
-property \emph{``There is always a possibility to reset the system
-  after a single failure''} (\ie without
-  additional failures having to occur in the meantime) enforced by the
-  Failure Monitor architecture can be specified using CTL as
-    $\AG
-\bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
-  \PortReset}\bigr)$.  Additional properties are provided in~\cite{Avocs-RR}.
-
-%% \TODO{it would be good to express here maybe 2 properties of the
-%%   architecture, maybe one taken from the original study, and another
-%%   one involving the timer data (number of ticks ?)}
-
-
-\subsection{Composing Two FailureTimer BIP Architectures}
+\subsection{Composing Two Failure Monitor BIP Architectures}
 \label{section:use-case:Double}
 
-In the conception of the nanosatellite software \cite{CubETH-case-study}, the FailureTimer architecture was used to control several processes
-communicating on the common bus. Timeout signals (``$ask$''), resets,
-and the passing of time ($tick$) were synchronised in the global
-system.
-In this section, we use a combination of 2 FailureTimer architectures
-to demonstrate how the encoding works, and as a slightly larger
-example to show how the approach scales up.
+%% In the design of the nanosatellite software \cite{CubETH-case-study}, the Failure Monitor architecture was used to control several processes
+%% communicating through a common bus. Timeout signals (``$ask$''), resets,
+%% and the passing of time ($tick$) were synchronised in the global
+%% system.
+In this section, we use a combination of two Failure Monitor
+architectures shown in Figure~\ref{schema:ArchFailure:BIP:Double}
+%% to demonstrate how the encoding works, and
+as a slightly larger example to show how the approach scales up.  In
+this example, each of the two instances of the architecture is applied
+to a corresponding operand component.  Hence, the dangling ports
+$\PortFail$ and $\PortReset$ are duplicated accordingly.  On the
+contrary, the environment actions $\PortTick$, $\PortAsk$ and
+$\PortReset$ are shared.  For a detailed presentation of the
+architecture composition, we refer the reader to
+\cite{AttieBBJS16-architectures-faoc}.
 
 \begin{figure}[ht]
   \centering
@@ -2213,18 +2220,27 @@ example to show how the approach scales up.
   \label{schema:ArchFailure:Double:OA}
 \end{figure}
 
-In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
-of two FailureTimer architectures, with their respective controlled
-processes.
-In Figure~\ref{schema:ArchFailure:Double:OA} we show the resulting
-open automaton. It indicates that the two timers are forced to
-be synchronous: each can only tick after the other has also started,
-and then they will tick, reset, and timeout, synchronously.
-
-This is a very strong assumption, and we are working on a more
+%% In Figure~\ref{schema:ArchFailure:BIP:Double} we show the combination
+%% of two Failure Monitor architectures, with their respective controlled
+%% processes.
+In Figure~\ref{schema:ArchFailure:Double:OA} we show the open
+automaton computed for the combined architecture of
+Figure~\ref{schema:ArchFailure:BIP:Double}.  It indicates that the two
+timers are forced to be synchronous: each can only tick after the
+other has also started, and then they will tick, reset, and timeout,
+synchronously.
+%
+\hl{This is a very strong assumption, and we are working on a more
 flexible specification (at BIP level) to release this hypothesis while
-keeping the safety properties of the composition.
+keeping the safety properties of the composition.}
 
+\noteInSB{The idea was that, by analysing the combination, we observe
+  that the architecture does not compose well with itself, generating
+  a deadlock (or an implicit deadlock, where only $false$ transitions
+  canb be fired.  Based on this observation, we were to improve it
+  accodingly.  The problem is that I do not see any deadlocks in
+  Figure~\ref{schema:ArchFailure:Double:OA}.  I presume that some of
+  the asterisks should be only $false$ or something of a kind.}
 
 
 
