@@ -1507,7 +1507,7 @@ renaming of these fresh variables
           by line 13.
 \end{itemize}
 
-\paragraph{States:} for each of these, define $States: \langle OT\rangle\rightarrow\langle State\rangle$ which is the function computing the set of states in a
+\paragraph{States:} for each of these, define $States: \langle OT\rangle\rightarrow\langle State\rangle$ which is the function computing the set of target states in a
 set of OTs. 
 
 Between two transition sets of the algorithms, define
@@ -1610,49 +1610,65 @@ the same open automaton as that of Algorithm 1 up to a renaming of variables in 
 
 %\TODO{Formalize the proof}
 \begin{proof}
-In Theorem 2, we have already proved the result automata $OA_1$ and $OA_2$ of the two algorithm are the same without the assignments.
+In Theorem 2, we have already proved that the result automata $OA_1$ and $OA_2$ of two algorithms are the same if the pNet contains no assignment to its state variables.
 
-Define the function $States$ as before, and  $Assignments : \langle OT\rangle\times\langle State\rangle\rightarrow\langle Assign\rangle$ the function
+We define the function $States$ as before, and the function $Assignments : \langle OT\rangle\times State\rightarrow\langle Assign\rangle$
 computing the set of assignments of a global state from a given set of OTs.
 
-The structure implicitely computed by the algorithm is a triple $ Aut= \langle OTs, States, Assigns\rangle$.
+The structure implicitly computed by the algorithm is a triple $ Aut= \langle OTs, States,\\ Assigns\rangle$.
 
-Then the assignments set of $OA_1$ is $Assignments(L1, States(L1))$ and that of $OA_2$ is $Assignments(L2_{sat}, States(L2_{sat}))$. The computed triples are 
-\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), Assignments(L1, States(L1))\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), Assignments(L2_{sat}, States(L2_{sat}))\rangle \ . \]
+Then the assignments set of $OA_1$ is $\{Assignments(L1, State_{i})\}^{State_{i}\in States(L1)}$ and $OA_2$ is $\{Assignments(L2_{sat}, State_{j})\}^{State_{j}\in States(L2_{sat})}$. The result triples should be 
+\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), \{Assignments(L1, State_{i})\}^{State_{i}\in States(L1)}\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), \{Assignments(L2_{sat}, State_{j})\}^{State_{j}\in States(L2_{sat})}\rangle \ . \]
 
-Based on the notation of the triple, we define the function $Refine : Aut \rightarrow Aut$ refining the result automaton together with the assignments,
+Basing on the notation of the triple, we define the function $Refine : Aut \rightarrow Aut$ implementing $makeReachableSubAutomaton(S0,OTs)$, it uses the assignments of the previous step to refine the computed reachable space.
 \begin{align*}
-Refine(Aut) &=\langle OT', States(OT'), Assignments(OT', States(OT'))\rangle \\
+Refine(Aut) &=\langle L', States(L'), \{Assignments(L', State_{i})\}^{State_{i}\in States(L')}\rangle \\
 &=Aut'
 \end{align*}
-where $OT' = OT - OT_{unsat}$, $OT_{unsat}$ is the set of transitions checked unsatisfiable in this iteration.
+where $L' = L - L_{unsat}$, $L_{unsat}$ is the set of unsatisfiable transitions checked in this iteration. So there must have $|L'|<|L|$, and potentially, their target states and corresponding assignments could be reduced: 
+\[States_{L'}=\{State_{init}\}\cup \bigcup States(L'),\]
+\[Assignments_{L',States_{L'}}=\bigcup\{Assignments(L', State_{i})\}^{State_{i}\in States_{L'}} \]
+\[s.t. |States_{L'}|\le|States_{L}|\wedge|Assignments_{L',States_{L'}}|\le|Assignments_{L,States_{L}}|.\]
 
-Given that every iteration will remove some unsatisfiable transitions, $Refine$ is a monotone function. There exists a sequence $Aut^n = Refine(Aut^{n-1})$ s.t. $|Aut^n| < |Aut^{n-1}|$.
-Let $Aut''$ contains the $OT''$ which has no more unsatisfiable transition, then there is $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
-Let $Aut''_1$ and $Aut''_2$ be the two
- fixed points with $Refine(Aut''_1) = Aut''_1$, $Refine(Aut''_2) = Aut''_2$.
+In one single iteration, satisfiability of a transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L$ is checked through whether 
+\[\bigvee_{Assign_i\in Assignments_{L, States_{L}}}(Pred_{l}\wedge Assign_{i})\text{ is true}.\]
+More transitions could be unsatisfiable after the reduction of the assignments set, so the function need iterate several times. Given that in each iteration, the number of triples decreases, so $Refine$ is a monotone function. And there exists a sequence \[Aut^n = Refine(Aut^{n-1})\quad s.t. |Aut^n| < |Aut^{n-1}|.\]
+The function terminates if $Aut''$ contains no more unsatisfiable transition, then there is a fixed-point $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
 
-For the transition sets in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
-At the first iteration, the unsatisfiable transitions in $OA_1$ has only one case according to the relation between the assertions to check,
+Let $Aut''_1$ and $Aut''_2$ be two fixed-points that $Refine(Aut''_1) = Aut''_1$, $Refine(Aut''_2) = Aut''_2$. Focusing on the transition sets in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
+
+First, there is an inclusion relation between the initial assignments sets, 
 \begin{align*}
-&\quad Pred\wedge \bigvee_i Assignments_i(L1, States(L1) \text{ is false}\\
-&\quad\longrightarrow Pred\wedge \bigvee_j Assignments_j(L2_{sat}, States(L2_{sat})\text{ is false}\\
-&\Rightarrow \forall t\in L1_{unsat} \longrightarrow t\in L2_{unsat}\\
-&\Rightarrow L1_{unsat}\subseteq L2_{unsat}.
+&L2_{sat}\subseteq L1\Rightarrow States_{L2_{sat}}\subseteq State_{L1}\\
+\Rightarrow &Assignments_{L2_{sat}, States_{L2_{sat}}}\subseteq Assignments_{L1, States_{L1}}
 \end{align*}
-However, its reverse direction is not fulfilled. Recall that $L1_{sat}=L2_{sat}$, these relations can imply that,
+
+Then we come to see what changes have occurred during the iterations. In the first iteration, the inclusion relation between their assignments implies an inclusion relation of unsatisfiable transitions. If there are two transitions $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L1_{unsat}$ and $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L2_{unsat},$ then
 \begin{align*}
-Assignments(L1, &States(L1))\supseteq Assignments(L2_{sat}, States(L2_{sat}))\\
-&\supseteq Assignments(L1_{sat}-L1_{unsat}, States(L1_{sat}-L1_{unsat}))\\
-&\supseteq Assignments(L2_{sat}-L2_{unsat}, States(L2_{sat}-L2_{unsat}))
+&\bigvee_{Assign_i\in Assignments_{L1, States_{L1}}} (Pred_{l}\wedge Assign_i)\text{ is false}\\
+\longrightarrow&\bigvee_{Assign_j\in Assignments_{L2_{sat}, States_{L2_{sat}}}} (Pred_{l}\wedge Assign_j)\text{ is false}.
 \end{align*}
-So after the first iteration, the unsatisfiable transitions in $OA_1$ has two cases,
+The relation that $\forall\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L1_{unsat},\exists\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L2_{unsat}$, implies that $L1_{unsat}\subseteq L2_{unsat}.$
+
+However, its reverse direction is not fulfilled. Recall that $L1_{sat}=L2_{sat}$, more inclusion relations of the assignments can be implied,
 \begin{align*}
-&\forall t\in L1'_{unsat} \longrightarrow t\in L2'_{unsat}\\
-\text{ or }&\forall t\in L1'_{unsat} \longrightarrow t\notin L2'_{sat}.
+Assignments_{L1, States_{L1}}&\supseteq Assignments_{L2_{sat}, States_{L2_{sat}}}\\
+&\supseteq Assignments_{L1_{sat}-L1_{unsat}, States_{(L1_{sat}-L1_{unsat})}}\\
+&\supseteq Assignments_{L2_{sat}-L2_{unsat}, States_{(L2_{sat}-L2_{unsat})}}
 \end{align*}
-By induction, after removing all the transitions not in $L2''_{sat}$, we obtain  $L1_{reach}=L2_{reach}$, which implies that $States_{L1_{reach}}=States_{L2_{reach}}$ and
-$$Assignments\\(L1_{reach},States_{L1_{reach}})=Assignments(L2_{reach},States_{L2_{reach}})\ .$$
+
+Let $L1'_{sat}=L1_{sat}-L1_{unsat}$ and $L2'_{sat}=L2_{sat}-L2_{unsat}$
+Then in the next iteration, the unsatisfiable transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}$ removed from $L1'_{sat}$ might be the same transition (up to renaming) removed from $L2'_{sat}$. In this case,
+\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat} \longrightarrow \ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L2'_{unsat}.\]
+Or it is the transition has not removed in the last iteration because of 
+\[Assignments_{L2_{sat}, States_{L2_{sat}}}\subseteq Assignments_{L1, States_{L1}}.\] 
+We have already proved that 
+\[Assignments_{L1'_{sat}, States_{L1'_{sat}}}\subseteq Assignments_{L2_{sat}, States_{L2_{sat}}},\]
+so those transitions will be removed this time. In this case,
+\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat} \longrightarrow \ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\notin L2_{sat}.\]
+
+By induction, if there is no more unsatisfiable transitions in $L2''_{sat}$, $L1''_{sat}$ continues removing all the transitions not in $L2''_{sat}$, until $L1_{reach}=L2_{reach}$. It implies that $States_{L1_{reach}}=States_{L2_{reach}}$ and
+$$Assignments_{L1_{reach},States_{L1_{reach}}}=Assignments_{L2_{reach},States_{L2_{reach}}}.$$
 \hfill\qed
 \end{proof}
 
@@ -1705,9 +1721,9 @@ $$Assignments\\(L1_{reach},States_{L1_{reach}})=Assignments(L2_{reach},States_{L
   - the result $Aut$ contains all reachable OTs and States from $L1$,
   and only these (proof should be similar to that of Th2).
 
-  \medskip
-  \noteInEM{I keep below the original proof draft from Xudong, though
-    think it does not apply any more}
+%  \medskip
+%  \noteInEM{I keep below the original proof draft from Xudong, though
+%    think it does not apply any more}
 
 \subsection{Translation to SMTlib}
 \label{section:TranslationToSMTlib}
