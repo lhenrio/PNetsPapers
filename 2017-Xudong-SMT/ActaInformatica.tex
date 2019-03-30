@@ -1518,12 +1518,12 @@ computing the set of target states of a set of OTs. \\
 by the algorithms, define $Rename:  L1_{reach} \rightarrow L2_{reach}$
 which is the function renaming fresh variables. 
 
-When the pNets contains no assignment, there is no need for the last
-filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
+%% When the pNets contains no assignment, there is no need for the last
+%% filtering step, so $L1_{sat}=L1_{reach}$ and $L2_{sat}=L2_{reach}$.
 We want to prove that $L1_{reach}=L2_{reach}$, that will imply
 the equality of the 2 open automata.
 
-\medskip
+\smallskip
 Let $S=\ostate{\overline{s}}=\ostate{\{s_{i}\}^{i\in Leaves(pn)}}$
 range over the global states $States(L0)$, 
 The only difference between the main loops of the algorithms is that 
@@ -1539,17 +1539,17 @@ $S_0\xrightarrow{l_1}S_1\xrightarrow{l_2}...S_{n-1}\xrightarrow{l_{n}}S$
 
 \medskip
 We will prove by induction on the distance from the original state,
-that $\forall S \in L0. S \in States(L2_{reach}) \land |S|_{l2_{reach}}=n => S
+that $\forall S \in L0. \forall n \in \mathbb{N}. S \in States(L2_{reach}) \land |S|_{l2_{reach}}=n => S
 \in States(L1_{reach})$, and vice-versa.
 
   The initial property is trivial, for $n=0$, both state sets of
-  distance zero are reduced to $S_0$.
+  distance zero are reduced to $\{S_0\}$.
 
   Suppose our property is true for distance $n$, and
   suppose $|S|_{L2_{reach}}=n+1$, then there exist a chain
   $S_0\xrightarrow{l_1}S_1\xrightarrow{l_2}...S_{n}\xrightarrow{l_{n+1}}S$
   with all $l_k \in L2_{reach}$. In particular, as
-  $L2_{reach}\subseteq L2_{sat}$, $l_{n+1} \in L2_{sat}$, meaning it
+  $L2_{reach}\subseteq L2_{sat}$, $l_{n+1} \in L2_{sat}$, meaning 
   it's predicate is satisfiable.
   
   By induction hypothesis, we get $S_{n} \in States(L1_{reach})$, so during the
@@ -1561,11 +1561,11 @@ that $\forall S \in L0. S \in States(L2_{reach}) \land |S|_{l2_{reach}}=n => S
   $L1_{reach}$, with $S_n \xrightarrow{l_{n}}S, S_n \in
   States(L1_{reach})$, and $l_n$ satisfiable. By induction, we have
   $S_n \in States(L2_{reach})=States(L2_{sat})$, so $l_n$ will have
-  been checked ``on-the-fly'', in line 6 of algorithm~\ref{alg3}, and
-  the OT $S_n \xrightarrow{l_{n}}S$ added to $L2_{sat})$, and we
+  been checked ``on-the-fly'', in line 6 of algorithm~\ref{alg3},
+  the OT $S_n \xrightarrow{l_{n}}S$ added to $L2_{sat}$, and we
   conclude $S \in States(L2_{reach})$.
   
-Remember that $L0$ is finite, so we conclude $L1_{reach}=L2_{reach}$, and $States(L1_{reach})=States(L2_{reach})$.
+Remember $L0$ is finite, so we conclude $L1_{reach}=L2_{reach}$, and $States(L1_{reach})=States(L2_{reach})$.
 
 %  If there is an initial state $\ostate{\overline{t_0}}\in States(L2_{reach})$ then the initial state of the original automaton $\ostate{\overline{t_0}}\in States(L1_{reach})$ must exists.
 
@@ -1631,11 +1631,11 @@ Remember that $L0$ is finite, so we conclude $L1_{reach}=L2_{reach}$, and $State
 \end{proof}
 
 \paragraph{General case with assignments.}
-But in the presence of assignments, we need to collect all of them
+In the presence of assignments, we need to collect all of them
   before using the assignment information to refine the SAT
   checking. Still, the smart strategy will explore a reduced state
-  space, not necessarily the minimal one (discussion later). In the
-  following theorem, both algorithm are considered in their complete
+  space, not necessarily the minimal one. In the
+  following theorem, both algorithms are considered in their complete
   version, meaning the reachability (with assignments) step is
   iterated up to fixpoint.
   
@@ -1647,23 +1647,38 @@ the same open automaton as that of Algorithm 1 up to a renaming of variables in 
 
 %\TODO{Formalize the proof}
 \begin{proof}
-In Theorem 2, we have already proved that the result automata $OA_1$ and $OA_2$ of two algorithms are the same if the pNet contains no assignment to its state variables.
+  Define the OT sets $L0, L1_{sat}, L2_{sat}, L2_{reach}$ as previously, and:
 
-We define the function $States$ as before, and the function $Assignments : \langle OT\rangle\times State\rightarrow\langle Assign\rangle$
+  \begin{itemize}
+    \item $L1_{reach*}$ = final set of OTs of Algorithm 1, as computed
+        by an iterative application of makeReachableSubAutomaton (line
+        14) up to fixpoint.
+      \item $L2_{reach*}$ = final set of OTs of Algorithm 2, as computed
+        by an iterative application of makeReachableSubAutomaton (line
+        16) up to fixpoint.
+  \end{itemize}
+
+?? In Theorem 2, we have already proved that the result automata $OA_1$ and $OA_2$ of two algorithms are the same if the pNet contains no assignment to its state variables.
+
+We define the function $States$ as before, and the function $Assignments : \overline{OT}\ \times State\rightarrow \overline{Assign}$
 computing the set of assignments of a global state from a given set of OTs.
 
-The structure implicitly computed by the algorithm is a triple $ Aut= \langle OTs, States,\\ Assigns\rangle$.
+The structure implicitly computed by both algorithms is a triple $ Aut= \langle \overline{OT}, \overline{State},\\ \overline{Assign}\rangle$.
 
-Then the assignments set of $OA_1$ is $\{Assignments(L1, State_{i})\}^{State_{i}\in States(L1)}$ and $OA_2$ is $\{Assignments(L2_{sat}, State_{j})\}^{State_{j}\in States(L2_{sat})}$. The result triples should be 
-\[Aut_1 = \langle L1_{sat}, States(L1_{sat}), \{Assignments(L1, State_{i})\}^{State_{i}\in States(L1)}\rangle\] and \[Aut_2 = \langle L2_{sat}, States(L2_{sat}), \{Assignments(L2_{sat}, State_{j})\}^{State_{j}\in States(L2_{sat})}\rangle \ . \]
-
-Basing on the notation of the triple, we define the function $Refine : Aut \rightarrow Aut$ implementing $makeReachableSubAutomaton(S0,OTs)$, it uses the assignments of the previous step to refine the computed reachable space.
+Then the assignments set of $OA_1$ is $\{Assignments(L1, S_i)\}^{S_i\in States(L1)}$ and $OA_2$ is $\{Assignments(L2_{sat}, S_j)\}^{S_j\in States(L2_{sat})}$. The result triples are:  
+\noindent
 \begin{align*}
-Refine(Aut) &=\langle L', States(L'), \{Assignments(L', State_{i})\}^{State_{i}\in States(L')}\rangle \\
+Aut_1 = \langle L1_{sat}, States(L1_{sat}), \{Assignments(L1, S_i)\}^{S_i\in States(L1)}\rangle\\
+Aut_2 = \langle L2_{sat}, States(L2_{sat}), \{Assignments(L2_{sat}, S_j)\}^{S_j\in States(L2_{sat})}\rangle \ 
+\end{align*}
+
+Based on this triple structure, we define the function $Refine : Aut \rightarrow Aut$ modeling $makeReachableSubAutomaton(S0,OTs)$. It uses the assignments of the previous step to refine the computed reachable space:
+\begin{align*}
+Refine(Aut) &=\langle L', States(L'), \{Assignments(L', S_i)\}^{S_i\in States(L')}\rangle \\
 &=Aut'
 \end{align*}
-where $L' = L - L_{unsat}$, $L_{unsat}$ is the set of unsatisfiable transitions checked in this iteration. So there must have $|L'|<|L|$, and potentially, their target states and corresponding assignments could be reduced: 
-\[States_{L'}=\{State_{init}\}\cup \bigcup States(L'),\]
+where $L' = L - L_{unsat}$, and $L_{unsat}$ is the set of unsatisfiable transitions checked in this iteration. We have $L'\subseteq L$, and potentially, their target states and corresponding assignments may be reduced: 
+\[States(L')=\{S_0\}\cup \bigcup States(L'),\]
 \[Assignments_{L',States_{L'}}=\bigcup\{Assignments(L', State_{i})\}^{State_{i}\in States_{L'}} \]
 \[s.t. |States_{L'}|\le|States_{L}|\wedge|Assignments_{L',States_{L'}}|\le|Assignments_{L,States_{L}}|.\]
 
@@ -1913,9 +1928,9 @@ algorithm on these examples.
 
 \begin{figure}[ht]
 \centerline{ 
-  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1}
+  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1-aut}
   \hspace{25mm}
-  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2}}
+  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2-aut}}
   \begin{minipage}{5.7cm}
 $  \begin{array}{@{}r@{}l@{}}
     ot_1  = &\openrule{\{ \xrightarrow{a1}_P \},\\ [\forall x1. a1\neq\delta(x1)]}
@@ -1953,8 +1968,6 @@ $  \begin{array}{@{}r@{}l@{}}
 The open automata generated for the two encodings of Enable in
 Figure~\ref{schema:enable-pnets} are displayed in
 Figure~\ref{schema:enable-OAs}.
-\noteSB{I guess pNets in this figure have to be replaced by open
-  automata}
 Note that although these automata look very similar to the PLTS
 controllers from Figure~\ref{schema:enable-pnets}, their nature is very
 different: they represent the behavior of the whole system, including
@@ -2010,7 +2023,6 @@ when their semantics depends on data properties.
 \subsection{BIP Failure Monitor Architecture}
 \label{section:FailureTimer}
 
-\TODO{Simon: reduce...}
 
 In this section, we present the Failure Monitor architecture from the
 CubETH nanosatellite on-board software
@@ -2160,8 +2172,8 @@ coordinator component is encoded as a PLTS; dangling ports belonging
 to the operand component are encoded as actions of the hole; 
 %%  and the operand component as a hole;
 connectors of the BIP model are encoded as synchronisation vectors,
-\noteSB{Eric, please check whether this is ok.}\hl{with ports
-  representing the actions of the environment used as global actions}.
+with ports
+  representing the actions of the environment used as global actions.
 Each connector that does not involve triggers is trivially encoded by
 a synchronisation vector comprising the same ports ($SV2$, $SV3$ and
 $SV4$).  In order to encode the semantics of the connectors involving
@@ -2194,7 +2206,8 @@ connector~\cite{BliSif10-causal-fmsd}.
 For this example, the tool (using Algorithm 1) builds 408 open transitions, whereof 396
 are detected unsatisfiable by Z3.  The resulting open automaton, with
 3 reachable global states (out of the possible 6) and 12 open
-transitions, is shown in Figure~\ref{schema:resultOA1}.\noteSB{Eric, in the state 20, $b0$ should always be $false$: $\PortFail(true)$ is not possible in Control, and the safety property (\ref{eq:FM:safety}) does not hold otherwise.}
+transitions, is shown in Figure~\ref{schema:resultOA1}.
+%% \noteSB{Eric, in the state 20, $b0$ should always be $false$: $\PortFail(true)$ is not possible in Control, and the safety property (\ref{eq:FM:safety}) does not hold otherwise.}
 
 \begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{ActaXFIG/FailureTimerOA-v2-2}}
@@ -2319,26 +2332,6 @@ Eclipse Equinox, with Java 1.8.
                 ``P<<(Q<<R)'' State-based		&
                 359 ms 				&
                 297 ms  
-		%% \\\hline\specialrule{0em}{3pt}{3pt}
-		%% SimpleProt    			&
-                %% 7/260 OTs           &
-                %% 7/57 OTs
-                %% \\\specialrule{0em}{1pt}{1pt} 
-
-                %% (no holes)&
-                %% 1536 ms 				&
-                %% 359 ms  
-%                \\\specialrule{0em}{1pt}{1pt}
-%                \textsl{for any sort} & & $=,\ \ne$
-		%% \\\hline\specialrule{0em}{1pt}{1pt}
-		%% SimpleProt    			&
-                %% 19/836 OTs           &
-                %% 19/185 OTs
-                %% \\\specialrule{0em}{1pt}{1pt} 
-
-                %% (with 2 client holes)&
-                %% 2496 ms 				&
-                %% 844 ms  
 		\\\hline\specialrule{0em}{1pt}{1pt}
 		FailureTimer    			&
                 12/396 OTs           &
@@ -2610,7 +2603,7 @@ holes, and each PLTS at its leaves has a finite number of states and
   pNet tree. Since a finite number of synchronisation vectors are applied
   at each node, the number of global open transitions is finite. Similarily, if the number
   of transitions of each PLTS is finite, rule Tr1 is 
-  applied a finite finite number of times. Therefore, each internal loop of Algorithm~1 terminates, and we obtain finitely many deduction trees and
+  applied a finite number of times. Therefore, each internal loop of Algorithm~1 terminates, and we obtain finitely many deduction trees and
   open transitions.
   \hfill \qed
   \end{proof}
