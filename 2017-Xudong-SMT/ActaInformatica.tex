@@ -49,6 +49,37 @@
 %% ]{caption}
 %% \usepackage[list=true]{subcaption}
 
+\usepackage{tikz}
+\usetikzlibrary{matrix,arrows,decorations.pathmorphing,shapes}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{calc,positioning}
+
+%% \tikzset{
+%%   negated/.style={
+%%     decoration={
+%%       markings,
+%%       mark=at position 0.5 with {\node[transform shape] (tempnode) {$/$};},
+%%     },
+%%     postaction={decorate},
+%%   },
+%% }
+
+%% \tikzset{label/.style={text=blue,font=\normalsize}}
+%% \tikzset{box/.style={fill=yellow,draw=brown}}
+%% \tikzset{port north/.style={fill=white,draw=brown,anchor=north,minimum size=1.2em}}
+%% \tikzset{port east/.style={fill=white,draw=brown,anchor=east}}
+%% \tikzset{port west/.style={fill=white,draw=brown,anchor=west}}
+%% \tikzset{port south/.style={fill=white,draw=brown,anchor=south}}
+
+
+\newenvironment{tikzlts}[1][15mm]{\begin{tikzpicture}
+[->,>=stealth',shorten >=1pt,auto,node distance={#1},thick,draw=black,
+state/.style={ellipse,draw=black,font=\sffamily},align=center,text=black]} %,fill=blue!20 \large\bfseries
+{\end{tikzpicture}}
+
+
+
+
 \usepackage{soul}               % Highlighting: \hl, \so, \ul
 
 \soulregister{\st}{8}
@@ -153,6 +184,7 @@
 \newcommand{\EX}[1][\ ]{\ensuremath{\mathtt{EX}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
 \newcommand{\EU}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{U}\ #3\right]#1}}
+\newcommand{\AU}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{U}\ #3\right]#1}}
 
 
 \input{ActaXFIG/macros.tex}         % Definitions of macros used in XFig figures
@@ -2107,32 +2139,45 @@ top-level connectors, at each execution round.
 %% a failure, the operation performed by $\NameOprnd$ cannot finish
 %% unless it is explicitly resumed or the system is reset.
 
+Notice that the model in Figure~\ref{schema:ArchFailure:BIP} allows
+$\PortReset$ to happen in any state.  However, it is implied that,
+when the coordinator $\NameCtrl$ is in state $\cstate{2}$, this
+$\PortReset$ is ``asked for'' by the architecture (it follows the
+firing of $\PortAsk$), whereas in other states the corresponding
+transition reflects an ``external'' reset.  Although this can be
+formalised in the model using data variables, we have chosen not to do
+so for the sake of simplicity.
+
 Intuitively, application of the Failure Monitor architecture ensures
 that, whenever a failure is registered in the operand component, the
 system will be reset, unless a resumption is registered within
 $\mathrm{Max}$ time units.  Formally, this statement is decomposed
 into several properties, among which 
 %
-1)~the safety property \emph{``There is always a possibility to reset
-  the system after a single failure''} (\ie without additional
-failures having to occur in the meantime) specified using CTL as
+1)~the safety property \emph{``A reset is never asked for unless a failure occurs''} specified using CTL as
 %
 \begin{equation}
   \label{eq:FM:safety}
-  \AG
-  \bigl(\PortFail \rightarrow
-  \EX \EU[]{\lnot \PortFail}{\PortReset}\bigr)
+  %% \AG
+  %% \bigl(\PortFail \rightarrow
+  %% \EX \EU[]{\lnot \PortFail}{\PortReset}\bigr)
+  \AW[]{\lnot \PortAsk}{\PortFail}
 \end{equation}
 %
-and 2)~the liveness property \emph{``a reset will be fired when asked
-  for by a timeout''}:
+and 2)~the liveness property \emph{``in the absence of an external
+  reset, a reset can always be asked for after a non-transient
+  failure''}:
 %
 \begin{equation}
   \label{eq:FM:liveness}
-  \mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset).
+  %% \mathtt{AG}(\PortAsk \rightarrow \mathtt{AF}\ \PortReset).
+  \AG \bigl(
+  \PortFail \rightarrow \EU[]{(\lnot \PortReset \land \lnot \PortResume)}{\PortAsk}
+  \bigr)
 \end{equation}
 %
 Additional properties are provided in~\cite{Avocs-RR}.
+
 
 %% \TODO{it would be good to express here maybe 2 properties of the
 %%   architecture, maybe one taken from the original study, and another
@@ -2244,7 +2289,148 @@ architecture composition, we refer the reader to
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.9\columnwidth]{ActaXFIG/Double-OA}
+  %% \includegraphics[width=0.9\columnwidth]{ActaXFIG/Double-OA}
+  \resizebox{\columnwidth}{!}{
+  \begin{tikzlts}
+    \node[state] (0000) {0000};
+    \node[state, above right= 10mm and 30mm of 0000] (1010) {1010};
+    \node[state, below right= 10mm and 30mm of 0000] (0101) {0101};
+    \node[state, below right= 10mm and 30mm of 1010] (1111) {1111};
+    \node[state, above right= 15mm and 20mm of 1010] (2200) {2200};
+
+    \path[draw,->]
+    (0000.135)
+    .. controls +(-7mm,3mm) and +(-3mm,7mm) ..
+    node {reset}
+    (0000.120)
+    ;
+
+    \path
+    (0000)
+    edge[loop left] node[left] {resume1(*)} (0000)
+    edge[bend left] node[above] {fail1(true)} (1010)
+    edge[bend right] node[below] {fail2(true)} (0101)
+    ;
+
+    \path[draw,->]
+    (0000.-120)
+    .. controls +(-3mm,-7mm) and +(-7mm,-3mm) ..
+    node[below left] {resume2(*)}
+    (0000.-135)
+    ;
+
+    \path[draw,->]
+    (1111.60)
+    .. controls +(3mm,7mm) and +(7mm,3mm) ..
+    node[above right] {fail1(*)}
+    (1111.45)
+    ;
+
+    \path
+    (1111)
+    edge node {reset} (0000)
+    edge[loop right] node[right] {fail2(*)} (1111)
+    edge[out=170,in=-20] node[left] {resume2(true)} (1010)
+    edge[out=-170,in=20] node[left] {resume1(true)} (0101)
+    ;
+
+    \path[draw,->]
+    (1111.-45)
+    .. controls +(7mm,-3mm) and +(3mm,-7mm) ..
+    node[below right] {\begin{tabular}{@{}l@{}}
+        tick\\
+        {}[t1<Max1 \& t2<Max2]\\
+        \{t1:=t1+1; t2:=t2+1\}
+    \end{tabular}}
+    (1111.-60)
+    ;
+    
+    \path[draw,->]
+    (1111) edge
+    node[above right] {\begin{tabular}{@{}l@{}}
+        ask\\
+        {}[t1>=Max1 \& t2>=Max2]
+    \end{tabular}}
+    (2200)
+    ;
+
+    \path
+    (1010)
+    edge[out=-170,in=30] node[above] {reset} (0000)
+    edge[out=-150,in=20] node[below] {resume1(true)} (0000)
+    edge[bend left] node[above] {fail2(true)} (1111)
+    ;
+
+    \path[draw,->]
+    (1010.45)
+    .. controls +(7mm,3mm) and +(3mm,7mm) ..
+    node[above right] {fail1(*)}
+    (1010.80)
+    ;
+    
+    \path[draw,->]
+    (1010.100)
+    .. controls +(-3mm,7mm) and +(-7mm,3mm) ..
+    node[above left] {resume2(*)}
+    (1010.135)
+    ;
+
+    \path
+    (0101)
+    edge[out=170,in=-30] node[below] {reset} (0000)
+    edge[out=150,in=-20] node[above] {resume2(true)} (0000)
+    edge[bend right] node[below right] {fail1(true)} (1111)
+    ;
+
+    \path[draw,->]
+    (0101.-45)
+    .. controls +(7mm,-3mm) and +(3mm,-7mm) ..
+    node[below right] {fail2(*)}
+    (0101.-80)
+    ;
+    
+    \path[draw,->]
+    (0101.-100)
+    .. controls +(-3mm,-7mm) and +(-7mm,-3mm) ..
+    node[below left] {resume1(*)}
+    (0101.-135)
+    ;
+
+    \path[draw,->]
+    (2200.west)
+    .. controls +(left:5cm) ..
+    node[above left] {reset}
+    (0000.80)
+    ;
+
+    \path[draw,->]
+    (2200.0)
+    .. controls +(7mm,0) and +(3mm,-7mm) ..
+    node[right] {fail2(*)}
+    (2200.-20)
+    ;
+    
+    \path[draw,->]
+    (2200.40)
+    .. controls +(3mm,7mm) and +(7mm,3mm) ..
+    node[above right] {fail1(*)}
+    (2200.20)
+    ;
+    
+    \path[draw,->]
+    (2200.100)
+    .. controls +(-3mm,7mm) and +(3mm,7mm) ..
+    node[above] {resume2(*)}
+    (2200.80)
+    ;
+    
+    \path[draw,->]
+    (2200.160)
+    .. controls +(-7mm,3mm) and +(-3mm,7mm) ..
+    node[left] {resume1(*)}
+    (2200.150)
+    ;
+  \end{tikzlts}}
   \caption{The resulting automaton}
   \label{schema:ArchFailure:Double:OA}
 \end{figure}
@@ -2254,22 +2440,50 @@ architecture composition, we refer the reader to
 %% processes.
 In Figure~\ref{schema:ArchFailure:Double:OA} we show the open
 automaton computed for the combined architecture of
-Figure~\ref{schema:ArchFailure:BIP:Double}.  It indicates that the two
-timers are forced to be synchronous: each can only tick after the
-other has also started, and then they will tick, reset, and timeout,
-synchronously.
+Figure~\ref{schema:ArchFailure:BIP:Double}.
 %
-\hl{This is a very strong assumption, and we are working on a more
-flexible specification (at BIP level) to release this hypothesis while
-keeping the safety properties of the composition.}
+Comparing the guards of the transitions $\PortTick$ and $\PortAsk$
+leaving state $1111$, we see that $\PortAsk$ can never be taken,
+unless $\mathrm{Max1} = \mathrm{Max2}$.  This illustrates the
+\emph{interference} phenomenon discussed in
+\cite{AttieBBJS16-architectures-faoc}, showing that the liveness
+property (\ref{eq:FM:liveness}) is not preserved when two copies of
+the Failure Monitor architecture are composed together.\footnote{%
+%
+  One of the main results of \cite{AttieBBJS16-architectures-faoc}
+  states that in a system obtained by an application of several
+  architectures, liveness properties are preserved if these
+  architectures are \emph{pair-wise non-interfering}.  However, no
+  results were provided to check whether two are architectures are
+  interfering or not.
+%
+} In this example, the interference is caused by the strong
+synchronisation of the $\PortTick$ ports of the two architectures.  It
+can be avoided by replacing the \mbox{$\PortTick
+  \bullet\!\!\!-\!\!\!-\!\!\!\bullet \NameTimer.\PortTick$} connector
+in Figure~\ref{schema:ArchFailure:BIP} by \mbox{$\PortTick
+  \blacktriangleright\!\!\!-\!\!\!-\!\!\!\bullet
+  \NameTimer.\PortTick$} and applying the so-called \emph{maximal
+  progress} whereby, whenever possible, the interaction $\{\PortTick,
+\NameTimer.\PortTick\}$ is preferred to the firing of $\PortTick$
+alone.  However, this fix goes beyond the scope of the current paper.
 
-\noteInSB{The idea was that, by analysing the combination, we observe
-  that the architecture does not compose well with itself, generating
-  a deadlock (or an implicit deadlock, where only $false$ transitions
-  canb be fired.  Based on this observation, we were to improve it
-  accodingly.  The problem is that I do not see any deadlocks in
-  Figure~\ref{schema:ArchFailure:Double:OA}.  I presume that some of
-  the asterisks should be only $false$ or something of a kind.}
+%% It indicates that the two
+%% timers are forced to be synchronous: each can only tick after the
+%% other has also started, and then they will tick, reset, and timeout,
+%% synchronously.
+%% %
+%% \hl{This is a very strong assumption, and we are working on a more
+%% flexible specification (at BIP level) to release this hypothesis while
+%% keeping the safety properties of the composition.}
+
+%% \noteInSB{The idea was that, by analysing the combination, we observe
+%%   that the architecture does not compose well with itself, generating
+%%   a deadlock (or an implicit deadlock, where only $false$ transitions
+%%   canb be fired.  Based on this observation, we were to improve it
+%%   accodingly.  The problem is that I do not see any deadlocks in
+%%   Figure~\ref{schema:ArchFailure:Double:OA}.  I presume that some of
+%%   the asterisks should be only $false$ or something of a kind.}
 
 
 
