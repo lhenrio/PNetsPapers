@@ -1704,13 +1704,13 @@ Refine(Aut) &=\langle L', States(L'), \{Assignments(L', S_i)\}^{S_i\in States(L'
 &=Aut'
 \end{align*}
 where $L' = L - L_{unsat}$, and $L_{unsat}$ is the set of unsatisfiable transitions checked in this iteration. We have $L'\subseteq L$, and potentially, their target states and corresponding assignments may be reduced: 
-\[States(L')=\{S_0\}\cup \bigcup States(L'),\]
+\[States_{L'}=\{S_0\}\cup \bigcup States(L'),\]
 \[Assignments_{L',States_{L'}}=\bigcup\{Assignments(L', State_{i})\}^{State_{i}\in States_{L'}} \]
 \[s.t. |States_{L'}|\le|States_{L}|\wedge|Assignments_{L',States_{L'}}|\le|Assignments_{L,States_{L}}|.\]
 
-In one single iteration, satisfiability of a transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L$ is checked through whether 
+In one single iteration, the satisfiability of a transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L$ is checked through whether 
 \[\bigvee_{Assign_i\in Assignments_{L, States_{L}}}(Pred_{l}\wedge Assign_{i})\text{ is true}.\]
-More transitions could be unsatisfiable after the reduction of the assignments set, so the function needs to be iterated several times. In each iteration, the number of triples decreases, thus there exists a sequence \[Aut^n = Refine(Aut^{n-1})\quad s.t. |Aut^n| < |Aut^{n-1}|.\]
+More transitions could become unsatisfiable after the reduction of the assignments set, so the function needs to be iterated several times. In each iteration, the number of triples decreases, thus there exists a sequence \[Aut^n = Refine(Aut^{n-1})\quad s.t. |Aut^n| < |Aut^{n-1}|.\]
 The iteration terminates if $Aut''$ contains no more unsatisfiable transition, then there is a fixed point $Aut'' = Refine(Aut'')$ and $|Aut''| = |Refine(Aut'')|$.
 
 Let $Aut''_1$ and $Aut''_2$ be two fixed points with $Refine(Aut''_1) = Aut''_1$ and $Refine(Aut''_2) = Aut''_2$. Focusing on the transition sets in $Aut''_1$ and $Aut''_2$, $L1''_{sat}=L1_{reach}$ and $L2''_{sat}=L2_{reach}$, we need to check their equivalence.
@@ -1724,9 +1724,9 @@ First, there is an inclusion relation between the initial assignments sets,
 Then we come to see what changes have occurred during the iterations. In the first iteration, the inclusion relation between their assignments implies an inclusion relation of unsatisfiable transitions. If there are two transitions $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L1_{unsat}$ and $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L2_{unsat},$ then
 \begin{align*}
 &\bigvee_{Assign_i\in Assignments_{L1, States_{L1}}} (Pred_{l}\wedge Assign_i)\text{ is false}\\
-\longrightarrow&\bigvee_{Assign_j\in Assignments_{L2_{sat}, States_{L2_{sat}}}} (Pred_{l}\wedge Assign_j)\text{ is false}.
+\text{implies }&\bigvee_{Assign_j\in Assignments_{L2_{sat}, States_{L2_{sat}}}} (Pred_{l}\wedge Assign_j)\text{ is false}.
 \end{align*}
-The relation that $\forall\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L1_{unsat},\exists\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L2_{unsat}$, implies that $L1_{unsat}\subseteq L2_{unsat}.$
+From the relation $\forall\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L1_{unsat},\exists\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}} \in L2_{unsat}$, it can be implied that $L1_{unsat}\subseteq L2_{unsat}.$
 
 However, its reverse direction is not fulfilled. Recall that $L1_{sat}=L2_{sat}$, more inclusion relations of the assignments can be implied,
 \begin{align*}
@@ -1736,16 +1736,17 @@ Assignments_{L1, States_{L1}}&\supseteq Assignments_{L2_{sat}, States_{L2_{sat}}
 \end{align*}
 
 Let $L1'_{sat}=L1_{sat}-L1_{unsat}$ and $L2'_{sat}=L2_{sat}-L2_{unsat}$
-Then in the next iteration, the unsatisfiable transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}$ removed from $L1'_{sat}$ might be the same transition (up to renaming) removed from $L2'_{sat}$. In this case,
-\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat} \longrightarrow \ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L2'_{unsat}.\]
+Then in the next iteration, the unsatisfiable transition $\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat}$ removed from $L1'_{sat}$ has two cases, we use $L1'_{unsat1}$ and $L1'_{unsat2}$ where $L1'_{unsat1}+L1'_{unsat2}=L1'_{unsat}$ to present them. In the first case, it might be the same transition (up to renaming) removed from $L2'_{sat}$,
+\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat1}\longrightarrow\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L2'_{unsat}.\]
+
 Or it is the transition not removed in the last iteration because of the inclusion
 \[Assignments_{L2_{sat}, States_{L2_{sat}}}\subseteq Assignments_{L1, States_{L1}}.\] 
 We have already proved that 
 \[Assignments_{L1'_{sat}, States_{L1'_{sat}}}\subseteq Assignments_{L2_{sat}, States_{L2_{sat}}},\]
 so those transitions will be removed this time. In this case,
-\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat} \longrightarrow \ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\notin L2_{sat}.\]
+\[\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\in L1'_{unsat2}\longrightarrow\ostate{\tilde{t}}\xrightarrow{l}\ostate{\tilde{t'}}\notin L2_{sat}.\]
 
-By induction, if there is no more unsatisfiable transitions in $L2''_{sat}$, $L1''_{sat}$ continues removing all the transitions not in $L2''_{sat}$, until $L1_{reach}=L2_{reach}$. It implies that $States_{L1_{reach}}=States_{L2_{reach}}$ and
+By induction, if there is no more unsatisfiable transitions in $L2''_{sat}$, so $L2''_{unsat}$ is an empty set and then $L1'_{unsat1}$ is also empty as $L1'_{unsat1}\subseteq L2''_{unsat}$. The transitions to remove should only belong to $L1'_{unsat2}\nsubseteq L2''_{sat}$. So the iteration continues removing all the transitions not in $L2''_{sat}$, until $L1_{reach}=L2_{reach}$. It implies that $States_{L1_{reach}}=States_{L2_{reach}}$ and
 $$Assignments_{L1_{reach},States_{L1_{reach}}}=Assignments_{L2_{reach},States_{L2_{reach}}}.$$
 \hfill\qed
 \end{proof}
