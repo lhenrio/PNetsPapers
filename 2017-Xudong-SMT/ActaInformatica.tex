@@ -384,7 +384,7 @@ state/.style={ellipse,draw=black,font=\sffamily},align=center,text=black]} %,fil
 %	open automaton semantics. This automaton may be used to prove
 %	behavioural properties such as safety and liveness.
 We also propose and implement an optimised
-	algorithm that performs part of the pruning on-the-fly, and show 
+	algorithm that performs part of the pruning on the fly, and show 
 	its correctness with respect to the original one.
 	We illustrate the approach using two use-cases: the first one is a
 	classical process-algebra operator for which we provide several
@@ -696,7 +696,7 @@ semantics into the SMT engine input language (\cite{BarFT-RR-17}).
 		constructors and selectors of the sort $\mathit{sortname}$.
 	\end{itemize}
 	%  \noteSB{I think this can be removed}\hl{All sorts and operator names must be distinct.}
-	Constructors of arity 0 are called \emph{constants}, and denoted $\mathit{Consts}(\APres)$.
+	Constructors of arity 0 are called \emph{constants}, and denoted by $\mathit{Consts}(\APres)$.
 	%  $\mathit{Consts}(\APres) = \{\mathit{Con} \in \mathit{Constrs}\,|\, \mathit{arity}(\mathit{Con})=0\}$.
 \end{definition}
 
@@ -1033,9 +1033,9 @@ have the following specific structure.
 
 \paragraph{States of open pNets.}\label{def-states}
 A state of an open pNet is a tuple of the
-states of its leaves (in which we denote tuples
-in structured states as $\triangleleft\ldots\triangleright$).
-For any pNet $p$, let $\overline{\mathit{Leaves}} = \langle S_i,{s_i}_0, \to_i\rangle^{i \in L}$ be the set of PLTSs at its leaves,
+states of its leaves. We denote tuples
+in structured states in the form $\triangleleft\ldots\triangleright$.
+For any pNet $p$, let $\langle S_i,{s_i}_0, \to_i\rangle^{i \in L}$ be the set of PLTSs at its leaves,
 then $\mathit{States}(p) = \{\ostate{s_i^{i\in L}}
 |\, \forall i\in L. s_i \in S_i\}$.
 A PLTS could be its own single leave:
@@ -1130,12 +1130,12 @@ ensures the termination of our semantic construction algorithm.
  %$\mathcal{T}$ 
  with finitely many states and transitions.
 \end{theorem}
-  Remark that all the elements of such pNets and open automata are symbolic, and they can represent many classes of unbounded systems. 
+Notice that all the elements of such pNets and open automata are symbolic, and they can represent many classes of unbounded systems. 
 
 
 \section{Generation of Open Automata}
 \label{section:implementation}
-In this section we describe the algorithm implementing the pNet
+In this section we describe an algorithm implementing the pNet
 semantics, its new ``on-the-fly'' version, and the interaction with the
 Z3 SMT solver. Under the hypotheses of Theorem \ref{Th:finiteness} 
 both algorithms terminate. 
@@ -1170,7 +1170,7 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 \State $\mathit{L1}$=filterUnsatTransitions($\mathit{L,Assignments}$);
 \State $\mathit{OA_0}$=makeReachableSubAutomaton($\mathit{InitState}(P),L1)$;
 \Repeat $\mathit{OA_n}$=RefineReachableSubAutomaton($\mathit{OA_{n-1}}$)
-\Until  $\mathit{OA_n}=\mathit{OA_{n-1}}$; \Comment Fixpoint reached
+\Until  $\mathit{OA_n}=\mathit{OA_{n-1}}$;   \hfill $\setminus \setminus$ Fixed point reached
 \State \Return $\mathit{OA_n}$;
 
 \end{algorithmic}  
@@ -1183,7 +1183,7 @@ computes all possible OTs, and adds the target states in the
 unexplored set, until this set is empty.
 
 Before the SAT checking step, it may contain symbolic transitions that
-do not have valid ground instanciations. This is not logically
+do not have valid ground instantiations. This is not logically
 incorrect, but is naturally not an optimal representation. So we prune
 these UNSAT transitions: at the end of the open automaton generation,
 the predicate of each OT is translated 
@@ -1195,9 +1195,9 @@ the final open automaton (more details in Section~\ref{section:BuildingTheOpenAu
 The inside loop (\emph{MakeTransitions} method) applies recursively
 the semantic rules following the structure of the pNet.
 When applying a rule to a PLTS at the leaves, we simply take the PLTS transitions of the
-corresponding local state and use the semantic rule to build the OT.
-When applying a rule to a pNet node we use two methods, combining and
-matching, to generate the open transitions in a hierarchical manner,
+corresponding local state and use the semantic rules to build the OT.
+When applying a rule to a pNet node we use two methods, \emph{combining} and
+\emph{matching}, to generate the open transitions in a hierarchical manner,
 as shown in Algorithm~\ref{alg2}. This method directly manages the
 holes of the node, so \emph{MakeTransitions} is never called on a hole.
 
@@ -1287,7 +1287,7 @@ reasons why the matching would fail:
   \item if some subnet is marked as inactive in the vector, and the
     chosen combination has an active behaviour at this position, or vice-versa;
   \item if some subnet action expression in the vector does not match (by
-    pattern-matching) the corresponding action expression in $C$;
+    pattern-matching) with the corresponding action expression in $C$;
   \item or if the whole set of active subnet actions in the vector
     cannot be matched (by unification) with the corresponding action expressions
       in the tuple $C$ (this is strictly stronger than the
@@ -1589,7 +1589,7 @@ that $\forall S \in L0. \forall n \in \mathbb{N}. S \in States(L2_{reach}) \land
   $L1_{reach}$, with the transition $S_n \xrightarrow{l_{n}}S$.  Then $ S_n \in
   States(L1_{reach})$ and $l_n$ is satisfiable. By induction, we have
   $S_n \in States(L2_{reach})=States(L2_{sat})$, so $l_n$ will have
-  been checked ``on-the-fly'', in line 6 of Algorithm~\ref{alg3}. Then
+  been checked on the fly, in line 6 of Algorithm~\ref{alg3}. Then
   the transition $S_n \xrightarrow{l_{n}}S$ will be added to $L2_{sat}$, and thus $S \in States(L2_{reach})$.
   
 Note that $L0$ is finite, so we conclude $L1_{reach}=L2_{reach}$, and $States(L1_{reach})=States(L2_{reach})$.
@@ -1817,12 +1817,12 @@ of the relevent part of the LOTOS action algebra sorts
 and constructors, then the declaration of variables, and finally the
 predicate to be checked, encoded as a set of assertions.
 
-Here the behavior of the hole ``P'' ($a1$ in Figure~\ref{schema:unsat-ot}) , after matching with the synchronisation vectors, appears as a variable
-``|a1:sva\_SVA0:15:1|'', and ``R'' ($acc(x2)$) as ``|(ACT delta
+Here the behavior of the hole ``$P$'' ($a1$ in Figure~\ref{schema:unsat-ot}), after matching with the synchronisation vectors, appears as a variable
+``|a1:sva\_SVA0:15:1|'', and ``$R$'' ($acc(x2)$) as ``|(ACT delta
 |x:sva\_SV4:1:2|''. Line 16 requires that $a1 = \delta(x2)$ to match
 the second synchronisation vector of the root pNet node, and lines
 17-18 that $a1$ does not match $\delta(x1)$ for any $x1$. 
-We also display  the diagnosis (``sat'' or ``unsat'') generated by Z3.
+We also display  the diagnosis (``SAT'' or ``UNSAT'') generated by Z3.
 
 \begin{figure}[t]
     \centerline{\includegraphics[width=0.8\linewidth]{ActaXFIG/rise4fun1}}
@@ -1921,7 +1921,7 @@ in the SMT engine.
 Figure~\ref{schema:smt-lib} shows the decomposition of the
 predicate into a set of asserts, each encoding an elementary equality,
 inequality, or a guard. 
-The result (sat or unsat) of the final \texttt{check-sat} command in
+The result (SAT or UNSAT) of the final \texttt{check-sat} command in
 the translation () is then decoded.
 
 \section{Use-Cases}
@@ -2226,7 +2226,7 @@ connector~\cite{BliSif10-causal-fmsd}.
 
 
 
-\paragraph{Computed open automaton}
+\paragraph{Computed open automaton.}
 
 For this example, the tool (using Algorithm~\ref{alg1}) builds 408 open transitions, whereof 396
 are detected unsatisfiable by Z3.  The resulting open automaton, with
@@ -2546,13 +2546,13 @@ Eclipse Equinox, with Java 1.8.
 	\end{tabular}
 
         \medskip
-        In the basic cases (EnableState, EnableData) there is no
-        benefit, and even an overhead in the case of EnableData,
+        In the basic cases ($EnableState$, $EnableData$) there is no
+        benefit, and even an overhead in the case of $EnableData$,
         because of the extra step of checking SAT at the end of the
         algorithm.
 But as soon as there are more OTs in the system and not all
 states are reachable, these tests show a significant benefit of the ``smart'' strategy, in
-the considered use-cases, with 50\% of time saving for the FailureTimer,
+the considered use-cases, with 50\% of time saving for the $FailureTimer$,
 over to 80\% for the composition, depending
         on the nature of the examples, but increasing significantly
         with their complexity.
@@ -2567,7 +2567,7 @@ with the Z3 SMT engine.
 The implementation has two parts: the first is an algorithm
 that builds all possible combinations of synchronisations through the
 pNet hierarchical structure. The result is a so-called
-\emph{open automaton}, whose transitions contain predicates relating
+open automaton, whose transitions contain predicates relating
 the actions of the pNet holes and controllers. Some of the open
 transitions obtained at this step  may
 contain predicates which do not represent any possible concrete
