@@ -4168,7 +4168,7 @@ $\Post= \displaystyle{\bigotimes_{i=0}^{m_2}\subst{{\Post^{3a}_i}\uplus
 \end{proof}
 
 
-\begin{lemma}[Weak open transition composition]\label{lem-compose} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
+\begin{lemma}[Weak open transition composition]\label{lem-Weakcompose} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
 	Suppose $j_0\in J$ and $\gamma_{j_0}=[\beta_0..\beta_n]$ and additionally:\\[-2ex]
 \begin{mathpar}
 %\[
@@ -4213,7 +4213,7 @@ Then, we have\\[-2ex]
 	}
 	\]
 \end{lemma}
-\TODO{Proof}
+\TODO{Proof starts from here}
 
 \begin{proof} Suppose we have:
 \begin{mathpar}
@@ -4248,7 +4248,7 @@ $\displaystyle{\gamma_j^{j\in J}=\mybigdotcup_{p=0}^{m_1} \vis{\set{\beta^1_p}} 
 \Post=\bigotimes_{p=0}^{m_2}\Post^3_p\subst{\Post^2}\bigotimes_{j=0}^{m_1}\subst{\Post^1_j}
 $\\
 
-Note: If $(\beta^i_p)_{j_0}=\tau$ Because of Definition 11, $P$ necessarily do a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires $({\beta^i_p})_{j_0}=\tau$. We can thus  suppose that for all $p$ and $i$ we have $({\beta^i_p})_{j_0}\neq\tau$.
+Note that if $(\beta^i_p)_{j_0}=\tau$ because of Definition \ref{def:Non-ObsTau}, $P$ necessarily makes a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires ${\beta^i_{p{j_0}}}=\tau$. We can thus  suppose that for all $p$ and $i$ we have ${\beta^i_{p{j_0}}}\neq\tau$.
 
 Moreover, we have for all $p\in[0..n]$:
 \begin{mathpar}
@@ -4270,12 +4270,77 @@ In the same way,  by Lemma \ref{lem-rel-OT-WOT} we can decompose $\WOT_p$ into  
 				\ostate{s_{i}'^{i\in L_Q}}}
 				}%\]
 \]
-We can apply Lemma \ref{lem-compose} on each   $\symb{OT}_p$ of $P$ in the form: 
+
+We proceed by iteration on the list of   $\symb{OT}_p$ of $P$ identified above with an additional variable $t$, OTs are of the form: 
 $P\!\models		
 \openrule
     {
-       {(\beta^i_p)^{p\in J}},\Pred_p,\Post_p   }
+       {(\beta^i_{p j})^{j\in J}},\Pred_p,\Post_p   }
          {\ostate{s^{i\in L}_{pi}} \OTarrow {\alpha} \ostate{s^{i\in L}_{(p+1)i}}}$ 
+At the beginning $Q$ is at state $\ostate{s_{0}}$ and $t=0$. 
+For each step, we have two cases:
+\begin{itemize}
+\item If $j_0\in J$ then Q moves by one open transition. By the hypothesis above $\beta^i_{j_0}\neq \tau$. Additionally, we have
+$\displaystyle{\gamma_j^{j\in J}=\mybigdotcup_{p=0}^{m_1} \vis{\set{\beta^1_p}} \dotcup  \vis{\set{\beta^2}} \dotcup \mybigdotcup_{p=0}^{m_2} \vis{\set{\beta^3_p}}}$ and\\
+ $\gamma_{j_0}=[\beta_0..\beta_n]$, thus
+  $\beta^i_{j_0}=\beta_t$ with  for some $t$ such that $t$ has value $0$ at beginning and that is incremented whenever this condition is satisfied. 
+
+On the other hand, by hypothesis we have:
+\[Q\models{\openrule
+	{
+		\gamma_{t j}^{j\in J_t},
+		 \Pred_t,  
+		\Post_t}
+	{ \ostate{s_{t}}\OTWeakarrow {\alpha_t}
+		\ostate{s_{{(t+1)}}}}
+}
+\]
+By  Lemma \ref{lem-rel-OT-WOT} we can decompose $\WOT_t$ into  a series of $k+k'$ tau open transitions and the observable open transition:
+
+\[Q\models{\openrule
+	{
+		\gamma_{t j}^{j\in J_t},
+		 \Pred_t,  
+		\Post_t}
+	{\ostate{s^2_{t}}\OTarrow {\alpha_t}
+		\ostate{s^3_{t}}}
+}
+\]
+\begin{enumerate}
+
+\item For the first $k$ open tau transitions, by Definition \ref{def:Non-ObsTau} $P$ can make a tau open transition and the hole makes also tau action. So by Lemma \ref{lem-compose} we obtain $k$ open transitions in the form: 
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       \beta_p^{(p\in J\setminus\{j_0\}) \uplus J_Q},{\Pred_p},{\Post_p}   }
+         {\ostate{s^{i\in L \uplus L_Q}_{pi}} \OTarrow {\tau} \ostate{s^{i\in L\uplus L_Q }_{(p+1)i}}}\]
+
+\item We proceed in the same way for $k'$ last weak open transitions, and we obtain $k'$ open tau transitions.\\
+\item For the observable open transition. Because of the definition of $\Pred'$ we can suppose that $\alpha_t=\beta_{j_0}$ \TODO{because else the original WOT does not trigger}. By Lemma \ref{lem-compose} we obtain:\\ 
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       \beta_p^{(p\in J\setminus\{j_0\}) \uplus J_Q},{\Pred_p}\!\!'',{\Post_p}\!\!''   }
+         {\ostate{s^{i\in L \uplus L_Q}_{pi}} \OTarrow {\alpha} \ostate{s^{i\in L\uplus L_Q }_{(p+1)i}}}\] \\
+ such that  ${\Pred_p}\!\!'' \iff {\Pred_p}
+		\land {\Pred_p}\!\!'\land \alpha_t=\beta_{j_0}$, ${\Post_p}\!\!''={\Post_p}\uplus 
+		{\Post_p}\!\!'$\\ 
+\end{enumerate}
+
+By Lemma \ref{lem-rel-OT-WOT} from cases $(1)$, $2$ and $(3)$ we obtain: 
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       \beta_p^{(p\in J\setminus\{j_0\}) \uplus J_Q}, {\Pred_p}
+		\land {\Pred_p}\!\!'\land \alpha_p'=\beta_{j_0}$, ${\Post_p}\!\!''={\Post_p}\uplus 
+		{\Post_p}\!\!'}
+         {\ostate{s^{i\in L\uplus L_Q}_{pi}} \OTWeakarrow {\alpha} \ostate{s^{i\in L \uplus L_Q}_{(p+1)i}}}\] 
+
+ \item Else, $j_0\not\in J$. $t$ does not move  and $Q$ does not move, i.e. we have: $\ostate{(s_{ti})^{i\in L_Q}} = \ostate{({s}_{(t+1)i})^{i\in L_Q}}$....
+\end{itemize}
+
+ 
+---------------------------------------------------------
 
 au depart sQ0
 
