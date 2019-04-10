@@ -1762,11 +1762,12 @@ Now consider the fixed points of the $Refine$ iterations. From the
 initial inclusion $L_2^0\ \subseteq L_1^0$ and our invariant, we get the
 inclusion  $L_2^*\ \subseteq L_1^*$.
 
-Suppose there exists an OT $l$ in $L_1^*$ that is not in $L_2^*$. This
-means that $Pred(l,L_1^*)$ is satisfiable, but
-$Pred(l,L_2^*)$ is not satisfiable, which is a contradiction; or as in the
-invariant proof, there is a similar sequence with an OT $l_1$ that leads to
-a contradiction.
+Suppose there exists an OT $l$ in $L_1^*$ that is not in $L_2^*$.
+The fact that $l \in L_1^*$ means that $Pred_l$, with the information contained in $Assigns(L_1^*)$, is satisfiable, but also all the transitions $\{l_i\}_{i \in [1..n]}$ in a sequence
+$s_0\xrightarrow{l_1}s_1\xrightarrow{l_2}...s_{n}\xrightarrow{l_{n+1}}s_{n+1}$ leading to this $l_{n+1}=l$.
+
+Clearly all these $\{l_i\}_{i \in [1..n]}$ were also satisfiable and reachable in $L_2^0$ during the ``smart'' traversal, which did not use assignments. Now consider the chain of assignment sets $\{Assigns(L_2^i)\}_{i \in [0..k]}$, used during the iteration of $Refine$ by algorithm \ref{alg3}; we argue that the specific instanciation of variables that makes $Pred(l,L_1^*)$ satisfiable was contained in $Assigns(L_2^0)$, and that if it were removed during one of the $Refine$ step in algorithm \ref{alg1}, then it would be remove similarily during algorithm \ref{alg3}. So we get a contradiction.
+
 
 Therefore, we conclude that $L_2^* = L_1^*$.
 \hfill\qed
@@ -1943,7 +1944,7 @@ Figure~\ref{schema:smt-lib} shows the decomposition of the
 predicate into a set of asserts, each encoding an elementary equality,
 inequality, or a guard. 
 The result (SAT or UNSAT) of the final \texttt{check-sat} command in
-the translation () is then decoded.
+the translation is then decoded.
 
 \section{Use-Cases}
 \label{section:use-cases}
@@ -1959,11 +1960,12 @@ algorithm on these examples.
 \subsection{Enable operator} 
 \label{section:use-case:Enable}
 
+\vspace{-5mm}
 \begin{figure}[ht]
 \centerline{ 
-  \includegraphics[width=0.30\linewidth]{ActaXFIG/Enable1-aut}
+  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable1-aut}
   \hspace{25mm}
-  \includegraphics[width=0.25\linewidth]{ActaXFIG/Enable2-aut}}
+  \includegraphics[width=0.20\linewidth]{ActaXFIG/Enable2-aut}}
   \begin{minipage}{5.7cm}
 $  \begin{array}{@{}r@{}l@{}}
     ot_1  = &\openrule{\{ \xrightarrow{a1}_P \},\\ [\forall x1. a1\neq\delta(x1)]}
@@ -2005,28 +2007,20 @@ Note that although these automata look very similar to the PLTS
 controllers from Figure~\ref{schema:enable-pnets}, their nature is very
 different: they represent the behavior of the whole system, including
 the holes $P$ and $Q$. Their transitions do not rely on a particular
-implementation of the controllers, but only encode the logical
+implementation of the controllers, but only encode the 
 relations between the actions of the holes.
-We have shown in \cite{henrio:Forte2016} how to prove these two automata are bisimilar.
+We have shown in \cite{henrio:Forte2016} how to prove that they are bisimilar.
  
 %%\subsection{simple communication protocol} specification and implementation;
 %%\TODO{Eric: more results: enable associativity}
 
-Now let us revisit the Enable composition from
-Figure~\ref{schema:enable-composed}. Its open automaton is shown in
-Figure~\ref{schema:enable3bis}. Building the symmetric system ``$(P>>Q)>>R$'' in a similar
-way will allow us to prove that they are bisimilar (the Enable
-operator is associative), as we have shown in \cite{HMZ:RR-2016}.
-This approach allows us to study the equational properties of
-many operators in classical process algebras or parallel languages, even
-when their semantics depends on data properties.
 
 \begin{figure}[h]
   \begin{minipage}{2cm}
-  \includegraphics[width=\linewidth]{ActaXFIG/PQR-automaton}
+  \includegraphics[width=0.9\linewidth]{ActaXFIG/PQR-automaton}
   \end{minipage}
   \hspace{10mm}
-  \begin{minipage}{7cm}
+  \begin{minipage}{3.5cm}
   \begin{eqnarray*}
     OT_1 & = \openrule{\{\xrightarrow{a1}_P\}\\ a1\neq\delta(x)}
     {\ostate{00} \xrightarrow{a1} \ostate{00}}\\
@@ -2038,7 +2032,12 @@ when their semantics depends on data properties.
     OT_3 & = \openrule{
                         \{\xrightarrow{a2}_Q\},\\a2\neq\delta(x)
                         }
-    {\ostate{10} \xrightarrow{a2} \ostate{10}}\\
+    {\ostate{10} \xrightarrow{a2} \ostate{10}}
+    \end{eqnarray*}
+  \end{minipage}
+  \hspace{10mm}
+  \begin{minipage}{4cm}
+  \begin{eqnarray*}
     OT_4 & = \openrule{
                       \{\xrightarrow{\delta(x2)}_Q, \qquad 
                        \xrightarrow{acc(x2)}_R\} 
@@ -2052,6 +2051,15 @@ when their semantics depends on data properties.
   \caption{Open Automaton for the term ``$P>>(Q>>R)$''}
   \label{schema:enable3bis}
 \end{figure}
+
+Now let us revisit the Enable composition from
+Figure~\ref{schema:enable-composed}. Its open automaton is shown in
+Figure~\ref{schema:enable3bis}. Building the symmetric system ``$(P>>Q)>>R$'' in a similar
+way will allow us to prove that they are bisimilar (the Enable
+operator is associative), as we have shown in \cite{HMZ:RR-2016}.
+This approach allows us to study the equational properties of
+many operators in classical process algebras or parallel languages, even
+when their semantics depends on data properties.
 
 \subsection{BIP Failure Monitor Architecture}
 \label{section:FailureTimer}
