@@ -2578,8 +2578,7 @@ $p(\false)$ must be blocked.
 
 %\bigskip
 
-\paragraph{Practical experiments.}%\noteSB{J'ai repris ce paragraphe}
-%\noteLH{j ai nomme ce paragraphe}
+\paragraph{Practical experiments.}
 The above encoding provides a mechanism for the symbolic verification
 of architectures using our existing tool
 \cite{HMZ-FORTE2016QBMZ-AVOCS18} to compute the open automaton
@@ -2610,8 +2609,40 @@ action; full details can be found in
 %% explained in \ex{TimerOT3} (page~\pageref{ex:TimerOT3}).
 This automaton has 12 transitions, including those encoding various
 possible firing of some interactions (e.g. OT 2 and 3 for
-{\PortFail}). It looks like the rough behaviour is
-reasonable, although a detailed study shows that the property stated
+{\PortFail}).
+
+\add{Model-checking of open-automaton is out of the scope of this paper,
+though the resulting automaton here is small enough to observe the
+kind of properties we can prove. It is clear that our encoding allows
+to test specific values of state-variables in formulas, like e.g.:
+  \begin{equation}
+    \label{eq:prop:z:top}
+    \AW[\quad]{(z = \topinterval)}{\PortFail} \land\quad
+    \AG \bigl(
+    \PortReset \rightarrow \AW[]{(z = \topinterval)}{\PortFail}
+    \bigr).
+  \end{equation}
+that says that \emph{as long as no failure has occured, the $z$ variable of the
+$\NameTimer$ component has the value $\topinterval$}.
+
+But we can also (as long as we get a proper axiomatisation of our data
+operators in the SMT engine) handle more involved data properties,
+like here the fact that \emph{a reset can only be requested within the
+specified delay after a failure:}
+  \begin{multline}
+    \label{eq:prop:to:delay}
+    \forall T_0, T_1 \in \sZ,\
+    \AG \Big((\PortFail \land \NameTimer.t = T_0) \rightarrow
+    \\
+    \AW[]{\bigl((\PortAsk \land \NameTimer.t = T_1) \rightarrow
+      (T_1 - T_0 \in \NameCtrl.\mathit{zone})\bigr)
+    }{
+      (\PortReset \lor \PortResume)
+    }\Big),
+  \end{multline}
+}
+
+Last, a detailed study shows that the safety property stated
 in page~\pageref{property:reset} does not hold, because of the
 {\PortFail} loops on states $11$ and $12$. This is because we did not
 use the maximal progress assumption here. If we do, we get the
@@ -2620,7 +2651,9 @@ corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
 $OT_{10}$ have been restricted to $b0=\false$. This one verifies all
 the properties listed in \app{properties}.
 
-
+\noteEMin{on peut encore bouger deux lignes de l'annexe D.2, pour
+  mentionner ici une propriete de liveness, mais ca va dependre de la
+  place, c'est deja un peu long ici...}
 %% %****************************************************************
 
 %% \subsection{Composition of architectures}
