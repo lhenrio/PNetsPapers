@@ -114,6 +114,8 @@ TODOS: AVRIL 2019
 - biblio (rabea)
 - inuitions de preuves et intuition de bisim de cloture, etc. (Ludo)
 
+\TODO{voisr si on redefinit les bigotimes pour prendre des maps et retourner des maps au lieu des substitutions (et on englobe dans une subst a la fin)}
+
 ===> dealine 14 Juillet
 
 TODOs du 19 decembre
@@ -2610,7 +2612,40 @@ an open transition of $Q$, and building a corresponding transition of
 $P[Q]_{j_0}$, assembling their predicates.
 
 \begin{lemma}[Open transition composition]\label{lem-compose} 
-
+	Suppose $j_0\in J$ and:\\[-2ex]
+\begin{mathpar}
+%\[
+P\models{\openrule
+	{
+		\beta_j^{j\in J}, 
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+		\ostate{s_i'^{\, i\in L}}}
+}%\]
+\text{~~and~~}
+%\[
+Q\models{\openrule
+	{
+		\beta_j^{j\in J_Q},
+		 \Pred\,',  
+		\Post\,'}
+	{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
+		\ostate{s_i'^{\, i\in L_Q}}}
+}%\]
+\end{mathpar}
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\beta_j^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+			\Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0},  
+			\Post\uplus \Post\,'}
+		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {\alpha}
+			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
+	}
+	\]
 \end{lemma}
 \TODO{important comment added:}
 Note that this does not mean that any two pNets can be composed and produce an open 
@@ -2779,6 +2814,33 @@ J},\alpha)\\
         \end{proof}
 \end{small}
 
+
+Note that we also have the following lemma (trivial):
+
+\begin{lemma}[Open transition composition]\label{lem-compose-2} ~\\	Suppose $j_0\not\in J$ and $L_Q=\Leaves({Q})$:\\[-2ex]
+\begin{mathpar}
+%\[
+P\models{\openrule
+	{
+		\beta_j^{j\in J}, 
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+		\ostate{s_i'^{\, i\in L}}}
+}%\]
+\end{mathpar}
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\beta_j^{j\in J}, 
+			\Pred,  
+			\Post}
+		{\ostate{s_i^{i\in L}\uplus s_i^{i\in L_Q}} \OTarrow {\alpha}
+			\ostate{s_i'^{\, i\in L}\uplus s_i^{i\in L_Q}}}}
+	\]
+\end{lemma}
 
  \subsection{Proof of Theorem ~\ref{thm-congr-eq}}
  The proof of Theorem~\ref{thm-congr-eq} exhibits classically a bisimulation relation for 
@@ -4137,6 +4199,139 @@ $\Post= \displaystyle{\bigotimes_{i=0}^{m_2}\subst{{\Post^{3a}_i}\uplus
  where $n=m_1+m_2+1$	
 \end{proof}
 
+\begin{lemma}[Weak open transition composition]\label{lem-Weakcompose} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
+	Suppose $j_0\in J$  and additionally:\\[-2ex]
+\begin{mathpar}
+%\[
+P\models{\openrule
+	{
+		\beta_j^{j\in J}, 
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+		\ostate{s_i'^{\, i\in L}}}
+}\\
+\text{~~and~~}
+Q\models{\openrule
+	{
+		\set{\gamma},
+		 \Pred_Q,  
+		\Post_Q}
+	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
+		\ostate{{s'}_{i}^{\, i\in L_Q}}}
+}%\]
+\end{mathpar}
+Let 
+\begin{mathpar}
+%J_Q=\displaystyle{\bigcup_{t=0}^nJ_{t}}
+%\qquad
+\Pred\,'=\Pred\land (\beta_{j_0}=\alpha_Q\land \Pred_Q)
+\\
+%\forall j\in J_t,\,\gamma_j= \displaystyle{\mybigdotcup_{t=0}^n \gamma_{t j}}\text{\quad and\quad}
+\Post\,'=\Post\uplus\Post_Q
+\end{mathpar}
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\set{\gamma}\uplus\vis{\beta_j^{j\in J\setminus \{j_0\}}}, 
+			\Pred\,',  \Post\,'
+			 }
+		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
+			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
+	}
+	\]
+\end{lemma}
+\begin{proof}
+By  Lemma \ref{lem-rel-OT-WOT} we can decompose the WOT of $Q$ into  a series of $k+1$ and $k'+1$ tau open transitions and an observable open transition:
+
+\[\forall h\!\in\![0..k].Q\models\openrule
+    {\set{\beta^1_h},\Pred^1_h,\Post^1_h   }
+         {\ostate{{(s^1_{h})}} \OTarrow {\tau} \ostate{{(s^1_{(h+1)})}}}
+\]
+
+\[Q\models{\openrule
+	{
+		\set{\beta^2},
+		 \Pred^2,  
+		\Post^2}
+	{\ostate{s^2_{0}}\OTarrow {\alpha_Q}
+		\ostate{s^2_{1}}}
+}
+\]
+
+\[
+\forall h \in [0..k'].Q\models\openrule
+         {
+           \set{\beta^3_h},\Pred^3_h, \Post^3_h}
+         { \ostate{(s^3_h)} \OTarrow {\tau} \ostate{(s^3_{(h+1)})}} \]
+
+such that 
+$s_i^{i\in L_Q}=s^1_{0} \wedge s^1_{(k+1) i}=s^2_{0} \wedge  s^2_{1}= s^3_{0} \wedge s^3_{(k'+1) i}={s'}_i^{i\in L_Q}$\\
+
+$\displaystyle{\set{\gamma}=\mybigdotcup_{h=0}^{k} \vis{\set{\beta^1_h}} \dotcup  \vis{\set{\beta^2}} \dotcup \mybigdotcup_{h=0}^{k'} \vis{\set{\beta^3_h}}}
+\\
+\Pred_Q=\bigwedge_{h=0}^{k}\!\big(\Pred^1_h\bigotimes_{j=0}^{h-1}\subst{\Post_j^1}\big)\land\Pred^2\bigotimes_{h=0}^{k}\subst{\Post_h^1}\land \bigwedge_{h=0}^{k'}\!\Pred_h^3\big(\bigotimes_{j=0}^{h-1}\subst{\Post^3_j}\subst{\Post^2}  \bigotimes_{h=0}^{k}\subst{\Post_h^1}\big)
+\\
+\Post_Q=\bigotimes_{h=0}^{k'}\Post^3_h\subst{\Post^2}\bigotimes_{j=0}^{k}\subst{\Post^1_j}
+$
+
+\begin{enumerate}
+
+\item For the first $k$ open tau transitions, by Definition \ref{def:Non-ObsTau} $P$ can necessarily make a tau open transition if the hole indexed $j_0$ makes a tau action. So by Lemma \ref{lem-compose} we obtain $k$ open transitions in the form: 
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       \set{\beta^1_h},{\Pred^1_h},{\Post^1_h}   }
+         {\ostate{s^1_h\uplus s^{i\in L}_{i} } \OTarrow {\tau} \ostate{s^1_{h+1}\uplus s^{i\in L}_{i}}}\]
+
+
+\item For the observable open transition.  By Lemma \ref{lem-compose} with the lemma hypotheses we obtain:\\ 
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			{\beta^i_{p j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2}, 
+			\Pred\land\Pred^2\land \alpha_t=\beta^i_{p j_0 },  
+			\Post\uplus \Post^2}
+{\ostate{s^{i\in L}_{i}\uplus s_0^2} \OTarrow {\alpha_p} \ostate{{s'}^{i\in L}_{i}\uplus s_1^2}}
+	}
+	\]
+
+%
+%\[P[Q]_{j_0}\!\models		
+%\openrule
+%    {
+%       {\beta^i_{p j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2},{\Pred_p}\!\!'',{\Post_p}\!\!''   }
+%         {\ostate{s^{i\in L \uplus L_Q}_{pi}} \OTarrow {\alpha} \ostate{s^{i\in L\uplus L_Q }_{(p+1)i}}}\] \\
+% such that  ${\Pred_p}\!\!'' \iff {\Pred_p}
+%		\land {\Pred_p}\!\!'\land \alpha_t=\beta_{j_0}$, ${\Post_p}\!\!''={\Post_p}\uplus 
+%		{\Post_p}\!\!'$\\ 
+\item We proceed in the same way as the first item for $k'$ last weak open transitions, and we obtain $k'$ open tau transitions.\\
+\end{enumerate}
+
+By Lemma \ref{lem-rel-OT-WOT} from cases $(1)$, $(2)$ and $(3)$ we obtain: 
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+\set{\gamma'}, \Pred_c,
+\Post_c}
+         {\ostate{s^1_0\uplus s^{i\in L}_{i}} \OTWeakarrow {\alpha^l} 
+	\ostate{{{s'}^{i\in L}_{i}\uplus s_{k'}^3}}}\] 
+where
+\[\set{\gamma'}=\mybigdotcup_{h=0}^k\vis{\set{\beta^1_h}} \dotcup \vis{{\beta^i_{p j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2}} \dotcup \mybigdotcup_{h=0}^{k'}\vis{\set{\beta^3_h}}\]
+\[
+\Pred_c=\begin{array}[t]{l}\displaystyle\bigwedge_{h=0}^k{\Pred^1_h}\subst{\bigotimes_{i=0}^{h-1}\Post_i^1}\land
+\left(Pred\land\Pred^2\land \alpha_t=\beta^i_{p j_0 }\right)\subst{\bigotimes_{i=0}^{k}{\Post_i^1}}\land\\\displaystyle
+\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\otimes({\Post\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}}
+\end{array}
+\]
+
+\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\otimes({\Post\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}
+\]
+Note that we have $s_t=s^1_{0} \wedge s^1_{(k+1) i}=s^2_{0} \wedge  s^2_{1}= s^3_{0} \wedge s^3_{(k'+1) i}=s_{t+1}$
+\end{proof}
 
 \begin{lemma}[Weak open transition composition]\label{lem-Weakcompose} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
 	Suppose $j_0\in J$ and $\gamma_{j_0}=[\beta_0..\beta_n]$ and additionally:\\[-2ex]
@@ -4150,25 +4345,25 @@ P\models{\openrule
 	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
 		\ostate{s_i'^{\, i\in L}}}
 }\\
-\text{~~and for all $p\in[0..n]$~~}
+\text{~~and for all $t\in[0..n]$~~}
 Q\models{\openrule
 	{
-		\gamma_{p j}^{j\in J_p},
-		 \Pred_p,  
-		\Post_p}
-	{\ostate{s_{p i}^{i\in L_Q}} \OTWeakarrow {\alpha_p}
-		\ostate{s_{(p+1) i}^{\, i\in L_Q}}}
+		\gamma_{t j}^{j\in J_t},
+		 \Pred_t,  
+		\Post_t}
+	{\ostate{s_{t i}^{i\in L_Q}} \OTWeakarrow {\alpha_t}
+		\ostate{s_{(t+1) i}^{\, i\in L_Q}}}
 }%\]
 \end{mathpar}
 Let 
 \begin{mathpar}
-J_Q=\displaystyle{\bigcup_{p=0}^nJ_{p}}
+J_Q=\displaystyle{\bigcup_{t=0}^nJ_{t}}
 \qquad
-\Pred\,'=\Pred\land \bigwedge_{p=0}^{n}(\alpha_p=\beta_p\land \Pred_p)\bigotimes_{i=0}^{p-1}\Post_i
+\Pred\,'=\Pred\land \bigwedge_{t=0}^{n}(\alpha_t=\beta_t\land \Pred_t)\bigotimes_{i=0}^{t-1}\Post_i
 \\
-\forall j\in J_p,\,\gamma_j= \displaystyle{\mybigdotcup_{p=0}^n \gamma_{p j}}\text{\quad and\quad}
-\Post\,'=\Post\uplus\bigotimes_{p=0}^{n}
-		\Post_p 
+\forall j\in J_t,\,\gamma_j= \displaystyle{\mybigdotcup_{t=0}^n \gamma_{t j}}\text{\quad and\quad}
+\Post\,'=\Post\uplus\bigotimes_{t=0}^{n}
+		\Post_t
 \end{mathpar}
 Then, we have\\[-2ex]
 	\[ P[Q]_{j_0}  
@@ -4218,17 +4413,17 @@ $\displaystyle{\gamma_j^{j\in J}=\mybigdotcup_{p=0}^{m_1} \vis{\set{\beta^1_p}} 
 \Post=\bigotimes_{p=0}^{m_2}\Post^3_p\subst{\Post^2}\bigotimes_{j=0}^{m_1}\subst{\Post^1_j}
 $\\
 
-Note that if $(\beta^i_p)_{j_0}=\tau$ because of Definition \ref{def:Non-ObsTau}, $P$ necessarily makes a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires ${\beta^i_{p{j_0}}}=\tau$. We can thus  suppose that for all $p$ and $i$ we have ${\beta^i_{p{j_0}}}\neq\tau$.
+Note that, for $l\in\{1,2,3\}$ if $(\beta^l_p)_{j_0}=\tau$ because of Definition \ref{def:Non-ObsTau}, $P$ necessarily makes a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires ${\beta^l_{p{j_0}}}=\tau$. We can thus  suppose that for all $p$ and $l$ we have ${\beta^l_{p{j_0}}}\neq\tau$.
 
-Moreover, we have for all $p\in[0..n]$:
+Moreover, we have for all $t\in[0..n]$:
 \begin{mathpar}
 Q\models{\openrule
 	{
-		\gamma_{p j}^{j\in J_p},
-		 \Pred_p,  
-		\Post_p}
-	{\ostate{s_{p i}^{i\in L_Q}} \OTWeakarrow {\alpha_p}
-		\ostate{s_{(p+1) i}^{\, i\in L_Q}}}
+		\gamma_{t j}^{j\in J_t},
+		 \Pred_t,  
+		\Post_t}
+	{\ostate{s_{t i}^{i\in L_Q}} \OTWeakarrow {\alpha_t}
+		\ostate{s_{(t+1) i}^{\, i\in L_Q}}}
 }		
 \end{mathpar}
 %In the same way,  by Lemma \ref{lem-rel-OT-WOT} we can decompose $\WOT_p$ into  a series of $m'+n'$ tau open transitions and a single observable open transition:
@@ -4241,13 +4436,13 @@ Q\models{\openrule
 %				}%\]
 %\]
 
-We proceed by iteration on the list of  OTs of $P$ identified above, these OTs are of the form: 
-
-$P\!\models		
+We proceed by iteration on the list of  OTs of $P$ identified above, these OTs are of the form, for $l\in\{1,2,3\}$: 
+\[P\!\models		
 \openrule
     {
-       {(\beta^i_{p j})^{j\in J}},\Pred_p,\Post_p   }
-         {\ostate{s^{i\in L}_{pi}} \OTarrow {\alpha} \ostate{s^{i\in L}_{(p+1)i}}}$
+       {(\beta^l_{p j})^{j\in J}},\Pred_p,\Post_p   }
+         {\ostate{s^{i\in L}_{pi}} \OTarrow {\alpha^l} \ostate{s^{i\in L}_{(p+1)i}}}\]
+with $\alpha^2=\alpha$ and $\alpha^1=\alpha^3=\tau$
 
 We use an additional variable $t$, in the iteration, it will be used as an index from $0$ to $n$, i.e. inside the OTs of $Q$.
 At the beginning $t=0$, i.e. $Q$ is at state $\ostate{s_{0}}$. \TODO{on peut remplacer $s_t$ par $s_{t i}^{i\in L_Q}$}
@@ -4337,12 +4532,39 @@ By Lemma \ref{lem-rel-OT-WOT} from cases $(1)$, $2$ and $(3)$ we obtain:
 \[P[Q]_{j_0}\!\models		
 \openrule
     {
-       \beta_p^{(p\in J\setminus\{j_0\}) \uplus J_Q}, {\Pred_p}
-		\land {\Pred_p}\!\!'\land \alpha_p'=\beta_{j_0}$, ${\Post_p}\!\!''={\Post_p}\uplus 
-		{\Post_p}\!\!'}
-         {\ostate{s^{i\in L\uplus L_Q}_{pi}} \OTWeakarrow {\alpha} \ostate{s^{i\in L \uplus L_Q}_{(p+1)i}}}\] 
+\set{\gamma}, \Pred_c,
+\Post_c}
+         {\ostate{s^1_0\uplus s^{i\in L}_{pi}} \OTWeakarrow {\alpha^l} 
+	\ostate{{s^{i\in L}_{(p+1)i}\uplus s_{k'}^3}}}\] 
+where
+\[\set\gamma=\mybigdotcup_{h=0}^k\vis{\set{\beta^1_h}} \dotcup \vis{{\beta^i_{p j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2}} \dotcup \mybigdotcup_{h=0}^{k'}\vis{\set{\beta^3_h}}\]
+\[
+\Pred_c=\begin{array}[t]{l}\displaystyle\bigwedge_{h=0}^k{\Pred^1_h}\subst{\bigotimes_{i=0}^{h-1}\Post_i^1}\land
+\left(Pred_p\land\Pred^2\land \alpha_t=\beta^i_{p j_0 }\right)\subst{\bigotimes_{i=0}^{k}{\Post_i^1}}\land\\\displaystyle
+\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\otimes({\Post_p\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}}
+\end{array}
+\]
 
- \item Else, $j_0\not\in J$. $t$ does not move  and $Q$ does not move, i.e. we have: $\ostate{(s_{ti})^{i\in L_Q}} = \ostate{({s}_{(t+1)i})^{i\in L_Q}}$....
+\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\otimes({\Post_p\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}
+\]
+Note that we have $s_t=s^1_{0} \wedge s^1_{(k+1) i}=s^2_{0} \wedge  s^2_{1}= s^3_{0} \wedge s^3_{(k'+1) i}=s_{t+1}$
+
+ \item Else, $j_0\not\in J$. $t$ does not move  and $Q$ does not move, i.e. we have: $\ostate{(s_{t})} = \ostate{({s}_{(t+1)})}$
+By lemma~\ref{lem-compose-2} we have:
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       {(\beta^l_{p j})^{j\in J}},\Pred_p,\Post_p   }
+         {\ostate{s^{i\in L}_{pi}\uplus s_t} \OTarrow {\alpha^l} \ostate{s^{i\in L}_{(p+1)i}\uplus s_t}}
+\]
+and thus
+\[P[Q]_{j_0}\!\models		
+\openrule
+    {
+       \vis{{(\beta^l_{p j})^{j\in J}}},\Pred_p,\Post_p   }
+         {\ostate{s^{i\in L}_{pi}\uplus s_t} \OTWeakarrow {\alpha^l} \ostate{s^{i\in L}_{(p+1)i}\uplus s_t}}
+\]
+
 \end{itemize}
 
  
