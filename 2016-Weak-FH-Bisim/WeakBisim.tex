@@ -38,7 +38,7 @@
 \newcommand{\raisemath}[1]{\mathpalette{\raisem@th{#1}}}
 \newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
 \makeatother
-
+\newcommand{\shortotimes}{\!\otimes\!}
 \usepackage{macrospNets}
 
 
@@ -328,16 +328,9 @@ $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
 for more general synchronisation mechanisms, like gate negociation in Lotos, or broadcast
 communications. 
 
-\smallskip
-
-We denote $y\gets e$ a substitution. The application of the substitution is denoted
-$\subst{y\gets e}$, the operation replaces in a term all occurrences 
-of the variable $y$ by the expression $e$ (note that the absence of binders makes this operation 
-trivial). 
-We use sets of equations of the form $x_i=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$.
 
 
-\subsubsection*{Indexed sets and substitution}
+\subsubsection*{Indexed sets}
 
 
 
@@ -411,6 +404,13 @@ $\setminus$ is the standard subtraction operation on indexed sets: $\dom(A\setmi
 %not meaningful.  $\uplus$ is the disjoint union on
 %indexed sets.
 
+\subsubsection*{Substitutions}
+
+We denote $y\gets e$ a substitution. The application of the substitution is denoted
+$\subst{y\gets e}$, the operation replaces in a term all occurrences 
+of the variable $y$ by the expression $e$ (note that the absence of binders makes this operation 
+trivial). 
+We use sets of equations of the form $x_i=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 
 
 \subsection{Parameterised Networks (pNets)}
@@ -724,7 +724,7 @@ We take in this article a semantics and logical understanding of these automata.
 \implies
     \openrule
          {
-           \set{\beta}\subst{\Post}, \Pred\,'\subst{\Post}\land\Pred,\Post\otimes\Post\,'}
+           \set{\beta}\subst{\Post}, \Pred\,'\subst{\Post}\land\Pred,\Post\shortotimes\Post\,'}
          {t \OTarrow {\alpha\subst{\Post}} {t'}}\in\mathcal{T}
 \end{mathpar}
 \end{definition}
@@ -815,8 +815,8 @@ the following:
      %     \right)$.
 \bigskip
 
- $\Pred_{s,t} \land \Pred_{OT}\implies\bigvee_{x\in X} \Pred_x$\\
-and
+ $\Pred_{s,t} \land \Pred_{OT}\implies\bigvee_{x\in X} \Pred_x$
+and\\
 %\hspace{1cm}
  $ \forall{x\in X}. \Pred_x \land \Pred_{s,t} \land \Pred_{OT} \Rightarrow
    \left( \forall j. \beta_j=\beta_{jx}  \land \Pred_{OT_x}
@@ -929,7 +929,9 @@ $InitState(\pNet) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 %Let
 %$\mylangle\set{\pNet},\set{\Sort},\set{\symb{SV}}\myrangle$
 %be a pNet. 
-Consider a synchronisation vector $\symb{SV}$. We 
+Consider a synchronisation vector $\SV{{(\alpha'_i)}^{i\in I}, {(\beta'_j)}^{j\in J}} 
+{\alpha'} 
+{e_b}$. We 
 define a
 predicate $\Predsv$ relating
 the actions of the involved sub-pNets and the resulting actions. This predicate verifies:
@@ -1505,9 +1507,9 @@ and
            \set{\gamma_3},\Pred_3,\Post_3  }
          {s_2 \OTWeakarrow {\tau} s'} \in\WT
 \\
-\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\otimes\Post_1}
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortotimes\Post_1}
 \\
-\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\otimes \Post_1}\\
+\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortotimes \Post_1}\\
 \alpha'=\alpha\subst{\Post_1}
 }
 {
@@ -1515,7 +1517,7 @@ and
          {\set{\gamma}
            ,
 		\Pred,
-				\Post_3\otimes\Post_2\otimes\Post_1} 
+				\Post_3\shortotimes\Post_2\shortotimes\Post_1} 
          {s \OTWeakarrow {\alpha'} s'} \in\WT
 } \WTTrois
 \end{mathpar}
@@ -1606,7 +1608,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
    \left( \forall j\in J_x. \vis{\beta_j}=\gamma_{jx}  \Rightarrow \Pred_{OT_x}
      \land \alpha\!=\!\alpha_x \land  
-     \Pred_{s',t_x}\subst{\Post_{OT}\otimes\Post_{OT_x}}\right)$
+     \Pred_{s',t_x}\subst{\Post_{OT}\shortotimes\Post_{OT_x}}\right)$
     
  \item  and symmetrically any open transition from $t$ in $\mathcal{T}_2$ can be 
       covered by a set of weak transitions from $s$ in $\WT_1$.
@@ -2266,7 +2268,7 @@ variable in $\mathcal{T}_1$.
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
        		\left( \forall j. \beta_j=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
        		\land \alpha\!=\!\alpha_{pxy} \land
-       		\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
+       		\Pred\,'_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{pxy}}}\right)$.
        	\end{small}
 From (*) and (**) we have, for all $p$
        	\begin{small}
@@ -2274,30 +2276,30 @@ From (*) and (**) we have, for all $p$
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow \Pred_{OT_{px}}
        		\land \alpha\!=\!\alpha_{px} \land
-       		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\land\Pred_{p,u}\\
+       		\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}}\right)\land\Pred_{p,u}\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow 
        		(\Pred_{OT_{px}}\land\Pred_{p,u})
        		\land \alpha\!=\!\alpha_{px} \land
-       		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\right)\\
+       		\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}}\right)\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
        		\big( \forall j. \beta_j=\beta_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
        		\big( \forall j'. \beta_{j'px}=\beta_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
        		\land \alpha_{px}\!=\!\alpha_{pxy}\\\hspace{3em}~ \land
-       		\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\big))
+       		\Pred_{{pxy}}\subst{\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}\big))
        		\land \alpha\!=\!\alpha_{px} \land
-       		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\\
+       		\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}}\big)\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
        		\big( \forall j, j'. \beta_j=\beta_{jpx} \land \beta_{j'px}=\beta_{j'pxy}
        		\Rightarrow \big( 
        		\Pred_{OT_{pxy}}
        		\land \alpha\!=\alpha_{px}\!=\!\alpha_{pxy}\\\hspace{3em}~ \land
-       		\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}
+       		\Pred_{{pxy}}\subst{\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}
        		\land
-       		\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\big)\big)
+       		\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}}\big)\big)
        		$
        		
        	\end{small}
@@ -2306,14 +2308,14 @@ By construction, four substitutions $\subst{~}$ only have an effect on the
 variables of the open automaton they belong to, they also produce terms containing only 
 variables of the open automaton they belong to. Finally, because of the domain of the 
 substitutions  and of the predicates, we have:\\
-       	$\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\land 
-       	\Pred_{{pxy}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+       	$\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}}\land 
+       	\Pred_{{pxy}}\subst{\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}\\
        	\Leftrightarrow % we changed =
-       	\Pred_{{px}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\land
-       	\Pred_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
-       	\implies\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{px}}}\subst{\Post_{OT_{pxy}}}\\
+       	\Pred_{{px}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}\land
+       	\Pred_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}\\
+       	\implies\Pred\,'_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{px}}\shortotimes\Post_{OT_{pxy}}}\\
        	\Leftrightarrow % we changed = 
-       	 \Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}} $\\
+       	 \Pred\,'_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{pxy}}} $\\
        	
        	This allows us to conclude, with $\Pred_{s,u} = \bigvee_{p\in P} 
        	\Pred_{s,p}\land\Pred_{p,u}$:
@@ -2328,12 +2330,12 @@ $\Pred_{s,u} \land \Pred_{OT}\\
 \Rightarrow \big( 
 \Pred_{OT_{pxy}}
 \land \alpha\!=\alpha_{px}\!=\!\alpha_{pxy}\\~\hspace{3em}~ \land
-\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\big)\big)
+\Pred\,'_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{pxy}}}\big)\big)
 \\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
 \left( \forall j. \beta_j=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
 \land \alpha\!=\!\alpha_{pxy} \land
-\Pred\,'_{{pxy}}\subst{\Post_{OT}}\subst{\Post_{OT_{pxy}}}\right)$.
+\Pred\,'_{{pxy}}\subst{\Post_{OT}\shortotimes\Post_{OT_{pxy}}}\right)$.
   \end{small}
        	
        	\smallskip
@@ -2824,7 +2826,7 @@ J},\alpha)\\
 
 Note that we also have the following lemma (trivial):
 
-\begin{lemma}[Open transition composition]\label{lem-compose-2} ~\\	Suppose $j_0\not\in J$ and $L_Q=\Leaves({Q})$:\\[-2ex]
+\begin{lemma}[Open transition composition -- inactive]\label{lem-compose-2} ~\\	This lemma is the simple case where the pNet filling the hole is not involved in the transition. Suppose $j_0\not\in J$ and $L_Q=\Leaves({Q})$:\\[-2ex]
 \begin{mathpar}
 %\[
 P\models{\openrule
@@ -2848,6 +2850,8 @@ Then, we have\\[-2ex]
 			\ostate{s_i'^{\, i\in L}\uplus s_i^{i\in L_Q}}}}
 	\]
 \end{lemma}
+The proof is trivial.
+
 
  \subsection{Proof of Theorem ~\ref{thm-congr-eq}}
  The proof of Theorem~\ref{thm-congr-eq} exhibits classically a bisimulation relation for 
@@ -2930,7 +2934,7 @@ Then, we have\\[-2ex]
  \left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
  \Pred_{OT_x}
  \land \alpha_Q\!=\!\alpha_x \land  
- \Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)$
+ \Pred_{s x}\subst{\Post\,''\shortotimes\Post_{OT_x}}\right)$
 
  
  We can now apply Lemma~\ref{lem-compose} on each of the $OT'_x$ together with 
@@ -2970,7 +2974,7 @@ Then, we have\\[-2ex]
  	\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
  	\Pred_{OT_x}
  	\land \alpha_Q\!=\!\alpha_x \land  
- 	\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
+ 	\Pred_{s x}\subst{\Post\,''\shortotimes\Post_{OT_x}}\right)
  }
  \\~\qquad\qquad	\land \Pred\,'\land\alpha_Q=\beta_{j_0} \\
  	\implies
@@ -2979,7 +2983,7 @@ Then, we have\\[-2ex]
  		\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
  		\Pred\,'\land \Pred_{OT_x}
  		\land \alpha_Q\!=\!\alpha_x \land \alpha_Q\!=\!\beta_{j_0 x} \land  
- 		\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
+ 		\Pred_{s x}\subst{\Post\,''\shortotimes\Post_{OT_x}}\right)
  	}
  	$\end{small}
  Note that, $\beta_{j_0}$ can be transformed into  $\beta_{j_0 x}$ because of the 
@@ -3000,19 +3004,19 @@ Then, we have\\[-2ex]
  	does not 
  	change the validity of the formula (those variables are not used).
  	\item Concerning the last term, we need 
- 	$\Pred_{s x}\subst{\Post_{OT}}\subst{\Post\,'\uplus \Post_{OT_x}}$ 
+ 	$\Pred_{s x}\subst{\Post_{OT}\shortotimes(\Post\,'\uplus \Post_{OT_x})}$ 
  	, i.e.:
- 	$\Pred_{s x}\subst{\Post\,'\uplus 
- 		\Post\,''}\subst{\Post\,'\uplus \Post_{OT_x}}$. We 
+ 	$\Pred_{s x}\subst{(\Post\,'\uplus 
+ 		\Post\,'')\shortotimes(\Post\,'\uplus \Post_{OT_x})}$. We 
  	can conclude by observing that	$\Pred_{s x}$ does not use any variable of $P$ 
- 	and thus $\subst{Post\,'}$ has no effect.
+ 	and thus the substitution $\subst{Post\,'}$ has no effect on it.
  \end{itemize}	
 Finally: 
 \[{\displaystyle\bigvee_{x\in X}
  		\left( \forall j\in J. \beta_j=\beta_{jx}  \Rightarrow 
  		\left(\Pred\,'\land \Pred_{OT_x}
  		 \land \alpha_Q\!=\!\beta_{j_0 x}\right) \land \alpha_Q\!=\!\alpha_x\land  
- 		\Pred_{s x}\subst{\Post\,''}\subst{\Post_{OT_x}}\right)
+ 		\Pred_{s x}\subst{\Post\,''\shortotimes\Post_{OT_x}}\right)
  	}\]
  This proves the  condition of the FH-simulation, the other direction is 
  similar.\qed
@@ -3095,7 +3099,7 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			\left( \forall j\in J'. \beta_j=\beta_{jx}  \Rightarrow 
 			\Pred_{OT_x}
 			\land \alpha\!=\!\alpha_x \land  
-			\Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}\right)$
+			\Pred_{s x}\subst{\Post\,'\shortotimes\Post_{OT_x}}\right)$
 			%     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x}) \right)$.
 			
 			We can now apply Lemma~\ref{lem-compose} on each of the $OT'_x$ together with 
@@ -3130,7 +3134,7 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 \Rightarrow \!
 \Pred_{OT_x}\land \alpha_Q=\beta_{j_0}
 \land \alpha\!=\!\alpha_x}} %\\ \hspace*{40mm} %
-\land \Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}) \land
+\land \Pred_{s x}\subst{\Post\,'\shortotimes\Post_{OT_x}}) \land
 \Pred\,''\\ % 
 			%FH for P
  \implies  \hspace{-2ex}
@@ -3138,9 +3142,9 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 \Rightarrow \!
 \left(\Pred_{OT_x}\land
 \Pred\,''
-\land \alpha_Q=\beta_{j_0 x}\right)
+\land \alpha_Q\!=\!\beta_{j_0 x}\right)
 \land \alpha\!=\!\alpha_x}} 
-\land \Pred_{s x}\subst{\Post\,'}\subst{\Post_{OT_x}}) 	
+\land \Pred_{s x}\subst{\Post\,'\shortotimes\Post_{OT_x}}) 	
 $\end{small}
 
 %\TODO{There was a confusion between the $\Rightarrow$ between the
@@ -3155,10 +3159,10 @@ $\end{small}
 	the substitution). Concerning $\Holes(Q)$, adding prerequisite on more variables 
 	does not 
 	change the validity of the formula (those variables are not used).
-	\item We need $\Pred_{s x}\subst{\Post_{OT}}\subst{\Post_{OT_x}\uplus \Post\,''}$, i.e.:
-	$\Pred_{s x}\subst{\Post\,'\uplus \Post\,''}\subst{\Post_{OT_x}\uplus \Post\,''}$. We 
+	\item We need $\Pred_{s x}\subst{\Post_{OT}\shortotimes(\Post_{OT_x}\uplus \Post\,'')}$, i.e.:
+	$\Pred_{s x}\subst{(\Post\,'\uplus \Post\,'')\shortotimes(\Post_{OT_x}\uplus \Post\,'')}$. We 
 	can conclude by observing that	$\Pred_{s x}$ does not use any variable of $Q$ 
-	and thus $\subst{\Post\,''}$ has no effect.
+	and thus the substitution involving $\Post\,''$ has no effect.
 \end{itemize}	
 This proves the  condition of the FH-simulation, the other direction is 
 similar.\qed
@@ -3166,9 +3170,9 @@ similar.\qed
  
        \section{Weak FH-bisimulation lemmas and proofs}
 
-\TODO{Voir ou ajouter ceci: We introduce the notation ${\displaystyle \bigotimes_{i=1}^{n} \subst{Post_i}}$ to denote a combination of multiple substitution operations}
+We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity.
 
-${\displaystyle \bigotimes_{i=0}^{n} \subst{Post_i}} = \subst{Post_n}..\subst{Post_0}$
+\TODO{attention a l ordre: inverse d avant mais colle mieux a la notation -- check everywhere below}
 \subsection{Weak bisimulation is an equivalence}
 
 \begin{lemma}
@@ -3196,7 +3200,7 @@ there exist   $\set{\beta^1}_i$, $\set{\beta^2_i}$, and $\set{\beta^3_i}$, $\Pre
 \quad \wedge\\
 \forall i \in [0..m].\openrule
          {
-           \set{\beta^3_i},\Pred^3_i,({x^3_{ik}\gets e^3_{ik}})^{k\in K_i}    }
+           \set{\beta^3_i},\Pred^3_i,\Post_i^3    }
          {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
  \end{mathpar}
 \item  there exist $\set{\gamma}$, $\Pred$, $\Post$ s.t.
@@ -3211,12 +3215,13 @@ there exist   $\set{\beta^1}_i$, $\set{\beta^2_i}$, and $\set{\beta^3_i}$, $\Pre
 \end{mathpar}
 where\\
 $
-s=s^1_0 \wedge s^1_{n+1}=s_0^2 \wedge s_1^2 = s^3_0 \wedge s^3_{m+1}=s',
-\displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta^1_i}} \dotcup  \vis{\set{\beta^2}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta^3_i}}}
+s=s^1_0 \wedge s^1_{n+1}=s_0^2 \wedge s_1^2 = s^3_0 \wedge s^3_{m+1}=s',\\
+\displaystyle{
+\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta^1_i}\subst{\bigotimes_{j=i-1}^{0} \Post_j^1 } }  \dotcup  \vis{\set{\beta^2}\subst{\bigotimes_{j=n}^{0}\Post_j^1}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta^3_i} \subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j=n}^{0}\Post^1_j} }}
 \\
-\Pred=\bigwedge_{i=0}^n\Pred^1_i\bigotimes_{j=0}^{i-1}\subst{\Post_j^1}\land\Pred^2 \bigotimes_{j=0}^{n}\subst{\Post_j^1}\land\\ 
-~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_i^3\bigotimes_{j=0}^{i-1}\subst{\Post_j^3}\subst{\Post^2}\bigotimes_{j=0}^{n}\subst{\Post^1_j}\Big)\\
-\Post=\big({x^3_{mk}\gets e^3_{mk}\bigotimes_{j=0}^{m-1}\subst{\Post_j^3}\subst{\Post^2}\bigotimes_{j=0}^{n}\subst{\Post^1_j}\big)^{k\in K_m}}
+\Pred=\bigwedge_{i=0}^n\Pred^1_i\subst{\bigotimes_{j=i-1}^{0}\Post_j^1}\land\Pred^2 \subst{\bigotimes_{j=n}^{0}\Post_j^1}\land\\ 
+~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_i^3\subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j=n}^{0}\Post^1_j}\Big)\\
+\Post=\bigotimes_{j=m}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j=n}^{0}\Post^1_j
 $
 
 
@@ -4331,11 +4336,11 @@ where
 \[
 \Pred_c=\begin{array}[t]{l}\displaystyle\bigwedge_{h=0}^k{\Pred^1_h}\subst{\bigotimes_{i=0}^{h-1}\Post_i^1}\land
 \left(Pred\land\Pred^2\land \alpha_Q=\beta_{j_0 }\right)\subst{\bigotimes_{i=0}^{k}{\Post_i^1}}\land\\\displaystyle
-\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\otimes({\Post\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}}
+\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\shortotimes({\Post\uplus \Post^2})\shortotimes\bigotimes_{i=0}^{k}{\Post_i^1}}
 \end{array}
 \]
 
-\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\otimes({\Post\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}
+\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\shortotimes({\Post\uplus \Post^2})\shortotimes\bigotimes_{i=0}^{k}{\Post_i^1}
 \]
 Note that we have $s_i^{i\in L_Q}=s^1_{0} \wedge s^1_{(k+1) i}=s^2_{0} \wedge  s^2_{1}= s^3_{0} \wedge s^3_{(k'+1) i}={s'}_i^{i\in L_Q}$\\
 
@@ -4550,11 +4555,11 @@ where
 \[
 \Pred_c=\begin{array}[t]{l}\displaystyle\bigwedge_{h=0}^k{\Pred^1_h}\subst{\bigotimes_{i=0}^{h-1}\Post_i^1}\land
 \left(Pred_p\land\Pred^2\land \alpha_t=\beta^i_{p j_0 }\right)\subst{\bigotimes_{i=0}^{k}{\Post_i^1}}\land\\\displaystyle
-\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\otimes({\Post_p\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}}
+\bigwedge_{h=0}^{k'}{\Pred^3_h}\subst{\bigotimes_{i=0}^{h-1}{\Post_i^3}\shortotimes({\Post_p\uplus \Post^2})\shortotimes\bigotimes_{i=0}^{k}{\Post_i^1}}
 \end{array}
 \]
 
-\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\otimes({\Post_p\uplus \Post^2})\otimes\bigotimes_{i=0}^{k}{\Post_i^1}
+\[\Post_c=(\bigotimes_{i=0}^{k'}{\Post_i^3})\shortotimes({\Post_p\uplus \Post^2})\shortotimes\bigotimes_{i=0}^{k}{\Post_i^1}
 \]
 Note that we have $s_t=s^1_{0} \wedge s^1_{(k+1) i}=s^2_{0} \wedge  s^2_{1}= s^3_{0} \wedge s^3_{(k'+1) i}=s_{t+1}$
 
@@ -5100,9 +5105,9 @@ $(UG)_{\widetilde{i}k}$\newline
 &\!>\longrightarrow \underline{um_{\widetilde{i}.k}(\widetilde{t})}
 % $
 %     \symb{sv}_{u(\widetilde{i}k)}\triangleq
-%     <ium_{\widetilde{i}.k}(\widetilde{t})\otimes
-%     -^{\widetilde{I_P}}\otimes
-%     um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     <ium_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%     -^{\widetilde{I_P}}\shortotimes
+%     um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %  -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
 %         k\}}}>\longrightarrow
 %     \underline{um(\widetilde{t})}$
@@ -5127,8 +5132,8 @@ $(UM)_{\widetilde{i}k}$\newline$k\leq p$
 \end{array}$}\raisebox{-18pt}{~}
  % &
 %$\symb{sv}_{!\widetilde{i}}\triangleq
-%    <um_{\widetilde{i}.k}(\widetilde{t})\otimes
-%    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%    <um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
 %    -^{\widetilde{I_G}}>\longrightarrow
 %    um_{\widetilde{i}.k}(\widetilde{t})$
 \\
@@ -5563,9 +5568,9 @@ This may come to be simpler to define and implement than FH-bisimulation.
  %% $(UC)_{\widetilde{k}} \ERIC{UG}$ & $
  $(UG)_{\widetilde{k}}$ & $
      \symb{sv}_{u(\widetilde{i}.k)}\triangleq
-     <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
-     -^{\widetilde{I_P}}\otimes
-     !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+     <?um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+     -^{\widetilde{I_P}}\shortotimes
+     !m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
          k\}}}>\longrightarrow \tau(
      m_{\widetilde{i}.k}(\widetilde{t}))$ &
@@ -5576,8 +5581,8 @@ This may come to be simpler to define and implement than FH-bisimulation.
 %% $(DG)_{\widetilde{k}} \ERIC{DB}$&
 $(DB)_{\widetilde{k}}$&
 $\symb{sv}_{?\widetilde{i}}\triangleq
-     <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
-     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     <?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
      -^{\widetilde{I_G}}>\longrightarrow
      ?dm_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
      \hline
@@ -5587,8 +5592,8 @@ $\symb{sv}_{?\widetilde{i}}\triangleq
 \hline
 $(UM)_{\widetilde{k}}$&
 $\symb{sv}_{!\widetilde{i}}\triangleq
-    <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
-    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+    <!um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
     -^{\widetilde{I_G}}>\longrightarrow
     !um_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
 \hline
@@ -5600,8 +5605,8 @@ $\symb{sv}_{!\widetilde{i}}\triangleq
 $(HB)_{\widetilde{k}}$ &
 $\symb{sv}_{b(\widetilde{i}.k)}\triangleq
     <?m_{\widetilde{i}.j}^{\forall j\in I_K}(\widetilde{t})
-    \otimes !bm_{\widetilde{i}.k}(\widetilde{t})
-    \otimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$ &
+    \shortotimes !bm_{\widetilde{i}.k}(\widetilde{t})
+    \shortotimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$ &
     $I_K = \{k/\widetilde{i}.k\in \widetilde{I_{G+P}}\}$, \\ &  &  and
     $\widetilde{k}=\widetilde{i}.k$ \\
 \hline
@@ -5613,15 +5618,15 @@ $\symb{sv}_{b(\widetilde{i}.k)}\triangleq
 %% $(DC)_{\widetilde{k}} \ERIC{DG}$ &
 $(DG)_{\widetilde{k}}$ &
 $\symb{sv}_{?\widetilde{i}}\triangleq
-     <!dm_{\widetilde{i}.k}(\widetilde{t})\otimes
-     -^{\widetilde{I_P}}\otimes
-     ?dm_{\widetilde{i}.k}(\widetilde{t})\otimes
+     <!dm_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+     -^{\widetilde{I_P}}\shortotimes
+     ?dm_{\widetilde{i}.k}(\widetilde{t})\shortotimes
      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}}
      >\longrightarrow
      \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
 %      <?m_{\widetilde{i}.k}^{\forall k\in
-%        I_K}(\widetilde{t})\otimes
-%      -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%        I_K}(\widetilde{t})\shortotimes
+%      -^{\widetilde{I_P}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
      %      ?m_{\widetilde{i}}(\widetilde{t})$
      & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
 
@@ -5633,8 +5638,8 @@ subgroup, e.g. with $(DM)_{\widetilde{k}}$}\\
 %% $(DK)_{\widetilde{k}} \ERIC{DM}$&
 $(DM)_{\widetilde{k}}$&
 $\symb{sv}_{!\widetilde{i}}\triangleq
-    <  ?m_{\widetilde{i}.k}(\widetilde{t})\otimes
-    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+    <  ?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+    -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
     -^{\widetilde{I_G}}>\longrightarrow ?m_{\widetilde{i}}(\widetilde{t})$
     & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_{G+P}}$\\
 \hline
@@ -5655,8 +5660,8 @@ $\symb{sv}_{!\widetilde{i}}\triangleq
 \hline\hline
 $(DIS)_{\widetilde{k}}$&
      $\symb{sv}_{u(\widetilde{i}.k)}\triangleq
-     <Discard\otimes
-     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     <Discard\shortotimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
          k\}}}>\longrightarrow \tau(DIS)$ &
      $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
@@ -5668,8 +5673,8 @@ $(DIS)_{\widetilde{k}}$&
 \hline
 $(ERR)_{\widetilde{k}}$&
      $\symb{sv}_{u(\widetilde{i}.k)}\triangleq
-     <Error\otimes
-     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\otimes
+     <Error\shortotimes
+     -^{\widetilde{I_{G+P}}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
          k\}}}>\longrightarrow Error(\widetilde{k})$ &
      $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
@@ -6770,24 +6775,24 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %% \hline
 %% $(UC)_{\widetilde{k}}$ & $
 %%      \symb{sv}_{u(\widetilde{i}.k)}\triangleq
-%%      <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
-%%      -^{\widetilde{I_P}}\otimes
-%%      !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      <?um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%%      -^{\widetilde{I_P}}\shortotimes
+%%      !m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
 %%          k\}}}>\longrightarrow \tau(
 %%      m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
 %% \hline
 %% $(DM )_{\widetilde{k}}$& $\symb{sv}_{?\widetilde{i}}\triangleq
-%%      <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      <?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%      -^{\widetilde{I_{G+P}}
-%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %%      ?m_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
 %%      \hline
 %% $(UM)_{\widetilde{k}}$&
 %% $\symb{sv}_{!\widetilde{i}}\triangleq
-%%     <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%     <!um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%     -^{\widetilde{I_P}\uplus
-%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
 %%     -^{\widetilde{I_G}}>\longrightarrow
 %%     !m_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
 
@@ -6796,8 +6801,8 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %% $(DG )$&
 %% $\symb{sv}_{?\widetilde{i}}\triangleq
 %%      <?m_{\widetilde{i}.k}^{\forall k\in
-%%        I_K}(\widetilde{t})\otimes
-%%      -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%        I_K}(\widetilde{t})\shortotimes
+%%      -^{\widetilde{I_P}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %%      ?m_{\widetilde{i}}(\widetilde{t})$ & $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
 %% \widetilde{I_P}\}$\\
 
@@ -6811,32 +6816,32 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %% \hline
 %% $(UC)_{\widetilde{k}}$ & $
 %%      \symb{sv}_{u(\widetilde{i}.k)}\triangleq
-%%      <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
-%%      -^{\widetilde{I_P}}\otimes
-%%      !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      <?um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%%      -^{\widetilde{I_P}}\shortotimes
+%%      !m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%      -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
 %%          k\}}}>\longrightarrow \tau(
 %%      m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}$\\
 %% \hline
 %% $(DM )_{\widetilde{k}}$& $\symb{sv}_{?\widetilde{i}}\triangleq
-%%      <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%      <?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%      -^{\widetilde{I_P}\uplus
-%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %%      ?m_{\widetilde{i}}(\widetilde{t})$&$\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
 %%      \hline
 %%      $(UM)_{\widetilde{k}}$&
 %% $\symb{sv}_{!\widetilde{i}}\triangleq
-%%     <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%%     <!um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %%     -^{\widetilde{I_P}\uplus
-%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
 %%     -^{\widetilde{I_G}}>\longrightarrow
 %%     !m_{\widetilde{i}.k}(\widetilde{t})$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
 %% \hline
 %% $(DK)_{\widetilde{k}}$&
 %% $\symb{sv}_{!\widetilde{i}}\triangleq
-%%     <!m_{\widetilde{i}.k}(\widetilde{t})\otimes
-%%     ?m_{\widetilde{i}.g}(\widetilde{t})\otimes -^{\widetilde{I_P}\uplus
-%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k,\widetilde{i}\cdot g\}}\otimes
+%%     <!m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%%     ?m_{\widetilde{i}.g}(\widetilde{t})\shortotimes -^{\widetilde{I_P}\uplus
+%%       \widetilde{I_G}\backslash\{\widetilde{i}\cdot k,\widetilde{i}\cdot g\}}\shortotimes
 %%     -^{\widetilde{I_G}}>\longrightarrow
 %%     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$ & $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$\\
 
@@ -6849,25 +6854,25 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %  \item[$(BG)_{\widetilde{k}}$]
 %    $\symb{sv}_{b(\widetilde{i}.k)}\triangleq
 %    <?m_{\widetilde{i}.j}^{\forall j\in I_K}(\widetilde{t})
-%    \otimes !bm_{\widetilde{i}.k}(\widetilde{t})
-%    \otimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$,
+%    \shortotimes !bm_{\widetilde{i}.k}(\widetilde{t})
+%    \shortotimes -^{\widetilde{I_G}}>\longrightarrow \tau( bm(\widetilde{t}))$,
 %where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
 %\widetilde{I_P}\}$, and $\widetilde{k}=\widetilde{i}.k$
 %
 %  \item [$(UM)_{\widetilde{k}}$] $
 %    \symb{sv}_{!\widetilde{i}}\triangleq
-%    <!um_{\widetilde{i}.k}(\widetilde{t})\otimes
+%    <!um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %    -^{\widetilde{I_P}\uplus
-%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes
+%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes
 %    -^{\widetilde{I_G}}>\longrightarrow
 %    !m_{\widetilde{i}.k}(\widetilde{t})$,
 %where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$;
 %
 %   \item [$(DC)_{\widetilde{k}}$] $
 %     \symb{sv}_{d(\widetilde{i}.k)}\triangleq
-%     <!dm_{\widetilde{i}.k}(\widetilde{t})\otimes
-%     -^{\widetilde{I_P}}\otimes
-%     ?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     <!dm_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%     -^{\widetilde{I_P}}\shortotimes
+%     ?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}}
 %     >\longrightarrow
 %     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
@@ -6875,9 +6880,9 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %
 %   \item [$(UC)_{\widetilde{k}}$] $
 %     \symb{sv}_{u(\widetilde{i}.k)}\triangleq
-%     <?um_{\widetilde{i}.k}(\widetilde{t})\otimes
-%     -^{\widetilde{I_P}}\otimes
-%     !m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     <?um_{\widetilde{i}.k}(\widetilde{t})\shortotimes
+%     -^{\widetilde{I_P}}\shortotimes
+%     !m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %     -^{{\widetilde{I_G}\backslash\{\widetilde{i}\cdot
 %         k\}}}>\longrightarrow \tau(
 %     m_{\widetilde{i}.k}(\widetilde{t}))$,
@@ -6885,23 +6890,23 @@ which can be inserted the sub-pNets(subgroups) and has the sort: $\Sortop
 %
 %   \item [$(DG )$] $\symb{sv}_{?\widetilde{i}}\triangleq
 %     <?m_{\widetilde{i}.k}^{\forall k\in
-%       I_K}(\widetilde{t})\otimes
-%     -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%       I_K}(\widetilde{t})\shortotimes
+%     -^{\widetilde{I_P}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %     ?m_{\widetilde{i}}(\widetilde{t})$,
 %where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
 %\widetilde{I_P}\}$.
 %
 % \item [$(DM )_{\widetilde{k}}$] $\symb{sv}_{?\widetilde{i}}\triangleq
-%     <?m_{\widetilde{i}.k}(\widetilde{t})\otimes
+%     <?m_{\widetilde{i}.k}(\widetilde{t})\shortotimes
 %     -^{\widetilde{I_P}\uplus
-%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%      \widetilde{I_G}\backslash\{\widetilde{i}\cdot k\}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %     ?m_{\widetilde{i}}(\widetilde{t})$,
 %where $\widetilde{k}=\widetilde{i}.k\in \widetilde{I_G}\uplus \widetilde{I_P}$;
 %
 %\item [$(DIS)_{\widetilde{k}}$] $\symb{sv}_{dc}\triangleq
 %     <DISCARD_{\widetilde{i}.k}^{\forall k\in
-%       I_K}(\widetilde{t})\otimes
-%     -^{\widetilde{I_P}}\otimes -^{\widetilde{I_G}}>\longrightarrow
+%       I_K}(\widetilde{t})\shortotimes
+%     -^{\widetilde{I_P}}\shortotimes -^{\widetilde{I_G}}>\longrightarrow
 %     \tau(m_{\widetilde{i}.k}(\widetilde{t}))$,
 %where $I_K = \{k/\widetilde{i}.k\in \widetilde{I_G}\uplus
 %\widetilde{I_P}\}$.
