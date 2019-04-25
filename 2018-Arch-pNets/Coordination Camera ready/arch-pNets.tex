@@ -198,6 +198,7 @@
 \newcommand{\Eg}[1][\ ]{E.g.#1}
 \newcommand{\cf}[1][\ ]{cf.#1}
 \newcommand{\wrt}[1][\ ]{w.r.t.#1}
+\newcommand{\Wrt}[1][\ ]{W.r.t.#1}
 \newcommand{\resp}[1][\ ]{resp.#1}
 
 \newcommand{\bydef}[1]{\ensuremath{\stackrel{\mathit{\scriptscriptstyle def}}{#1}}}
@@ -216,14 +217,13 @@
 \newcommand{\noop} {\ensuremath{\emptyset}} % \mathsf{skip}
 \newcommand{\init} {\ensuremath{\mathsf{init}}}
 
-%% \newcommand{\order}{\leqslant}
-\newcommand{\order}{<}
+\newcommand{\order}{\leqslant}
 \newcommand{\ordbool}{\ensuremath{\sB^{\order}}}
 \newcommand{\data}{\ensuremath{\sD}}
 \newcommand{\signature}{\ensuremath{\Sigma}}
 \newcommand{\variables}{\ensuremath{\cV}}
 \newcommand{\Talg}{\ensuremath{\cT_{\signature,\variables}}}
-\newcommand{\actions}[1]{\ensuremath{\cA_{#1}}}
+\newcommand{\actions}[1]{\ensuremath{\mathit{Act}_{#1}}}
 \newcommand{\exprs}[1]{\ensuremath{\sE_{#1}}}
 \newcommand{\monexprs}[1]{\ensuremath{\sE^{\order}_{#1}}}
 \newcommand{\boolexprs}[1]{\ensuremath{\sB_{#1}}}
@@ -240,6 +240,7 @@
 \newcommand{\EX}[1][\ ]{\ensuremath{\mathtt{EX}#1}}
 \newcommand{\AW}[3][\ ]{\ensuremath{\mathtt{A}\left[#2\ \mathtt{W}\ #3\right]#1}}
 \newcommand{\EU}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{U}\ #3\right]#1}}
+\newcommand{\EW}[3][\ ]{\ensuremath{\mathtt{E}\left[#2\ \mathtt{W}\ #3\right]#1}}
 
 
 \newcommand{\filter}[2][]{\ensuremath{\pi_{#1}({#2})}}
@@ -377,8 +378,13 @@ called \emph{architectures}\mdash to a small set of functional
 components.  To this end, we extend the theory of architectures
 developed previously for the BIP framework with the elements necessary
 for handling data: definition and operations on data domains, syntax
-and semantics of composition operators involving data transfer.  Under
-monotonicity assumptions on guards and assignments, composition of
+and semantics of composition operators involving data transfer.
+%
+\newCoord{We provide a property preservation result, which states that
+%
+under
+monotonicity assumptions on guards and assignments and, in presence of the \emph{maximal progress} special case of
+  priority models, additional upwards compatibility assumptions on the architectures,} composition of
 architectures preserves their characteristic safety properties.
 To verify that individual architectures do enforce their associated
 properties, we provide an encoding into open pNets, an intermediate
@@ -572,15 +578,15 @@ encompassing several copies of any given data type with
 different orders.  We assume that $(\data,
 \order)$ comprises both the unordered set of Booleans $\sB =
 \tuple{\{\true, \false\}, \emptyset}$ and the naturally ordered one
-$\sB^< = \tuple{\{\true, \false\}, \{\false < \true\}}$, and
+$\sB^\order = \tuple{\{\true, \false\}, \{\false \order \true\}}$, and
 similarly for integer and real numbers; as well as the set of
 intervals ordered by inclusion.
 %In practice, and in the examples of
 %this paper, all the variables are sorted, meaning that their values
 %can only range over given subsets of $\data$, such as $\sB$ or
-%$\sB^<$.
+%$\sB^\order$.
 %
-When speaking of an ordered sort, \eg $\sB^<$, we will assume that it
+When speaking of an ordered sort, \eg $\sB^\order$, we will assume that it
 forms a meet-semilattice and denote by $\wedge$ the meet
 operator.
 
@@ -668,7 +674,7 @@ $s_0 \in S$ is the initial state;
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
 %\item 
-$\to \subseteq S \times L \times S$ is the transition relation and 
+${\to} \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
 % SB: I removed a new paragraph here, ok?
 $\langle \alpha,~g,~u\rangle$,
@@ -779,7 +785,7 @@ the transition occurs if some predicates hold, and can involve
        {s \OTarrow {{\alpha}}s'}
        \end{mathpar}
        Where $s, s'\in\mathcal{S}$ and $\beta_j\in\actions{\variables}$
-        is an action of the hole $j$. $\alpha$ is the resulting global action. \Pred\ is a predicate 
+        is an action of the hole $j$; $\alpha$ is the resulting global action; {\Pred} is a predicate 
        over the different variables of the
        terms, labels, and states  $\beta_j$, $s$, $\alpha$. $\Post\in 
        \assigns{\variables}$\ is 
@@ -850,7 +856,7 @@ Open transitions are identified modulo logical equivalence on their predicate.
 
 
 
-\newCoord{The red dotted rule somehow expresses an implication, stating that if actions of the holes perform the designed actions and the condition is verified, then the variables are modified and the state changes. This implication however  uses a simple logic with the 
+\newCoord{The red dotted rule expresses the implication stating that if the holes perform the designated actions and the condition $g$ is verified, then the variables are modified and the state changes. This implication however  uses a simple logic with the 
  expressive power  given by the predicate algebra (it must include logical 
  propositions and equality). 
  Proposition and inference rules of the paper use a standard logic, while predicates inside the open transitions should use a more restricted logic, typically a logic that could  be handled mechanically and expressed by terms that can be encoded in a simple syntax.
@@ -898,8 +904,8 @@ We now briefly illustrate an open transition:
     \{t' := t+1\} }
   {\ostate{11} \OTarrow{\alpha(t)} \ostate{14}}\vspace{-1.3ex}
   \]
-\end{small}
-It requires the hole at label $B$ to fire a $fail(b)$ action, with the condition $b=true$ and the state variable $t<Max$. In this case, the global pNet goes from state $\ostate{11}$ that has an internal variable $t$ to state $\ostate{14}$ where the state variable $t'$ has the value $t+1$. This emits a global action $\alpha(t)$. \newCoord{Figure~\ref{fig:ArchFailure:OA} illustrates a whole open automaton.}
+\end{small}%
+It requires the hole at label $B$ to fire a $fail(b)$ action, with the condition $b=true$ and the state variable $t<Max$. In this case, the global pNet goes from state $\ostate{11}$ that has an internal variable $t$ to state $\ostate{14}$ where the state variable $t'$ has the value $t+1$. This emits a global action $\alpha(t)$. \newCoord{Figure~\ref{fig:ArchFailure:OA} illustrates a complete open automaton.}
 %
 %It corresponds to the firing of the \replaceSB{connector
 %$''tick, fail, fail''$}{interaction $\listset{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail}$}. It states that, if the hole $B$ performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
@@ -1191,6 +1197,47 @@ This section presents the extension of the theory of
   architectures \cite{AttieBBJS16-architectures-faoc} with data and
   briefly discusses a special case of priority models, called
   \emph{maximal progress}.
+%
+  \newCoord{These extensions require us to define the framework in a
+    manner that would allow formulating and proving the property
+    preservation result (\thm{combining} below).  In
+    \cite{AttieBBJS16-architectures-faoc}, this result is obtained by
+    requiring, in the definition of architecture composition, that an
+    interaction among coordinated components be only possible if both
+    architectures ``agree'' that it should be enabled.  With respect
+    to data, the main difficulty lies in ensuring that this
+    ``agreement'' extends to the transferred data values.  A trivial
+    extension would allow an interaction only if the data values
+    proposed by both architectures coincide.  Considering this
+    requirement too restrictive, we go beyond by assuming the data
+    domains to be ordered and taking the \emph{meet} of the proposed
+    values.  The property preservation result then holds independently
+    of the proposed values, provided that guards and update
+    assignments are monotonic.
+
+    An important insight is that, although the requirement that guards
+    and update assignments be monotonic appears to be a limitation, it
+    is, in fact, a generalisation of the usual setting.  Indeed, the
+    usual settings, where data domains are not ordered, can be
+    recovered here by considering trivial partial orders with no two
+    distinct elements being comparable.  In such case, \emph{all
+      expressions} are trivially monotonic.
+
+    The intuition behind the proof of the preservation of safety
+    properties in \cite{AttieBBJS16-architectures-faoc} is simple.
+    The composition of two architectures combines the ``constraints''
+    that they impose on the possible executions of the system: as
+    stated above, an interaction is only enabled if both architectures
+    ``agree''.  In \cite{Baranov17-phd}, it is shown that this
+    intuition extends well to priorities in the \emph{offer semantics}
+    of BIP.  However, this is not the case in the classical semantics.
+    In this section, we informally discuss the special case of the
+    maximal progress priority models, where property preservation does
+    hold in the classical semantics of BIP.
+%
+}
+  
+
 
 %****************************************************************
 
@@ -1233,7 +1280,6 @@ This section presents the extension of the theory of
   skip the index on the transition relations $\goesto{}$, since it
   is always clear from the context.
 \end{definition}
-
 
 In this paper, we  use  a refined
 version of the Failure Monitor architecture
@@ -1301,10 +1347,9 @@ respectively.
 %% \{\mathit{zone}\}$ and $\export[\NameCtrl](p) = \emptyset$, for all
 %% other ports $p$; $\export[\NameTimer](\PortTick) = \{t, z\}$ and
 %% $\export[\NameTimer](p) = \emptyset$, for all other ports $p$.
-Variable $t$ is implicitly assumed to be an integer.  Variables $z$
-and $\mathit{zone}$ are  integer intervals of
-the form $[l,u]$.  Both types are implicitly equipped with a
-natural ordering: increasing integers and interval inclusion.
+Variable $t$ is implicitly assumed to be \newCoord{of type Integer (with trivial ordering).  Variables $z \bydef{=} [z.l, z.u]$
+and $\mathit{zone} \bydef{=} [\mathit{zone}.l, \mathit{zone}.u]$ are   of type Integer Interval 
+ordered by interval inclusion}.
 
 %% are \emph{coordinators}\mdash they are specified
 %% completely, including the states and transitions defining their
@@ -1398,7 +1443,7 @@ conclusion and the third premise of  \eq{comp:semantics}
 allows some  variables to get new values before the
 transition is  fired.  Thus the component is \emph{open}
 to the exchange of data with its environment.  However, the
-fourth premise  states that only the variables exported through the ports participating to the interaction can be affected by the data transfer.
+fourth premise  states that only the variables exported through the ports participating in the interaction can be affected by the data transfer.
 %restricts the set of
 %variables that can be affected by such data transfer to those
 %that are exported through the ports participating in the
@@ -1666,15 +1711,16 @@ ports that serve as placeholders for the eventual connection with
   An \emph{architecture} is a tuple $A = \tuple{\cC, V_A, P_A,
     \export[A], \Gamma}$, where\vspace{-1.5ex}
   \begin{itemize}
+  \item $P_A$ and $V_A$ are sets of ports and variables, respectively;
 \item
-  $\cC$ is a finite set of \emph{coordinating components},
+  $\cC$ is a finite set of components, which we call \emph{coordinators},
   %% with pairwise disjoint sets of ports and variables,
   such that
   $\bigcup_{C \in \cC} P_C \subseteq P_A$ and
   $\bigcup_{C \in \cC} V_C \subseteq V_A$;
 %
   ports in $P_A \setminus \bigcup_{C \in \cC} P_C$, which do not
-  belong to any of the coordinating components are called
+  belong to any of the coordinators are called
   \emph{dangling};
 
 \item
@@ -1771,8 +1817,8 @@ ports that serve as placeholders for the eventual connection with
 
 An architecture $A$ enforces coordination constraints on the
 components in $\cB$.  The interface $(V_A, P_A, \export[A])$ of an
-architecture $A$ contains all ports of the coordinating
-components $\cC$ and the dangling ports, which must belong to
+architecture $A$ contains all ports of the coordinators
+$\cC$ and the dangling ports, which must belong to
 the components in $\cB$.  In the application $A(\cB)$, the ports
 belonging to $P_A$ can only participate in the interactions
 defined by the interaction model $\Gamma$ of $A$.  Ports which do
@@ -1823,7 +1869,7 @@ through an invocation of the dangling port {\PortAsk}.
 %  \label{prop:arcomp:nice}
   %% Architecture composition
 $\arcomp$ is associative and commutative.
-  %%; it is idempotent if all coordinating components
+  %%; it is idempotent if all coordinators
   %% are deterministic; $A_{id} = \bigl(\emptyset, \emptyset,
   %% \emptyset, \emptyset, \{(\emptyset, \true, \noop)\}\bigr)$ is its neutral element, \ie for
   %% any architecture $A$, we have $A \oplus A_{id} \arequiv A$.
@@ -1838,11 +1884,11 @@ $\arcomp$ is associative and commutative.
 %% %
 %% %% \todoLH{Check when equivalence is defined}
 %% %%   Suppose we have two architectures $A \arequiv A'$.  This does not
-%% %%   necessarily mean that their sets of coordinating components
-%% %%   coincide.  However, if all the involved coordinating components
+%% %%   necessarily mean that their sets of coordinators
+%% %%   coincide.  However, if all the involved coordinators
 %% %%   are deterministic, then, in any state of $(A \arcomp A')(\cB)$,
 %% %%   both architectures will impose the same restrictions, enabling
-%% %%   the same interactions between the coordinating and operand
+%% %%   the same interactions between the coordinators and operand
 %% %%   components.  Hence, we have $(A \arcomp A')(\cB) = A(\cB) =
 %% %%   A'(\cB)$.  Since this holds for any set of components $\cB$, we
 %% %%   conclude that $A \arcomp A' \arequiv A \arequiv A'$.
@@ -1859,6 +1905,13 @@ $\arcomp$ is associative and commutative.
 For a component $B$, we denote $S_{\semopen{B}}$ and
 $s^0_{\semopen{B}}$ the corresponding constituents of
 $\semopen{B}$ (see Definition~\ref{defn:comp:semantics}).
+
+\medskip
+\newCoord{It is well known that, since violations of safety properties
+  are characterised by finite executions, they can also be represented
+  as state predicates: intuitively, a safety property corresponds to
+  the predicate characterising the set of states, where this property
+  is not violated.}
 
 \begin{definition}[Properties]
   \label{defn:property}
@@ -1885,16 +1938,16 @@ appropriate logic can be used to specify them.  For instance, the
 property \emph{``There is always a possibility to reset the system
   after a single failure''} (\ie without
   additional failures having to occur in the meantime) enforced by the
-  Failure Monitor architecture can be specified using CTL as
-%  \noteSB{Removed $\lnot \PortResume$, because not needed \emph{and} could not reformulate nicely in English.}
+  Failure Monitor architecture \newCoord{comprises the safety component that} can be specified using CTL as
+  %  \noteSB{Removed $\lnot \PortResume$, because not needed \emph{and} could not reformulate nicely in English.}
     $\AG
-\bigl(\PortFail \rightarrow \EX \EU[]{\lnot \PortFail}{
+\bigl(\PortFail \rightarrow \EX \EW[]{\lnot \PortFail}{
   \PortReset}\bigr)$.  Additional properties are provided in
 \app{properties}.
 %% \todoSB{Cite the original paper somewhere.}
 An architecture enforces
 its characteristic property on  its operand components.
-From this point of view, the set of coordinating components is
+From this point of view, the set of coordinators is
 not relevant, neither are their states.  Thus, 
 properties enforced by architectures only involve
 the unrestricted composition of the operands:
@@ -1993,6 +2046,50 @@ We define $\nopri[A, \partition] \bydef{=} \pNetTuple{(\nopri[C])^{C
     \in \cC}, \partition, \nopri[\Gamma]}$, where $\nopri[C]$ and
 $\nopri[\Gamma]$ are the encodings of a coordinator $C$ and the
 interaction model $\Gamma$ respectively.
+
+\newCoord{Below, we present both the encodings of coordinators and
+  interaction models.  The key constraint is that we encode each
+  connector by one synchronisation vector.  This is necessary to
+  1)~preserve the structure of the system and 2)~allow the encoding of
+  maximal progress.
+
+  Although somewhat technical, the encoding of coordinators is, in
+  fact, pretty straightforward, comprising three key ideas: 1)~we
+  introduce an additional transition (hence also an additional state)
+  to explicitly initialise the variables; 2)~we introduce additional
+  input variables to manipulate the values provided to the coordinator
+  by the rest of the system for all exported variables; and
+  3)~following the classical technique~\cite{milner83-calculi}, we
+  simulating absence of action by an additional loop transition.
+
+  The encoding of connectors (interaction models) is more involved.
+  Since a connector represents a set of potential interactions, some
+  ports may not participate in all of them.  To encode this
+  possibility, we introduce, for each port, an additional Boolean
+  variable denoting whether the port participates in the interaction
+  or not and, for each connector, a predicate characterising the
+  interaction pattern.  Intuitively, the semantics of \emph{flat} BIP
+  connectors~\cite{BliSif08-acp-tc} depends on the synchron/trigger
+  annotations of ports.  If all ports in a connector are synchrons,
+  the only allowed interaction is that comprising all the ports, \ie
+  they all have to ``agree to interact''.  This case corresponds
+  precisely to the semantics of synchronisation vectors in pNets.  If
+  a connector has at least one trigger, then the allowed interactions
+  are those that comprise at least one trigger, \ie they must be
+  ``initiated by a trigger''.  In a hierarchical connector, these
+  principles are applied recursively.  Thus, we observe a
+  ``causality'' relation among ports of a connector: participation of
+  a synchron in an interaction \emph{implies} that of a trigger.
+  Causal Interaction Trees and Systems of Causal Rules, proposed in
+  \cite{BliSif10-causal-fmsd}, formalise this causality relation and
+  provide transformations from connectors to Boolean predicates and
+  back.  Since we use SMT techniques for the analysis of the resulting
+  pNet, the encoding presented below is optimised to reduce the number
+  of variables by treating separately the ``top-level'' triggers, \ie
+  those thereof the participation in an interaction is not subject to
+  that of any other ports.
+%
+}
 
 \paragraph{Encoding the coordinators.}
 The encoding of a coordinator $C$ is a pLTS with: 1)~an
@@ -2470,6 +2567,20 @@ most one action of interest (see the properties in
   %% paragraphe sonne vraiment note de rapport de recherche, tu
   %% arrives a lui donner un peu d'abstraction/de recul?}\noteSB{Est-ce que c'est mieux comme \c{c}a ? OUI -- Ludo}
 
+\newCoord{In the following theorem, we claim an \emph{isomorphism}
+  between the open automaton semantics of a pNet encoding a BIP
+  architecture and the LTS semantics of the application of this
+  architecture to a set of simple components.  We omit the formal
+  definition of this isomorphism relation.  However, noting that open
+  automata are, essentially, symbolic representations of automata with
+  data, we can summarise it as follows: a transition belongs to the
+  LTS iff a corresponding open transition belongs to the open
+  automaton and the source and target data values of the LTS
+  transition satisfy the predicate and implement the assignments of
+  the open transition.
+%
+}
+
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
   $\nopri[A,\partition]$ is
@@ -2609,7 +2720,7 @@ This automaton has 12 transitions, including those encoding various
 possible firing of some interactions (e.g. OT 2 and 3 for
 {\PortFail}).
 
-\add{Model-checking of open-automaton is out of the scope of this paper,
+\newCoord{Model-checking of open-automaton is out of the scope of this paper,
 though the resulting automaton here is small enough to observe the
 kind of properties we can prove. It is clear that our encoding allows
 to test specific values of state-variables in formulas, like e.g.:
@@ -2641,7 +2752,7 @@ specified delay after a failure:}
 }
 
 Last, a detailed study shows that the safety property stated
-in page~\pageref{property:reset} does not hold, because of the
+on page~\pageref{property:reset} does not hold, because of the
 {\PortFail} loops on states $11$ and $12$. This is because we did not
 use the maximal progress assumption here. If we do, we get the
 corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
@@ -2652,6 +2763,7 @@ the properties listed in \app{properties}.
 \noteEMin{on peut encore bouger deux lignes de l'annexe D.2, pour
   mentionner ici une propriete de liveness, mais ca va dependre de la
   place, c'est deja un peu long ici...}
+
 %% %****************************************************************
 
 %% \subsection{Composition of architectures}
@@ -2677,7 +2789,7 @@ the properties listed in \app{properties}.
 %% For instance, the initialisation of the $\mathit{zone}$ variable is
 %% transformed into $\IntervalInit[1]$ and $\IntervalInit[2]$,
 %% respectively.  The only exception to this cloning procedure are the
-%% sets of coordinating components: $\cC^i = \listset{\NameTimer,
+%% sets of coordinators: $\cC^i = \listset{\NameTimer,
 %%   \NameCtrl^i}$, \ie the $\NameTimer$ component is shared, while
 %% components $\NameCtrl^1$ and $\NameCtrl^2$ are obtained by making two
 %% copies of $\NameCtrl$ as above.
@@ -2767,7 +2879,13 @@ and tools developed separately in BIP and pNets communities,
 avoiding the additional effort of designing the corresponding
 tools in both contexts from scratch.  
 
-
+\newCoord{The presented work opens a number of avenues for future
+  work, among which the most immediate ones consist in 1)~developing
+  tools that would implement the discussed encoding and verification
+  techniques and 2)~studying the preservation of liveness properties
+  by architecture composition under assumptions similar to the
+  non-interference property discussed in
+  \cite{AttieBBJS16-architectures-faoc}.}
 %The automatic checking of properties given by the pNet framework
 %
 %Discussion…:
@@ -3342,7 +3460,7 @@ limitations.
     (a, g, e) \in \Gamma
   }$, with $P_\cC = \bigcup_{C \in \cC} P_C$,
 %  
-  the projection of $\Gamma$ onto the coordinating components of
+  the projection of $\Gamma$ onto the coordinators of
   $A$.  Consider the architecture $A' = \tuple{\{C'\}, V_A, P_A, \export[A],
   \Gamma}$, where $C' = \Gamma_\cC(\cC)$.  For any set of
   components $\cB$, satisfying the conditions of
@@ -3589,8 +3707,8 @@ limitations.
   definition of $\Gamma$);
 %  
   $g_1$, $g_2$ and $e_1$, $e_2$ are, respectively, the guards and
-  update expressions of the underlying transitions in the coordinating
-  components $C_1$ and $C_2$;
+  update expressions of the underlying transitions in the coordinators
+  $C_1$ and $C_2$;
 %    
   \begin{mathpar}
     g_\cB = \bigwedge_{B \in \supp{a} \cap \cB} g_B
@@ -3835,7 +3953,7 @@ limitations.
 
 \begin{proof}[Proof of \thm{combining}]
   By \lem{onlyone}, we can assume without loss of generality that each of the two
-  architectures has only one coordinating component.  For $i =
+  architectures has only one coordinator.  For $i =
   1,2$, we denote $\{C_i\} = \cC_i$, $P_i = P_{C_i}
   \cup\ \bigcup_{B \in \cB} P_B$ and $V_i = V_{C_i}
   \cup\ \bigcup_{B \in \cB} V_B$.
