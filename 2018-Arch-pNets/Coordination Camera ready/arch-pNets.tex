@@ -122,6 +122,11 @@
   \tuplebase[#1]{#2}%
 }
 
+\newcommand{\SVTuple}[2][\ensuremath{,\allowbreak}]{%
+  \setTupleDelims[\langle]{\rangle}%
+  \tuplebase[#1]{#2}%
+}
+
 \newcommand{\listset}[2][\ensuremath{,\allowbreak}]{%
   \setTupleDelims[\{]{\}}%
   \tuplebase[#1]{#2}%
@@ -601,13 +606,13 @@ Valuations extend canonically to expressions, denoted $\val{}{}(e)$. We define:
 %  applied to expressions are interpreted as partial functions
 %  $\exprs{V} \rightharpoonup \data$.}
 %For a valuation $\val{}{}$ and an assignment $(x_i := e_i)^{i \in I}$, we define:
-\vspace{-1.5ex}
+%% \vspace{-1.5ex}
 \[
 \val{}{}\bigl[(x_i := e_i)^{i \in I}\bigr](x) \bydef{=}
 \begin{cases}
   \val{}{}(x), & \text{if } x \not\in x_i^{i \in I}\,,\\
   \val{}{}(e_i), & \text{if } x = x_i, \text{for some } i \in I\,.
-\end{cases}\vspace{-1ex}
+\end{cases}%% \vspace{-1ex}
 \]
 For two valuations $\val{1}{}, \val{2}{} : V \rightarrow
 \data$, we denote $\valdiff{\val{1}{}}{\val{2}{}} \bydef{=}
@@ -654,7 +659,7 @@ assignments.
 %Note that we make no assumption on the finiteness of the set of states, nor
 %on the finite branching of the transition relation.
 Variables of each state are pairwise disjoint.
-\newCoord{The parameters of actions that appear on pLTS transitions are either input variables, bound when the action occurs and accepting any value (of the right type), or expressions using the value of other variables.}
+\newCoord{Each transition label of a pLTS consists of a parameterised action, a guard and an update assignment.  The parameters of actions are either input variables or expressions.  Input variables are bound when the action occurs; they accept any value (of the correct type), thus providing a to input data from the environment.  Expressions are computed from the values of other variables.  They allow providing aggregated values to the environment, without exposing all the underlying variables.}
 We  define the set of parameterised actions a pLTS can use ($a$
 ranges over action labels):
 % Action terms are  of the form 
@@ -862,7 +867,7 @@ Open transitions are identified modulo logical equivalence on their predicate.
  expressive power  given by the predicate algebra (it must include logical 
  propositions and equality). 
  Proposition and inference rules of the paper use a standard logic, while predicates inside the open transitions should use a more restricted logic, typically a logic that could  be handled mechanically and expressed by terms that can be encoded in a simple syntax.
-Open transitions express in a symbolic way, transitions  that are not only parametrised with variables but also actions of not yet known processes.}
+Open transitions express in a symbolic way, transitions  that are not only parameterised with variables but also actions of not yet known processes.}
 
 \begin{definition}[Open automaton]
 	\label{defn:open-automaton}
@@ -897,17 +902,29 @@ tuples of states of the pLTSs at the leaves, denoted $\triangleleft\ldots\triang
 
 
 
-\begin{example}[An open-transition]
-  \label{ex:TimerOT3}
-We now briefly illustrate an open transition:
-\begin{small}\[ \openrule
-  {\{B\mapsto fail(b)\},
-    t<Max \land b=true ,
-    \{t' := t+1\} }
-  {\ostate{11} \OTarrow{\alpha(t)} \ostate{14}}\vspace{-1.3ex}
-  \]
-\end{small}%
-It requires the hole at label $B$ to fire a $fail(b)$ action, with the condition $b=true$ and the state variable $t<Max$. In this case, the global pNet goes from state $\ostate{11}$ that has an internal variable $t$ to state $\ostate{14}$ where the state variable $t'$ has the value $t+1$. This emits a global action $\alpha(t)$. \newCoord{Figure~\ref{fig:ArchFailure:OA} illustrates a complete open automaton.}
+\begin{example}[An open transition]
+  \label{ex:TimerOT5}
+  \newCoord{The open transition
+  \begin{small}
+    \[
+    \openrule{
+      \{E\mapsto ask\},
+      t \in z,
+      \{t:=t+1\}
+    }{
+      \ostate{11} \OTarrow{ask} \ostate{11}
+    }
+    \]
+  \end{small}%
+%% \begin{small}\[ \openrule
+%%   {\{B\mapsto \mathit{fail}(b)\},
+%%     t<Max \land b=true ,
+%%     \{t := t+1\} }
+%%   {\ostate{11} \OTarrow{\alpha(t)} \ostate{14}}%% \vspace{-1.3ex}
+%%   \]
+%% \end{small}
+%
+emits a global action $ask$ labelling the synchronisation vector $\SVTuple{\mathit{timeout}_T, \mathit{timeout}_C, -, \mathit{ask}} \rightarrow \mathit{ask}$.  It requires the hole at label $E$ to fire an $\mathit{ask}$ action, with the condition $t \in z$. In this case, the global pNet loops on the state $\ostate{11}$ that has internal variables $t$ and $z$ local to the pLTS $T$ (hence not appearing in the synchronisation vector).  The variable $t$ is updated to the new value $t+1$. \Fig{FailureTimer:pNet} shows the complete pNet, whereas \fig{ArchFailure:OA} shows a complete open automaton.}
 %
 %It corresponds to the firing of the \replaceSB{connector
 %$''tick, fail, fail''$}{interaction $\listset{\NameTimer.\PortTick, \PortFail, \NameCtrl.\PortFail}$}. It states that, if the hole $B$ performs an action $fail$, and the (complex) guard is satisfied, then the variable $z$ is set to $z1$ (as specified by the guard), then the transition below the dotted line occurs and a global action labelled $\alpha_0$ occurs. Only the second pLTS performs a transition from state $1$ to state $2$.
@@ -1248,7 +1265,7 @@ This section presents the extension of the theory of
 \begin{definition}[Component]
   \label{defn:component}
   A component is a tuple $\tuple{Q, q^0, V, \val{0}{}, P,
-  \export, \goesto{}}$ where\vspace{-2ex}
+  \export, \goesto{}}$ where%% \vspace{-2ex}
   \begin{itemize}
   \item $Q$ is a set of \emph{states}, with $q^0 \in Q$ the
     \emph{initial state}, 
@@ -1434,10 +1451,11 @@ Clearly, all guards and update assignments are monotonic.
     \,.
   \end{equation}
 %
-  The \emph{closed semantics} of $B$ is given by the LTS denoted
+  \newCoord{%
+    The \emph{closed semantics} of $B$ is given by the LTS denoted
   $\semclosed{B}$, comprising only those transitions of $\semopen{B}$,
-  where $\tilde{\val{}{}} = \val{}{}$, which we denote
-  $(q, \val{}{}) \goesto{a} (q', \val[\primeit]{}{})$.
+  where $\tilde{\val{}{}} = \val{}{}$.}%% , which we denote
+  %% $(q, \val{}{}) \goesto{a} (q', \val[\primeit]{}{})$.}
 \end{definition}
 
 The use of the intermediate valuation $\tilde{\val{}{}}$ in the
@@ -1714,7 +1732,7 @@ ports that serve as placeholders for the eventual connection with
 \begin{definition}[Architecture]
   \label{defn:arch}
   An \emph{architecture} is a tuple $A = \tuple{\cC, V_A, P_A,
-    \export[A], \Gamma}$, where\vspace{-1.5ex}
+    \export[A], \Gamma}$, where%% \vspace{-1.5ex}
   \begin{itemize}
   \item $P_A$ and $V_A$ are sets of ports and variables, respectively;
 \item
@@ -1856,7 +1874,7 @@ through an invocation of the dangling port {\PortAsk}.
   Let $A_i = \tuple{\cC_i, V_{A_i}, P_{A_i}, \export[A_i], \Gamma_i}$, for $i = 1,2$,
   be two architectures.  The \emph{composition} of $A_1$ and
   $A_2$ is the architecture $A_1 \arcomp A_2 = \tuple{\cC_1 \cup \cC_2,
-  V_{A_1} \cup V_{A_2}, P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$, where\vspace{-1ex}
+  V_{A_1} \cup V_{A_2}, P_{A_1} \cup P_{A_2}, \export[A_1] \cup \export[A_2], \Gamma}$, where%% \vspace{-1ex}
 %
   \begin{equation}
     \label{eq:arch:composition}
@@ -2816,14 +2834,14 @@ the properties listed above.%% in \app{properties}.
 
 \section{Related work}
 \label{secn:related}
-%% Aside from previous work on pNets and BIP architectures mentioned in \secn{introduction}. We  review here the closest related works outside the scope of pNets and BIP architectures, with a particular focus on compositional and parameterized verification.
+%% Aside from previous work on pNets and BIP architectures mentioned in \secn{introduction}. We  review here the closest related works outside the scope of pNets and BIP architectures, with a particular focus on compositional and parameterised verification.
 
 %%A few tracks, pas r\'edig\'es...
 
 %%% compositional verification
 %approaches by typing interfaces/protocols == Simon
 
-%% infinite/parametrized model checking? == ERIC (listes ci-dessous)  + Simon
+%% infinite/parameterised model checking? == ERIC (listes ci-dessous)  + Simon
 
 The design methodology based on BIP architectures
 is inspired by the notion of design patterns introduced
