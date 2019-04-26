@@ -3,6 +3,7 @@
 % for Lecture Notes in Computer Science, version 2.4
 \documentclass{llncs}
 \usepackage{llncsdoc}
+\usepackage[T1]{fontenc}
 
 %\usepackage{a4wide}
 
@@ -380,11 +381,12 @@ developed previously for the BIP framework with the elements necessary
 for handling data: definition and operations on data domains, syntax
 and semantics of composition operators involving data transfer.
 %
-\newCoord{We provide a property preservation result, which states that
-%
-under
-monotonicity assumptions on guards and assignments and, in presence of the \emph{maximal progress} special case of
-  priority models, additional upwards compatibility assumptions on the architectures,} composition of
+\newCoord{We provide a set of conditions under which} %% property preservation result holds that states that
+%% %
+%% under
+%% monotonicity assumptions on guards and assignments and, in presence of the \emph{maximal progress} special case of
+%%   priority models, additional upwards compatibility assumptions on the architectures,}
+composition of
 architectures preserves their characteristic safety properties.
 To verify that individual architectures do enforce their associated
 properties, we provide an encoding into open pNets, an intermediate
@@ -1208,8 +1210,8 @@ This section presents the extension of the theory of
     to data, the main difficulty lies in ensuring that this
     ``agreement'' extends to the transferred data values.  A trivial
     extension would allow an interaction only if the data values
-    proposed by both architectures coincide.  Considering this
-    requirement too restrictive, we go beyond by assuming the data
+    proposed by both architectures coincide.  As this
+    requirement is too restrictive, we go beyond by assuming the data
     domains to be ordered and taking the \emph{meet} of the proposed
     values.  The property preservation result then holds independently
     of the proposed values, provided that guards and update
@@ -1409,7 +1411,7 @@ Clearly, all guards and update assignments are monotonic.
 
 \begin{definition}[Component semantics]
   \label{defn:comp:semantics}
-  The \emph{semantics} of a component $B = \tuple{Q, q^0, V,
+  The \emph{open semantics} of a component $B = \tuple{Q, q^0, V,
   \val{0}{}, P, \export, \goesto{}}$ is %% given by
   the LTS denoted $\semopen{B} = \tuple{S,
   s^0, \goesto{}}$, where $S = Q \times \valuations{V}$, $s^0 =
@@ -1431,11 +1433,11 @@ Clearly, all guards and update assignments are monotonic.
     }
     \,.
   \end{equation}
-  %
-  %% \todoSB{Do we actually need this?}\todoLH{I agree: I do not think we need this}
-  %% \hl{The \emph{closed semantics} of $B$ is given by the LTS denoted
-  %% $\semclosed{B} \bydef{=}\reachable{\semopen{B}}$, comprising
-  %% only the reachable states of $\semopen{B}$.}
+%
+  The \emph{closed semantics} of $B$ is given by the LTS denoted
+  $\semclosed{B}$, comprising only those transitions of $\semopen{B}$,
+  where $\tilde{\val{}{}} = \val{}{}$, which we denote
+  $(q, \val{}{}) \goesto{a} (q', \val[\primeit]{}{})$.
 \end{definition}
 
 The use of the intermediate valuation $\tilde{\val{}{}}$ in the
@@ -1448,6 +1450,8 @@ fourth premise  states that only the variables exported through the ports partic
 %variables that can be affected by such data transfer to those
 %that are exported through the ports participating in the
 %interaction.
+%
+The closed semantics excludes this possibility of data exchange.
 
 \begin{definition}[Interaction model]
   \label{defn:im}
@@ -1647,15 +1651,16 @@ $
 
 In addition to interaction models, BIP relies on 
   \emph{priority models} that impose  a strict partial order on
-  interactions.  Formal definitions are provided in \app{arch:appendix}.  Intuitively, an interaction can be fired only if all
+  interactions.  %% Formal definitions are provided in \app{arch:appendix}.
+  Intuitively, an interaction can be fired only if all
   the higher-priority interactions available in the current state are
   disabled by their respective guards.
 %
 In the next sections, we will implicitly assume application of the  \emph{maximal
   progress} priority $\mu$, where $(a, g, u) \prec_\mu (b, h, w)$ iff  $a \subset b$ and $a \neq b$.  For instance, the
 port $\NameTimer.\PortTick$ will never fire alone if the port $\PortFail$ is also enabled.
-In \secn{conclusion}, we discuss the generalisation of the
-obtained results to other priority models.
+%% In \secn{conclusion}, we discuss the generalisation of the
+%% obtained results to other priority models.
 
 %% Below, we will assume that the maximal progress priority $\mu$ is
 %% applied after each composition with an interaction model.
@@ -1902,9 +1907,6 @@ $\arcomp$ is associative and commutative.
 %****************************************************************
 %\subsubsection{Preservation of safety properties}
 %\label{secn:safety}
-For a component $B$, we denote $S_{\semopen{B}}$ and
-$s^0_{\semopen{B}}$ the corresponding constituents of
-$\semopen{B}$ (see Definition~\ref{defn:comp:semantics}).
 
 \medskip
 \newCoord{It is well known that, since violations of safety properties
@@ -1913,21 +1915,25 @@ $\semopen{B}$ (see Definition~\ref{defn:comp:semantics}).
   the predicate characterising the set of states, where this property
   is not violated.}
 
+For a component $B$, we denote $S_{\semclosed{B}}$ and
+$s^0_{\semclosed{B}}$ the corresponding constituents of
+$\semclosed{B}$ (see Definition~\ref{defn:comp:semantics}).
+
 \begin{definition}[Properties]
   \label{defn:property}
   Let $B$ be a component.  A \emph{(safety) property} 
   of $B$ is a predicate $\Phi$ on
-  $S_{\semopen{B}}$, such that $\bigl((q,
+  $S_{\semclosed{B}}$, such that $\bigl((q,
   \val{}{}) \models \Phi\bigr) \land (\val[\primeit]{}{} \order
   \val{}{})$ implies $(q, \val[\primeit]{}{}) \models \Phi$.
   %% ,
   %% where we write $(q, \val{}{}) \models \Phi$ iff $\Phi(q,
   %% \val{}{}) = \true$.
   A property $\Phi$ is \emph{initial} if
-  $s^0_{\semopen{B}} \models \Phi$.
+  $s^0_{\semclosed{B}} \models \Phi$.
   %% \todoSB{Do we need this?}\hl{;
   %% it is \emph{reachable} iff there exists a possibly empty path
-  %% $s^0_{\semopen{B}} \goesto{a^1, \val{1}{}} s^1 \goesto{a^2,
+  %% $s^0_{\semclosed{B}} \goesto{a^1, \val{1}{}} s^1 \goesto{a^2,
   %%   \val{2}{}} \cdots \goesto{a^n, \val{n}{}} s^n$, such that
   %% $s^n \models \Phi$}.
 \end{definition}
@@ -1942,8 +1948,8 @@ property \emph{``There is always a possibility to reset the system
   %  \noteSB{Removed $\lnot \PortResume$, because not needed \emph{and} could not reformulate nicely in English.}
     $\AG
 \bigl(\PortFail \rightarrow \EX \EW[]{\lnot \PortFail}{
-  \PortReset}\bigr)$.  Additional properties are provided in
-\app{properties}.
+  \PortReset}\bigr)$.  %% Additional properties are provided in
+%% \app{properties}.
 %% \todoSB{Cite the original paper somewhere.}
 An architecture enforces
 its characteristic property on  its operand components.
@@ -1960,9 +1966,9 @@ the unrestricted composition of the operands:
   with $\Gamma_{\|} = \setdef{(a,\true,\emptyset)}{a \subseteq \bigcup_{B \in \cB} P_B}$.
   We say that \emph{$A$ enforces $\Phi$ on
     $\cB$} iff, for every state $s = (s_c, s_b)$ reachable in
-  $\semopen{A(\cB)}$, with 
-  $s_c \in \prod_{C \in \cC} S_{\semopen{C}}$ and
-  $s_b \in \prod_{B \in \cB} S_{\semopen{B}}$,
+  $\semclosed{A(\cB)}$, with 
+  $s_c \in \prod_{C \in \cC} S_{\semclosed{C}}$ and
+  $s_b \in \prod_{B \in \cB} S_{\semclosed{B}}$,
   we have $s_b \models \Phi$.
 \end{definition}
 In the following, when we say that an
@@ -1972,7 +1978,7 @@ architecture enforces some property $\Phi$, $\Phi$ is supposed to be initial for
 %architecture enforces some property $\Phi$, it is implicitly
 %assumed that $\Phi$ is initial for the coordinated components.
 %Below, we omit mentioning this explicitly.
-\defn{up:compat} in \app{arch:appendix} formally defines
+In \cite{arch-pNets-RR}, we formally define
  \emph{upwards compatibility} that ensures property preservation when composing architectures. Informally, two architectures $A_1$ and $A_2$
 are  upwards compatible iff, whenever their composition
 involves the fusion of two interactions $a_1 = a \cap P_{A_1}$ and
@@ -2060,7 +2066,7 @@ interaction model $\Gamma$ respectively.
   input variables to manipulate the values provided to the coordinator
   by the rest of the system for all exported variables; and
   3)~following the classical technique~\cite{milner83-calculi}, we
-  simulating absence of action by an additional loop transition.
+  simulate the absence of action by an additional loop transition.
 
   The encoding of connectors (interaction models) is more involved.
   Since a connector represents a set of potential interactions, some
@@ -2085,9 +2091,10 @@ interaction model $\Gamma$ respectively.
   provide transformations from connectors to Boolean predicates and
   back.  Since we use SMT techniques for the analysis of the resulting
   pNet, the encoding presented below is optimised to reduce the number
-  of variables by treating separately the ``top-level'' triggers, \ie
-  those thereof the participation in an interaction is not subject to
-  that of any other ports.
+  of variables by treating separately the ``top-level'' triggers (\eg
+  $\NameTimer.\PortTick$ in the connector {\NameTimer.\PortTick
+    \trigsynch (\PortFail \trigsynch \NameCtrl.\PortFail)} in
+  \fig{schema:ArchFailure:BIP}).
 %
 }
 
@@ -2287,14 +2294,15 @@ causal dependencies through an encoding mapping
 $\tau: \ac(P) \rightarrow \ct(P)$.  Another mapping $R: \ct(P)
 \rightarrow \cru(P)$ encodes causal interaction trees into systems of
 causal rules, which are Boolean implications similar to the ones in
-the example above.  We briefly summarise the key definitions and
-results in \app{algebras}.  The $\ac(P)$, $\ct(P)$ and $\cru(P)$
+the example above.  %% We briefly summarise the key definitions and
+%% results in \app{algebras}.
+The $\ac(P)$, $\ct(P)$ and $\cru(P)$
 representations of the connectors in \fig{schema:ArchFailure:BIP} are
 shown in \tab{connectors} (elements shown in red can be removed for
 simplification as described in the example above).
 
 \begin{table}[t]
-  \caption{Algebraic representations of the connectors in \fig{schema:ArchFailure:BIP} (see \app{algebras})}
+  \caption{Algebraic representations of the connectors in \fig{schema:ArchFailure:BIP}}
   \label{tab:connectors}
   \resizebox{\columnwidth}{!}{%
   \begin{tabular}{@{}c|c|c@{}}
@@ -2539,7 +2547,7 @@ $\nopri[\Gamma] \bydef{=}
 %
 with $b_p^{p \in P_x}$ fresh Boolean variables, $\alpha$ a fresh name, $\tau :
 \ac(P_A) \rightarrow \ct(P_A)$ and $R : \ct(P_A) \rightarrow
-\cru(P_A)$ the two mappings defined in \app{transformations} and
+\cru(P_A)$ the two mappings \cite{BliSif10-causal-fmsd} discussed above and
 illustrated in \tab{connectors}, $\bigl[\nicefrac{b_p}{p}\bigr]$ is
 the substitution that replaces in the expression that precedes it
 all occurrences of all $p$ by corresponding variables $b_p$.
@@ -2551,7 +2559,7 @@ For the sake of clarity, we simplify the case study encoding in
 architecture instead of fresh names $\alpha$.  This is made
 possible by the fact that each synchronisation vector involves at
 most one action of interest (see the properties in
-\app{properties}).
+\cite{arch-pNets-RR}).
 %% In the general encoding, the global actions of the
 %% synchronisation vectors should be fresh action names.
 %% However,
@@ -2569,22 +2577,21 @@ most one action of interest (see the properties in
 
 \newCoord{In the following theorem, we claim an \emph{isomorphism}
   between the open automaton semantics of a pNet encoding a BIP
-  architecture and the LTS semantics of the application of this
-  architecture to a set of simple components.  We omit the formal
-  definition of this isomorphism relation.  However, noting that open
-  automata are, essentially, symbolic representations of automata with
-  data, we can summarise it as follows: a transition belongs to the
-  LTS iff a corresponding open transition belongs to the open
-  automaton and the source and target data values of the LTS
-  transition satisfy the predicate and implement the assignments of
-  the open transition.
+  architecture and the LTS semantics of this architecture applied to a
+  set of simple components.  We omit the formal definition of this
+  isomorphism relation.  However, noting that open automata are,
+  essentially, symbolic representations of automata with data, we can
+  summarise it as follows: a transition belongs to the LTS iff a
+  corresponding open transition belongs to the open automaton and the
+  source and target data values of the LTS transition satisfy the
+  predicate and implement the assignments of the open transition.
 %
 }
 
 \begin{theorem}
   The open automaton $\semopen{\nopri[A,\partition]}$ corresponding to
   $\nopri[A,\partition]$ is
-  isomorphic to the LTS $\semopen{\Gamma\bigl(\cC_A, (B_D)^{D \in
+  isomorphic to the LTS $\semclosed{\Gamma\bigl(\cC_A, (B_D)^{D \in
       \partition}\bigr)}$ (see \defn{comp:semantics}), with, for each
   $D \in \partition$, the component $B_D \bydef{=} \tuple{\{q\}, q,
     V_D, \val{0}{D}, D, \export[D], \goesto{}}$, with
@@ -2646,8 +2653,8 @@ the variable introduced above for the encoding without maximal
 progress, $q \goesto{p(\true, b_p)} q'$ iff $\exists q'': q
 \goesto{p(b_p)} q''$ with $b_p = \true$ in $\nopri[A, \partition]$.
 In the SV guard, we have to check whether \emph{all ports
-  leading to $p$ in the causal tree $\tau(x)$ can be fired} (see
-\app{transformations}).  If so, then $p$ must be fired, \ie
+  leading to $p$ in the causal interaction tree $\tau(x)$ can be fired} (see the second column of
+\tab{connectors} for examples).  If so, then $p$ must be fired, \ie
 $p(\false)$ must be blocked.
 %% This is pretty much straightforward, but
 %% care must be taken when doing this in the general case, since causal
@@ -2710,15 +2717,15 @@ obtained from the pNet in \fig{FailureTimer:pNet}.  Due to space limitations, we
 details of the open transitions, but only the assignments of state
 variables, some useful parts of the predicates, and the resulting
 action; full details can be found in 
-\app{full-results}.
+\cite{arch-pNets-RR}.
 %
 %\noteSB{Removed ``As an example...'', since that \ex{TimerOT3} was
 %  simplified and does not correspond to the real OT.}
 %% As an example, $OT_3$ is the one
 %% explained in \ex{TimerOT3} (page~\pageref{ex:TimerOT3}).
 This automaton has 12 transitions, including those encoding various
-possible firing of some interactions (e.g. OT 2 and 3 for
-{\PortFail}).
+possible firing of some interactions, \eg $OT_2$ and $OT_3$ for
+{\PortFail}.  \newCoord{Notice, however, that the global actions of these open transitions have an additional Boolean parameter.  In this context, model checking should be understood after application of the encoding, namely here the original {\PortFail} event must be an effective ``fail'' of the hole ``B'', that is a $\mathit{fail}(\mathit{true})$ action in the open automaton.}
 
 \newCoord{Model-checking of open-automaton is out of the scope of this paper,
 though the resulting automaton here is small enough to observe the
@@ -2753,16 +2760,18 @@ specified delay after a failure:}
 
 Last, a detailed study shows that the safety property stated
 on page~\pageref{property:reset} does not hold, because of the
-{\PortFail} loops on states $11$ and $12$. This is because we did not
-use the maximal progress assumption here. If we do, we get the
-corrected behaviour in \fig{ArchFailure:OA-MaxProgress}
-(\app{full-results}), in which $OT_7$ has disappeared, and $OT_2$ and
-$OT_{10}$ have been restricted to $b0=\false$. This one verifies all
-the properties listed in \app{properties}.
+{\PortFail} loop on state $11$.  This is because we did not
+use the maximal progress assumption here.  If we do, we get the
+corrected behaviour %% in \fig{ArchFailure:OA-MaxProgress}
+%% (\app{full-results}), in which
+where
+$OT_7$ disappears, and $OT_2$ and
+$OT_{10}$ are restricted to $b0=\false$. This one verifies all
+the properties listed above.%% in \app{properties}.
 
-\noteEMin{on peut encore bouger deux lignes de l'annexe D.2, pour
-  mentionner ici une propriete de liveness, mais ca va dependre de la
-  place, c'est deja un peu long ici...}
+%% \noteEMin{on peut encore bouger deux lignes de l'annexe D.2, pour
+%%   mentionner ici une propriete de liveness, mais ca va dependre de la
+%%   place, c'est deja un peu long ici...}
 
 %% %****************************************************************
 
@@ -2882,10 +2891,10 @@ tools in both contexts from scratch.
 \newCoord{The presented work opens a number of avenues for future
   work, among which the most immediate ones consist in 1)~developing
   tools that would implement the discussed encoding and verification
-  techniques and 2)~studying the preservation of liveness properties
-  by architecture composition under assumptions similar to the
-  non-interference property discussed in
-  \cite{AttieBBJS16-architectures-faoc}.}
+  techniques; 2)~studying the preservation of liveness properties by
+  architecture composition under assumptions similar to those
+  discussed in \cite{AttieBBJS16-architectures-faoc} and
+  3)~generalisation to priority models other than maximal progress.}
 %The automatic checking of properties given by the pNet framework
 %
 %Discussion…:
@@ -2914,6 +2923,8 @@ tools in both contexts from scratch.
 
 %****************************************************************
 %****************************************************************
+\end{document}
+
 \appendix
 \clearpage
 
