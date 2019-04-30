@@ -3170,7 +3170,7 @@ similar.\qed
  
        \section{Weak FH-bisimulation lemmas and proofs}
 
-We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity.
+We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity. Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
 
 \TODO{attention a l ordre: inverse d avant mais colle mieux a la notation -- check everywhere below}
 \subsection{Weak bisimulation is an equivalence}
@@ -3213,7 +3213,6 @@ there exist   $\set{\beta^1}_i$, $\set{\beta^2_i}$, and $\set{\beta^3_i}$, $\Pre
 				 } {s \OTWeakarrow {\alpha'} s'} \in\WT
 %}
 \end{mathpar}
-\TODO{changer alpha...}\\
 where\\
 $
 \alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=n}^{0}\Post_j^1}}\\
@@ -3230,9 +3229,9 @@ $
 \end{enumerate}
 \end{lemma}
 
-\begin{proof} ($\Rightarrow$) We proceed by induction on  $l=n+m+1$, which is in fact the number of transitions with which we  build  a weak transition (introduced in Definition \ref{def:buildweakOT}).
+\begin{proof} ($\Rightarrow$) We proceed by induction on  $n$ and $m$ (where between each step either $m$ or $n$ increases).
 \begin{itemize}
-\item The base case $l=1$, so $n=0$ and $m=0$, we have:
+\item The base case there is one transition, so $n=0$ and $m=0$, we have:
 \begin{mathpar}
  % \mprset {vskip=.5ex}
 %\inferrule{
@@ -3263,10 +3262,10 @@ by rule (\WTDeux) we can directly conclude the implication:
 				 } {s \OTWeakarrow {\alpha} s'} \in \WT
 }
 \end{mathpar} 
-\item For the inductive step, first we have by induction hypothesis that the formula holds for some length $l$.   Induction step is to infer that formula holds for transitions of length $l + 1$. As the condition holds for $l$, it means that there is $n$  $m$, $n'$,$m'$ such that $l=n+m+1$, and $l+1=n'+m'+1$ and either $n'=n+1$ or $m'=m+1$ (exclusively). \LUDO{je trouve toujours ca pas tres correct le coup $l=n+m+1$ donc $l'=(n+1)+m+1$ ou $l'=n+(m+1)+1$ mais bon comme on dirait que ma proposition plait pas, on verra a la review}
-We consider the case $n'=n+1$, and $m'=m+1$ are similar. Side conditions are omitted for readability. We first focus on the left part of the disjunction. Let us consider the sequence of ($n+m+1$) open transitions:
+\item For the inductive step, first we have by induction hypothesis that the formula holds for some lengths $m$ and $n$. Induction step is to infer that formula holds for transitions of length $m+1$ or $n+1$. 
+We consider the case $n'=n+1$ (because $m'=m+1$ is similar).  We first focus on the left part of the disjunction. Let us consider the sequence of ($n+m+1$) open transitions:
 \begin{mathpar}
-\Big(\forall i \in [0..n].\openrule
+\Big(\forall i \in [0..n+1].\openrule
     {
        \set{\beta^1_i},\Pred^1_i,\Post^1_i   }
          {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \quad \wedge
@@ -3278,17 +3277,17 @@ We consider the case $n'=n+1$, and $m'=m+1$ are similar. Side conditions are omi
 \quad \wedge\\
 ~~\qquad\qquad\forall i \in [0..m].\openrule
          {
-           \set{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+           \set{\beta^3_i},\Pred^3_i,\Post_{i 3}   }
          {s^3_i \OTarrow {\tau} s^3_{i+1}} \in \mathcal{T}
 \Big) 
 \end{mathpar}
 
-By recurrence hypothesis we suppose that the statement holds for some  set of open transitions of length $l$. In particular, we have:\\
+By recurrence hypothesis we suppose that the statement holds for $n$ and $m$ (we remove the first tau transition). We have:\\
 
 $
 %\mprset {vskip=.5ex}
 %\inferrule 
-\Big(\forall i \in [0..n].\openrule
+\Big(\forall i \in [1..n+1].\openrule
     {
        \set{\beta^1_i},\Pred^1_i,\Post^1_i   }
          {s^1_i \OTarrow {\tau} s^1_{i+1}} \in \mathcal{T} \,\wedge\,
@@ -3299,7 +3298,7 @@ $
 \, \wedge\\
 ~~\hspace{5.25cm}\forall i \in [0..m].\openrule
          {
-           \set{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
+           \set{\beta^3_i},\Pred^3_i,\Post_{i 3}   }
          {s^3_i \OTarrow {\tau} s^3_{i+1}}\! \in\! \mathcal{T}
 \Big) \\       
           \bigvee \Big(\alpha = \tau \wedge  \set{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)\!  \implies\!  {
@@ -3307,8 +3306,19 @@ $
          {
            \set{\gamma},
 		\Pred, \Post
-				 } {s' \OTWeakarrow {\alpha'} s''} \in\WT
+				 } {s'' \OTWeakarrow {\alpha'} s'} \in\WT
 }
+$
+where\\
+$
+\alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{1}\Post_j^1}}\\
+s''=s^1_0 \wedge s^1_{n+2}=s_0^2 \wedge s_1^2 = s^3_0 \wedge s^3_{m+1}=s'\\
+\displaystyle{
+\set{\gamma}=\mybigdotcup_{i=1}^{n+1} \vis{\set{\beta^1_i}\subst{\bigotimes_{j=i-1}^{1} \Post_j^1 } }  \dotcup  \vis{\set{\beta^2}\subst{\bigotimes_{j=n+1}^{1}\Post_j^1}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta^3_i} \subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j=n}^{0}\Post^1_j} }}
+\\
+\Pred=\bigwedge_{i=1}^{n+1}\Pred^1_i\subst{\bigotimes_{j=i-1}^{1}\Post_j^1}\land\Pred^2 \subst{\bigotimes_{j={n+1}}^{1}\Post_j^1}\land\\ 
+~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_i^3\subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j={n+1}}^{1}\Post^1_j}\Big)\\
+\Post=\bigotimes_{j=m}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j={n+1}}^{1}\Post^1_j
 $
 
 We need to prove that   by adding the following open transition the implication remains true:
@@ -3317,22 +3327,21 @@ We need to prove that   by adding the following open transition the implication 
 %\inferrule{
  \openrule
          {
-           \set{\beta},\Pred\,',\Post\,'}
-         {s \OTarrow {\tau} s'} \in \mathcal{T}
-%}
+           \set{\beta_{0}^{1}},\Pred_0^1,\Post_0^1}
+         {s_0^1 \OTarrow {\tau} s_1^1} \in \mathcal{T}%}
 \end{mathpar}
 First by using rule (\WTDeux) we have:
 \begin{mathpar}
 
  \openrule
          {
-           \set{\beta},\Pred\,',\Post\,'}
-         {s \OTarrow {\tau} s'} \in \mathcal{T}
+           \set{\beta_{0}^{1}},\Pred_0^1,\Post_0^1}
+         {s_0^1 \OTarrow {\tau} s_1^1} \in \mathcal{T}
 \implies 
 { \openrule
-         {
-           \vis{\set{\beta}}\!,\Pred\,',\Post\,'
-				 } {s \OTWeakarrow {\tau} s'} \in \WT
+       {
+           \vis{\set{\beta_{0}^{1}}}\!,\Pred_0^1,\Post_0^1
+				 } {s_0^1 \OTWeakarrow {\tau}s_1^1} \in \WT
 }
 \end{mathpar} 
 
@@ -3340,8 +3349,8 @@ On the other hand, by rule (\WTUn) we can write the following weak open transiti
 \begin{mathpar}
  \openrule
          {
-          \emptyset,\True,\Id(s'')
-				 } {s'' \OTWeakarrow {\tau} s''} \in \WT
+          \emptyset,\True,\Id(s')
+				 } {s' \OTWeakarrow {\tau} s'} \in \WT
 \end{mathpar}
 
 Finally by applying rule (\WTTrois) on  the above weak open transitions:
@@ -3350,33 +3359,45 @@ Finally by applying rule (\WTTrois) on  the above weak open transitions:
 \begin{mathpar}
   \mprset {vskip=.5ex}
 \inferrule {\openrule
-         {
-           \vis{\set{\beta}},\Pred\,',\Post\,'   }
-         {s \OTWeakarrow {\tau} s'} \in \WT
+       {
+           \vis{\set{\beta_{0}^{1}}}\!,\Pred_0^1,\Post_0^1
+				 } {s_0^1 \OTWeakarrow {\tau}s_1^1} \in \WT
 \qquad
 \openrule
          {
            \set{\gamma},
 		\Pred, \Post
-				 } {s' \OTWeakarrow {\alpha} s''} \in\WT
+				 } {s'' \OTWeakarrow {\alpha} s'} \in\WT
 \qquad
 \openrule
          {
           \emptyset,\True,\Id(s'')
-				 } {s'' \OTWeakarrow {\tau} s''} \in \WT
+				 } {s' \OTWeakarrow {\tau} s'} \in \WT
 \\
-\set{\gamma''}= \vis{\set{\beta}} \dotcup \set{\gamma}\subst{\Post\,'}\quad
-\Pred\,''=\Pred\,'\land\Pred\subst{\Post\,'}\\%\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
-\Post\,''=\Id(s'')\shortotimes\Post\shortotimes\Post\,' \quad \alpha''=\alpha'\subst{\Post\,'}
+\set{\gamma''}= \vis{\set{\beta_{0}^{1}}} \dotcup \set{\gamma}\subst{\Post_0^1}\quad
+\Pred\,''=\Pred_0^1\land\Pred\subst{\Post_0^1}\\%\land (\Pred_3\subst{\Post_2})\subst{\Post_0^1}
+\Post\,''=\Id(s'')\shortotimes\Post\shortotimes\Post_0^1 \quad \alpha''=\alpha'\subst{\Post_0^1}
 }
 {
 \openrule
          {
           \set{\gamma''}, \Pred\,'',\Post\,''
 				 } 
-         {s \OTWeakarrow {\alpha''} s''} \in\WT
+         {s_0^1 \OTWeakarrow {\alpha''} s'} \in\WT
 } \WTTrois
 \end{mathpar}
+where we obtain the conclusion of the lemma, as required with the following assertions (derived from previous assertions):\\
+$
+\alpha''=\alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{1}\Post_j^1}}\subst{\Post_0^1} = \alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{0}\Post_j^1}}\\
+s^1_0=s^1_0 \wedge s^1_{n+2}=s_0^2 \wedge s_1^2 = s^3_0 \wedge s^3_{m+1}=s'\\
+\displaystyle{
+\set{\gamma''}=\mybigdotcup_{i=0}^{n+1} \vis{\set{\beta^1_i}\subst{\bigotimes_{j=i-1}^{1} \Post_j^1 } }  \dotcup  \vis{\set{\beta^2}\subst{\bigotimes_{j=n+1}^{1}\Post_j^1}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta^3_i} \subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j=n}^{0}\Post^1_j} }}
+\\
+\Pred=\bigwedge_{i=0}^{n+1}\Pred^1_i\subst{\bigotimes_{j=i-1}^{0}\Post_j^1}\land\Pred^2 \subst{\bigotimes_{j={n+1}}^{0}\Post_j^1}\land\\ 
+~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_i^3\subst{\bigotimes_{j=i-1}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j={n+1}}^{0}\Post^1_j}\Big)\\
+\Post=\bigotimes_{j=m}^{0}\Post_j^3\shortotimes\Post^2\shortotimes\bigotimes_{j={n+1}}^{0}\Post^1_j
+$
+
 
 The right part of the disjunction, i.e.,
 \begin{mathpar}
@@ -3436,18 +3457,21 @@ These two cases above prove the implication with $n=0$ and $m=0$.
 \quad
 \openrule
          {
-           \set{\gamma_3},\Pred_3,({x_k\gets e_k})^{k\in K}    }
+           \set{\gamma_3},\Pred_3,\Post_3    }
          {s'' \OTWeakarrow {\tau} s'''} \in\WT
 \\
-\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortotimes\Post_1}
+\\
+\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortotimes \Post_1}\\
+\alpha'=\alpha\subst{\Post_1}
 }
 {
 \openrule
          {
-           \set{\gamma_1}\dotcup \set{\gamma_2}\dotcup\set{\gamma_3},
+           \set{\gamma},
 		\Pred,
-				({x_k\gets (e_k\subst {\Post_2})\subst{\Post_1}})^{k\in K} } 
-         {s \OTWeakarrow {\alpha} s'''} \in\WT
+				\Post_3\shortotimes{\Post_2}\shortotimes{\Post_1} }
+         {s \OTWeakarrow {\alpha'} s'''} \in\WT
 }
 \end{mathpar}
 
@@ -3473,10 +3497,10 @@ These two cases above prove the implication with $n=0$ and $m=0$.
 where \\
 $ 
 s=s_{10} \wedge s_{1{(n_1+1)}}\!=s',
-\displaystyle{\set{\gamma_1}=\mybigdotcup_{i=0}^{n_1} \vis{\set{\beta_{1i}}}}, 
-\Pred_1\!=\!\bigwedge_{i=0}^{n_1}\Pred_{1i}, \Post_1= \bigotimes_{i=0}^{n_1} \subst{\Post_{1i}}\\
+\displaystyle{\set{\gamma_1}= \mybigdotcup_{i=0}^{n_1} \vis{\set{\beta_{1 i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1 j} } }} \\
+\Pred_1\!=\!\bigwedge_{i=0}^{n_1}(\Pred_{1i} \subst{\bigotimes_{j=i-1}^{0}\Post_{i j}} ), \Post_1= \bigotimes_{i=0}^{n_1} \subst{\Post_{1i}} 
 $
-\TODO{$\Post_1= \biguplus_{i=0}^{n_1} \Post_{1i}$ or bigotimes?}
+
 \item Similarly, a series of $m_1$ open transitions such that $m_1=n+m+1$   can be simplified as follows: 
 \begin{mathpar}
 %\inferrule{
@@ -3491,10 +3515,10 @@ $
          {s_{3i} \OTarrow {\tau} s_{3(i+1)}} \in \mathcal{T}        
 \end{mathpar}
 where\\
-$
-s''\!=\!s_{30} \wedge s_{3(m_1+1)}\!=\!s''',
-\displaystyle{\set{\gamma_3}\!=\!\mybigdotcup_{i=0}^{m_1}\vis{\set{\beta_{3i}}}},
-\Pred_3\!=\!\bigwedge_{i=0}^{m_1}\Pred_{3i},\Post_3\!=\!\bigotimes_{i=0}^{m_1} \subst{\Post_{3i}}\\
+$ 
+s''=s_{30} \wedge s_{3{(m_1+1)}}\!=s''',
+\displaystyle{\set{\gamma_3}= \mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{3 i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{3 j} } }} \\
+\Pred_3\!=\!\bigwedge_{i=0}^{m_1}(\Pred_{3i} \subst{\bigotimes_{j=i-1}^{0}\Post_{3 j}} ), \Post_1= \bigotimes_{i=0}^{m_1} \subst{\Post_{3i}} 
 $
 
 \item Concerning the middle reduction, by induction hypothesis there exist a set of open transitions in $\mathcal{T}$ such that:
@@ -3502,7 +3526,7 @@ $
 \openrule
          {
            \set{\gamma_2},\Pred_2,\Post_2  }
-         {s' \OTWeakarrow {\alpha} s''} \in\! \WT
+         {s' \OTWeakarrow {\alpha'} s''} \in\! \WT
 \implies 
 \bigg(\forall i \in [0..n_2].\openrule
     {
@@ -3512,23 +3536,27 @@ $
 \openrule
          {
            \set{\beta'},\Pred\,',\Post\,' }
-         {s_2 \OTarrow {\alpha} s_2'} \in \mathcal{T}
+         {s_2 \OTarrow {\alpha''} s_2'} \in \mathcal{T}
  \wedge
 \forall i \in [0..m_2].\openrule
          {
-           \set{\beta_{2i}'},\Pred_{2i}^{\,\prime},({x_k\gets e_k})^{k\in K}    }
+           \set{\beta_{2i}'},\Pred_{2i}^{\,\prime},\Post'_{2i}    }
          {s_{2i}' \OTarrow {\tau} s_{2(i+1)}'} \in \mathcal{T}
 \bigg)         
 \end{mathpar}
 where\\
 $
-s'=s_{20} \wedge s_{2(n_2+1)}=s_2 \wedge s_2' = s_{20}' \wedge s_{2(m_2+1)}'=s''\\
-\displaystyle{\set{\gamma_2}=\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}} \dotcup  \vis{\set{\beta'}}  \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{2i}'}}}
+\alpha''=\alpha'\displaystyle{\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}}\\
+s'=s_{20} \wedge s_{2(n_2+1)}=s_2 \wedge  s_2' = s_{20}' \wedge s_{2(m_2+1)}'=s''\\
+\displaystyle{
+\set{\gamma_2}=\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{2 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigotimes_{j=n}^{0}\Post_j^1}} }\\~\qquad
+\dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{2i}} \subst{\bigotimes_{j=i-1}^{0}\Post'_{2j}\shortotimes\Post'\shortotimes\bigotimes_{j=n}^{0}\Post_{2j}} }
 \\
-\Pred_2=\bigwedge_{i=0}^{n_2}\Pred_{2i}\land\Pred\,'\bigotimes_{i=0}^{n_2}\subst{\Post_{2i}}\land \big(\bigwedge_{i=0}^{m_2}\Pred_{2i}^{\,\prime}\subst{\Post\,'}\big)\bigotimes_{i=0}^{n_1}\subst{\Post_{2i}}
-\\
-\Post_2= \big({x_k\gets e_k\subst {\Post\,'}\bigotimes_{i=0}^{n_2}\subst{\Post_{2i}}}\big)^{k\in K}
+\Pred_2=\bigwedge_{i=0}^{n_2}\Pred_{2i}\subst{\bigotimes_{j=i-1}^{0}\Post_{2j}}\land\Pred' \subst{\bigotimes_{j={n_2}}^{0}\Post_{2j}}\land\\ 
+~\qquad\quad\Big(\bigwedge_{i=0}^{m_2}\Pred_i^3\subst{\bigotimes_{j=i-1}^{0}\Post'_{2j}\shortotimes\Post'\shortotimes\bigotimes_{j={n_2}}^{0}\Post_{2j}}\Big)\\
+\Post_2=\bigotimes_{j=m_2}^{0}\Post'_{2j}\shortotimes\Post'\shortotimes\bigotimes_{j={n_2}}^{0}\Post_{2j}
 $
+
 \end{enumerate}
 ~~\\
 Therefore, we can deduce that we have:
@@ -3541,44 +3569,53 @@ Therefore, we can deduce that we have:
  \implies
 \bigg(\forall i\in [0..(n_1\!+\!n_2)].\openrule
     {
-       \set{\beta^1_i},\Pred^1_i,\Post^1_i   }
-         {s^1_i \OTarrow {\tau} s^1_{i+1}} \in\mathcal{T} \wedge
+       \set{\beta_{4i}},\Pred_{4i},\Post_{4i}   }
+         {s_{4i} \OTarrow {\tau} s_{4(i+1)}} \in\mathcal{T} \wedge
          
 \openrule
          {
-           \set{\beta^2},\Pred^2,\Post^2 }
-         {s_0^2 \OTarrow {\alpha} s_1^2} \in \mathcal{T}
+           \set{\beta'},\Pred\,',\Post\,' }
+         {s_2 \OTarrow {\alpha''} s_2'} \in \mathcal{T}
 \wedge\,
 \forall i \in [0..(m_1\!+\!m_2)].\openrule
-         {\set{\beta^3_i},\Pred^3_i,({x^3_k\gets e^3_k})^{k\in K}    }
-         {s^3_i\OTarrow {\tau} s^3_{i+1}}\in\mathcal{T}\bigg)  
+         {\set{\beta_{5i}},\Pred_{5 i},\Post_{5i}    }
+         {s_{5i}\OTarrow {\tau} s_{5({i+1})}}\in\mathcal{T}\bigg)  
 \end{mathpar}
 
 such that\\
+
 $
-s_i^1= \left\{
+s_{4i}= \left\{
  \begin{array}{ll}
 s_{1i} & \mbox{if }i<n_1\\
 s_{2i-n_1} & \mbox{if }i\geq n_1\\
 \end{array}
-\right. \quad \wedge \quad
-s_i^3= \left\{
+\right.  \qquad \qquad
+s_{5i}= \left\{
  \begin{array}{ll}
 s_{3i} & \mbox{if }i<m_1\\
 s_{2i-m_1}' & \mbox{if }i\geq m_1\\
 \end{array}
 \right. \\
-~~\\
-s\!=\!s^1_0 \wedge s^1_{(n_1+n_2+1)}\!=s_0^2 \wedge s_1^2 = s^3_0 \wedge s^3_{(m_1+m_2+1)}\!=\!s'''\\
-~~\\
-\displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^{n_1+n_2}\!\! \vis{\set{\beta^1_i}}
-\dotcup\vis{\set{\beta^2}}\dotcup\!\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta^3_i}}
-}\\
-\displaystyle{\Pred=\bigwedge_{i=0}^{n_2}\Pred^1_i\land\Pred^2\bigotimes_{i=0}^{n_2}\subst{\Post^1_i}\land \Big(\bigwedge_{i=0}^{m_2}\Pred^1_i\subst{\Post^2}\Big)\bigotimes_{i=0}^{n_1}\subst{\Post^1_i}}
+$
 \\
-\displaystyle{\Post= \big({x^3_k\gets e^3_k\subst {\Post^2}\bigotimes_{i=0}^{n_2}\subst{\Post^1_i}}\big)^{k\in K}}
+
+ and similarly for $Pred_{4i}$, $Pred_{5i}$, $Pred_{4i}$, and $Pred_{4i}$  \TODO{define or OK this way?}
+
+We have the following assertions:\\
+$
+{\displaystyle \alpha''=\alpha\subst{\bigotimes_{j=n_1+n_2}^{0}\Post_{4j}}}\\
+s\!=\!s_{40} \wedge s_{4(n_1+n_2+1)}\!=s_2 \wedge s_2' = s_{50} \wedge s_{5(m_1+m_2+1)}\!=\!s'\\
+~~\\
+\displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigotimes_{j=n_1+n_2}^{0}\Post_{4j}}}}\\~\qquad
+\dotcup\!\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigotimes_{j=i-1}^{0}\Post'_{5i}\shortotimes\Post'\shortotimes\bigotimes_{j=n_1+n_2}^{0}\Post_{4i}} }
+\\
+\displaystyle{\Pred=
+\bigwedge_{i=0}^{n_1+n_2}\Pred_{4i}\subst{\bigotimes_{j=i-1}^{0}\Post_{4j}}\land\Pred' \subst{\bigotimes_{j={n_1+n_2}}^{0}\Post_{4j}}\land}\\ 
+~\qquad\quad\Big(\bigwedge_{i=0}^{m_1+m_2}\Pred_{5i}\subst{\bigotimes_{j=i-1}^{0}\Post_{5j}\shortotimes\Post'\shortotimes\bigotimes_{j={n_1+n_2}}^{0}\Post_{4j}}\Big)\\
+\Post=\bigotimes_{j=m_1+m_2}^{0}\Post_{5j}\shortotimes\Post'\shortotimes\bigotimes_{j={n_1+n_2}}^{0}\Post_{4j}
 $\\
-This concludes the inductive step, showing  that the decomposition expressed by the $\Leftarrow$ direction of the lemma is always possible. \qed
+This concludes the inductive step, showing  that the decomposition expressed by the $\Leftarrow$ direction of the lemma is always possible with the right side conditions. \qed
 \end{itemize}
 \end{proof}
 
@@ -3939,7 +3976,7 @@ where $\Post_p$ only act upon variables of
 			{\ostate{s_l^{l\in L}} \OTWeakarrow {\alpha}
 				\ostate{s_l'^{\, l\in L}}} 
 \end{mathpar}
-By Lemma \ref{lem-rel-OT-WOT} this implies the following: \\			
+By Lemma \ref{lem-rel-OT-WOT} this implies the following \TODO{replace $\alpha$ by $\alpha'$}: \\			
 $ \forall p\! \in [0..m_1]\,		
 	P[Q]_{j_0}\!\models		
 \openrule
