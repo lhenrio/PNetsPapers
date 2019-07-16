@@ -4435,7 +4435,7 @@ Because
 \qed
 \end{proof}
 
-\begin{lemma}[Weak open transition composition]\label{lem-Weakcompose} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
+\begin{lemma}[Weak open transition composition]\label{lem-Weakcompose1} Suppose that we have a weak open automaton such that the WOTs cannot observe silent actions (see Definition \ref{def:Non-ObsTau}).
 	Suppose $j_0\in J$  and additionally:\\[-2ex]
 \begin{mathpar}
 %\[
@@ -4445,7 +4445,7 @@ P\models{\openrule
 		\Pred,  
 		\Post}
 	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
-		\ostate{s_i'^{\, i\in L}}}
+		\ostate{(s_i')^{\, i\in L}}}
 }\\
 \text{~~and~~}
 Q\models{\openrule
@@ -4454,7 +4454,7 @@ Q\models{\openrule
 		 \Pred_Q,  
 		\Post_Q}
 	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
-		\ostate{{s'}_{i}^{\, i\in L_Q}}}
+		\ostate{(s'_{i})^{\, i\in L_Q}}}
 }%\]
 \end{mathpar}
 Let 
@@ -4475,7 +4475,7 @@ Then, we have\\[-2ex]
 			\Pred\,',  \Post\,'
 			 }
 		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
-			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
+			\ostate{(s_i')^{\, i\in L\uplus L_Q}}}
 	}
 	\]
 \end{lemma}
@@ -4619,6 +4619,8 @@ J_Q=\displaystyle{\bigcup_{t=0}^nJ_{t}}
 \forall j\in J_t,\,\gamma_j= \displaystyle{\mybigdotcup_{t=0}^n \gamma_{t j}}\text{\quad and\quad}
 \Post\,'=\Post\uplus\bigotimes_{t=n}^{0}
 		\Post_t
+\\
+\forall{i\in L_Q}.\,s_i=s_{0i} \text{\quad and \quad} \forall {i\in L_Q}.\,s'_i=s_{(n+1) i}
 \end{mathpar}
 \TODO{add posts to gammaj's above}
 Then, we have\\[-2ex]
@@ -4649,32 +4651,93 @@ P\models{\openrule
 \end{mathpar}
 By Lemma \ref{lem-rel-OT-WOT} this implies the following: \\			
 $\forall p\!\in\![0..m_1].P\models\openrule
-    {\set{\beta_{1p}},\Pred_{1p},\Post_{1p}   }
+    {{\beta_{1pj}^{j\in J_{1p}}},\Pred_{1p},\Post_{1p}   }
          {\ostate{{(s_{1pi})}^{i\in L}} \OTarrow {\tau} \ostate{{(s_{1(p+1)i})}^{i\in L}}} \wedge
 P\models\openrule
-         {\set{\beta_2},\Pred_2,\Post_2 }
+         {\beta_2^{j\in J_2},\Pred_2,\Post_2 }
          {\ostate{({s_{20i}})^{i\in L}} \OTarrow {\alpha'} \ostate{({s_{21i}})^{i\in L}}}
 \wedge\\
 \forall p \in [0..m_2].P\models\openrule
          {
-           \set{\beta_{3p}},\Pred_{3p}, \Post_{3p}}
+           \beta_{3pj}^{j\in J_{3p}},\Pred_{3p}, \Post_{3p}}
          { \ostate{(s_{3pi})^{i\in L}} \OTarrow {\tau} \ostate{(s_{3(p+1)i})^{i\in L}}}$ 
 \\
 where for all $i\in L$:\\
 $s_i=s_{10 i} \wedge s_{1(m_1+1) i}=s_{20i} \wedge  s_{21i}= s_{30 i} \wedge s_{3(m_2+1) i}=s'_i$\\
 \[\alpha=\alpha'\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}}\]
 \[\displaystyle{
-\gamma_j^{j\in J}=\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\Post_{1j}}}}\]
+\gamma_j^{j\in J}=\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}^{j\in J_{1p}}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{{\beta_{2j}^{j\in J_{2}}}\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij}^{j\in J_{1p}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\Post_{1j}}}}\]
 \begin{equation*}
 \begin{split}
-\Pred&g=\bigwedge_{p=0}^{m_1}\!\big(\Pred_{1p}\bigotimes_{j=p-1}^{0}\subst{\Post_{1j}}\big)\land\Pred^2\bigotimes_{p=m_1}^{0}\subst{\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\big(\!\!\bigotimes_{j=p-1}^{0}\subst{\Post_{3j}}\subst{\Post_2}\!\! \bigotimes_{p=m_1}^{0}\subst{\Post_{1p}}\big)
+\Pred&=\bigwedge_{p=0}^{m_1}\!\big(\Pred_{1p}\bigotimes_{j=p-1}^{0}\subst{\Post_{1j}}\big)\land\Pred^2\bigotimes_{p=m_1}^{0}\subst{\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\big(\!\!\bigotimes_{j=p-1}^{0}\subst{\Post_{3j}}\subst{\Post_2}\!\! \bigotimes_{p=m_1}^{0}\subst{\Post_{1p}}\big)
 \\
 \Post&=\bigotimes_{p=m_2}^{0}\Post_{3p}\subst{\Post_2}\bigotimes_{j=m_1}^{0}\subst{\Post_{1j}}
 \end{split}
 \end{equation*}
 
 
-Note that, for $l\in\{1,2,3\}$ if $\beta^l_{p j_0}=\tau$, then, because of Definition \ref{def:Non-ObsTau}, $P$ necessarily makes a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires ${\beta^l_{p{j_0}}}=\tau$. We can thus  suppose that for all $p$ and $l$ we have ${\beta^l_{p{j_0}}}\neq\tau$.
+Note that, for $l\in\{1,3\}$ if $\beta_{l p j_0}=\tau$, then, because of Definition \ref{def:Non-ObsTau}, $P$ necessarily makes a $\tau$ open transition and remains in the same state, ($s_p = s_{p+1}$). Thus without loss of generality, we can bypass such an open transition and obtain another decomposition of the WOT without the open transition that requires ${\beta^l_{p{j_0}}}=\tau$. We can thus  suppose that for all $p$ and $l$ we have ${\beta_{l p{j_0}}}\neq\tau$ or $j_0\not\in J_{1 p}$. To avoid a special case, we suppose that the hole $j_0$ moves during the OT $\alpha'$, i.e. $\beta_{2 \j_0}=\beta_{m}$ for some $m$. Additionally, $\beta_{m}\neq \tau$, else we would have $\alpha=\alpha'=\tau$ and the $\alpha'$ OT could be also removed from the reduction, leading to a particular and simpler case.
+
+
+We introduce $n_i^{i\in[0..m-1]}$, and $(n'_i)^{i\in[m+1..n]}$ the indices of the steps in 
+which the hole $j_0$ moves in the 3 sets of OTs above ($\beta_m$ is the action that matches the hole $j_0$ in the OT $\alpha'$), in other words, we have for all $i$, $\beta_{1 n_i j_0}$ a visible action, as additionally:
+\begin{equation*}
+\begin{split}
+\gamma_{j_0}&=[\beta_0..\beta_n]\\
+&=\mybigdotcup_{\substack{i=0\\j_0\in J_{1i}}}^{m_1} \vis{{\beta_{1ij_0}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{{\beta_{2j_0}}\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \dotcup \mybigdotcup_{\substack{i=0\\j_0\in J_{3i}}}^{m_2} \vis{{\beta_{3ij_0}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\Post_{1j}}}
+\end{split}
+\end{equation*}
+
+We have, by definition of $n_i$ and $n'_i$:
+\begin{equation*}
+\begin{split}
+\forall{i\in[0..m-1]}.],&\beta_{1 n_i j_0}\subst{\bigotimes_{j=n_i-1}^{0} \Post_{1j} }=\beta_i\\ 
+&
+\beta_{2 j_0}\subst{\bigotimes_{j=m_1}^{0} \Post_{1j} }=\beta_m\\ 
+\forall{i\in[m+1..n]}.],&\beta_{3 n'_i j_0}\subst{\bigotimes_{j=n'i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\Post_{1j}}=\beta_i\\ 
+\end{split}\end{equation*}
+
+
+Now, we compose OTs for each of the case above (OTs of $P$)':
+\begin{enumerate}
+\item $p\in [0..m_1]$. Either there is $i$ such that $p=n_i$, and thus $\beta_i=\beta_{1 p j_0}$. In this case by Lemma~\ref{lem-Weakcompose1}, we have: 
+
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\gamma_{i j}^{j\in J_i}\uplus\vis{\beta_{1pj}^{j\in J_{1p}\setminus \{j_0\}}}, 
+			\Pred_{1p}\,',  \Post_{1p}\,'
+			 }
+		{\ostate{s_{1pj}^{j\in L}\uplus s_{ij}^{j\in L_Q}} \OTWeakarrow {\tau}
+			\ostate{s_{1(p+1)j}^{\, j\in L}\uplus s_{(i+1)j}^{j\in L_Q} } }
+	}
+	\]
+with 
+\begin{mathpar}
+\Pred_{1p}\,'=\Pred_{1p}\land (\beta_{1pj_0}=\alpha_i\land \Pred_i)
+\\
+%\forall j\in J_t,\,\gamma_j= \displaystyle{\mybigdotcup_{t=0}^n \gamma_{t j}}\text{\quad and\quad}
+\Post_{1p}\,'=\Post_{1p}\uplus\Post_i
+\end{mathpar}
+
+
+Or $j_0\not \in \dom(\beta_{1 p})$ and $Q$ does not move in the composed reduction
+\[P[Q]_{j_0} \models\openrule
+    {\set{\beta_{1p}},\Pred_{1p},\Post_{1p}   }
+         {\ostate{{(s_{1pi})}^{i\in L}} \OTarrow {\tau} \ostate{{(s_{1(p+1)i})}^{i\in L}}}
+\]
+and thus we also have a weak OT by definition:
+\[P[Q]_{j_0} \models\openrule
+    {\set{\beta_{1p}},\Pred_{1p},\Post_{1p}   }
+         {\ostate{{(s_{1pi})}^{i\in L}} \OTWeakarrow {\tau} \ostate{{(s_{1(p+1)i})}^{i\in L}}}
+\]
+\item idem for the OT $\alpha$
+\item idem for the last $]\tau$s
+\end{enumerate}
+
+What we need here is an adaptation of Lemma~\ref{lem-rel-OT-WOT} where transitions are WOTs and not OTs ... \TODO{I suggest to say that it is a trivial adaptation even if it is not}
 
 Moreover, we have for all $t\in[0..n]$:
 \begin{mathpar}
