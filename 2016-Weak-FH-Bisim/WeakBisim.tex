@@ -632,37 +632,26 @@ pNets are composition entities equipped with a rich synchronisation mechanism: s
 
 \subsection{Running Example}
 \TODO{Rabea: trouver reference !!}
-\TODO{refaire les commentaires}
-To illustrate this work, we use the well-known Alternate bit protocol
-(ABP) \TODO{Ref ?}, that provides safe transport of data between two processes,
-over unsafe media. This protocol has been described and studied using
-many approaches, because it is small enough, and can be easily
-verified using exact finite models. Our version here is more
-ambitious, encoding both the data and the control bits in a symbolic
-way. One can imagine that this could easily be extended using bounded
-integers, as in the sliding window protocol, or with more complex data
-structures, in order to verify realistic protocols.
+To illustrate this work, we use a simple transport protocol, that provides safe transport of data between two processes,
+over unsafe media.
 
 Fig. \ref{SimpleProt:Schema} shows the example principle: two unspecified
 processes $P$ and $Q$ (Holes) communicate messages, with a data value
 argument, through the two protocol entities $sender$ and
-$receiver$. The underlying network is modelled by two media,
-carrying the message together with a control bit on one way, and an
-acknowledge back from $receiver$ to $sender$. The media can be perfect (safe), or
-faulty (losing or duplicating messages) as shown in
-Fig. \ref{schema:ABP-media}. Remark that the pLTSs shown in
-Fig. \ref{schema:ABP-media} are in fact ``generic'' in the sense that
-they will be instanciated in different ways depending on the number
-and types of the message arguments. This is only a graphical syntax,
+$receiver$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect some transport error, and signal it to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe.
+
+This is only a graphical syntax,
 with an obvious semantics for building the corresponding pNets.
 
-Fig. \ref{schema:ABP-composed} \TODO{To be commented}
+Fig. \ref{SimpleProt:Spec} shows the Schema of this system, and on the right side, its global specification, expressed as a pNet: it should be equivalent to a simple system where the holes would be connected by a perfect reliable medium.
 
 The full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.
 
-\section{A model of process composition}
-\label{sec:OT}
+
+\section{A model of process composition}\label{sec:OT}
+\TODO{Commenter la figure 2}
+
 
 The semantics of open pNets will be defined  as an open automaton. An open
 automaton is an automaton where each transition composes transitions of several LTSs with
@@ -971,18 +960,15 @@ The definition of this predicate is not constructive but it is easy to build the
 \TODO{Eric: rewrite example with new Protocol}
 \begin{example}\emph{An open-transition.}
   \label{OT:ABP}
-At the upper level, the $ABP$ pNet has 2 holes and $Protocol$ has
+At the upper level, the $SimpleSystem$ pNet has 2 holes and $SimpleProtocol$ as
 a subnet. One of its possible open transitions (synchronizing the hole $P$
-with the \emph{Protocol}) is:
+with the $Sender$ within the \emph{SimpleProtocol}) is:
 
  \smallskip\noindent
  $  OT_1  = \openrule{
-%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
-%                            \xrightarrow{in(?m,?b)}_{M1}
-      (P\mapsto send(m)); Pred=[m=m']; Post=\{s1\_m:=m\}
+      (P\mapsto p\_send(m)); Pred=[m=m']; Post=\{s1\_m:=m\}
                       }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_0,m_0,m_0,r_0} \OTarrow{\underline{send(m')}} \ostate{s_1,m_0,m_0,r_0}}
+    {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m')}} \ostate{s_1,m_0,r_0}}
     $
 
     \smallskip
@@ -991,35 +977,23 @@ with the \emph{Protocol}) is:
     $Post$ uses a variable from the action of hole $P$ to set the
     value of the sender state variable $s1\_m$.
 
-  The \emph{Protocol} pNet of Fig. \ref{schema:ABP-composed} has 4 controllers and no holes. One of its possible open-transition (the sender sending $(m,b)$ to the medium) is:
+  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
 
  \smallskip\noindent
  $  OT_2  = \openrule{
-%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
-   %                           \xrightarrow{in(?m,?b)}_{M1}
-   \emptyset; Pred=[send(SV2\_m, SV2\_b)=send(s_1\_m, s_1\_sb);in(SV2\_m, SV2\_b)=in(?m,?b)];  \\ Post=\{m_1\_m:=?m, m_1\_b:=?b, s_2\_sb:=s_1\_sb\}
+   \emptyset; Pred=[send(SV2\_m)=send(s_1\_m);in(SV2\_m)=in(?m)];  \\ Post=\{m_1\_m:=?m\}
                       }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(SV2\_m, SV2\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
     $
 
-    \ERIC{Apres resolution de l'unification:}
-    
-     $  OT_2  = \openrule{
-%                       1 \xrightarrow{send(m,sb)}_{Sender} 2 ~~
-   %                           \xrightarrow{in(?m,?b)}_{M1}
-      \emptyset; Pred=[s_1\_m=SV2\_m, SV2\_m=?m, s_1\_sb=SV2\_b, SV2\_b=?b];  \\ Post=\{m_1\_m:=?m, m_1\_b:=?b, s_2\_sb:=s_1\_sb\}
-                      }
-  %  {\ostate{00} \xrightarrow{\underline{\delta(x1)}} \ostate{10}}
-    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
-    $
+    That can be simplified to:
 
     \ERIC{Apres application des substitutions et simplification du predicat:}
 
      $  OT_2  = \openrule{
-      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
+      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m\}
                       }
-    {\ostate{s_1,m_0,m_0,r_0} \OTarrow{\underline{send(s_1\_m, s_1\_b)}} \ostate{s_2,m_1,m_0,r_0}}
+    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
     $
 
     \smallskip
@@ -1167,7 +1141,7 @@ Note that  the construction is symbolic, and each open-transition deduced expres
 behaviours, for any possible values of the variables.
 %
 
-\TODO{Add a reference to the construction (deduction tree) in the forte paper?}
+In \cite{henrio:Forte2016}, we have shown a detailed example of the construction of a complex open transition, building a deduction tree using rules Tr1 and Tr2.
 
 %% \LUDO{Je sais pas de quoi parle le prochain todo :-( l'exemple?}
 %% \TODO{Ceci n'est pas nouveau, n'est-ce pas, est-ce utile pour le lecteur ici ? Ou est-ce qu'on bouge tous ces ``details techniques'' dans une annexe ? Si oui, je refais avec un morceau de ABP}
@@ -1312,7 +1286,16 @@ holes, and each pLTS at leaves having a finite number of states and
 %%   need to be more precise on unification in the matching...} 
 
 
-\TODO{Eric: full (???) result of the tool execution on the running example on the Simple Prot Spec, and maybe one example on the Impl. OTs presented in latex readable form.}
+\TODO{Eric: full (???) result of the tool execution on the running example on the Simple Prot Spec: Done, on the Counetr version !}
+
+\TODO{:  and maybe one example on the Impl. OTs presented in latex readable form??}
+
+\begin{figure}[t]
+   \centerline{\includegraphics[width=9cm]{ATG/SPSpecOpen}}
+   \caption{Specification OA (version with the error counter)}
+   \label{SimpleProtCounter:SpecOA}
+\end{figure}
+
 
 
 \subsection{pNet Composition Properties: composition of open transitions}
@@ -1418,6 +1401,8 @@ Two pNets are FH-bisimilar if there exist a relation between their associated
 automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
 the predicate associated to the relation between the initial states is \True.
 \end{definition}
+\TODO{Predicate=True me pose un probleme... typiquement, on a besoin d'une ``condition initiale'', pour avoir des pNets data-oriented equivalents a leur version state-oriebted}
+
 We can now prove that pNet composition  preserves
 FH-bisimulation. More precisely, one can define two preservation
 properties, namely 1) when one hole of a pNet is filled by two bisimilar other (open) pNets; and 2) when the same hole in two bisimilar pNets are
