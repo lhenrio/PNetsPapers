@@ -4946,7 +4946,171 @@ This allows us to conclude concerning the lemma. \qed
 	$\pNet[\pNetQ]_{j_0}$ and 
 	$\pNet[\pNetQ']_{j_0}$ are weak FH-bisimilar.
 \end{theorem}
- \begin{proof}  (Sketch of proof) Consider $Q$ weak FH-bisimilar to $Q'$.  It means, there exist a FH-bisimulation $\mathcal{R}_{Q,Q'}$ relating the two pNets $Q$ and $Q'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P[Q']_{j_0}$: 
+ \begin{proof}  Consider $Q$ weak FH-bisimilar to $Q'$.  It means, there exist a FH-bisimulation $\mathcal{R}_{Q,Q'}$ relating the two pNets $Q$ and $Q'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P[Q']_{j_0}$: 
+\[\mathcal{R} = \{(\ostate{S_P\uplus S_Q},\ostate{S_P\uplus S'_Q}, \Pred_{Q,Q'})|\,(s_Q,s_{Q'}, \Pred_{Q,Q'})\in\mathcal{R}_{Q,Q'}\}\]
+
+
+To prove weak FH-bisimulation of $\pNet[\pNetQ]_{j_0}$ and 
+	$\pNet[\pNetQ']_{j_0}$, we consider  an open transition of $\pNet[\pNetQ]_{j_0}$, and an equivalent state of $\pNet[\pNetQ']_{j_0}$, and we try to find a family of WOT of 	$\pNet[\pNetQ']_{j_0}$ that simulates it.
+Consider an OT of  $\pNet[\pNetQ]_{j_0}$ it is of the form (notations introduced to prepare the decomposition):
+\[
+\pNet[\pNetQ]_{j_0}\models\openrule
+	{
+		\beta_j^{j\in( J_P\uplus J_Q)}, 
+		\Pred_P\land \Pred_Q,  
+		\Post_P\uplus \Post_Q}
+	{\ostate{S_P\uplus S_Q} \OTWeakarrow {\alpha}
+		\ostate{S'_P\uplus S'_Q}
+}
+\]
+
+By the decomposition lemma for OTs (Lemma~\ref{lem-decompose}), we obtain the 2 following OTs (equality side-conditions have been inlined for clarity):
+\begin{mathpar}
+%\[
+\pNet\models{\openrule
+	{
+		\beta_j^{j\in J_P}\uplus(j_0\mapsto \alpha_Q), 
+		\Pred_P,  
+		\Post_Q}
+	{\ostate{S_P} \OTWeakarrow {\alpha}
+		\ostate{S'_P}}
+}
+\quad\text{~~and~~}\quad
+Q\models{\openrule
+	{
+		\beta_j^{j\in J_Q},
+		 \Pred_Q,  
+		\Post_Q}
+	{\ostate{S_Q} \OTWeakarrow {\alpha_Q}
+		\ostate{S'_Q}}
+}%\]
+
+\end{mathpar}
+
+By definition of $\mathcal{R}$ we have 
+$(s_Q,s_{Q'}| \Pred_{Q,Q'})\in\mathcal{R}_{Q,Q'}$. And thus, by definition of weak FH-bisimulation, there exist a family of weak open transitions $WOT_{x}$:
+ \begin{mathpar}
+    \openrule
+         {
+           \gamma_{j x}^{j\in J_Q}, \Pred_{Q' x},\Post_{Q' x}}
+         {\ostate{S_{Q'}}\OTWeakarrow {\alpha_{x}} \ostate{S'_{Q' x}}}
+\end{mathpar}
+
+where  
+\[\forall x.\, (S'_Q,S'_{Q' x}| \Pred_{Q,Q' x})\in\mathcal{R}_{Q,Q'}\]
+and
+\begin{equation*}
+\begin{split}
+\Pred_{Q,Q'}\land \Pred_Q \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_Q.\, \vis{\beta_j}=\gamma_{j x})\Rightarrow (\Pred_{Q_x}\land\\ &~~\alpha_Q=\alpha_x \land \Pred_{Q,Q' x}\subst{\Post_{Q' x}\uplus \Post_{Q}}) \Big)
+\end{split}
+\end{equation*}
+
+Composing the OT of $P$ with the WOTs of $Q'$ by Lemma~\ref{lem-Weakcompose1} we obtain:
+\[
+\pNet[\pNetQ']_{j_0}\models\openrule
+	{
+		\vis{\beta_j^{j\in( J_P}}\uplus\gamma_{j x}^{j\in J_Q}, 
+		\Pred_P\land \Pred_{Q' x},  
+		\Post_P\uplus \Post_{Q' x}}
+	{\ostate{S_P\uplus S_{Q'}} \OTWeakarrow {\alpha}
+		\ostate{S'_P\uplus S'_{Q' x}}
+}
+\]
+with $\alpha_Q=\alpha_x$
+
+Side conditions necessary to prove weak-FH bisimulations are:
+
+\[\forall x.\, (S'_P\uplus S'_Q,S'_P\uplus S'_{Q' x}| \Pred_{Q,Q' x})\in\mathcal{R}\]
+which is trivially verified, and
+\begin{equation*}
+\begin{split}
+\Pred_{Q,Q'}\land \Pred_P\land \Pred_Q \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_Q.\, \vis{\beta_j}=\gamma_{j x}\land \forall j\in J_P.\, \vis{\beta_j}=\vis{\beta_j}))\Rightarrow\\
+& (\Pred_P\land \Pred_{Q' x}\land\\ &~~\alpha=\alpha \land \Pred_{Q,Q' x}\subst{\Post_P\uplus\Post_{Q' x}\uplus \Post_{Q}}) \Big)
+\end{split}
+\end{equation*}
+We conclude by observing that $\Post_P$ has no effect on variables of $Q$ and $Q'$, and thus on $\Pred_{Q,Q' x}$
+\qed
+
+% OLD
+% according to Lemma  \ref{lem-alternative-weak-bisim} for any weak open transition $WOT$ in $Q$ there exist a family of weak open transitions $WOT_{x}^{x \in X}$ in $Q'$. 
+%We apply  Lemma \ref{lem-Weakcompose1} on weak open transition $WOT$, $j_0 \in J$, we obtain a new weak open transition $WOT'$ in $P[Q]_{j_0}$.
+%On other hand, we apply same Lemma \ref{lem-Weakcompose1} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$.
+%
+%Suppose we have:\\[-2ex]
+%\begin{mathpar}
+%%\[
+%P\models{\openrule
+%	{
+%		\beta_j^{j\in J}, 
+%		\Pred,  
+%		\Post}
+%	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
+%		\ostate{(s_i')^{\, i\in L}}}
+%}
+%\quad\text{~~and~~}\quad
+%Q\models{\openrule
+%	{
+%		\set{\gamma},
+%		 \Pred_Q,  
+%		\Post_Q}
+%	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
+%		\ostate{(s'_{i})^{\, i\in L_Q}}}
+%}%\]
+%
+%
+%\end{mathpar}
+%
+%Then, we have by lemma \ref{lem-Weakcompose}: \\[-2ex]
+%	\[ P[Q]_{j_0}  
+%	\models
+%	{\openrule
+%		{
+%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
+%			\Pred\,',  \Post\,'
+%			 }
+%		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
+%			\ostate{(s_i')^{\, i\in L\uplus L_Q}}}
+%	}
+%	\]
+%
+%On the other hand, $Q$ weak FH-bisimilar to $Q'$, so according to  Lemma  \ref{lem-alternative-weak-bisim} 
+%
+%such that...\\
+%
+%By applying  Lemma \ref{lem-Weakcompose} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$:
+%
+%\[ P[Q']_{j_0}  
+%	\models
+%	{\openrule
+%		{
+%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
+%			\Pred\,',  \Post\,'
+%			 }
+%		{\ostate{s_i^{i\in L} \uplus t_{i}^{i\in L_{Q_x}}} \OTWeakarrow {\alpha}
+%			\ostate{(s_i')^{\, i\in L} \uplus t_{ix}^{i\in L_{Q_x}} }}
+%	}
+%	\]
+
+
+ \end{proof}
+\begin{theorem}[Context equivalence]\label{thm-ctxt-weq}
+	Consider two FH-bisimilar open pNets:
+	$\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
+	\set{\symb{SV}}\myrangle$ and 	$\pNet' = \mylangle {\pNet'}_i^{i\in I}, 
+	\Sort_j^{j\in 
+	J}, 	\set{\symb{SV'}}\myrangle$ 
+	(recall they must have the same holes to be bisimilar).
+	Let $j_0\in J$ be a hole, and $Q$ be a pNet such that $\Sortop(Q)=\Sort_{j_0}$. Then 
+	$\pNet[Q]_{j_0}$ and 
+	$\pNet'[Q]_{j_0}$ are FH-bisimilar.
+\end{theorem}
+
+
+ \begin{proof}   Consider $P$ weak FH-bisimilar to $P'$.  It means, there exist a FH-bisimulation $\mathcal{R}_{P,P'}$ relating the two pNets $Q$ and $Q'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P[Q']_{j_0}$: 
 \[\mathcal{R} = \{(\ostate{S_P\uplus S_Q},\ostate{S_P\uplus S'_Q}, \Pred_{Q,Q'})|\,(s_Q,s_{Q'}, \Pred_{Q,Q'})\in\mathcal{R}_{Q,Q'}\}\]
 
 
@@ -5034,80 +5198,8 @@ which is trivially verified, and
 \end{equation*}
 We conclude by observing that $\Post_P$ has no effect on variables of $Q$ and $Q'$, and thus on $\Pred_{Q,Q' x}$
 \qed
+\end{proof}
 
-% OLD
-% according to Lemma  \ref{lem-alternative-weak-bisim} for any weak open transition $WOT$ in $Q$ there exist a family of weak open transitions $WOT_{x}^{x \in X}$ in $Q'$. 
-%We apply  Lemma \ref{lem-Weakcompose1} on weak open transition $WOT$, $j_0 \in J$, we obtain a new weak open transition $WOT'$ in $P[Q]_{j_0}$.
-%On other hand, we apply same Lemma \ref{lem-Weakcompose1} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$.
-%
-%Suppose we have:\\[-2ex]
-%\begin{mathpar}
-%%\[
-%P\models{\openrule
-%	{
-%		\beta_j^{j\in J}, 
-%		\Pred,  
-%		\Post}
-%	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
-%		\ostate{(s_i')^{\, i\in L}}}
-%}
-%\quad\text{~~and~~}\quad
-%Q\models{\openrule
-%	{
-%		\set{\gamma},
-%		 \Pred_Q,  
-%		\Post_Q}
-%	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
-%		\ostate{(s'_{i})^{\, i\in L_Q}}}
-%}%\]
-%
-%
-%\end{mathpar}
-%
-%Then, we have by lemma \ref{lem-Weakcompose}: \\[-2ex]
-%	\[ P[Q]_{j_0}  
-%	\models
-%	{\openrule
-%		{
-%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
-%			\Pred\,',  \Post\,'
-%			 }
-%		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
-%			\ostate{(s_i')^{\, i\in L\uplus L_Q}}}
-%	}
-%	\]
-%
-%On the other hand, $Q$ weak FH-bisimilar to $Q'$, so according to  Lemma  \ref{lem-alternative-weak-bisim} 
-%
-%such that...\\
-%
-%By applying  Lemma \ref{lem-Weakcompose} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$:
-%
-%\[ P[Q']_{j_0}  
-%	\models
-%	{\openrule
-%		{
-%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
-%			\Pred\,',  \Post\,'
-%			 }
-%		{\ostate{s_i^{i\in L} \uplus t_{i}^{i\in L_{Q_x}}} \OTWeakarrow {\alpha}
-%			\ostate{(s_i')^{\, i\in L} \uplus t_{ix}^{i\in L_{Q_x}} }}
-%	}
-%	\]
-
-
- \end{proof}
-\begin{theorem}[Context equivalence]\label{thm-ctxt-weq}
-	Consider two FH-bisimilar open pNets:
-	$\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
-	\set{\symb{SV}}\myrangle$ and 	$\pNet' = \mylangle {\pNet'}_i^{i\in I}, 
-	\Sort_j^{j\in 
-	J}, 	\set{\symb{SV'}}\myrangle$ 
-	(recall they must have the same holes to be bisimilar).
-	Let $j_0\in J$ be a hole, and $Q$ be a pNet such that $\Sortop(Q)=\Sort_{j_0}$. Then 
-	$\pNet[Q]_{j_0}$ and 
-	$\pNet'[Q]_{j_0}$ are FH-bisimilar.
-\end{theorem}
 
 
 \end{document}
