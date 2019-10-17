@@ -1,7 +1,7 @@
 % !TEX TS-program = pdflatex
 % !TeX spellcheck = en_GB
 
-\documentclass{lncs/llncs}
+\documentclass[preprint]{elsarticle}
 
 \usepackage[T1]{fontenc}
 %\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
@@ -53,25 +53,26 @@
 % that we use for open-transitions
 
 
-%\newtheorem{theorem}{Theorem}[section]
-\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{prop}{Proposition}
 %\newtheorem{corollary}[theorem]{Corollary}
-%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{lemma}{Lemma}
 \newtheorem{algorithm}[theorem]{Algorithm}
 %\newtheorem{remark}[theorem]{Remark}
-%\newtheorem{definition}[theorem]{Definition}
-%\newtheorem{example}[theorem]{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{property}{Property}
+\newtheorem{example}{Example}
 %\newtheorem{problem}[theorem]{Problem}
-%\newtheorem{proof}[theorem]{Proof}
+\newenvironment{proof}{\paragraph{Proof}}{}
 
 
 \title{Compositional equivalences based on Open pNets\thanks{This work was partially 
 funded by the Associated Team FM4CPS
   between INRIA and ECNU, Shanghai}}
-\author{Ludovic Henrio\inst{1}  \ \ \  Eric Madelaine\inst{1,2} \ \ \ Rab\'ea}
-\institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
-	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
-}
+\author{Ludovic Henrio  \ \ \  Eric Madelaine \ \ \ Rab\'ea}
+%\institute{Univ. of Nice Sophia Antipolis, CNRS, UMR 7271, 06900 Sophia Antipolis, France
+%	\and INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France
+%}
 \date{}                                           % Activate to display a given date or no date
 
                           % Activate to display a given date or no date
@@ -207,6 +208,10 @@ Rabea
 \end{itemize}
 === en parallele
 
+
+
+\tableofcontents
+
 \section{Introduction}
 
 \ERIC{imported from FORTE'16, but many of these works also had weak
@@ -265,22 +270,22 @@ To summarise, the contribution of this paper are the following
 \paragraph{Structure}
 This article is organised as follows. Section~\ref{sec:notations}
 provides the definition of pNets and introduces the notations used in
-this paper. Section~\ref{sec:OT} defines open automata, i.e. automata
+this paper, including the definition of open pNets. 
+Section~\ref{sec:OT} defines open automata, i.e. automata
 with parameters and transitions conditioned by the behaviour of
 ``holes''; a strong bisimulation equivalence for open automata is also
-presented in this section. Section~\ref{section:op-semantics} gives
-the semantics of open pNets expressed as weak automata, and states
+presented in this section. 
+Section~\ref{section:op-semantics} gives
+the semantics of open pNets expressed as open automata, and states
 compositional properties on the strong bisimulation for open
-pNets. Finally, Section~\ref{sec:weak} defines a weak bisimulation
+pNets. 
+Section~\ref{sec:weak} defines a weak bisimulation
 equivalence on open automata and derives weak bisimilarity for pNets,
 together with properties on compositionality of weak bisimulaiton for
-open pNets. Finally, Section~\ref{section:conclusion} concludes the
+open pNets. 
+Finally, Section~\ref{sec:RW} discusses related works and Section~\ref{section:conclusion} concludes the
 paper. 
 
-
-\section{Related works}
-
-\TODO{TODO ... }
 
 \section{Background and notations}\label{sec:notations}
 This section introduces the notations we will use in this article, and  recalls the definition of pNets~\cite{henrio:Forte2016} with an informal semantics  of the pNet constructs.
@@ -429,6 +434,8 @@ of the variable $y$ by the expression $e$ (note that the absence of binders make
 trivial). 
 We use sets of equations of the form $x_i=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 
+
+Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
 
 \subsection{Parameterised Networks (pNets)}
 \label{section:pnets}
@@ -608,7 +615,7 @@ pNets are synchronisation entities: a pNet composes several subnets and  synchro
 	\]
 \end{definition}
 
-pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allows the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used can be used inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. These works show that pNets are convenient to express the behaviour of the system in a compositional way, which is crucial for the definition of the semantics, especially when dealing with a hierarchical component system like GCM. Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. The semmantics of closed pNets~\cite{AmeurBoulifa2017}, defined as an instantiation of labelled transition systems, is not necessary to understand this article but can be useful to  understand the semantics of pNets in a simpler and more operational setting. The theory of pNets as operators able to fully take into account open systems is given in the rest of this article.
+pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allows the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used can be used inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. These works show that pNets are convenient to express the behaviour of the system in a compositional way, which is crucial for the definition of the semantics, especially when dealing with a hierarchical component system like GCM. Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. The semantics of closed pNets~\cite{AmeurBoulifa2017}, defined as an instantiation of labelled transition systems, is not necessary to understand this article but can be useful to  understand the semantics of pNets in a simpler and more operational setting. The theory of pNets as operators able to fully take into account open systems is given in the following sections.
 
 \begin{figure}[t]
    \includegraphics[width=5.5cm]{XFIG/SimpleProt-Schema}
@@ -644,14 +651,16 @@ to the two processes connected simply through a perfect medium. Fig. \ref{Simple
 
 Fig. \ref{SimpleProt:Impl} show the pNet model of the protocol. When the medium detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its error counter $c$, and resend the message (including $c$) to the medium, that will, eventually, transmit $m,c$ to the receiver.
 
+\section{A model of process composition}\label{sec:OT}
 
-\section{Open Automata: A model of process composition}
-\label{sec:OT}
 
 The semantics of open pNets will be defined  as an open automaton. An open
 automaton is an automaton where each transition composes transitions of several LTSs with
 action of some holes, the transition occurs if some predicates hold, and can involve a 
-set of state modifications. This section defines open automata and a bisimulation theory for them. Open automata are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on variables (potentially with only symbolic values).
+set of state modifications. This section defines open automata and a bisimulation theory for them.
+
+\subsection{Open Automata}
+ Open automata are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on variables (potentially with only symbolic values).
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
@@ -752,7 +761,7 @@ More precisely, for any pair $(s,t)$, there is a
       t\\True, i.e. the states are related when the variables in $s$ and $t$ verify the 
       predicate $\Pred_{s,t}$.
  FH-bisimulation is defined formally: 
- \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} 
+ \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
 
 \noindent
 \begin{minipage}{0.69\linewidth} 	Suppose that
@@ -1290,7 +1299,101 @@ holes, and each pLTS at leaves having a finite number of states and
 
 
 
-\subsection{Bisimulation for open pNets and Composability}
+\subsection{pNet Composition Properties: composition of open transitions}
+The semantics of open pNets allows us to prove two crucial properties relating pNet composition with pNet semantics: open transition of a composed pNet can be decomposed into open transitions of its composing sub-pNets, and conversely, from the open transitions of sub-pNets,  an open transition of the composed pNet can be built.
+
+We start with decomposition: from one open transition of $P[Q]_{j_0}$, we exhibit 
+corresponding behaviours of $P$ and $Q$, and determine the relation between their 
+predicates:
+\begin{lemma}[Open transition decomposition]\label{lem-decompose} Consider two pNets $P$ and $Q$ that are not pLTSs\footnote{A similar lemma can be proven for a pLTS $Q$}.
+	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose:
+	\[ P[Q]_{j_0}  
+		\models
+		{\openrule
+			{
+				\beta_j^{j\in J}, \Pred,  
+				\Post}
+			{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+				\ostate{s_i'^{\, i\in L}}}
+		}
+	\]
+		with  $J\cap\Holes(Q)\neq\emptyset$ or $\exists i\in L_Q.\,s_i\neq s'_i$, i.e. $Q$ takes part in the reduction.
+		 Then there exist $\alpha_Q$, $\Pred\,'$, $\Pred\,''$, 
+		$\Post\,'$, $\Post\,''$ s.t.:\\[-2ex]
+		%\[
+		\begin{mathpar}
+		P\models{\openrule
+			{
+				\beta_j^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}, 
+				\Pred\,',  
+				\Post\,'}
+			{\ostate{s_i^{i\in L\setminus L_Q}} \OTarrow {\alpha}
+				\ostate{s_i'^{\,i\in L\setminus L_Q}}}
+		}%\]
+	\vspace{-2.2ex}\\\text{and~~}
+		%\[
+		Q\models{\openrule
+			{
+				\beta_j^{j\in J\cap\Holes(Q)}, \Pred\,'',  
+				\Post\,''}
+			{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
+				\ostate{s_i'^{\,i\in L_Q}}}
+		}%\]
+		\end{mathpar}
+		and  $\Pred \iff \Pred\,'
+		\land \Pred\,''\land \alpha_Q=\beta_{j_0}$, $\Post=\Post\,'\uplus 
+		\Post\,''$ where $\Post\,''$ is the restriction of $\Post$ over variables of 
+		$\Leaves(Q)$.
+\end{lemma}
+
+
+Lemma \ref{lem-compose} is combining an open transition of $P$ with
+an open transition of $Q$, and building a corresponding transition of
+$P[Q]_{j_0}$, assembling their predicates.
+\paragraph{Lemma~\ref{lem-compose}} {\bf Open transition composition}\\
+	Suppose $j_0\in J$ and:\\[-2ex]
+\begin{mathpar}
+%\[
+P\models{\openrule
+	{
+		\beta_j^{j\in J}, 
+		\Pred,  
+		\Post}
+	{\ostate{s_i^{i\in L}} \OTarrow {\alpha}
+		\ostate{s_i'^{\, i\in L}}}
+}%\]
+\text{~~and~~}
+%\[
+Q\models{\openrule
+	{
+		\beta_j^{j\in J_Q},
+		 \Pred\,',  
+		\Post\,'}
+	{\ostate{s_i^{i\in L_Q}} \OTarrow {\alpha_Q}
+		\ostate{s_i'^{\, i\in L_Q}}}
+}%\]
+\end{mathpar}
+Then, we have\\[-2ex]
+	\[ P[Q]_{j_0}  
+	\models
+	{\openrule
+		{
+			\beta_j^{(j\in J\setminus\{j_0\}) \uplus J_Q}, 
+			\Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0},  
+			\Post\uplus \Post\,'}
+		{\ostate{s_i^{i\in L\uplus L_Q}} \OTarrow {\alpha}
+			\ostate{s_i'^{\, i\in L\uplus L_Q}}}
+	}
+	\]
+
+
+Note that this does not mean that any two pNets can be composed and produce an open 
+transition. Indeed, the predicate $\Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0}$ is often not  satisfiable, for example if the action  $\alpha_Q$ cannot be matched with $\beta_{j_0}$.
+Note also that $\beta_{j_0}$ is  only used as an intermediate term inside formulas in the composed open transition: it 
+does not appear neither as global action nor as an action of a hole.
+
+
+\subsection{Bisimulation for open pNets -- a Composable Bisimulation Theory}
 \label{section:bisimulation-PN}
 As  our symbolic operational semantics provides an open automaton, we can apply the notion of
 	strong (symbolic) bisimulation on automata to open pNets:
@@ -1349,11 +1452,13 @@ that have indistinguishable behaviour, with respect to some definition
 of \emph{internal actions} that are considered local to some
 subsystem, and consequently cannot be observed, nor used for
 synchronisation with their context.
-As the notions of invisible action varies in different contexts,
-e.g. $tau$ in CCS, and $i$ in Lotos, we will rely here on some set of
-\emph{internal actions} depending on a specific action
-algebra. Naturally, an internal action cannot be synchronised with
-actions of other systems in its environment. We show here that under such assumption of non-observability of internal actions, we can define a weak bisimulation relation that is compositional, in the sense of open pNet composition. In this section we will first define a notion of weak transition similar to open transition. In fact a weak open transition is made of several open transitions labelled as internal transitions, plus potentially one non-internal open transition. This allows us to define weak open automata, and a weak bisimulation relation based on these weak open automata. Finally, we apply this weak bisimulation to open pNets, obtain a weak bisimilarity relationship for open pNets, and prove that this relation has compositional properties.
+The notions of non-observable action varies in different contexts,
+e.g. $tau$ in CCS, and $i$ in Lotos, we could define classically a set of
+\emph{internal/non-observable actions} depending on a specific action
+algebra. In this paper, to simplify the notations, we will simply use $\tau$ as the single non-observable action; the generalisation of our results to a set of non-observable actions is trivial. 
+Naturally, a non-observable action cannot be synchronised with
+actions of other systems in its environment. 
+We show here that under such assumption of non-observability of $\tau$ actions, see Definition~\ref{def:Non-ObsTau}, we can define a weak bisimulation relation that is compositional, in the sense of open pNet composition. In this section we will first define a notion of weak open transition similar to open transition. In fact a weak open transition is made of several open transitions labelled as non-observable transitions, plus potentially one observable open transition. This allows us to define weak open automata, and a weak bisimulation relation based on these weak open automata. Finally, we apply this weak bisimulation to open pNets, obtain a weak bisimilarity relationship for open pNets, and prove that this relation has compositional properties.
 
 %% \TODO{we should understand if it make sense to distinguish invisible
 %%   from synchronised actions: in the Forte paper we wrote ``using  as 
@@ -1367,12 +1472,15 @@ actions of other systems in its environment. We show here that under such assump
 %% tool-assistance, both for the generation of the open-automata and for
 %% their comparison.
 
-\subsection{Defining weak open transitions}
+\subsection{Preliminary definitions and notations}
 
-Intuition: tau is non observable if the automaton allows any tau transition from holes, and the global transition resulting from a tau in a hole is a tau transition not changing the action state.
+
+We first specify in terms of open transition, what it means for an action to be non-observable. Namely, we constraint ourselves to system where the emission of a $\tau$ action by a sub-pNet cannot be observed by the surrounding pNets. In other words, a pNet cannot change its state, or emit a specific observable action when one of its holes emits a $\tau$ action.
+
+More precisely, we state that $\tau$ is not observable if the automaton always allows any $\tau$ transition from holes, and additionally the global transition resulting from a $\tau$ action of a hole is a $\tau$ transition not changing the pNet's state.
 We define $\Id(s)$ as the identity function on variables of state s.
-\begin{definition}[Non-observability of silent actions]\label{def:Non-ObsTau}
-An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe silent actions} if and only if for all $j$ in $J$ and $s$ in $\mathcal{S}$ we have
+\begin{definition}[Non-observability of $\tau$ actions]\label{def:Non-ObsTau}
+An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe $\tau$ actions} if and only if for all $j$ in $J$ and $s$ in $\mathcal{S}$ we have:
 \begin{enumerate}
 \item
 \[ \openrule
@@ -1382,30 +1490,45 @@ An open automaton $A = <J,\mathcal{S},s_0,\mathcal{T}>$ \emph{cannot observe sil
          \in \mathcal{T}
 \]
 and 
-\item for all $A$, $\alpha$,  $s$, $\Post$ and $s'$ such that
+\item for all $\beta_j$, $J$,  $\alpha$,  $s$, $s'$, $\Pred$, $\Post$  such that
 \[ \openrule
          {
            \beta_j^{j\in J},\Pred,\Post}
          {s \OTarrow {\alpha} s'}
-         \in \mathcal{T} \] If there is a $j$ such that $\beta_j=\tau$ then we have \[ \alpha=\tau\land s=s'\land \Pred=\True\land\Post=\Id(s) \land J=\{j\})
+         \in \mathcal{T} \] If there exists $j$ such that $\beta_j=\tau$ then we have: \[ \alpha=\tau\land s=s'\land \Pred=\True\land\Post=\Id(s) \land J=\{j\}
 \]
 \end{enumerate}
 \end{definition}
-The first statement of the definition state that the open automaton must allow a hole to do a silent action at any time, and must not observe it, i.e. cannot change its internal state because a hole did a $\tau$ transition. The second statement ensures that there cannot be in the open automaton other transitions that would be able to observe a silent action from a hole. The condition $J=\{j\}$ is a bit restrictive, it could safely be replaced by $\forall j\in J.\, \beta_j=\tau$, allowing the other holes to perform silent transitions too (because these silent actions cannot be observed).
+The first statement of the definition states that the open automaton must allow a hole to do a silent action at any time, and must not observe it, i.e. cannot change its internal state because a hole did a $\tau$ transition. The second statement ensures that there cannot be in the open automaton other transitions that would be able to observe a $\tau$ action from a hole. The condition $J=\{j\}$ is a bit restrictive, it could safely be replaced by $\forall j\in J.\, \beta_j=\tau$, allowing the other holes to perform $\tau$ transitions too (because these $\tau$ actions cannot be observed).
 
 
-We then can add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away $\tau$ transitions from holes in the definition of a weak open transition.
+By definition, one weak open transition contains  several open transitions, where  each open transition can require an observable action from a given hole, the same hole might have to emit several observable actions for a single weak open transition to occur. 
+Consequently, for a weak open transition to trigger, a list of actions from a given hole might be required.
+
+Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the union operator that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of lists:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the list of  actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two lists is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a list with a single element.
 
 
-Classically, we start by defining a derived transition relation based
-on sequences of invisible actions:
+As required actions are now sequences of observable actions, we need an operator to build them from set of actions that occur in open transitions.
+Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions but where each element is either empty or a list of length 1:
+ \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]
+
+
+
+
+
+\subsection{Weak open transition definition}
+
+Because of the non-observability property (Definition~\ref{def:Non-ObsTau}), it is possible to add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away $\tau$ transitions from holes in the definition of a weak open transition.
+
+
+
+%
+%Classically, we start by defining a derived transition relation based
+%on sequences of invisible actions.
 
 \def\InvAct{\mathcal{Inv}}
-
-\RAB{We let $\gamma$ range over words (of action terms) and use $\dotcup$ as the union that appends words.}
-
-
-We let $\gamma$ range over lists of action terms and use $\dotcup$ as the union that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates teh two lists. The operation is lifted to indexed sets of lists where  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists that at each index concatenates the listof  list of $\set{\gamma_1}$ and the one of $\set {\gamma_2}$ (where one of the two lists is empty when $j\not \in \dom(\set{\gamma_1})$). $[a]$ is a list with a single element.
+%
+%\RAB{We let $\gamma$ range over words (of action terms) and use $\dotcup$ as the union that appends words.}
 
 \begin{definition}[Weak open transition]\label{def:weakOT}
 A weak open transition over a
@@ -1425,19 +1548,13 @@ A weak open transition over a
 A weak open automaton $<J,\mathcal{S},s_0,\WT>$ is similar to an open automaton  except that $\WT$ is a set of weak open transitions over $J$ and $\mathcal{S}$.
 \end{definition}
 
-
-We can rewrite a weak open transition  $ \OTWeakarrow {\alpha}$ as a sequence of open transitions $(\OTarrow{\tau})^* (\OTarrow{\alpha})(\OTarrow{\tau})^* $. 
-
+A weak open transition labelled $\alpha$ can be seen as a sequence of open transitions that are all labelled $\tau$ except one that is labelled $\alpha$; however conditions on predicates, effects, and states must be verified for this sequence to be enactable.
 
 
-
-We define $\vis{\set\beta}$ as the mapping $\set\beta$  without  invisible actions but where each element is now a list (if length 1).\\ $\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}$ s.t. $I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}$.
-
-
+We are now able to build a weak open automaton from an open automaton. This is done in a way that resembles the process of $\tau$ saturation: we add  $\tau$ open transitions before or after another (observable or not) open transition.
 \begin{definition}[Building a weak open automaton]\label{def:buildweakOT}
   Let $A = <J,\mathcal{S},s_0,\mathcal{T}>$ be an open automaton. 
 The weak open automaton \emph{derived} from $A$ is an open automaton  $<J,\mathcal{S},s_0,\WT>$ where $\WT$ is derived from $\mathcal{T}$ as follows: 
-
 %\noindent{\bf Invisible $\tau$ transitions:}
 \begin{mathpar}
  \openrule
@@ -1512,10 +1629,13 @@ and
 \end{mathpar}
  
 \end{definition}
-
+Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after a weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their value thus depend of the initial state but also of the effect (as a substitution $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the joint substitution $\Post_2\bigotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition	.
 
 \TODO{Eric: try to draw (ATG) the weak transitino versions of the Simple Protocol, both Spec (easy) and Impl (check readability?)}
 
+
+\subsection{Composition properties: composition of weak open transitions}
+Now the semantics of an open pNet is defined both as an open automaton, and as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pnet that fills its hole.
 
 
 
@@ -1561,7 +1681,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
  and  \\
  $\Pred \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
-   \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \Rightarrow\! \Pred_{OT_x}
+   \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
      \!\land\! \alpha\!=\!\alpha_x\! \land\!  
      \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)}$
     
@@ -1637,6 +1757,8 @@ Let $A$ be the open automaton expressing the semantics of an open \pNet: $\pNet$
 %% \end{array}\]
 %% \end{property}
 
+\subsection{Properties of weak bisimulation for open pNets}
+
 \begin{theorem}[Congruence for  weak bisimulation]\label{weak-thm-congr-eq}
 	Consider an open pNet:
 	$\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
@@ -1678,11 +1800,11 @@ composability and weak FH-bisimilarity.
 
 The ``saturation'' step in the construction of the weak relation will
 pick all $\tau^*$ and $\tau^*;a;\tau^*$ sequences from the OA, and build a weak
-OT from each sequence. Here is one example of a short sequence,
+open trnsition from each sequence. Here is one example of a short sequence,
 starting with the open transition $OT_2$ of page \pageref{OT:ABP},
 then transmitting the message to the receiver (if the sender and
 receiver control bits are equal), and to the environment. The two
-firts OTs are internal, the last one is visible, so it constitute a
+firsts open transitionTs are internal, the last one is visible, so it constitute a
 $\tau;\tau;a$ weak transition.  
 
 \noindent
@@ -1762,7 +1884,7 @@ WOT is:
 
 %% Note that 
 
-\section{Related Works}
+\section{Related Works}\label{sec:RW}
 
 \TODO{rertavailler le paragraphe ci dessous}
 In
@@ -2152,7 +2274,7 @@ satisfiability of the predicate relating the first state to the last one.
        	
        	$\Pred_{s,p} \land \Pred_{OT}\\
        	\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}
-       	\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow \Pred_{OT_{px}}
+       	\left( \forall j. \beta_j=\beta_{jpx}  \land \Pred_{OT_{px}}
        	\land \alpha\!=\!\alpha_{px} \land
        	\Pred_{{px}}\subst{\Post_{OT}\uplus\Post_{OT_{px}}}\right)}$\\
        	
@@ -2175,7 +2297,7 @@ For any open transition $OT_{px}$, since
        	(t_{px},u_{pxy}|\Pred_{{pxy}})\in \mathcal{R}'$; and  \\
        	$\Pred\,'_{p,u} \land \Pred_{OT_{p x}}\\
        	\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{y\in Y}\!
-       	\left( \forall j.\beta_{jpx}\!=\!\beta_{jpxy} \Rightarrow\! \Pred_{OT_{pxy}}\!
+       	\left( \forall j.\beta_{jpx}\!=\!\beta_{jpxy} \land\! \Pred_{OT_{pxy}}\!
        	\land\! \alpha_{px}\!=\!\alpha_{pxy} \!\land\!
        	\Pred_{{pxy}}\subst{\Post_{OT_{px}}\!\uplus\!\Post_{OT_{pxy}}}\right)}$\\
        	
@@ -2183,7 +2305,7 @@ For any open transition $OT_{px}$, since
        	transitions 
        	$OT_{pxy}^{p\in 
        		P, x\in X, 
-       		y\in Y} \subseteq \mathcal{T}_3$ that should simulate \emph{OT}.
+       		y\in Y} \subseteq \mathcal{T}_3$ that should simulate $OT$.
 
        	
        	
@@ -2225,7 +2347,7 @@ variable in $\mathcal{T}_1$.
        	\begin{small}
        		$\Pred_{s,u} \land \Pred_{OT}\\
        		\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
-       		\left( \forall j. \beta_j=\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+       		\left( \forall j. \beta_j=\beta_{jpxy}  \land \Pred_{OT_{pxy}}
        		\land \alpha\!=\!\alpha_{pxy} \land
        		\Pred\,'_{{pxy}}\subst{\Post_{OT}\uplus\Post_{OT_{pxy}}}\right)}$.
        	\end{small}
@@ -2233,19 +2355,19 @@ From (*) and (**) we have, for all $p$
        	\begin{small}
        		$\Pred_{s,p} \land \Pred_{OT}\land\Pred_{p,u}\\
        		\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}
-       		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow \Pred_{OT_{px}}
+       		\left( \forall j. \beta_j=\beta_{jpx}  \land \Pred_{OT_{px}}
        		\land \alpha\!=\!\alpha_{px} \land
        		\Pred_{{px}}\subst{\Post_{OT}\uplus\Post_{OT_{px}}}\right)\land\Pred_{p,u}}\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-       		\left( \forall j. \beta_j=\beta_{jpx}  \Rightarrow 
+       		\left( \forall j. \beta_j=\beta_{jpx}  \land 
        		(\Pred_{OT_{px}}\land\Pred_{p,u})
        		\land \alpha\!=\!\alpha_{px} \land
        		\Pred_{{px}}\subst{\Post_{OT}\uplus\Post_{OT_{px}}}\right)\\
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X}
-       		\big( \forall j. \beta_j=\beta_{jpx}  \Rightarrow (\bigvee_{y\in Y} 
-       		\big( \forall j'. \beta_{j'px}=\beta_{j'pxy}  \Rightarrow \Pred_{OT_{pxy}}
+       		\big( \forall j. \beta_j=\beta_{jpx}  \land (\bigvee_{y\in Y} 
+       		\big( \forall j'. \beta_{j'px}=\beta_{j'pxy}  \land \Pred_{OT_{pxy}}
        		\land \alpha_{px}\!=\!\alpha_{pxy}\\~\hspace{3em}~ \land
        		\Pred_{{pxy}}\subst{\Post_{OT_{px}}\uplus\Post_{OT_{pxy}}}\big))
        		\land \alpha\!=\!\alpha_{px} \land
@@ -2253,7 +2375,7 @@ From (*) and (**) we have, for all $p$
        		%
        		\hspace{1cm} \implies\!\!\! \bigvee_{x\in X} \bigvee_{y\in Y}
        		\big( \forall j, j'. \beta_j=\beta_{jpx} \land \beta_{j'px}=\beta_{j'pxy}
-       		\Rightarrow \big( 
+       		\land \big( 
        		\Pred_{OT_{pxy}}
        		\land \alpha\!=\alpha_{px}\!=\!\alpha_{pxy}\\~\hspace{3.5em}~ \land
        		\Pred_{{pxy}}\subst{\Post_{OT_{px}}\uplus\Post_{OT_{pxy}}}
@@ -2286,12 +2408,12 @@ $\displaystyle{\Pred_{s,u} \land \Pred_{OT}}\\
 \hspace{1cm} \implies\!\!\!\bigvee_{p\in P}
  \bigvee_{x\in X} \bigvee_{y\in Y}
 \big( \forall j, j'.\beta_j=\beta_{jpx} \land \beta_{j'px}=\beta_{j'pxy}
-\Rightarrow\\ ~\hspace{7em} 
+\land\\ ~\hspace{7em} 
 \Pred_{OT_{pxy}}
 \land \alpha\!=\!\alpha_{px}\!=\!\alpha_{pxy}\land\Pred\,'_{{pxy}}\subst{\Post_{OT}\uplus \Post_{OT_{pxy}}}\big)
 \\
 \hspace{1cm} \implies\!\!\! \bigvee_{x\in X}\bigvee_{y\in Y}\bigvee_{p\in P}
-\left( \forall j. \beta_j\!=\!\beta_{jpxy}  \Rightarrow \Pred_{OT_{pxy}}
+\left( \forall j. \beta_j\!=\!\beta_{jpxy}  \land \Pred_{OT_{pxy}}
 \land \alpha\!=\!\alpha_{pxy} \land
 \Pred\,'_{{pxy}}\subst{\Post_{OT}\uplus\Post_{OT_{pxy}}}\right)$
   \end{small}
@@ -2310,11 +2432,9 @@ $\displaystyle{\Pred_{s,u} \land \Pred_{OT}}\\
        The proof of the other theorems rely on two main lemmas,
 dealing respectively with the decomposition of a composed behaviour
 between the context and the internal pNet, and with their recomposition. 
-We start with decomposition: from one open transition of $P[Q]_{j_0}$, we exhibit 
-corresponding behaviours of $P$ and $Q$, and determine the relation between their 
-predicates:
 
-\begin{lemma}[OT decomposition]\label{lem-decompose} Consider two pNets $P$ and $Q$ that are not pLTSs\footnote{A similar lemma can be proven for a pLTS $Q$}.
+\paragraph{Lemma~\ref{lem-decompose}}: {\bf Open transition decomposition} \\
+ Consider two pNets $P$ and $Q$ that are not pLTSs\footnote{A similar lemma can be proven for a pLTS $Q$}.
 	Let $\Leaves(Q)=p_l^{l\in L_Q}$; suppose:
 	\[ P[Q]_{j_0}  
 		\models
@@ -2353,7 +2473,7 @@ predicates:
 		\land \Pred\,''\land \alpha_Q=\beta_{j_0}$, $\Post=\Post\,'\uplus 
 		\Post\,''$ where $\Post\,''$ is the restriction of $\Post$ over variables of 
 		$\Leaves(Q)$.
-\end{lemma}
+
 
    \begin{proof}
 Consider rule \TrDeux\ in 
@@ -2455,7 +2575,7 @@ the set of subnets to the set of holes).
 %Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus J_k})$.
 We have $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
 
-Now focus on OTs of the subnets. For each $m\in I_1\uplus I_2$ we have one of the two 
+Now focus on OTs\footnote{In the appendix we use OT to abbreviate ``open transition'' and WOT to stand for ``weak open transition.''} of the subnets. For each $m\in I_1\uplus I_2$ we have one of the two 
 following OT\footnotemark[\thefootnote]:\\
 for $m$ in $I_1$
 \[
@@ -2579,9 +2699,6 @@ actions of the holes, and the predicate involving $v_Q$ and the synchronisation 
  on the previous proof and this restriction  results from the composition of predicates.
 %\TODO{is this useful? = yes, I think }
 
-Lemma \ref{lem-compose} is combining an open transition of $P$ with
-an open transition of $Q$, and building a corresponding transition of
-$P[Q]_{j_0}$, assembling their predicates.
 
 \begin{lemma}[Open transition composition]\label{lem-compose} 
 	Suppose $j_0\in J$ and:\\[-2ex]
@@ -2619,7 +2736,7 @@ Then, we have\\[-2ex]
 	}
 	\]
 \end{lemma}
-\TODO{important comment added:}
+
 Note that this does not mean that any two pNets can be composed and produce an open 
 transition. Indeed, the predicate $\Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0}$ is not 
 be satisfiable if the action of $\alpha_Q$ cannot be matched with $\beta_{j_0}$.
@@ -2725,10 +2842,11 @@ The set of moving leaves is the union of the moving leaves in the open transitio
 and the ones for $Q$; similarly the moving holes are the union of the moving 
 holes, minus $j_0$: $J'_{PQ}=  J\setminus\{j_0\}\uplus J_Q$. The 
 predicate for the open 
-transition is: $\displaystyle{\Pred\,''=\!\!\!\!\bigwedge_{m\in I _1\uplus I_2}\!\!\!\Pred_m \land \Pred\,'
+transition is:\\
+ $\displaystyle{\Pred\,''=\!\!\!\!\bigwedge_{m\in I _1\uplus I_2}\!\!\!\Pred_m \land \Pred\,'
 \land \Pred(SV_k,v_i^{i\in I_1\uplus I_2}\uplus(j_0\mapsto v_Q),\beta_j^{j\in 
-J},\alpha)}$. 
-By definition 
+J},\alpha)}$. \\
+By definition we have:\\
 $\Pred(SV_k,\alpha_i^{i\in I}\uplus(j_0\mapsto \alpha_Q),\beta_j^{j\in 
 J},v)\Leftrightarrow
 	\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J.\, \beta_j=\alpha'_j \land 
@@ -2740,7 +2858,7 @@ this is equivalent to $\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J
 	$\Pred\,''\iff \Pred\land\Pred\,'\land \alpha_Q=\beta_{j_0}$. The post-condition 
 	gathers the post-conditions related to all 
 	the leaves: $\displaystyle{\biguplus_{m\in I_1\cup\{j_0\}\uplus I_2} 
-    		\!\!\!\!\!\Post_m = 	\Post\uplus \Post\,'}$. Finally, the composed open transition can be
+    		\!\!\!\!\!\Post_m = 	\Post\uplus \Post\,'}$.\\ Finally, the composed open transition can be
         built by \TrDeux:
 	
 	\noindent
@@ -2841,8 +2959,7 @@ The proof is trivial.
  of the contained indexed 
  sets} $\mathcal{R}'=\{(s,t|\Pred_{s,t})|s=s'\uplus s'' \land 
  t=t'\uplus s'' \land s''\in \mathcal{S}_P \land (s',t'|\Pred_{s,t})\in\mathcal{R}\}$ 
-  
- where $\mathcal{S}_S$ is the set of states of the open automaton of $P$.	We will prove 
+   where $\mathcal{S}_P$ is the set of states of the open automaton of $P$.	We will prove 
  that $\mathcal{R}'$ is an open FH-bisimulation. Consider a pair of FH-bisimilar 
  states: $(\ostate{s_{i}^{i \in L_P\uplus L}},\ostate{{t}_{i}^{i \in L'}\uplus 
  	{s}_{i}^{i \in L_P}}|\Pred_{s,t})\in\mathcal{R}'$. %Those are states of the open 
@@ -2896,11 +3013,11 @@ The proof is trivial.
  \mathcal{R}$; 
  and  \\
  $\Pred_{s,t} \land \Pred\,''
- \Rightarrow \displaystyle{\bigvee_{x\in X}
- \left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
+ \implies$\\ $\displaystyle{\bigvee_{x\in X}
+ \left( \forall j\in J\cap \Holes(Q). \beta_j\!=\!\beta_{jx}\!  \land\! 
  \Pred_{OT_x}
  \land \alpha_Q\!=\!\alpha_x \land  
- \Pred_{s x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)}$
+ \Pred_{s, x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)}$
 
  
  We can now apply Lemma~\ref{lem-compose} on each of the $OT'_x$ together with 
@@ -2925,33 +3042,32 @@ The proof is trivial.
  \{j_0\})\setminus\{j_0\}\cup 
  (J\cap\Holes(Q))$. Now we have to verify the conditions for the 
  FH-bisimulation between $OT$ and $OT_x$.
- $\forall x, (\ostate{{s'}_{i}^{~i\in L_P\uplus L}},\ostate{t_{i 
- 		x}^{i\in L_P\uplus L'}}|\Pred_{s x})\in 
+ $\forall x, (\ostate{{s'}_{i}^{~i\in L_P\uplus L}},\ostate{t_{i 	x}^{i\in L_P\uplus L'}}|\Pred_{s, x})\in 
  \mathcal{R}'$ (by definition of
  $\mathcal{R}'$) and in three steps we get:
  
  \noindent                        
- \begin{small} $\Pred_{s,t} \land \Pred_{OT} \implies
- 	\Pred_{s,t}\land\Pred\,'\land \Pred\,''\land\alpha_Q=\beta_{j_0}\\ % 
+ \begin{small} $\Pred_{s,t} \land \Pred_{OT}\\ 
+ \implies 	\Pred_{s,t}\land\Pred\,'\land \Pred\,''\land\alpha_Q=\beta_{j_0}\\ % 
  	%reversed 
  	%substitution 
  	\implies  \hspace{-2ex}
  	{\displaystyle\bigvee_{x\in X}
- 	\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
+ 	\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \land 
  	\Pred_{OT_x}
  	\land \alpha_Q\!=\!\alpha_x \land  
- 	\Pred_{s x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)
+ 	\Pred_{s x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)\land
  }
- \\~\qquad\qquad	\land \Pred\,'\land\alpha_Q=\beta_{j_0} \\
+ \\~\qquad\quad \Pred\,'\land\alpha_Q=\beta_{j_0} \\
  	\implies
  	 \hspace{-2ex}
  	{\displaystyle\bigvee_{x\in X}
- 		\left( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \Rightarrow 
+ 		( \forall j\in J\cap \Holes(Q). \beta_j=\beta_{jx}  \land 
  		\Pred\,'\land \Pred_{OT_x}
- 		\land \alpha_Q\!=\!\alpha_x \land \alpha_Q\!=\!\beta_{j_0 x} \land  
- 		\Pred_{s x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)
- 	}
- 	$\end{small}
+ 		\land \alpha_Q\!=\!\alpha_x \land \alpha_Q\!=\!\beta_{j_0 x}\, \land} \\ 
+ 	~\qquad\quad 	\Pred_{s, x}\subst{\Post\,''\uplus\Post_{OT_x}})
+ 	 $\end{small}
+ 	 
  Note that, $\beta_{j_0}$ can be transformed into  $\beta_{j_0 x}$ because of the 
  implication hypothesis.
  %\TODO{There was a confusion between the $\Rightarrow$ between the
@@ -2967,24 +3083,22 @@ The proof is trivial.
  \begin{itemize}
  	\item We need $\forall j\!\in\! J$ instead of $\forall j\!\in\! J\cap\Holes(Q)$  but  
  	adding prerequisite on more variables 
- 	does not 
- 	change the validity of the formula (those variables are not used).
+ 	does not   	change the validity of the formula (those variables are not used).
  	\item Concerning the last term, we need 
- 	$\Pred_{s x}\subst{\Post_{OT}\uplus(\Post\,'\uplus \Post_{OT_x})}$ 
- 	, i.e.:
- 	$\Pred_{s x}\subst{(\Post\,'\uplus 
- 		\Post\,'')\uplus(\Post\,'\uplus \Post_{OT_x})}$. We 
+ 	$\Pred_{s x}\subst{\Post_{OT}\uplus(\Post\,'\uplus \Post_{OT_x})}$, i.e.
+ 	$\Pred_{s x}\subst{(\Post\,'\uplus 	\Post\,'')\uplus(\Post\,'\uplus \Post_{OT_x})}$. We 
  	can conclude by observing that	$\Pred_{s x}$ does not use any variable of $P$ 
  	and thus the substitution $\subst{Post\,'}$ has no effect on it.
  \end{itemize}	
-Finally: 
-\[{\displaystyle\bigvee_{x\in X}
- 		\left( \forall j\in J. \beta_j=\beta_{jx}  \Rightarrow 
- 		\left(\Pred\,'\land \Pred_{OT_x}
- 		 \land \alpha_Q\!=\!\beta_{j_0 x}\right) \land \alpha_Q\!=\!\alpha_x\land  
- 		\Pred_{s x}\subst{\Post\,''\uplus\Post_{OT_x}}\right)
- 	}\]
- This proves the  condition of the FH-simulation, the other direction is 
+Finally: \\
+\begin{small} $\Pred_{s,t} \land \Pred_{OT} \implies\\
+{\displaystyle\bigvee_{x\in X}
+ 		\!\left( \forall j\in J. \beta_j=\beta_{jx} \! \land\! 
+ 		\big(\Pred\,'\land\! \Pred_{OT_x}
+ 		 \land \alpha_Q\!=\!\beta_{j_0 x}\right)\! \land\! \alpha_Q\!=\!\alpha_x\land\!  \Pred_{s, x}\subst{\Post\,''\!\uplus\!\Post_{OT_x}}\big)
+ 		}$
+ 		\end{small}\\
+This proves the  condition of the FH-simulation, the other direction is 
  similar.\qed
 
         \subsection{Proof of Theorem ~\ref{thm-ctxt-eq}}
@@ -3061,11 +3175,11 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			\mathcal{R}$; 
 			and  \\
 			$\displaystyle{\Pred_{s,t} \land \Pred\,'
-		 \Rightarrow \bigvee_{x\in X}
-			\left( \forall j\in J'. \beta_j=\beta_{jx}  \Rightarrow 
-			\Pred_{OT_x}
-			\land \alpha\!=\!\alpha_x \land  
-			\Pred_{s x}\subst{\Post\,'\uplus\Post_{OT_x}}\right)}$
+		 \!\!\implies\!\!\! \bigvee_{x\in X}\!
+			\left( \forall j\in J'. \beta_j=\beta_{jx}\!  \land\! 
+			\Pred_{OT_x}\!
+			\land\! \alpha\!=\!\alpha_x\! \land\!  
+			\Pred_{s,x}\subst{\Post\,'\uplus\Post_{OT_x}}\right)}$
 			%     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x}) \right)$.
 			
 			We can now apply Lemma~\ref{lem-compose} on each of the $OT'_x$ together with 
@@ -3086,28 +3200,28 @@ Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By
 			Observe that $J=(J\setminus\Holes(Q)\cup \{j_0\})\setminus\{j_0\}\cup 
 			(J\cap\Holes(Q))$. Now we have to verify the conditions for the 
 			FH-bisimulation between $OT$ and $OT_x$.
-
 			 $\forall x, (\ostate{{s'}_{i}^{~i\in L\uplus L_Q}},\ostate{t_{i 
-			x}^{~i\in L'\uplus L_Q}}|\Pred_{s x})\in 
+			x}^{~i\in L'\uplus L_Q}}|\Pred_{s, x})\in 
 			\mathcal{R}'$ (by definition of
                         $\mathcal{R}'$) and in four steps we get:
 
 \noindent                        
-\begin{small} $\Pred_{s,t} \land \Pred_{OT} \implies
+\begin{small} 
+$\Pred_{s,t} \land \Pred_{OT}\\ \implies
  \Pred_{s,t}\land\Pred\,'\land \Pred\,''\land \alpha_Q=\beta_{j_0}\\  
  \implies  \hspace{-2ex}
 {\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. \beta_j\!=\!\beta_{jx}  
-\Rightarrow \!
-\Pred_{OT_x}\land \alpha_Q=\beta_{j_0}
-\land \alpha\!=\!\alpha_x}} %\\ \hspace*{40mm} %
-\land \Pred_{s x}\subst{\Post\,'\uplus\Post_{OT_x}}) \land
+\!\land \!
+\Pred_{OT_x}\!\land\! \alpha_Q\!=\!\beta_{j_0}
+\land\! \alpha\!=\!\alpha_x}} %\\ \hspace*{40mm} %
+\land \Pred_{s, x}\subst{\Post\,'\uplus\Post_{OT_x}}) \land
 \Pred\,''\\ % 
 			%FH for P
  \implies  \hspace{-2ex}
 	{\displaystyle{\bigvee_{x\in X}\!(\forall j\!\in\! J'. \beta_j\!=\!\beta_{jx}  
-\Rightarrow \!
-\left(\Pred_{OT_x}\land
-\Pred\,''
+\land \!
+\left(\Pred_{OT_x}\!\land\!
+\Pred\,''\!
 \land \alpha_Q\!=\!\beta_{j_0 x}\right)
 \land \alpha\!=\!\alpha_x}} 
 \land \Pred_{s x}\subst{\Post\,'\uplus\Post_{OT_x}}) 	
@@ -3126,7 +3240,7 @@ $\end{small}
 	does not 
 	change the validity of the formula (those variables are not used).
 	\item We need $\Pred_{s x}\subst{\Post_{OT}\uplus(\Post_{OT_x}\uplus \Post\,'')}$, i.e.:
-	$\Pred_{s x}\subst{(\Post\,'\uplus \Post\,'')\uplus(\Post_{OT_x}\uplus \Post\,'')}$. We 
+	$\Pred_{s,x}\subst{(\Post\,'\uplus \Post\,'')\uplus(\Post_{OT_x}\uplus \Post\,'')}$. We 
 	can conclude by observing that	$\Pred_{s x}$ does not use any variable of $Q$ 
 	and thus the substitution involving $\Post\,''$ has no effect.
 \end{itemize}	
@@ -3136,10 +3250,14 @@ similar.\qed
  
        \section{Weak FH-bisimulation lemmas and proofs}
 
-We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity. Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
+We  define a quantified composition operator for effects, i.e. $\Post$ elements of the open transitions.
+We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity. 
 
-\TODO{attention a l ordre: inverse d avant mais colle mieux a la notation -- check everywhere below}
+
+
 \subsection{Weak bisimulation is an equivalence}
+
+In this section, we first define two alternative definitions for weak bisimulation. We use these two alternative definitions to show that weak bisimulation is an equivalence, we will also re-use these alternative definitions in the  proofs of the theorems in next sections.
 
 \begin{lemma}
 \label{lem-rel-OT-WOT} Let $A = <J,\mathcal{S}, s_0,
@@ -3184,7 +3302,8 @@ $
 \alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=n}^{0}\Post_{1j}}}\\
 s=s_{10} \wedge s_{1(n+1)}=s_2 \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
 \displaystyle{
-\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup}\\
+~\qquad \displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
 \\
 \Pred=\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
 ~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
@@ -3279,7 +3398,8 @@ $
 \alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{1}\!\!\Post_j^1}}\\
 s''=s_{10} \wedge s_{1(n+2)}=s_2 \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
 \displaystyle{
-\set{\gamma}=\mybigdotcup_{i=1}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+\set{\gamma}=\mybigdotcup_{i=1}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup}\\
+~\qquad \displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
 \\
 \Pred=\bigwedge_{i=1}^{n+1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{1}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j={n+1}}^{1}\Post_{1j}}\land\\ 
 ~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{1}\Post_{1j}}\Big)\\
@@ -3326,18 +3446,18 @@ Finally by applying rule (\WTTrois) on  the above weak open transitions:
 \inferrule {\openrule
        {
            \vis{\set{\beta_{10}}}\!,\Pred_{10},\Post_{10}
-				 } {s_{10} \OTWeakarrow {\tau}s_{11}} \in \WT
-\qquad
+				 } {s_{10} \OTWeakarrow {\tau}s_{11}} \in\! \WT
+\quad
 \openrule
          {
            \set{\gamma},
 		\Pred, \Post
-				 } {s'' \OTWeakarrow {\alpha'} s'} \in\WT
-\qquad
+				 } {s'' \OTWeakarrow {\alpha'} s'} \in\!\WT
+\quad
 \openrule
          {
           \emptyset,\True,\Id(s'')
-				 } {s' \OTWeakarrow {\tau} s'} \in \WT
+				 } {s' \OTWeakarrow {\tau} s'} \in\! \WT
 \\
 \set{\gamma''}= \vis{\set{\beta_{10}}} \dotcup \set{\gamma}\subst{\Post_{10}}\quad
 \Pred\,''=\Pred_{10}\land\Pred\subst{\Post_{10}}\\%\land (\Pred_3\subst{\Post_2})\subst{\Post_{10}}
@@ -3348,7 +3468,7 @@ Finally by applying rule (\WTTrois) on  the above weak open transitions:
          {
           \set{\gamma''}, \Pred\,'',\Post\,''
 				 } 
-         {s_{10} \OTWeakarrow {\alpha''} s'} \in\WT
+         {s_{10} \OTWeakarrow {\alpha''} s'} \in\!\WT
 } \WTTrois
 \end{mathpar}
 where we obtain the conclusion of the lemma, as required with the following assertions (derived from previous assertions):\\
@@ -3356,7 +3476,8 @@ $
 \alpha''=\alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}}\subst{\Post_{10}} = \alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{0}\Post_{1j}}}\\
 s_{10}=s_{10} \wedge s_{1(n+2)}=s_{2} \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
 \displaystyle{
-\set{\gamma''}=\mybigdotcup_{i=0}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+\set{\gamma''}=\mybigdotcup_{i=0}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup}\\
+~\qquad~\displaystyle{ \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
 \\
 \Pred=\bigwedge_{i=0}^{n+1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j={n+1}}^{0}\Post_{1j}}\land\\ 
 ~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{i3}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{0}\Post_{1j}}\Big)\\
@@ -3389,14 +3510,14 @@ $
          {
            \emptyset,\True,\Id(s)
 				 } {s \OTWeakarrow {\tau} s}\! \in\! \WT
-}\!\! \implies\!\! \Big(\alpha = \tau \wedge \set{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)
+}\!\! \Rightarrow\!\! \Big(\alpha = \tau \wedge \set{\gamma}=\emptyset \wedge \Pred =\True \wedge \Post =\Id(s)\wedge s=s'\Big)
 $
 \item Case rule (\WTDeux). We have:
 \begin{mathpar}
 \openrule
          {
            \set{\gamma},\Pred,\Post}
-         {s \OTWeakarrow {\alpha} s'} \in \WT \implies
+         {s \OTWeakarrow {\alpha} s'} \in \WT \Rightarrow
          \openrule
          {
            \set{\beta},\Pred,\Post}
@@ -3453,7 +3574,7 @@ These two cases above prove the implication with $n=0$ and $m=0$.
          {
            \set{\gamma_1},\Pred_1,\Post_1   }
          {s \OTWeakarrow {\tau} s'} \in\! \WT 
-\implies 
+\Rightarrow \,
  \forall i \in [0..n_1].\openrule
     {
        \set{\beta_{1i}},\Pred_{1i},\Post_{1i}   }
@@ -3473,7 +3594,7 @@ $
          {
            \set{\gamma_3},\Pred_3,\Post_3   }
          {s'' \OTWeakarrow {\tau} s'''} \in\! \WT
-\implies 
+\Rightarrow\, 
 \forall i \in [0..m_1].\openrule
     {
        \set{\beta_{3i}},\Pred_{3i},\Post_{3i}   }
@@ -3492,7 +3613,7 @@ $
          {
            \set{\gamma_2},\Pred_2,\Post_2  }
          {s' \OTWeakarrow {\alpha'} s''} \in\! \WT
-\implies 
+\Rightarrow 
 \bigg(\forall i \in [0..n_2].\openrule
     {
        \set{\beta_{2i}},\Pred_{2i},\Post_{2i}}
@@ -3514,8 +3635,8 @@ $
 \alpha''=\alpha'\displaystyle{\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}}\\
 s'=s_{20} \wedge s_{2(n_2+1)}=s_2 \wedge  s_2' = s_{20}' \wedge s_{2(m_2+1)}'=s''\\
 \displaystyle{
-\set{\gamma_2}=\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{2 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}} }\\~\qquad
-\dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{2i}} \subst{\bigotimes_{j=i-1}^{0}\Post'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j=n_2}^{0}\Post_{2j}} }
+\set{\gamma_2}=\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{2 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}} \dotcup}\\~\qquad
+ \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{2i}} \subst{\bigotimes_{j=i-1}^{0}\Post'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j=n_2}^{0}\Post_{2j}} }
 \\
 \Pred_2=\bigwedge_{i=0}^{n_2}\Pred_{2i}\subst{\bigotimes_{j=i-1}^{0}\Post_{2j}}\land\Pred\,' \subst{\bigotimes_{j={n_2}}^{0}\Post_{2j}}\land\\ 
 ~\qquad\quad\Big(\bigwedge_{i=0}^{m_2}\Pred\,'_{2i}\subst{\bigotimes_{j=i-1}^{0}\Post'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j={n_2}}^{0}\Post_{2j}}\Big)\\
@@ -3531,7 +3652,7 @@ Therefore, we can deduce that we have:
            \set{\gamma}\!,\Pred,\Post
 				 } {s \OTWeakarrow {\alpha} s'} \in \WT
 }
- \implies
+ \Rightarrow
 \bigg(\forall i\in [0..(n_1\!+\!n_2)].\openrule
     {
        \set{\beta_{4i}},\Pred_{4i},\Post_{4i}   }
@@ -3565,15 +3686,14 @@ s_{2i-m_1}' & \mbox{if }i\geq m_1\\
 $
 \\
 
- and similarly for $\Pred_{4i}$, $\Pred_{5i}$, $\Post_{4i}$, and $\Post_{5i}$  \TODO{define or OK this way?}
+ and similarly for $\Pred_{4i}$, $\Pred_{5i}$, $\Post_{4i}$, and $\Post_{5i}$.  
 
-We have the following assertions:\\
+Also, we have the following assertions:\\
 $
 {\displaystyle \alpha''=\alpha\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}\!}\\
 s\!=\!s_{40} \wedge s_{4(n_1+n_2+1)}\!=s_2 \wedge s_2' = s_{50} \wedge s_{5(m_1+m_2+1)}\!=\!s'\\
 ~~\\
-\displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}}}\\~\qquad
-\dotcup\!\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigotimes_{j=i-1}^{0}\Post'_{5i}\shortotimes\Post\,'\shortotimes\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4i}} }
+\displaystyle{\set{\gamma}=\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}}\dotcup }\\~\!\qquad\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigotimes_{j=i-1}^{0}\Post'_{5i}\shortotimes\Post\,'\shortotimes\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4i}} }
 \\
 \displaystyle{\Pred=
 \bigwedge_{i=0}^{n_1+n_2}\!\!\Pred_{4i}\subst{\bigotimes_{j=i-1}^{0}\Post_{4j}}\land\Pred\,' \subst{\!\!\bigotimes_{j={n_1+n_2}}^{0}\!\!\!\Post_{4j}}\land}\\ 
@@ -3617,8 +3737,8 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred_{s,t})\in\mathcal{R}$, we
  and  \\
 $\Pred_{s,t} \land \Pred_{OT}\\
 \displaystyle{\implies\!\!\! \bigvee_{x\in X}
-   \left( \forall j\in J_x.\gamma_j=\gamma_{jx}  \Rightarrow \Pred_{OT_x}
-     \land \alpha\!=\!\alpha_x \land  
+   \left( \forall j\in J_x.\gamma_j\!=\!\gamma_{jx}\!\land\! \Pred_{OT_x}
+     \land \alpha\!=\!\alpha_x \!\land\!  
      \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)}$
     
  \item  and symmetrically any open transition from $\symb{WOT}$ in $\WT_2$ can be 
@@ -3687,10 +3807,11 @@ $
 \displaystyle{\alpha=\alpha'\subst{\bigotimes_{j=n}^{0}\Post_{1j}}}\\
 s=s_{10} \wedge s_{1(n+1)}=s_{20} \wedge s_{21} = s_{30} \wedge s_{3(m+1)}=s'\\
 \displaystyle{
-\gamma_j^{j\in J'}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+\gamma_j^{j\in J'}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup}\\
+~\qquad\qquad\!\displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
 \\
 \Pred_{OT}=\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
-~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
+~\qquad\qquad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
 \Post_{OT}=\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}$
 
 
@@ -3709,13 +3830,13 @@ by hypothesis we have $(s,t|\Pred_{s,t})\in\mathcal{R}$  and $s=s_{10}$. Thus, b
     \openrule
          {
            \gamma_{j a}^{j\in J_{a}}, \Pred_{OT_a},\Post_{OT_a}}
-         {u \OTWeakarrow {\alpha_{1 a}} u_a}
+         {t \OTWeakarrow {\alpha_{1 a}} u_a}
 \end{mathpar}
- such that  $\forall a, J_{a}=\{j\in J_1'|\beta_{1j}\neq\tau\}, u=t,  (s_{11},u_a|\Pred_{s_{11},u_a})\in \mathcal{R}$ and \\
+ such that  $\forall a, J_{a}=\{j\in J_1'|\beta_{1j}\neq\tau\},   (s_{11},u_a|\Pred_{s_{11},u_a})\in \mathcal{R}$ and \\
  $\Pred_{s,t} \land \Pred_1\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}
-  \!\! \left( \forall j\in J_a.\vis{\beta_{1j}}=\gamma_{ja}  \Rightarrow \Pred_{OT_a}
-     \land \alpha_{1 a}\!=\!\tau \land  
+  \!\! \left( \forall j\in J_a.\vis{\beta_{1j}}\!=\!\gamma_{ja} \!\land\! \Pred_{OT_a}\!
+     \land\! \alpha_{1 a}\!=\!\tau \land  
      \Pred_{s_{11},u_a}\subst{\Post_1\uplus\Post_{OT_a}}\right)$
    
  Note that, because $\AlgE\cap\AlgA=\emptyset$  (actions and expressions are disjoint) and $\alpha_{1 a}\!=\!\tau$ we have 
@@ -3724,7 +3845,7 @@ directly ($\alpha_{1 a}$ cannot be a variable, and cannot contain expressions/va
     \openrule
          {
            \gamma_{j a}^{j\in J_{a}}, \Pred_{OT_a},\Post_{OT_a}}
-         {u \OTWeakarrow {\tau} u_a}
+         {t \OTWeakarrow {\tau} u_a}
 \end{mathpar}
 %and\\
 %$\Pred_{s,t} \land \Pred_1\\
@@ -3752,7 +3873,7 @@ we have  $(s_{11},u_a|\Pred_{s_{11},u_a})\in \mathcal{R}$  and $s_{11}=s_{20}$. 
 (s_{21},v_{b}|\Pred_{s_{21},v_{b}})\in \mathcal{R}$; \\
  $\Pred_{s_{11},u_a} \land \Pred_2\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{b\in B}}
- \!\!  \left( \forall j\in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}\Rightarrow \Pred_{OT_{b}}\!\land \alpha'\!=\!\alpha_{2 b} \land  
+ \!\!  \left( \forall j\in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}\land \Pred_{OT_{b}}\!\land \alpha'\!=\!\alpha_{2 b}\! \land\!  
      \Pred_{s_{21},v_{b}}\subst{\Post_2\uplus\Post_{OT_{b}}}\right)$
 
 
@@ -3776,7 +3897,7 @@ From previous case, we have $(s_{21},v_{b}|\Pred_{s_{21},v_{b}})\in \mathcal{R}$
 (s_{31},w_{c}|\Pred_{s_{31},w_{c}})\in \mathcal{R}$ and \\
  $\Pred_{s_{21},v_{b}} \land \Pred_3\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{c\in C}}
-   \!\left( \forall j\in J_{c}. \vis{\beta_{3j}}\!=\!\gamma_{jc} \! \Rightarrow\! \Pred_{OT_{c}}\!
+   \!\left( \forall j\in J_{c}. \vis{\beta_{3j}}\!=\!\gamma_{jc} \! \land\! \Pred_{OT_{c}}\!
      \land\!  
      \Pred_{s_{31},w_{c}}\subst{\Post_3\uplus\Post_{OT_{c}}}\right)$
          
@@ -3811,60 +3932,60 @@ Based on cases described above by applying (\WTTrois)~rule on the resulting $\sy
          {
            \set{\gamma},
 		\Pred, \Post}  
-         {u \OTWeakarrow {\alpha''} w_{c}} 
+         {t \OTWeakarrow {\alpha''} w_{c}} 
 } 
  \end{mathpar}
 We now need to prove that the following statement holds:\\
 $\Pred_{s,t} \land \Pred\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}} 
-  ( \forall j\in J. \gamma_j'=\gamma_{j}  \Rightarrow \Pred
+  ( \forall j\in J. \gamma_j'=\gamma_{j}  \land \Pred
      \land \alpha \!=\! \alpha'' \land  
      \Pred_{s',t_{x}}\subst{\Post_{OT}\uplus\Post\,})$\\
-     Let's start with the hypothesis \TODO{ je vois pas ce que u=t apporte -- Ludo} and consider  $u=t$   we have:\\
+We have:\\
 $\Pred_{OT}= \Pred_1 \wedge \Pred_2\subst{\Post_1} \wedge \Pred_3\subst{\Post_2\shortotimes\Post_1}$\\
 $\Post_{OT}=\Post_3\shortotimes \Post_2\shortotimes\Post_1$\\
 Moreover, we have the following  statement:\\
 $\Pred_{s,t} \land \Pred_1\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}
- \! \! \left( \forall j\in J_a. \vis{\beta_{1j}}=\gamma_{ja}  \Rightarrow \Pred_{OT_a}
+ \! \! \left( \forall j\in J_a. \vis{\beta_{1j}}=\gamma_{ja}  \land \Pred_{OT_a}
       \land  
      \Pred_{s_{11},u_a}\subst{\Post_1\uplus\Post_{OT_a}}\right)$\\
 With the conjunction of the predicate $\Pred_2\subst{\Post_1}$ on both sides of the implication, we get:\\  
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\\
  \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}
-  \!\! ( \forall j\in J_a. \vis{\beta_{1j}}=\gamma_{ja}  \Rightarrow \Pred_{OT_a} \land
+  \!\! ( \forall j\in J_a. \vis{\beta_{1j}}=\gamma_{ja}  \land \Pred_{OT_a} \land
      \Pred_{s_{11},u_a}\subst{\Post_1\uplus\Post_{OT_a}}) \wedge\\ \Pred_2\subst{\Post_1\uplus\Post_{OT_a}}  \\
 $
 Note that  on the right side of the implication we added  the substitution  of $\Post_{OT_x}$ without affecting the validity of the statement, because  the domain  of the substitution $\Post_{OT_x}$ is disjoint from the others. Hence a little rewriting gives:\\
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\\
  \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}
-\!\!   \left(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja}\Rightarrow \Pred_{OT_a}
+\!\!   \left(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja}\land \Pred_{OT_a}
      \!\land(\Pred_{s_{11},u_a}\wedge\Pred_2)\subst{\Post_1\uplus\Post_{OT_a}} \right)$\\
 By replacing the inner predicate $(\Pred_{s_{11},u_a}\wedge\Pred_2)$ by the conclusion of the  statement given in case 2,  the formula becomes: \\
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\\
  \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}
-   \!\!(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja}  \Rightarrow \Pred_{OT_a}
+   \!\!(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja}  \land \Pred_{OT_a}
       \land (\displaystyle{\bigvee_{b\in B}}(
-    \forall j\in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}  \Rightarrow \Pred_{OT_{b}}\land \alpha'\!=\!\alpha_{2 b}\! \land \Pred_{s_{21},v_{b}}\subst{\Post_2\uplus\Post_{OT_{b}}})\subst{\Post_1\uplus\Post_{OT_a}})$\\
+    \forall j\in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}  \land \Pred_{OT_{b}}\land \\~\qquad\qquad\alpha'\!=\!\alpha_{2 b}\! \land \Pred_{s_{21},v_{b}}\subst{\Post_2\uplus\Post_{OT_{b}}})\subst{\Post_1\uplus\Post_{OT_a}})$\\
 This can be rewritten into:\\
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}\, \displaystyle{\bigvee_{b\in B}} 
-(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja} \land  \forall j \in J_{b}. (\vis{\beta_{2j}}\!=\!\gamma_{jb})\subst{\Post_1\uplus\Post_{OT_a}}   \Rightarrow\Pred_{OT_a} \land  \Pred_{OT_{b}} \subst{\Post_1\uplus\Post_{OT_a}} \land  (\alpha'\!=\!\alpha_{2 b}) \subst{\Post_1\uplus\Post_{OT_a}} \land \\ \Pred_{s_{21},v_{b}}\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})$\\ 
+(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja} \land  \forall j \in J_{b}. (\vis{\beta_{2j}}\!=\!\gamma_{jb})\subst{\Post_1\uplus\Post_{OT_a}}   \land\Pred_{OT_a} \land  \Pred_{OT_{b}} \subst{\Post_1\uplus\Post_{OT_a}} \land  (\alpha'\!=\!\alpha_{2 b}) \subst{\Post_1\uplus\Post_{OT_a}} \land \\ \Pred_{s_{21},v_{b}}\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})$\\ 
 Since $Post_1$  does not act on $\gamma_{jb}$, nor on $ \Pred_{OT_{b}}$ and $  \alpha_{2}$. As well $\Post_{OT_a}$  does not act on $\alpha'$, nor on  $\beta_{2j}$ the formula can be simplified as follows:\\
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}\, \displaystyle{\bigvee_{b\in B}} 
-(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}=\gamma_{jb} \subst{\Post_{OT_a}}  \Rightarrow\Pred_{OT_a} \land  \Pred_{OT_{b}} \subst{\Post_{OT_a}} \land \alpha'\subst{\Post_1}=\alpha_{2 b} \subst{\Post_{OT_a}} \land \Pred_{s_{21},v_b}\\\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})$\\ 
+(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}=\gamma_{jb} \subst{\Post_{OT_a}}  \land\Pred_{OT_a} \land  \Pred_{OT_{b}} \subst{\Post_{OT_a}} \land \alpha'\subst{\Post_1}=\alpha_{2 b} \subst{\Post_{OT_a}} \land \Pred_{s_{21},v_b}\\\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})$\\ 
 Finally, the conjunction with the term $\Pred_3\subst{\Post_2\shortotimes\Post_1}$ of the both sides of the implication and rewriting, we get:\\
 $(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortotimes\Post_1}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}} \displaystyle{\bigvee_{b\in B}} 
-(\forall j\in J_a.\vis{\beta^1_j}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}\Rightarrow \Pred_{OT_a}\land\Pred_{OT_{b}}\subst{\Post_{OT_a}} \land  \alpha'\subst{\Post_1}= \alpha_{2 b} \subst{\Post_{OT_a}} \land (\Pred_{s_{21},v_b} \land  \Pred_3)\\ \subst{\Post_2\shortotimes \Post_1\uplus \Post_{OT_{b}}\shortotimes\Post_{OT_a}})$\\ 
+(\forall j\in J_a.\vis{\beta^1_j}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}\land \Pred_{OT_a}\land\Pred_{OT_{b}}\subst{\Post_{OT_a}} \land  \alpha'\subst{\Post_1}= \alpha_{2 b} \subst{\Post_{OT_a}} \land (\Pred_{s_{21},v_b} \land  \Pred_3)\\ \subst{\Post_2\shortotimes \Post_1\uplus \Post_{OT_{b}}\shortotimes\Post_{OT_a}})$\\ 
 Again note that because of the domain  of the substitution is independent from some predicates and expressions, we removed $\Post_1$ and  we  added the term $\Post_{OT_{b}}\shortotimes\,\Post_{OT_a}$ in the substitution of the right side of the implication.\\
 Finally, by replacing the predicate $(\Pred_{s_{21},v_{b}} \land  \Pred_3)$
 by the conclusion of the  implication given in case 3, we get:\\
 $\Pred_{s,t} \land \underbrace{\Pred_1\land \Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortotimes\Post_1}}_{\Pred_{OT}}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}}\, \displaystyle{\bigvee_{b\in B}}\, \displaystyle{\bigvee_{c\in C}} 
 (\forall\! j\in\! J_a.\vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \!\in\! J_{b}.\vis{\beta_{2j}\subst{\Post_{OT_a}}}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}  \land 
- \forall j\!\in\! J_{c}. \vis{\beta_{3j} \subst{\Post_2\,\shortotimes\,\Post_1}} \!=\!\gamma_{jc} \subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}  \Rightarrow\\
+ \forall j\!\in\! J_{c}. \vis{\beta_{3j} \subst{\Post_2\,\shortotimes\,\Post_1}} \!=\!\gamma_{jc} \subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}  \land\\
    \underbrace{\Pred_{OT_a}\land\Pred_{OT_{b}} \subst{\Post_{OT_a}} \land 
   \Pred_{OT_{c}}\subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}}_{\Pred} \land  \underbrace{\alpha'\subst{\Post_1}}_{\alpha}=\underbrace{\alpha_{2 b} \subst{\Post_{OT_a}}}_{\alpha''} \land\\ \Pred_{s_{31},w_{c}}  \subst{\underbrace{\Post_3\shortotimes\Post_2\shortotimes\Post_1}_{\Post_{OT}}\uplus \underbrace{\Post_{OT_{c}}\shortotimes \Post_{OT_{b}}\shortotimes\Post_{OT_a}}_{\Post}})$\\
 The three for all statements (on $J_a$, $J_b$, and $J_c$) can be concatenated using $\dotcup$, the list union lifted to indexed sets (if $\gamma=\gamma'$ and $\gamma''=\gamma'''$ then $\gamma\dotcup\gamma''=\gamma'\dotcup\gamma'''$).\\
@@ -3873,17 +3994,17 @@ $ \\
 We have  $s_{31}=s'$, so can rewrite the formula:\\
 $\Pred_{s,t} \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{a\in A}} \displaystyle{\bigvee_{b\in B}} \displaystyle{\bigvee_{c\in C}} 
-(\forall j\in J.\gamma_j'=\gamma_j \Rightarrow  \Pred \land \alpha=\alpha''  \land \Pred_{s',w_{c}}\subst{\Post_{OT}\uplus\Post\,}$\\
+(\forall j\in J.\gamma_j'=\gamma_j \land  \Pred \land \alpha=\alpha''  \land \Pred_{s',w_{c}}\subst{\Post_{OT}\uplus\Post\,}$\\
 
 All the combinations of elements in $A$, $B$, and $C$ provides a set $X$ of weak open transitions (each combination of one transition in $A$, one in $B$, and one in $C$ provides one weak open transition in the set $X$, i.e. each $x\in X$ corresponds to a triple $(a,b,c)\in A\times B\times C$); this defines a set of weak open transitions indexed over $X$;  each such open transition leads to a $w_c$ that we call $t_x$. This re-indexing allows us to conclude:\\
 $\Pred_{s,t} \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}} 
-(\forall j\in J.\gamma_j'=\gamma_j \Rightarrow  \Pred \land \alpha=\alpha''  \land \Pred_{s',t_{x}}\subst{\Post_{OT}\uplus\Post\,}$\\
+(\forall j\in J.\gamma_j'=\gamma_j \land  \Pred \land \alpha=\alpha''  \land \Pred_{s',t_{x}}\subst{\Post_{OT}\uplus\Post\,}$\\
 \qed
 \end{proof}
 
 
-
+\TODO{attention theorem 10 est le thm 6 en fait -- presentation des thm et preuve a revoir}
 \begin{theorem}[Weak FH-Bisimulation is an equivalence]\label{thm-weak-equiv} Suppose $\mathcal{R}$ 
 is a weak FH-bisimulation. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
 reflexive, symmetric and transitive.
@@ -3899,8 +4020,9 @@ With the above lemma, we can use the same technique as for Theorem \ref{thm-equi
 
        		
 \subsection{Composition properties}
+This section gives detailed lemmas and their proofs, these are the equivalent of the composition lemmas for open transitions, but applied to weak automata that give the semantics of open pNets.
 
-\begin{lemma}[Weak OT decomposition]\label{lem-decomposeWOT} 
+\begin{lemma}[Weak open transition decomposition]\label{lem-decomposeWOT} 
 	Let $\Leaves(Q)=pLTS_l^{l\in L_Q}$; suppose\footnote{Note that the hypotheses of the 
 	lemma imply that $Q$ is 
 	not a pLTS but a similar lemma can be proven for a pLTS $Q$}:
@@ -4122,7 +4244,7 @@ $\forall p\! \in\! [0..n_1] Q\models{\openrule
 				{\ostate{s_{pl}^{l\in L_Q}} \OTarrow {\alpha_{1p}}
 				\ostate{s_{(p+1)l}^{l\in L_Q}}}
 				}%\]
-,$
+,$  \\
 $ Q\models{\openrule
 			{
 				(\beta'_{2 j})^{j\in J\cap\Holes(Q)}, {\Pred''_2},  
@@ -4131,7 +4253,7 @@ $ Q\models{\openrule
 				\ostate{t_l'^{\,l\in L_Q}}}
 		}%\]
 $
-and
+and \\
 $\forall p \in [0..n_2] Q\models{\openrule
 			{
 				(\beta'_{3pj})^{j\in J\cap\Holes(Q)}, {{\Pred''_{3p}}},  
@@ -4160,10 +4282,13 @@ In this equation, and using case 1 above for all $k\in [0\ldots n_1]$ there is a
 &\iff\alpha_k\subst{\bigotimes_{j=k-1}^{0}\!\!\Post''_{j}}= \beta_{1 p j_0}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post'_{1j}} 
 \end{split}
 \end{equation*}
-We can optain similar equations for $\alpha_{n_1+1}$ related with $\beta_{2 j_0}$ and the  $\alpha_k$ for $k\geq n_1+2$ related with $\beta_{3 p j_0}$ for some $p$. Note that the substitutions are however more complex. \TODO{detailler les equations?}
+We can obtain similar equations for $\alpha_{n_1+1}$ related with $\beta_{2 j_0}$ and the  $\alpha_k$ for $k\geq n_1+2$ related with $\beta_{3 p j_0}$ for some $p$. Note that the substitutions are however more complex. 
+Overall we obtain (we skip here the details about the three cases 1, 2, and 3 above that all fall into the same equation because of the re-indexing we perform): 
+\begin{equation}\label{eqproofbeta}
+\Pred_\beta \iff \gamma_{j_0}=
+\vis{[\alpha_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post''_{j}}|p\in[0..n_1+n_2+2]]}
+\end{equation}
 
-Overall we obtain (we skip here the details about the three cases 1, 2, and 3 above that all fall into the same equation because of the re-indexing we perform) \[\Pred_\beta \iff \gamma_{j_0}=
-\vis{[\alpha_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post''_{j}}|p\in[0..n_1+n_2+2]]}\]
 
 
 %, 2 and 3 above, we have for all $k\in [0\ldots n_1+n_2+2]$, then there is an action $\beta$ such that $\beta=\beta_{1p j_0}$ s.t. $j_0\in J_{1p}$, or $\beta=\beta_{2 j_0}$ with $j_0\in J_{2}$, or $\beta=\beta_{3p j_0}$ s.t. $j_0\in J_{3p}$, where $\beta=\alpha_k$, additionally the different $\beta$ are ordered by following the OTs, somehow performing the same re-indexing as  the removal of steps where $Q$ does not move above. Overall we have\footnote{under the assumption written above, i.e. that $Q$ moves in the middle OT, i.e. $j_0\in J_{2}$}:
@@ -4174,11 +4299,16 @@ Overall we obtain (we skip here the details about the three cases 1, 2, and 3 ab
 %And thus \[\gamma_{j_0} = []\]
 
 
-Let us consider the sequence of $(n_1+n_2+3)$  actions $\alpha_p$ some of them may be non-observable (are $\tau$ transition). By considering $\tau$  actions we split the sequence of actions into $n+1$ subsequences, such that each subsequence is a sequence of actions containing  only one observable action, and possibly many $\tau$ ones.  We can decompose each of the $n+1$ subsequences; 
+Let us consider the sequence of $(n_1+n_2+3)$  actions $\alpha_p$ some of them may be non-observable (they are $\tau$ transitions). By considering the sequence of $\tau$ and non-$\tau$ actions we split the sequence of actions into $n+1$ subsequences, such that each subsequence is a sequence of actions containing  only one observable action, and possibly many $\tau$ ones. 
 
+\begin{figure}
+\begin{center}
 \includegraphics[width=6cm]{XFIG/proof-explain}
+\end{center}\caption{Composition of the subsequences}\label{figproof}
+\end{figure}
 
-for $k\in [0..n]$ the position of the $k^{\text{th}}$ visible action is  $n_k$, for $k\in [1..n]$,  $n'_k$ is any index between $n_{k-1}$ and $n_k$, additionally $n'_0=0$ and $n'_{n+1}=n_1+n_2+3$. We obtain $n+1$ subsequences  made of the following OTs, for all $k\in [0..n]$ :\\
+ We can decompose each of the $n+1$ subsequences in the following way (see Figure~\ref{figproof}).
+For $k\in [0..n]$ the position of the $k^{\text{th}}$ visible action is  $n_k$. For $l\in [1..n]$,  $n'_l$ is any index between $n_{l-1}$ and $n_l$, additionally $n'_0=0$ and $n'_{n+1}=n_1+n_2+3$. We obtain $n+1$ subsequences  made of the following OTs, for all $k\in [0..n]$ :\\
 $\forall p\! \in\! [n'_{k}..(n_k\!-\!1)] Q\models{\openrule
 			{
 				\beta_{pj}^{j\in J\cap\Holes(Q)}, {{\Pred''_{p}}},  
@@ -4186,7 +4316,7 @@ $\forall p\! \in\! [n'_{k}..(n_k\!-\!1)] Q\models{\openrule
 				{\ostate{v_{pl}^{l\in L_Q}} \OTarrow {\tau}
 				\ostate{v_{(p+1)l}^{l\in L_Q}}}
 				}%\]
-,$ 
+,$ \\
 $Q\models{\openrule
 			{
 				\beta_{n_k j}^{j\in J\cap\Holes(Q)}, {{\Pred''_{n_k}}},  
@@ -4195,7 +4325,7 @@ $Q\models{\openrule
 				\ostate{v_{(n_k+1)l}^{l\in L_Q}}}
 				}%\]
 $
-and
+and\\
 $\forall p \in [(n_k\!+\!1)..(n'_{k+1}\!-\!1)]\,\, Q\models{\openrule
 			{
 				\beta_{pj}^{j\in J\cap\Holes(Q)}, {{\Pred''_{p}}},  
@@ -4235,7 +4365,7 @@ Consequently,  we have:
 \[\alpha_{n_k}\displaystyle{\subst{\bigotimes_{j=n_k-1}^{0}\!\!\Post''_{j}}} =
 \alpha_{n_k}\displaystyle{\subst{\bigotimes_{j=n_k-1}^{n'_{k}}\!\!\Post''_{j}\otimes\bigotimes_{j=n'_{k}-1}^{0}\!\!\Post''_{j}}} = \alpha_k'\displaystyle{\subst{\bigotimes_{j=n'_{k}-1}^{0}\!\!\Post''_{j}}} = 
 \alpha_k'\displaystyle{\subst{\bigotimes_{j=k-1}^{0}\!\!\Post_{j}}}\]
-We now have (the $\alpha'_p$ correspond to the observable $\alpha_k$ actions): \TODO{add ref to eq 1 page above?}
+With~\ref{eqproofbeta}, we now have (the actions $\alpha'_p$ correspond to the observable actions, $\alpha_k$): 
 \begin{eqnarray*}
 \Pred_\beta &\iff& \gamma_{j_0}=
 \mybigdotcup_{p=0}^{p=n_1+n_2+2}
@@ -4281,7 +4411,7 @@ $\Pred = \displaystyle{\Pred\,'
 		\land \!\!\bigwedge_{p=0}^n((\alpha_p\subst{\bigotimes_{i=p-1}^{0}\Post_i)} = \beta_p\land (\Pred_p\subst{\bigotimes_{i=p-1}^{0}\Post_i)} )}$
 
 
-Indeed, \TODO{fill the empty lines (more complex but easy adaptation)}
+Indeed,
 {\scriptsize \begin{equation*}
 \begin{split}
 \Pred&\iff\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\land
@@ -4762,12 +4892,12 @@ For $\set{\gamma'}$ we distinguish elements in the holes of $P$ and of $Q$. Firs
 \gamma'_j=\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}}\subst{\bigotimes_{k=i-1}^{0} \Post_{1k} } }  \dotcup  \vis{{\beta_{2j}}\subst{\bigotimes_{k=m_1}^{0}\Post_{1k}}} \\
 \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij} \subst{\bigotimes_{k=i-1}^{0}\Post_{3k}\shortotimes\Post_2\shortotimes\bigotimes_{k=m_1}^{0}\Post_{1k}}}
 \end{multline*}
-Now, when $j\in J_t$ for some $t$,  $\gamma'_j$ is the concatenation of elements of $\gamma'_{1ij}$, $\gamma_2'$, $\gamma'_{3ij}$  that are not empty. By construction the concatenation of these elements is $\gamma_{tj}$, for $t\in[0..n]$. $\Post_{ik}$ has no effect on $\gamma_{tj}$ but  $\Post_{k}$ has \TODO{do we want to be more explicit in the explanation? giving the exact indices is cumbersome because Post'ij is either empty or postij for the same indices as gamma, this can also be related with the ni and n'i}:
+Now, when $j\in J_t$ for some $t$,  $\gamma'_j$ is the concatenation of elements of $\gamma'_{1ij}$, $\gamma'_{2 j}$, $\gamma'_{3ij}$  that are not empty. By construction the concatenation of these elements is $\gamma_{tj}$, for $t\in[0..n]$. $\Post_{ik}$ has no effect on $\gamma_{tj}$ but  $\Post_{k}$ has \TODO{do we want to be more explicit in the explanation? giving the exact indices is cumbersome because Post'ij is either empty or postij for the same indices as gamma, this can also be related with the ni and n'i}:
 \begin{align*}
 \gamma'_j&=
-\mybigdotcup_{i=0}^{m_1}\set{\gamma'_{1i}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{1k}}\dotcup
- \set{\gamma'_{2}}\subst{\bigotimes_{k=m_1}^{0}\Post\,'_{1k}}\dotcup
- \mybigdotcup_{i=0}^{m_2}\set{\gamma'_{3i}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{3k}\shortotimes\Post\,'_2\shortotimes\bigotimes_{k=n}^{0}\Post\,'_{1k}}\\
+\mybigdotcup_{i=0}^{m_1}{\gamma'_{1ij}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{1k}}\dotcup
+ {\gamma'_{2 j}}\subst{\bigotimes_{k=m_1}^{0}\Post\,'_{1k}}\dotcup
+ \mybigdotcup_{i=0}^{m_2}{\gamma'_{3ij}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{3k}\shortotimes\Post\,'_2\shortotimes\bigotimes_{k=n}^{0}\Post\,'_{1k}}\\
 &=
 \mybigdotcup_{t=0}^{n} {\gamma_{tj}}\subst{\bigotimes_{k=t-1}^{0} \Post_{k} }   
 \end{align*}
@@ -4777,11 +4907,11 @@ Concerning predicates, we also separate predicates on $P$ from predicates on $Q$
 \begin{split}
 \Pred''&=\Big(\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\land\\ &\qquad
 ~\quad\bigwedge_{i=0}^{m_3}\Pred\,'_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\Big)\\
-&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigotimes_{j=p-1}^{0}\Post_{1j}}\land\Pred^2\subst{\bigotimes_{p=m_1}^{0}\Post_{1p}}\land\\&\qquad \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigotimes_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigotimes_{p=m_1}^{0}\Post_{1p}}\Big)\\&\qquad
+&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigotimes_{j=p-1}^{0}\Post_{1j}}\land\Pred_2\subst{\bigotimes_{p=m_1}^{0}\Post_{1p}}\land\\&\qquad \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigotimes_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigotimes_{p=m_1}^{0}\Post_{1p}}\Big)\\&\qquad
 \land \bigwedge_{t=0}^{n} \Pred_t\bigotimes_{i=t-1}^{0}\Post_i\\&\qquad
 \land \Big( \bigwedge_{i=0}^{m-1}(\beta_{1{n_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j={n_i}-1}^{0}\Post\,'_{1j}}\land(\beta_{2{j_0}}=\alpha_m) \subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\land\\ &\qquad
 ~\quad\bigwedge_{i=m+1}^{n}(\beta_{3{n'_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j=n'_i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\Big)\\
-&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigotimes_{j=p-1}^{0}\Post_{1j}}\big)\land\Pred^2\subst{\bigotimes_{p=m_1}^{0}\Post_{1p}}\land\\&\qquad \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigotimes_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigotimes_{p=m_1}^{0}\Post_{1p}}\Big)\\&\qquad
+&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigotimes_{j=p-1}^{0}\Post_{1j}}\big)\land\Pred_2\subst{\bigotimes_{p=m_1}^{0}\Post_{1p}}\land\\&\qquad \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigotimes_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigotimes_{p=m_1}^{0}\Post_{1p}}\Big)\\&\qquad
 \land \bigwedge_{t=0}^{n} \Pred_t\bigotimes_{i=t-1}^{0}\Post_i\\&\qquad
 \land \Big(\bigwedge_{i=0}^{m-1}(\beta_{i}=\alpha_i)\subst{\bigotimes_{j={i-1}}^{0}\Post_{j}}\land(\beta_m=\alpha_m )\subst{\bigotimes_{j=m}^{0}\Post_{j}}\land\\ &\qquad
 ~\quad\bigwedge_{i=m+1}^{n}(\beta_i=\alpha_i)\subst{\bigotimes_{j=i-1}^{m}\Post_j\shortotimes\Post_m\shortotimes\bigotimes_{j=m-1}^{0}\Post_{j}}\Big)\\
@@ -4803,7 +4933,6 @@ Finally, concerning postconditions:
 This allows us to conclude concerning the lemma. \qed
 \end{proof}
 
-\TODO{prove the 3 theorems for composability of weak bisim or explain why the proof is similar to strong (thanks to the previous lemmas)}
 \newpage
 
 
@@ -4816,70 +4945,155 @@ This allows us to conclude concerning the lemma. \qed
 	$\pNet[\pNetQ]_{j_0}$ and 
 	$\pNet[\pNetQ']_{j_0}$ are weak FH-bisimilar.
 \end{theorem}
- \begin{proof}  (Sketch of proof) Consider $Q$ weak FH-bisimilar to $Q'$.  It means, according to Lemma  \ref{lem-alternative-weak-bisim} for any weak open transition $WOT$ in $Q$ there exist a family of weak open transitions $WOT_{x}^{x \in X}$ in $Q'$. 
-We apply  Lemma \ref{lem-Weakcompose1} on weak open transition $WOT$, $j_0 \in J$, we obtain a new weak open transition $WOT'$ in $P[Q]_{j_0}$.
-On other hand, we apply same Lemma \ref{lem-Weakcompose1} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$.
+ \begin{proof}  Consider $Q$ weak FH-bisimilar to $Q'$.  It means that there exist a FH-bisimulation $\mathcal{R}_{Q,Q'}$ relating the two pNets $Q$ and $Q'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P[Q']_{j_0}$: 
+\[\mathcal{R} = \{(\ostate{S_P\uplus S_Q},\ostate{S_P\uplus S_{Q'}}, \Pred_{Q,Q'})|\,(S_Q,S_{Q'}, \Pred_{Q,Q'})\in\mathcal{R}_{Q,Q'}\}\]
 
-Suppose we have:\\[-2ex]
+
+To prove weak FH-bisimulation of $\pNet[\pNetQ]_{j_0}$ and 
+	$\pNet[\pNetQ']_{j_0}$, we consider  an open transition $OT$ of $\pNet[\pNetQ]_{j_0}$, and an equivalent state of $\pNet[\pNetQ']_{j_0}$, and we try to find a family of WOT of 	$\pNet[\pNetQ']_{j_0}$ that simulates $OT$.
+Consider an OT of  $\pNet[\pNetQ]_{j_0}$ it is of the form (notations introduced to prepare the decomposition):
+\[
+\pNet[\pNetQ]_{j_0}\models\openrule
+	{
+		\beta_j^{j\in( J_P\uplus J_Q)}, 
+		\Pred_P\land \Pred_Q,  
+		\Post_P\uplus \Post_Q}
+	{\ostate{S_P\uplus S_Q} \OTWeakarrow {\alpha}
+		\ostate{S'_P\uplus S'_Q}
+}
+\]
+
+By the decomposition lemma for OTs (Lemma~\ref{lem-decompose}), we obtain the 2 following OTs (equality side-conditions have been inlined for clarity):
 \begin{mathpar}
 %\[
-P\models{\openrule
+\pNet\models{\openrule
 	{
-		\beta_j^{j\in J}, 
-		\Pred,  
-		\Post}
-	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
-		\ostate{(s_i')^{\, i\in L}}}
+		\beta_j^{j\in J_P}\uplus(j_0\mapsto \alpha_Q), 
+		\Pred_P,  
+		\Post_Q}
+	{\ostate{S_P} \OTWeakarrow {\alpha}
+		\ostate{S'_P}}
 }
 \quad\text{~~and~~}\quad
 Q\models{\openrule
 	{
-		\set{\gamma},
+		\beta_j^{j\in J_Q},
 		 \Pred_Q,  
 		\Post_Q}
-	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
-		\ostate{(s'_{i})^{\, i\in L_Q}}}
+	{\ostate{S_Q} \OTWeakarrow {\alpha_Q}
+		\ostate{S'_Q}}
 }%\]
-
 
 \end{mathpar}
 
-Then, we have by lemma \ref{lem-Weakcompose}: \\[-2ex]
-	\[ P[Q]_{j_0}  
-	\models
-	{\openrule
-		{
-			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
-			\Pred\,',  \Post\,'
-			 }
-		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
-			\ostate{(s_i')^{\, i\in L\uplus L_Q}}}
-	}
-	\]
-
-On the other hand, $Q$ weak FH-bisimilar to $Q'$, so according to  Lemma  \ref{lem-alternative-weak-bisim} there exist a family of weak open transitions $WOT_{x}$:
+By definition of $\mathcal{R}$ we have 
+$(S_Q,S_{Q'}| \Pred_{Q,Q'})\in\mathcal{R}_{Q,Q'}$. And thus, by definition of weak FH-bisimulation, there exist a family of weak open transitions $WOT_{x}$:
  \begin{mathpar}
     \openrule
          {
-           \gamma_{j x}^{j\in J_{x}}, \Pred_{Q_x},\Post_{Q_x}}
-         {\ostate{t_{i}^{i\in L_{Q_x}}}\OTWeakarrow {\alpha_x} \ostate{t_{ix}^{i\in L_{Q_x}}}}
+           \gamma_{j x}^{j\in J_Q}, \Pred_{Q' x},\Post_{Q' x}}
+         {\ostate{S_{Q'}}\OTWeakarrow {\alpha_{x}} \ostate{S'_{Q' x}}}
 \end{mathpar}
 
-such that...\\
+where  
+\[\forall x.\, (S'_Q,S'_{Q' x}| \Pred_{Q,Q' x})\in\mathcal{R}_{Q,Q'}\]
+and
+\begin{equation*}
+\begin{split}
+\Pred_{Q,Q'}\land \Pred_Q \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_Q.\, \vis{\beta_j}=\gamma_{j x})\Rightarrow (\Pred_{Q_x}\land\\ &~~\alpha_Q=\alpha_x \land \Pred_{Q,Q' x}\subst{\Post_{Q' x}\uplus \Post_{Q}}) \Big)
+\end{split}
+\end{equation*}
 
-By applying  Lemma \ref{lem-Weakcompose} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$:
+Composing the OT of $P$ with the WOTs of $Q'$ by Lemma~\ref{lem-Weakcompose1} we obtain:
+\[
+\pNet[\pNetQ']_{j_0}\models\openrule
+	{
+		\vis{\beta_j^{j\in( J_P}}\uplus\gamma_{j x}^{j\in J_Q}, 
+		\Pred_P\land \Pred_{Q' x},  
+		\Post_P\uplus \Post_{Q' x}}
+	{\ostate{S_P\uplus S_{Q'}} \OTWeakarrow {\alpha}
+		\ostate{S'_P\uplus S'_{Q' x}}
+}
+\]
+with $\bigvee_{x\in X}
+(\forall j\in J_Q.\, \vis{\beta_j}=\gamma_{j x} \implies \alpha_Q=\alpha_x$ that ensures that the open transitions can be recomposed when the OT fires.
 
-\[ P[Q']_{j_0}  
-	\models
-	{\openrule
-		{
-			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
-			\Pred\,',  \Post\,'
-			 }
-		{\ostate{s_i^{i\in L} \uplus t_{i}^{i\in L_{Q_x}}} \OTWeakarrow {\alpha}
-			\ostate{(s_i')^{\, i\in L} \uplus t_{ix}^{i\in L_{Q_x}} }}
-	}
-	\]
+Side conditions necessary to prove weak-FH bisimulations are:
+
+\[\forall x.\, (S'_P\uplus S'_Q,S'_P\uplus S'_{Q' x}| \Pred_{Q,Q' x})\in\mathcal{R}\]
+which is trivially verified, and
+\begin{equation*}
+\begin{split}
+\Pred_{Q,Q'}\land \Pred_P\land \Pred_Q \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_Q.\, \vis{\beta_j}=\gamma_{j x}\land \forall j\in J_P.\, \vis{\beta_j}=\vis{\beta_j}))\Rightarrow\\
+& (\Pred_P\land \Pred_{Q' x}\land\\ &~~\alpha=\alpha \land \Pred_{Q,Q' x}\subst{\Post_P\uplus\Post_{Q' x}\uplus \Post_{Q}}) \Big)
+\end{split}
+\end{equation*}
+We conclude by observing that $\Post_P$ has no effect on variables of $Q$ and $Q'$, and thus on $\Pred_{Q,Q' x}$
+\qed
+
+% OLD
+% according to Lemma  \ref{lem-alternative-weak-bisim} for any weak open transition $WOT$ in $Q$ there exist a family of weak open transitions $WOT_{x}^{x \in X}$ in $Q'$. 
+%We apply  Lemma \ref{lem-Weakcompose1} on weak open transition $WOT$, $j_0 \in J$, we obtain a new weak open transition $WOT'$ in $P[Q]_{j_0}$.
+%On other hand, we apply same Lemma \ref{lem-Weakcompose1} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$.
+%
+%Suppose we have:\\[-2ex]
+%\begin{mathpar}
+%%\[
+%P\models{\openrule
+%	{
+%		\beta_j^{j\in J}, 
+%		\Pred,  
+%		\Post}
+%	{\ostate{s_i^{i\in L}} \OTWeakarrow {\alpha}
+%		\ostate{(s_i')^{\, i\in L}}}
+%}
+%\quad\text{~~and~~}\quad
+%Q\models{\openrule
+%	{
+%		\set{\gamma},
+%		 \Pred_Q,  
+%		\Post_Q}
+%	{\ostate{s_{i}^{i\in L_Q}} \OTWeakarrow {\alpha_Q}
+%		\ostate{(s'_{i})^{\, i\in L_Q}}}
+%}%\]
+%
+%
+%\end{mathpar}
+%
+%Then, we have by lemma \ref{lem-Weakcompose}: \\[-2ex]
+%	\[ P[Q]_{j_0}  
+%	\models
+%	{\openrule
+%		{
+%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
+%			\Pred\,',  \Post\,'
+%			 }
+%		{\ostate{s_i^{i\in L\uplus L_Q}} \OTWeakarrow {\alpha}
+%			\ostate{(s_i')^{\, i\in L\uplus L_Q}}}
+%	}
+%	\]
+%
+%On the other hand, $Q$ weak FH-bisimilar to $Q'$, so according to  Lemma  \ref{lem-alternative-weak-bisim} 
+%
+%such that...\\
+%
+%By applying  Lemma \ref{lem-Weakcompose} on each weak open transitions $WOT_{x}$, so we obtain a new family of weak open transitions $WOT_{x}'$ in $P[Q']_{j_0}$:
+%
+%\[ P[Q']_{j_0}  
+%	\models
+%	{\openrule
+%		{
+%			\gamma_j^{j\in (J\setminus\{j_0\}) \uplus J_Q}, 
+%			\Pred\,',  \Post\,'
+%			 }
+%		{\ostate{s_i^{i\in L} \uplus t_{i}^{i\in L_{Q_x}}} \OTWeakarrow {\alpha}
+%			\ostate{(s_i')^{\, i\in L} \uplus t_{ix}^{i\in L_{Q_x}} }}
+%	}
+%	\]
 
 
  \end{proof}
@@ -4894,6 +5108,98 @@ By applying  Lemma \ref{lem-Weakcompose} on each weak open transitions $WOT_{x}$
 	$\pNet[Q]_{j_0}$ and 
 	$\pNet'[Q]_{j_0}$ are FH-bisimilar.
 \end{theorem}
+
+
+ \begin{proof}   Consider $P$ weak FH-bisimilar to $P'$.  It means, there exist a FH-bisimulation $\mathcal{R}_{P,P'}$ relating the two pNets $P$ and $P'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P'[Q]_{j_0}$: 
+\[\mathcal{R} = \{(\ostate{S_P\uplus S_Q},\ostate{S_{P'}\uplus S_Q}, \Pred_{P,P'})|\,(S_P,S_{P'}, \Pred_{P,P'})\in\mathcal{R}_{P,P'}\}\]
+
+
+To prove weak FH-bisimulation of $\pNet[\pNetQ]_{j_0}$ and 
+	$\pNet'[\pNetQ]_{j_0}$, we consider  an open transition $OT$ of $\pNet[\pNetQ]_{j_0}$, and an equivalent state of $\pNet'[\pNetQ]_{j_0}$, and we try to find a family of WOT of 	$\pNet'[\pNetQ]_{j_0}$ that simulates $OT$.
+Consider an OT of  $\pNet[\pNetQ]_{j_0}$ it is of the form (notations introduced to prepare the decomposition):
+\[
+\pNet[\pNetQ]_{j_0}\models\openrule
+	{
+		\beta_j^{j\in( J_P\uplus J_Q)}, 
+		\Pred_P\land \Pred_Q,  
+		\Post_P\uplus \Post_Q}
+	{\ostate{S_P\uplus S_Q} \OTWeakarrow {\alpha}
+		\ostate{S'_P\uplus S'_Q}
+}
+\]
+
+By the decomposition lemma for OTs (Lemma~\ref{lem-decompose}), we obtain the 2 following OTs (equality side-conditions have been inlined for clarity):
+\begin{mathpar}
+%\[
+\pNet\models{\openrule
+	{
+		\beta_j^{j\in J_P}\uplus(j_0\mapsto \alpha_Q), 
+		\Pred_P,  
+		\Post_Q}
+	{\ostate{S_P} \OTWeakarrow {\alpha}
+		\ostate{S'_P}}
+}
+\quad\text{~~and~~}\quad
+Q\models{\openrule
+	{
+		\beta_j^{j\in J_Q},
+		 \Pred_Q,  
+		\Post_Q}
+	{\ostate{S_Q} \OTWeakarrow {\alpha_Q}
+		\ostate{S'_Q}}
+}%\]
+
+\end{mathpar}
+
+By definition of $\mathcal{R}$ we have 
+$(S_P,S_{P'}, \Pred_{P,P'})\in\mathcal{R}_{P,P'}$. And thus, by definition of weak FH-bisimulation, there exist a family of weak open transitions $WOT_{x}$:
+ \begin{mathpar}
+    \openrule
+         {
+           \gamma_{j x}^{j\in J_P\uplus\{j_0\}}, \Pred_{P' x},\Post_{P' x}}
+         {\ostate{S_{P'}}\OTWeakarrow {\alpha_{x}} \ostate{S'_{P' x}}}
+\end{mathpar}
+
+where  
+\[\forall x.\, (S'_P,S'_{P' x}, \Pred_{P,P' x})\in\mathcal{R}_{P,P'}\]
+and
+\begin{equation*}
+\begin{split}
+\Pred_{P,P'}\land \Pred_P \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_P.\, \vis{\beta_j}=\gamma_{j x} \land \vis{\alpha_Q}=\gamma_{j_0})\Rightarrow (\Pred_{Q_x}\land\\ &~~\alpha=\alpha_x \land \Pred_{P,P' x}\subst{\Post_{P' x}\uplus \Post_{P}}) \Big)
+\end{split}
+\end{equation*}
+
+
+We here need a special case of Lemma\ref{lem-Weakcompose}where the inner pNet $Q$ does a simple OT. This is just a particular case of the theorem but where notations get simplified because the inner pnet does a single transition.
+ This way we can compose the WOTs of $P'$ with the OT of $Q$ and obtain, whenever $\vis{\beta_j}=\gamma_{j x} $:
+\[
+\pNet'[\pNetQ]_{j_0}\models\openrule
+	{
+		\vis{\beta_j^{j\in( J_Q}}\uplus\gamma_{j x}^{j\in J_Q}, 
+		\Pred_{P' x}\land \Pred_Q,  
+		\Post_{P' x}\uplus \Post_Q}
+	{\ostate{S_{P'}\uplus S_{Q}} \OTWeakarrow {\alpha_x}
+		\ostate{{S'_{P' x}}\uplus S'_Q}
+}
+\]
+Side conditions necessary to prove weak-FH bisimulations are:
+
+\[\forall x.\, (S'_P\uplus S'_Q,S'_{P' x}\uplus S'_Q, \Pred_{P,P' x})\in\mathcal{R}\]
+which is trivially verified, and
+\begin{equation*}
+\begin{split}
+\Pred_{P,P'}\land \Pred_P\land \Pred_Q \implies &
+\Big(\bigvee_{x\in X}
+(\forall j\in J_P.\, \vis{\beta_j}\gamma_{j x} \land \forall j\in J_Q.\, \vis{\beta_j}=\vis{\beta_j} )\Rightarrow\\
+& (\Pred_{P' x}\land \Pred_Q\land\\ &~~\alpha_x=\alpha \land \Pred_{P,P' x}\subst{\Post_{P' x}\uplus\Post_P\uplus \Post_{Q}}) \Big)
+\end{split}
+\end{equation*}
+We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P'$, and thus on $\Pred_{P,P' x}$
+\qed
+\end{proof}
+
 \newpage
 
 \section{Full details of the Simple Protocol Example}
