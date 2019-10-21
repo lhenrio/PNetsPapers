@@ -11,6 +11,8 @@
 \usepackage{graphicx}
 \usepackage{DotArrow}
 \usepackage{hyperref}
+\usepackage{listings}
+\lstset{basicstyle=\small}
 
 %\usepackage{amsfonts}
 %\usepackage{fancyhdr}
@@ -5232,7 +5234,7 @@ We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P
 
 \section{Full details of the Simple Protocol Example}
 
-Let us start with the basic version, with no error counter.
+
 
 
 \begin{figure}[t]
@@ -5249,8 +5251,317 @@ Let us start with the basic version, with no error counter.
   \caption{Composed pNet with the Simple Protocol Implementation}  \label{SimpleProt:Impl}
 \end{figure}
 
+The first piece of code is the textual definition of the SimpleProtSec
+pNet. This code should be intuitive enough to read, with the following
+conventions:
+
+\begin{itemize}
+  \item Constants of any type (including Action) must be declared as
+    ``const''. They are used either as functions with argument, as
+    typically \texttt{in(msg)}, or constants without argument, denoted
+    as \texttt{\$tau}. Identifiers without the ``?'' marker are
+    variables.
+  \item Variables can be declared either: inside a pLTS state (normal
+    state variable), as global variable of a pLTS (see e.g. ...), or
+    as an input variable in a transition, as \texttt{?msg} in pLTS M1
+    here.
+  \item \TODO{continue...}
+\end{itemize}
+
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
+SimpleProtSpec2:
+import "Data_Alg.algp"
+root SimpleProtSpec2
+const in, out:Action
+const p_send, q_recv: Action
+const tau:Action
+
+pLTS M1
+initial a0
+vars ?msg:Data
+
+state a0
+transition in(msg) -> a1 {a1_msg:=msg}
+
+state a1
+vars a1_msg:Data {m1_c:=0}:Int
+
+transition out(a1_msg, m1_c) -> a0
+transition synchro($tau)  -> a1 {m1_c:=m1_c+1}
+
+pNet SimpleProtSpec2
+holes P,Q
+subnets P,M1,Q
+vars p_a,q_a:Action m:Data c:Int
+
+vector SV0 <p_send(m), in(m),_>->p_send(m)
+vector SV1 <p_a,_,_>->p_a [p_a != p_send(m)]
+vector SV2 <_, out(m,c), q_recv(m)>->q_recv(m,c)
+vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m)]
+
+  \end{lstlisting}
+
+The corresponding generated Open Automaton was given in Figure \ref{},
+page \pageref{}.
+
+Next is the code for the SimpleProtImpl pNet:
+
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
+SimpleProtImpl:
+import "Data_Alg.algp"
+
+root SimpleProtImpl2
+
+const in,out:Action
+const tau,p_send,q_recv,m_recv,m_send,m_error: Action
+const s_send,s_ack,s_error,r_recv,r_ack: Action
+
+pLTS M1
+initial a0
+vars ?msg:Data ?c:Int
+
+state a0
+transition m_recv(msg,c) -> a1 {a1_msg:=msg, a1_c:=c}
+
+state a1
+vars a1_msg:Data a1_c:Int
+transition m_send(a1_msg, a1_c) -> a0 
+transition synchro($tau) -> a2
+
+state a2
+transition $m_error -> a0
+
+pLTS Sender
+initial s0
+vars ?msg:Data
+
+state s0
+transition in(msg) -> s1 {s1_msg:=msg, s1_c:=0}
+
+state s1
+vars s1_msg:Data s1_c:Int
+transition s_send(s1_msg, s1_c) -> s2 
+
+state s2
+vars  s2_c:Int
+transition $s_ack -> s0
+transition $s_error -> s1 {s1_c:=s2_c+1}
+
+pLTS Receiver
+initial r0
+vars ?msg:Data ?c:Int
+
+state r0
+transition r_recv(msg,c) -> r1 {r1_msg:=msg, r1_c:=c}
+
+state r1
+vars r1_msg:Data r1_c:Int
+transition out(r1_msg, r1_c) -> r2
+
+state r2
+transition $r_ack -> r0
+
+pNet medium
+subnets Sender, M1, Receiver
+vars m:Data c:Int
+vector SV0 <in(m), _, _>->in(m)
+vector SV1 <s_send(m,c), m_recv(m,c), _>->synchro($tau)
+vector SV2 <_, m_send(m), r_recv(m)>->synchro($tau)
+vector SV3 <$s_ack, _, $r_ack>->synchro($tau)
+vector SV4 <$s_error, $m_error, _>->synchro($tau)
+vector SV5 <_, _, out(m,c)>->out(m,c)
+
+pNet SimpleProtImpl2
+holes P,Q
+subnets P,medium,Q
+vars p_a,q_a:Action  m:Data c:Int
+vector SV0 <p_send(m), in(m),_>->in(m)
+vector SV1 <p_a,_,_>->p_a [p_a != p_send(m)]
+vector SV2 <_, out(m,c), q_recv(m,c)>->out(m,c)
+vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m,c)]
+\end{lstlisting}
+
+From this code,A more compact view (maybe more readable ???) is given
+by the pretty-printer of VerCors:
+
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
+SimpleProtImpl2
+--------------------
+SV6 SVs: <p_send(m), in(m), _>-->in(m)
+SV7 SVs: <p_a, _, _>-->p_a, p_a!=(p_send(m))
+SV8 SVs: <_, out(m, c), q_recv(m, c)>-->out(m, c)
+SV9 SVs: <_, _, q_a>-->q_a, q_a!=(q_recv(m, c))
+SV11 SVs: <_, _tau_, _>-->_tau_
+SV12 SVs: <_, _tau_, _>-->_tau_
+SV13 SVs: <_, _tau_, _>-->_tau_
+SV14 SVs: <_, _tau_, _>-->_tau_
+SV15 SVs: <_, _tau_, _>-->_tau_
+Holes: P
+Subnets: medium
+- medium
+- SV0 SVs: <in(m), _, _>-->in(m)
+- SV1 SVs: <s_send(m, c), m_recv(m, c), _>-->_tau_
+- SV2 SVs: <_, m_send(m), r_recv(m)>-->_tau_
+- SV3 SVs: <s_ack, _, r_ack>-->_tau_
+- SV4 SVs: <s_error, m_error, _>-->_tau_
+- SV5 SVs: <_, _, out(m, c)>-->out(m, c)
+- SV10 SVs: <_, _tau_, _>-->_tau_
+- pLTS: Sender
+- - Transition: s0---in(msg)-->s1, { s1_msg := msg s1_c := 0}
+- - Transition: s1---s_send(s1_msg, s1_c)-->s2, {}
+- - Transition: s2---s_ack-->s0, {}
+- - Transition: s2---s_error-->s1, { s1_c := s2_c+1}
+- - Variable: s1_c, State: s1, Value(s) = 0,s2_c+1,
+- - Variable: s1_msg, State: s1, Value(s) = msg,
+- pLTS: M1
+- - Transition: a0---m_recv(msg, c)-->a1, { a1_msg := msg a1_c := c}
+- - Transition: a1---m_send(a1_msg, a1_c)-->a0, {}
+- - Transition: a1---_tau_-->a2, {}
+- - Transition: a2---m_error-->a0, {}
+- - Variable: a1_msg, State: a1, Value(s) = msg,
+- - Variable: a1_c, State: a1, Value(s) = c,
+- pLTS: Receiver
+- - Transition: r0---r_recv(msg, c)-->r1, { r1_msg := msg r1_c := c}
+- - Transition: r1---out(r1_msg, r1_c)-->r2, {}
+- - Transition: r2---r_ack-->r0, {}
+- - Variable: r1_msg, State: r1, Value(s) = msg,
+- - Variable: r1_c, State: r1, Value(s) = c,
+Holes: Q
+\end{lstlisting}
+
+Finaly, we list here, in raw format, the 24 OTs computed by the tool:
+
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
+INFO  SimpleProtImpl2 - Total: 24 OTs
+INFO  SimpleProtImpl2 - 
+		{P|->p_send(m:sva_SV6:1:1)},   [((in(msg))=:ra:Sender:121:1)/\(:ra:Sender:121:1=(in(m:sva_SV0:12:1)))/\((in(m:sva_SV0:12:1))=(in(m:sva_SV6:1:1)))],   {s1_msg := msg, s1_c := 0}
+	OT:1 ------------------------------------------------------------
+		<s0_a0_r0>-----in(m:sva_SV6:1:1)----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{P|->p_a:sva_SV7:1:2},   [(forall:m:sva_SV7:1:2. (p_a:sva_SV7:1:2!=(p_send(m:sva_SV7:1:2)))],   {}
+	OT:2 ------------------------------------------------------------
+		<s0_a0_r0>-----p_a:sva_SV7:1:2----><s0_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{Q|->q_a:sva_SV9:1:4},   [(forall:m:sva_SV9:1:4,c:sva_SV9:1:4. (q_a:sva_SV9:1:4!=(q_recv(m:sva_SV9:1:4, c:sva_SV9:1:4)))],   {}
+	OT:3 ------------------------------------------------------------
+		<s0_a0_r0>-----q_a:sva_SV9:1:4----><s0_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{P|->p_a:sva_SV7:1:2},   [(forall:m:sva_SV7:1:2. (p_a:sva_SV7:1:2!=(p_send(m:sva_SV7:1:2)))],   {}
+	OT:4 ------------------------------------------------------------
+		<s1_a0_r0>-----p_a:sva_SV7:1:2----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{Q|->q_a:sva_SV9:1:4},   [(forall:m:sva_SV9:1:4,c:sva_SV9:1:4. (q_a:sva_SV9:1:4!=(q_recv(m:sva_SV9:1:4, c:sva_SV9:1:4)))],   {}
+	OT:5 ------------------------------------------------------------
+		<s1_a0_r0>-----q_a:sva_SV9:1:4----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [((s_send(s1_msg, s1_c))=:ra:Sender:1144:1)/\(:ra:Sender:1144:1=(s_send(m:sva_SV1:114:2, c:sva_SV1:114:2)))/\((m_recv(msg, c))=:ra:M1:1145:1)/\(:ra:M1:1145:1=(m_recv(m:sva_SV1:114:2, c:sva_SV1:114:2)))/\(_tau_=_tau_)],   {a1_msg := msg, a1_c := c}
+	OT:6 ------------------------------------------------------------
+		<s1_a0_r0>-----_tau_----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [((s_send(s1_msg, s1_c))=:ra:Sender:1174:1)/\(:ra:Sender:1174:1=(s_send(m:sva_SV1:117:2, c:sva_SV1:117:2)))/\((m_recv(msg, c))=:ra:M1:1175:1)/\(:ra:M1:1175:1=(m_recv(m:sva_SV1:117:2, c:sva_SV1:117:2)))/\(_tau_=_tau_)],   {a1_msg := msg, a1_c := c}
+	OT:7 ------------------------------------------------------------
+		<s1_a0_r0>-----_tau_----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [((s_send(s1_msg, s1_c))=:ra:Sender:1204:1)/\(:ra:Sender:1204:1=(s_send(m:sva_SV1:120:2, c:sva_SV1:120:2)))/\((m_recv(msg, c))=:ra:M1:1205:1)/\(:ra:M1:1205:1=(m_recv(m:sva_SV1:120:2, c:sva_SV1:120:2)))/\(_tau_=_tau_)],   {a1_msg := msg, a1_c := c}
+	OT:8 ------------------------------------------------------------
+		<s1_a0_r0>-----_tau_----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [((s_send(s1_msg, s1_c))=:ra:Sender:1234:1)/\(:ra:Sender:1234:1=(s_send(m:sva_SV1:123:2, c:sva_SV1:123:2)))/\((m_recv(msg, c))=:ra:M1:1235:1)/\(:ra:M1:1235:1=(m_recv(m:sva_SV1:123:2, c:sva_SV1:123:2)))/\(_tau_=_tau_)],   {a1_msg := msg, a1_c := c}
+	OT:9 ------------------------------------------------------------
+		<s1_a0_r0>-----_tau_----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [((s_send(s1_msg, s1_c))=:ra:Sender:1264:1)/\(:ra:Sender:1264:1=(s_send(m:sva_SV1:126:2, c:sva_SV1:126:2)))/\((m_recv(msg, c))=:ra:M1:1265:1)/\(:ra:M1:1265:1=(m_recv(m:sva_SV1:126:2, c:sva_SV1:126:2)))/\(_tau_=_tau_)],   {a1_msg := msg, a1_c := c}
+	OT:10 ------------------------------------------------------------
+		<s1_a0_r0>-----_tau_----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{P|->p_a:sva_SV7:1:2},   [(forall:m:sva_SV7:1:2. (p_a:sva_SV7:1:2!=(p_send(m:sva_SV7:1:2)))],   {}
+	OT:11 ------------------------------------------------------------
+		<s2_a1_r0>-----p_a:sva_SV7:1:2----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{Q|->q_a:sva_SV9:1:4},   [(forall:m:sva_SV9:1:4,c:sva_SV9:1:4. (q_a:sva_SV9:1:4!=(q_recv(m:sva_SV9:1:4, c:sva_SV9:1:4)))],   {}
+	OT:12 ------------------------------------------------------------
+		<s2_a1_r0>-----q_a:sva_SV9:1:4----><s2_a1_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(_tau_=:ra:M1:11420:1)/\(:ra:M1:11420:1=_tau_)/\(_tau_=_tau_)],   {}
+	OT:13 ------------------------------------------------------------
+		<s2_a1_r0>-----_tau_----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(_tau_=:ra:M1:11720:1)/\(:ra:M1:11720:1=_tau_)/\(_tau_=_tau_)],   {}
+	OT:14 ------------------------------------------------------------
+		<s2_a1_r0>-----_tau_----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(_tau_=:ra:M1:12020:1)/\(:ra:M1:12020:1=_tau_)/\(_tau_=_tau_)],   {}
+	OT:15 ------------------------------------------------------------
+		<s2_a1_r0>-----_tau_----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(_tau_=:ra:M1:12320:1)/\(:ra:M1:12320:1=_tau_)/\(_tau_=_tau_)],   {}
+	OT:16 ------------------------------------------------------------
+		<s2_a1_r0>-----_tau_----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(_tau_=:ra:M1:12620:1)/\(:ra:M1:12620:1=_tau_)/\(_tau_=_tau_)],   {}
+	OT:17 ------------------------------------------------------------
+		<s2_a1_r0>-----_tau_----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{P|->p_a:sva_SV7:1:2},   [(forall:m:sva_SV7:1:2. (p_a:sva_SV7:1:2!=(p_send(m:sva_SV7:1:2)))],   {}
+	OT:18 ------------------------------------------------------------
+		<s2_a2_r0>-----p_a:sva_SV7:1:2----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{Q|->q_a:sva_SV9:1:4},   [(forall:m:sva_SV9:1:4,c:sva_SV9:1:4. (q_a:sva_SV9:1:4!=(q_recv(m:sva_SV9:1:4, c:sva_SV9:1:4)))],   {}
+	OT:19 ------------------------------------------------------------
+		<s2_a2_r0>-----q_a:sva_SV9:1:4----><s2_a2_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(s_error=:ra:Sender:11413:1)/\(:ra:Sender:11413:1=s_error)/\(m_error=:ra:M1:11414:1)/\(:ra:M1:11414:1=m_error)/\(_tau_=_tau_)],   {s1_c := s2_c+1}
+	OT:20 ------------------------------------------------------------
+		<s2_a2_r0>-----_tau_----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(s_error=:ra:Sender:11713:1)/\(:ra:Sender:11713:1=s_error)/\(m_error=:ra:M1:11714:1)/\(:ra:M1:11714:1=m_error)/\(_tau_=_tau_)],   {s1_c := s2_c+1}
+	OT:21 ------------------------------------------------------------
+		<s2_a2_r0>-----_tau_----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(s_error=:ra:Sender:12013:1)/\(:ra:Sender:12013:1=s_error)/\(m_error=:ra:M1:12014:1)/\(:ra:M1:12014:1=m_error)/\(_tau_=_tau_)],   {s1_c := s2_c+1}
+	OT:22 ------------------------------------------------------------
+		<s2_a2_r0>-----_tau_----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(s_error=:ra:Sender:12313:1)/\(:ra:Sender:12313:1=s_error)/\(m_error=:ra:M1:12314:1)/\(:ra:M1:12314:1=m_error)/\(_tau_=_tau_)],   {s1_c := s2_c+1}
+	OT:23 ------------------------------------------------------------
+		<s2_a2_r0>-----_tau_----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - 
+		{},   [(s_error=:ra:Sender:12613:1)/\(:ra:Sender:12613:1=s_error)/\(m_error=:ra:M1:12614:1)/\(:ra:M1:12614:1=m_error)/\(_tau_=_tau_)],   {s1_c := s2_c+1}
+	OT:24 ------------------------------------------------------------
+		<s2_a2_r0>-----_tau_----><s1_a0_r0>
+
+INFO  SimpleProtImpl2 - Total: 24 SATISFIABLE OTs
+INFO  SimpleProtImpl2 -        278 UNSATISFIABLE OTs
+INFO  SimpleProtImpl2 - Total Time: 1056 ms
+
+
+\end{lstlisting}
 
 \end{document}
+
 
 \section{Examples of Lotos laws}
 Possible Lotos small examples:
