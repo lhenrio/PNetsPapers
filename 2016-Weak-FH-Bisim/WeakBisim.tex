@@ -1029,7 +1029,7 @@ The semantics    instantiates fresh variables using the predicate $\fresh(x)$, a
 $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 
 
-\begin{definition}[Operational semantics of open pNets]
+\begin{definition}[Semantics of open pNets]
 	\label{def:operationalSemantics}
 	The semantics of a pNet $\pNet$ is an open automaton $A\!= 
 	<\!\!Holes(\pNet),States(\pNet),InitState(\pNet),\mathcal{T}\!\!>$ where $\mathcal{T}$   is the smallest set of open transitions such that $\mathcal{T}=\{OT\,|\,\pNet \models OT \}$ and	$\pNet \models OT$	is defined by the following  rules:
@@ -1707,7 +1707,6 @@ the predicate associated to the relation between the initial states is \True.
  \end{definition}
 
 Compared to strong bisimulation, except the obvious use of weak open transitions to simulate an open transition, the condition on predicate is slightly changed concerning actions of the holes. Indeed only the visible actions of the holes must be compared and they form a list of actions, but of length at most one.
-
 Weak FH-bisimilarity is an equivalence in the same way as strong FH-bisimilarity.
 
 
@@ -1720,16 +1719,35 @@ The proof  is detailed in \ref{app-WFH-equiv}, it follows a similar pattern as t
 
 
 \subsection{Weak bisimulation for open pNets}
-\begin{definition}[Non-observability of silent actions for pNets]~\\
+
+Beforedefining a weak open automaton for the semantics of open pNets, it is necessary to state under which condition a pNet is unable to observe silent actions of its holes. In the setting of pNets this can simply be expressed as a condition on the synchronisation vectors. Precisely, the set of synchronisation vectors must contain vectors that let silent actions go through the pNet, i.e. synchronisation vectors where one hole does a $\tau$ transition, and the global visible action is a $\tau$. Additionally, no other synchronisation vector must be able to react on a silent action from a hole, i.e. if a synchronisation vector observes a $\tau$ from a hole it cannot synchronise it with another action nor emit an action that is not $\tau$. This is formalised as follows
+
+\begin{definition}[Non-observability of silent actions for pNets]\label{def:non-obspNet}~\\
 A pNet $\mylangle \pNet_i^{i\in I} , \Sort_j^{j\in J}, \set{\symb{SV}}\myrangle$
- \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\True}\in \set{\symb{SV}}$ and $\forall SV_k\in \set{\symb{SV}}, \forall i,j\in I_k\uplus J_k.\,i\neq j \Rightarrow \alpha'_k\neq\tau$
+ \emph{cannot observe silent actions} if it verifies:\\ $\forall i\in I\uplus J.\, \SV{(i\mapsto \tau)}{\tau}{\True}\in \set{\symb{SV}}$ and 
+\begin{equation*}
+%\begin{split}
+\forall \left(\SV{{(\alpha_i)}^{i\in I'}} 
+{\alpha'} 
+{e_b}\in \set{\symb{SV}}\right), %&
+\forall i\in I'\cap J,\, \alpha_i=\tau \implies %\\
+%& 
+\alpha'=\tau ~\land~ %\\
+%&
+I'=\{i\}
+%\end{split}
+\end{equation*}
 \end{definition}
+
+With this definition, it is easy to check that the open automaton that gives the semantics of such an open pNet cannot observe silent actions in the sense of Definition~\ref{def:Non-ObsTau}:
 
 \begin{property}[Non-observability of silent actions]
 The open semantics of a pNets that cannot observe silent actions is an open automaton that  cannot observe silent actions.
 \end{property}
 
 %\TODO{question : we could merge prop 1 and def above, is it better?}
+
+Under this condition, it is safe to define the weak open automaton that provides a weak semantics to a given pNet. This is simply obtained by applying Definition~\ref{def:buildweakOT} to generate a weak open automaton from the open automaton that is the strong semantics of the open pNet, as provided by Definition~\ref{def:operationalSemantics}.
 
 \begin{definition}[Notation: Semantics of pNets as a weak open automaton]
 Let $A$ be the open automaton expressing the semantics of an open \pNet: $\pNet$; let $<J,\mathcal{S},s_0,  \WT>$ be the weak open automata derived from $A$. For any $\WOT\in\WT$, we denote $\pNet \models \WOT$, this defines the semantics of the pNet $\pNet$ as a weak open automaton.
