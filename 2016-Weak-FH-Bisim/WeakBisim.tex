@@ -593,7 +593,7 @@ is said to be \emph{open}.
 \end{definition}
   
 The informal semantics of pNets is as follows. pLTSs behave more or less like  classical automata with conditional branching and variables. The actions on the \pLTS s can send or receive values, potentially modifying the value of variables. 
-pNets are synchronisation entities: a pNet composes several subnets and  synchronisation vectors define how the subnets interact, where a subnet is either a pNet or a pLTS. Synchronisation between subnets is defined by synchronisation vectors that express how an action of a subnet can be synchronised with actions of other subnet, and how the resulting synchronised action is visible to the outside of the pNet. Synchronisation vectors also allow to explicitly export an action of a subnet to the next level, or to allow to subnets to synchronise and only exporting a non0observable action (provided such an non-visible action labels exist in the action algebra. Finally, a pNet can leave subnets undefined and instead declare holes with a well-defined signature. Holes can then be filled with a subnet. This is defined as follows.
+pNets are synchronisation entities: a pNet composes several subnets and  synchronisation vectors define how the subnets interact, where a subnet is either a pNet or a pLTS. Synchronisation between subnets is defined by synchronisation vectors that express how an action of a subnet can be synchronised with actions of other subnet, and how the resulting synchronised action is visible to the outside of the pNet. Synchronisation vectors also allow to explicitly export an action of a subnet to the next level, or to allow to subnets to synchronise and only exporting a non-observable action (provided such an non-visible action labels exist in the action algebra. Finally, a pNet can leave subnets undefined and instead declare holes with a well-defined signature. Holes can then be filled with a subnet. This is defined as follows.
 
 
 
@@ -617,6 +617,20 @@ pNets are synchronisation entities: a pNet composes several subnets and  synchro
 
 pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allows the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used can be used inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. These works show that pNets are convenient to express the behaviour of the system in a compositional way, which is crucial for the definition of the semantics, especially when dealing with a hierarchical component system like GCM. Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. The semantics of closed pNets~\cite{AmeurBoulifa2017}, defined as an instantiation of labelled transition systems, is not necessary to understand this article but can be useful to  understand the semantics of pNets in a simpler and more operational setting. The theory of pNets as operators able to fully take into account open systems is given in the following sections.
 
+\subsection{Running Example}
+To illustrate this work, we use a simple communication protocol, that provides safe transport of data between two processes, over unsafe media. 
+
+Fig. \ref{SimpleProt:Spec} (left) shows the example principle: two unspecified
+processes $P$ and $Q$ (holes) communicate messages, with a data value
+argument, through the two protocol entities. Process $P$ send an $p\_send(m)$ message to the $Sender$; this communication is denoted as $\underline{in(m)}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $p\_a$ and $q\_b$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (Hole Q) include the value of the ``error counter'' $ec$.
+
+
+Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
+the full system should be equivalent (e.g. through weak bisimulation)
+to the two processes connected simply through a perfect medium. Fig. \ref{SimpleProt:Spec}, right, shows the pNet representing this global specification.
+
+Fig. \ref{SimpleProt:Impl} show the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its local error counter $c$, and resends the message (including $c$) to the $Medium$, that will, eventually, transmit $m,c$ to the $Receiver$.
+
 \begin{figure}[t]
    \includegraphics[width=5.5cm]{XFIG/SimpleProt-Schema}
    \includegraphics[width=6.5cm]{XFIG/SimpleProt2-Spec}
@@ -630,25 +644,6 @@ pNets are composition entities equipped with a rich synchronisation mechanism: s
   \centerline{\includegraphics[width=12cm]{XFIG/SimpleProt2-pNet}}
   \caption{Composed pNet with the Simple Protocol Implementation}  \label{SimpleProt:Impl}
 \end{figure}
-
-
-\subsection{Running Example}
-\TODO{Rabea: trouver reference !!}
-To illustrate this work, we use a simple communication protocol, that provides safe transport of data between two processes, over unsafe media. The alternating bit protocol was first described in \cite{Bartlett:1969}.  Our specification  of the ABP is based on the one given in \cite{Vergamini:1986}.
-
-Fig. \ref{SimpleProt:Spec} (left) shows the example principle: two unspecified
-processes $P$ and $Q$ (Holes) communicate messages, with a data value
-argument, through the two protocol entities $sender$ and
-$receiver$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect some transport error, and signal it to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (Hole Q) include the value of the ``error counter'' $ec$.
-
-This is only a graphical syntax,
-with an obvious semantics for building the corresponding pNets.
-
-Fig. \ref{SimpleProt:Spec} (right) shows the Schema of this system, and on the right side, its global specification, expressed as a pNet. 
-The full system should be equivalent (e.g. through weak bisimulation)
-to the two processes connected simply through a perfect medium. Fig. \ref{SimpleProt:Spec}, right, shows the pNet representing this global specification.
-
-Fig. \ref{SimpleProt:Impl} show the pNet model of the protocol. When the medium detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its error counter $c$, and resend the message (including $c$) to the medium, that will, eventually, transmit $m,c$ to the receiver.
 
 \section{A model of process composition}\label{sec:OT}
 
@@ -5291,14 +5286,14 @@ We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P
    \includegraphics[width=5.5cm]{XFIG/SimpleProt-Schema}
    \includegraphics[width=6.5cm]{XFIG/SimpleProt-Spec}
    \caption{Specification pNet Schema and Specification}
-   \label{SimpleProt:Spec}
+   \label{App:SimpleProt:Spec}
 
 \end{figure}
 
   
 \begin{figure}[t]
   \centerline{\includegraphics[width=12cm]{XFIG/SimpleProt-pNet}}
-  \caption{Composed pNet with the Simple Protocol Implementation}  \label{SimpleProt:Impl}
+  \caption{Composed pNet with the Simple Protocol Implementation}  \label{App:SimpleProt:Impl}
 \end{figure}
 
 The first piece of code is the textual definition of the SimpleProtSec
