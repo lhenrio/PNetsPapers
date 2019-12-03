@@ -627,9 +627,9 @@ argument, through the two protocol entities. Process $P$ send an $p\_send(m)$ me
 
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
 the full system should be equivalent (e.g. through weak bisimulation)
-to the two processes connected simply through a perfect medium. 
+to the two processes connected simply through a perfect medium. \TODO{Decrire syntaxe graphique}
 
-Fig. \ref{SimpleProt:Impl} show the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its local error counter $c$, and resends the message (including $c$) to the $Medium$, that will, eventually, transmit $m,c$ to the $Receiver$.
+Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its local error counter $ec$, and resends the message (including $ec$) to the $Medium$, that will, eventually, transmit $m,ec$ to the $Receiver$.
 
 \begin{figure}[t]
    \includegraphics[width=5.5cm]{XFIG/SimpleProt-Schema}
@@ -652,9 +652,10 @@ The semantics of open pNets will be defined  as an open automaton. An open
 automaton is an automaton where each transition composes transitions of several LTSs with
 action of some holes, the transition occurs if some predicates hold, and can involve a 
 set of state modifications. This section defines open automata and a bisimulation theory for them.
+\TODO{Add initialisation of state vars}
 
 \subsection{Open Automata}
- Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on variables (potentially with only symbolic values). Formaly, each state of an OA has set of \emph{state variables}, and all state variable sets are disjoint.
+ Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on variables (potentially with only symbolic values). Formaly, each state of an OA has a set of \emph{state variables}, and all state variable sets are disjoint.
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
@@ -860,7 +861,7 @@ reflexive, symmetric and transitive.
 
 The proof of this theorem can be found in~\ref{thm-equiv-proof}. The only non-trivial part of the proof is the proof of transitivity. It relies on the following elements. First,  the transitive composition of two relations with predicate is defined; this is not exactly standard as it necessitates to define the right predicate for the transitive composition and producing a single predicate to relate any two states. Then the fact that one open transition is simulated by a family of open transitions leads to a doubly indexed family of simulating open transition; this needs particular care, also because of the use of renaming (\Post) when proving that the predicates satisfy the definition (property on $\Pred_{s,t} \land \Pred_{OT}$ in the definition). 
 
-\TODO{have a look at the end of the sec}
+%\TODO{have a look at the end of the sec}
 
 \medskip
 
@@ -961,7 +962,7 @@ The definition of this predicate is not constructive but it is easy to build the
 
 
 
-\TODO{Eric: rewrite example with new Protocol}
+\TODO{Eric: rewrite example with new Protocolkeep only OT1, and adapt comments}
 \begin{example}\emph{An open-transition.}
   \label{OT:ABP}
 At the upper level, the $SimpleSystem$ pNet has 2 holes and $SimpleProtocol$ as
@@ -981,33 +982,33 @@ with the $Sender$ within the \emph{SimpleProtocol}) is:
     $Post$ uses a variable from the action of hole $P$ to set the
     value of the sender state variable $s1\_m$.
 
-  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
+ %%  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
 
- \smallskip\noindent
- $  OT_2  = \openrule{
-   \emptyset; Pred=[send(SV2\_m)=send(s_1\_m);in(SV2\_m)=in(?m)];  \\ Post=\{m_1\_m:=?m\}
-                      }
-    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
-    $
+ %% \smallskip\noindent
+ %% $  OT_2  = \openrule{
+ %%   \emptyset; Pred=[send(SV2\_m)=send(s_1\_m);in(SV2\_m)=in(?m)];  \\ Post=\{m_1\_m:=?m\}
+ %%                      }
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    $
 
-    That can be simplified to:
+ %%    That can be simplified to:
 
-    \ERIC{Apres application des substitutions et simplification du predicat:}
+ %%    \ERIC{Apres application des substitutions et simplification du predicat:}
 
-     $  OT_2  = \openrule{
-      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m\}
-                      }
-    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
-    $
+ %%     $  OT_2  = \openrule{
+ %%      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m\}
+ %%                      }
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    $
 
-    \smallskip
-    Note that the global states shows how the sender and the
-    first medium have evolved during this transition, the sender
-    moving from $s_1$ to $s_2$, and the first (forward) medium from
-    $m_0$ to $m_1$.
-    The predicate $Pred$ involves the state variables $s_1\_m$ and
-    $s_1\_sb$ of the sender, while the assignment $Post$ sets the
-    state variables of the medium.
+ %%    \smallskip
+ %%    Note that the global states shows how the sender and the
+ %%    first medium have evolved during this transition, the sender
+ %%    moving from $s_1$ to $s_2$, and the first (forward) medium from
+ %%    $m_0$ to $m_1$.
+ %%    The predicate $Pred$ involves the state variables $s_1\_m$ and
+ %%    $s_1\_sb$ of the sender, while the assignment $Post$ sets the
+ %%    state variables of the medium.
 
     \smallskip
 
@@ -1213,16 +1214,6 @@ In \cite{henrio:Forte2016}, we have shown a detailed example of the construction
 %% \end{example}
 
 
-\paragraph{Variable management.}
-The variables in each synchronisation vector are considered local:
-for a given pNet expression, we must have fresh local variables for
-each occurrence of a vector (i.e. each time we instantiate rule
-\TrDeux). Similarly the state variables of each copy of a
-given pLTS in the system, must be distinct, and those created for each
-application of \TrDeux\ have to be fresh and all distinct. 
-This is implemented within the open-automaton generation algorithm,
-using name generation using a global counter as a suffix.
-
 
 
 %\subsection{Computing and using open automata}
@@ -1262,10 +1253,10 @@ using name generation using a global counter as a suffix.
 %
 %\end{algorithm}
 
-Given an open-pNet
+We have shown in \cite{henrio:Forte2016} that an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
-(symbolic) transitions, has a finite automaton (see \cite{henrio:Forte2016}). The algorithm for building such an automaton can be found in~\cite{QBMZ-AVOCS18}.
+(symbolic) transitions, has a finite automaton. The algorithm for building such an automaton can be found in~\cite{QBMZ-AVOCS18}.
 
 %% \subsection{Post-processing: Elimination of intermediate variables}
 
@@ -1290,9 +1281,12 @@ holes, and each pLTS at leaves having a finite number of states and
 %%   need to be more precise on unification in the matching...} 
 
 
-\TODO{Eric: full (???) result of the tool execution on the running example on the Simple Prot Spec: Done, on the Counetr version !}
+%\TODO{Eric: full (???) result of the tool execution on the running example on the Simple Prot Spec: Done, on the Counetr version !}
 
-\TODO{:  and maybe one example on the Impl. OTs presented in latex readable form??}
+\paragraph{Example} Figure \ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet in Figure \ref{SimpleProt:Spec}. 
+
+%\TODO{:  and maybe one example on the Impl. OTs presented in latex readable form??}
+\TODO{Comment on Fig 3...}
 
 \begin{figure}[t]
    \centerline{\includegraphics[width=9cm]{ATG/SPSpecOpen}}
@@ -1300,6 +1294,23 @@ holes, and each pLTS at leaves having a finite number of states and
    \label{SimpleProtCounter:SpecOA}
 \end{figure}
 
+Figure \ref{SimpleProtCounter:ImplOA} shows the full open automaton of the implementation $SimpleSystem$. Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{<actions of holes\} [<guard>] <action> \{assignments\}$''.
+\TODO{comment on difference from Exemple 1 page 15; and predicate simplification...}
+\begin{figure}[h]
+  \centerline{\includegraphics[width=10cm]{ATG/SPImplOpen}}
+  \caption{Open Automaton of the Simple Protocol Implementation}  \label{SimpleProtCounter:ImplOA}
+\end{figure}
+
+%% We show here the first open transition, written here in the form of the tool full output.
+
+%% $  OT_1  = \openrule{
+%%   (P\mapsto p\_send(m:sva\_SV6:1:1)) \\
+%%   [( msg =m: sva\_SV6 :1:1) \wedge (( in( msg ))=( in(m: sva_SV6 :1:1)))]\\
+%%   \{ s1\_msg := msg , s1\_c := 0\}
+%%                       }
+%% {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m:sva\_SV6:1:1)}} \ostate{s_1,m_0,r_0}}
+%% $
+    \TODO{Comment...}
 
 
 \subsection{pNet Composition Properties: composition of open transitions}
@@ -1402,10 +1413,10 @@ As  our symbolic operational semantics provides an open automaton, we can apply 
 	strong (symbolic) bisimulation on automata to open pNets:
 \begin{definition}[FH-bisimulation for open pNets]\label{def:bisim-pnets}
 Two pNets are FH-bisimilar if there exist a relation between their associated 
-automata that is an FH-bisimulation and their initial states are in the relation, i.e. 
-the predicate associated to the relation between the initial states is \True.
+automata that is an FH-bisimulation and their initial states are in the relation (with some initial predicate).
+\TODO{check}
 \end{definition}
-\TODO{Predicate=True me pose un probleme... typiquement, on a besoin d'une ``condition initiale'', pour avoir des pNets data-oriented equivalents a leur version state-oriebted}
+%\TODO{Predicate=True me pose un probleme... typiquement, on a besoin d'une ``condition initiale'', pour avoir des pNets data-oriented equivalents a leur version state-oriebted => remove the constraint}
 
 We can now prove that pNet composition  preserves
 FH-bisimulation. More precisely, one can define two preservation
@@ -1446,7 +1457,7 @@ composability and FH-bisimilarity.
 	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
 	obtain two FH-bisimilar pNets.
 \end{theorem}
-This theorem is quite powerful somehow states that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016}, or to study interaction protocols~\cite{BHHM:FACS11}.
+This theorem is quite powerful. It somehow implies that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016}, or to study interaction protocols~\cite{BHHM:FACS11}.
 
 \section{Weak bisimulation}\label{sec:weak}
 
@@ -1634,11 +1645,22 @@ and
 \end{definition}
 Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after a weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their value thus depend of the initial state but also of the effect (as a substitution $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the joint substitution $\Post_2\bigotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition	.
 
-\TODO{Eric: try to draw (ATG) the weak transitino versions of the Simple Protocol, both Spec (easy) and Impl (check readability?)}
+\begin{example}
+  Figure \ref{SimpleProtCounter:SpecOA-partial} show a partial view of the weak automaton of the simple protocol implementation.
+  
+\TODO{Explain the partial OA, and comment on building of WOT1}
+\end{example}
+
+\begin{figure}[t]
+   \centerline{\includegraphics[width=12cm]{ATG/SPImplWeakOpen}}
+  \caption{Weak Open Automaton, partial}
+   \label{SimpleProtCounter:SpecOA-partial}
+\end{figure}
+
 
 
 \subsection{Composition properties: composition of weak open transitions}
-We now have two different semantics for open pNets: a stronf semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
+We now have two different semantics for open pNets: a strong semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
 
 
 
@@ -1744,7 +1766,7 @@ The open semantics of a pNets that cannot observe silent actions is an open auto
 Under this condition, it is safe to define the weak open automaton that provides a weak semantics to a given pNet. This is simply obtained by applying Definition~\ref{def:buildweakOT} to generate a weak open automaton from the open automaton that is the strong semantics of the open pNet, as provided by Definition~\ref{def:operationalSemantics}.
 
 \begin{definition}[Notation: Semantics of pNets as a weak open automaton]
-Let $A$ be the open automaton expressing the semantics of an open \pNet: $\pNet$; let $<J,\mathcal{S},s_0,  \WT>$ be the weak open automata derived from $A$. For any $\WOT\in\WT$, we denote $\pNet \models \WOT$, this defines the semantics of the pNet $\pNet$ as a weak open automaton.
+Let $A$ be the open automaton expressing the semantics of an open pNet $\pNet$; let $<J,\mathcal{S},s_0,  \WT>$ be the weak open automata derived from $A$. For any $\WOT\in\WT$, we denote $\pNet \models \WOT$, this defines the semantics of the pNet $\pNet$ as a weak open automaton. \TODO{strange sentence}
 \end{definition}
 
 %% \TODO{move text below}
@@ -1825,8 +1847,7 @@ The detailed proof of these theorem can be found in~\ref{app-WFH-equiv}. The pro
 \subsection{Running example}
 - If we already have shown the saturated relation, we only need to argue on bisimulation here.
 
-\TODO{Je ne pense pas que nous ayons un algo de bisim weak operationnel pour la publi, mais ca n'est pas completement impossible nonp[l;us...  Au pire, argumenter intuitivement sur papier, en donnat les classes d'equivalence et les predicats.
-    Noter que la version de base est trop simple... Pour avoir des predicats moins triviaux, on peut ajouter un compteur qui compte le nb d'erreurs, et le transmet a la fin}
+\TODO{Je ne pense pas que nous ayons un algo de bisim weak operationnel pour la publi, mais ca n'est pas completement impossible nonp[l;us...  Au pire, argumenter intuitivement sur papier, en donnat les classes d'equivalence et les predicats.}
 
 The ``saturation'' step in the construction of the weak relation will
 pick all $\tau^*$ and $\tau^*;a;\tau^*$ sequences from the OA, and build a weak
@@ -1837,6 +1858,7 @@ receiver control bits are equal), and to the environment. The two
 firsts open transitionTs are internal, the last one is visible, so it constitute a
 $\tau;\tau;a$ weak transition.  
 
+\TODO{Eric: rewrite completely}
 \noindent
      $  \openrule{
       \emptyset; Pred=\True; Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
@@ -5318,6 +5340,17 @@ conventions:
   \item \TODO{continue...}
 \end{itemize}
 
+\TODO{keep ?}
+\paragraph{Variable management.}
+The variables in each synchronisation vector are considered local:
+for a given pNet expression, we must have fresh local variables for
+each occurrence of a vector (i.e. each time we instantiate rule
+\TrDeux). Similarly the state variables of each copy of a
+given pLTS in the system, must be distinct, and those created for each
+application of \TrDeux\ have to be fresh and all distinct. 
+This is implemented within the open-automaton generation algorithm,
+using name generation using a global counter as a suffix.
+
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 SimpleProtSpec2:
 import "Data_Alg.algp"
@@ -5586,7 +5619,7 @@ And here is a  drawing of this open automaton, slightly simplified for readabili
 
 \begin{figure}[h]
   \centerline{\includegraphics[width=10cm]{ATG/SPImplOpen}}
-  \caption{Open Automaton of the Simple Protocol Implementation}  \label{SimpleProtCounter:ImplOA}
+  \caption{Open Automaton of the Simple Protocol Implementation}  \label{Annex:SimpleProtCounter:ImplOA}
 \end{figure}
 
 And a partially saturated Automaton:
@@ -5595,6 +5628,13 @@ And a partially saturated Automaton:
   \centerline{\includegraphics[width=13cm]{ATG/SPImplWeakOpen}}
   \caption{Weak Open Automaton, partial}  \label{SimpleProtCounter:ImplWOA}
 \end{figure}
+
+In Figure \ref{Annex:SimpleProtCounter:ImplWOA}, we have added some of the weak transitions generated by the saturation, namely:
+- a tau-loop on each state
+- a transition from <s0\_a0\_r0> to <s2\_a1\_r0>, resulting from the sequence OT\-1;OT\-6 followed by any number of the loop (OT\_9;ot\_12;OT\_6).
+
+Many weak should be added, e.g. Tau loops on states <s2\_a1\_r0>, <s2\_a2\_r0>, 
+<s2\_a0\_r0>, encoding the loop.
 
 \end{document}
 
