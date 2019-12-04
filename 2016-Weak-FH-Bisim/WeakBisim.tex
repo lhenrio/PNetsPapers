@@ -1645,15 +1645,69 @@ and
 \end{definition}
 Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after a weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their value thus depend of the initial state but also of the effect (as a substitution $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the joint substitution $\Post_2\bigotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition	.
 
+%% \begin{figure}[ht]
+%%    \centerline{\includegraphics[width=12cm]{ATG/WOT1}}
+%%   \caption{Construction of the Weak Open transition WOT1}
+%%    \label{WOT1}
+%% \end{figure}
+
+\begin{figure}[ht]
+   \centerline{\includegraphics[width=11cm]{ATG/WOT2}}
+  \caption{Construction of WOT2}
+   \label{WOT2}
+\end{figure}
+
 \begin{example}
-  Figure \ref{SimpleProtCounter:SpecOA-partial} show a partial view of the weak automaton of the simple protocol implementation.
+  Figures \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. We show on the top one possible sequence corresponding to a weak transition, on the bottom left the concerned subset of the original OA, and on the right the generated weak transition.
+\end{example}
+
   
-\TODO{Explain the partial OA, and comment on building of WOT1}
+%  In the case of WOT1, we start with a tau loop, then change state with an action of hole $P$ to state 1, initializing the $ec$ counter. On state 1, we have two tau loops, on of them increasing the $ec$ counter. The resulting weak transition is represented here as a regular expression including assignemnts, rather than the substitutions of the formal definition. It can the be abbreviated as: $P\mapsto \texttt{p-send}\ \{(ec:=ec+1)^*$.
+
+  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter occurs before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3. For simplification we ignore the pure $\tau$-loops before and after the central \texttt{q-recv(ec)} action, they have no effect on the construction. First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
+  $\openrule
+         {\set{\tau}, True,
+			\subst{\texttt{ec++}\shortotimes\texttt{ec++}\shortotimes\emptyset} }
+         {s \OTWeakarrow {\tau\subst{\texttt{ec++}}} s'}$
+         that you can rewrite as:      
+  $\openrule
+         {\emptyset, True,
+			\subst{ec\gets ec+2} }
+         {s \OTWeakarrow \tau s'}$
+
+         Now you can iterate this construction an arbitrary number of times, getting for any natural number $n$ the weak transition:
+  $\openrule
+         {\emptyset, True,
+			\subst{ec\gets ec+n} }
+         {s \OTWeakarrow \tau s'}$
+
+         For any of these, apply again WT3, using the central \texttt{q-recv(ec)} transition as $\alpha$, and you get:
+      $\openrule
+         {\gamma=\{\texttt{q-revc(ec)}\subst{ec\gets ec+n}\}, True,
+			\subst{ec\gets ec+n} }
+         {s \OTWeakarrow {\texttt{q-recv(ec)}\subst{ec\gets ec+n}} s'}$
+     
+  \begin{example}
+    Figure \ref{SimpleProtCounter:WeakSpecOA} shows the weak automaton of the simple protocol specification.
+    \TODO{comment...}
+\end{example}
+
+
+\begin{figure}[ht]
+   \centerline{\includegraphics[width=10cm]{ATG/SPSpecWeakOpen}}
+  \caption{Weak Open Automaton of the Specification}
+   \label{SimpleProtCounter:WeakSpecOA}
+\end{figure}
+
+  \begin{example}
+  Figure \ref{SimpleProtCounter:SpecOA-partial} shows a partial view of the weak automaton of the simple protocol implementation.
+  
+\TODO{Explain the partial OA}
 \end{example}
 
 \begin{figure}[t]
    \centerline{\includegraphics[width=12cm]{ATG/SPImplWeakOpen}}
-  \caption{Weak Open Automaton, partial}
+  \caption{Weak Open Automaton of the implementation, partial}
    \label{SimpleProtCounter:SpecOA-partial}
 \end{figure}
 
