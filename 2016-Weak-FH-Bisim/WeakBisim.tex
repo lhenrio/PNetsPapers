@@ -175,38 +175,7 @@ Ludo:
 \item uniformisation pNet P Q
 \end{itemize}
 
-%Ludo
-%\begin{itemize}
-%\item[x] rewrite Tr2 and open transition with actions
-%\item[x] $v'\to \alpha'$ dans pred sv et enlever l exists
-%\item[x] $\beta$ ou $b$
-%\item[x] propager Tr2 dans l annexe
-%\item[x] add simple equivalence on OT -- fait a minima 
-%\item[x] explain the 2 level logic
-%\end{itemize}
-%=== 18 Avril
-\medskip
 
-Eric
-\begin{itemize}
-\item[X] nettoyage (1/2) -> 5 juil
-\item nettoyage exemple et algo de calcul
-\item example -> fin aout -> qq transitions dans l abp
-%\item re-ecrire transitions page 14 comment les presenter?
-%\item arbre de deduction
-%\item exemple avec actions
-\end{itemize}
-
-\medskip
-
-Rabea
-\begin{itemize}
-\item preuve transitivite -> 20 sept
-\item proofs of new theorems -> oct?
-%\item [x] uniformiser p et P pour les pnets 
-%\item [x] relectures
-\end{itemize}
-=== en parallele
 
 
 
@@ -432,7 +401,7 @@ We denote $y\gets e$ a substitution. The application of the substitution is deno
 $\subst{y\gets e}$, the operation replaces in a term all occurrences 
 of the variable $y$ by the expression $e$ (note that the absence of binders makes this operation 
 trivial). 
-We use sets of equations of the form $x_i=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
+We use \ERIC{sets of assignments of the form $x_i:=e_i$}, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 
 
 Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
@@ -678,7 +647,7 @@ set of state modifications. This section defines open automata and a bisimulatio
         in the different terms
         $\beta_j$ and $\alpha$, and the state variables of $s$.
         \Pred\ is a predicate over the source variables. \Post\ is a set of 
-	equations that hold \emph{after the open transition}, they are
+	\ERIC{assignments that are effective \emph{after the open transition}}, they are
         represented as a substitution of the form $({x_k\gets e_k})^{k\in K}$ 
 	where $x_k$ are state variables of $s'$, and $e_k$ are expressions
         over the source variables. Open transitions are identified
@@ -967,7 +936,7 @@ The definition of this predicate is not constructive but it is easy to build the
 
 %\TODO{Eric: rewrite example with new Protocolkeep only OT1, and adapt comments}
 \begin{example}\emph{An open-transition.}
-  \label{OT:ABP}
+  \label{OT:SimpleProt}
 At the upper level, the $SimpleSystem$ pNet of Figure \ref{SimpleProt:Impl} has 2 holes and $SimpleProtocol$ as
 a subnet, itself containing 3 pLTSs. One of its possible open transitions
 (synchronizing the hole $P$
@@ -975,16 +944,16 @@ with the $Sender$ within the \emph{SimpleProtocol}) is:
 
  \smallskip\noindent
  \[  OT_1  = \openrule{
-      \{P\mapsto p\_send(m)\} \qquad [m=m'] \qquad \{s1\_m:=m\}
+      \{P\mapsto p\_send(m)\} \qquad [m=m'] \qquad \{s1\_m\gets m\}
                       }
     {\ostate{s_0,a_0,r_0} \OTarrow{\underline{in(m')}} \ostate{s_1,a_0,r_0}}
     \]
 
     \smallskip
     The global states here are triples, build as the product of states of the 3 pLTS (remember the Holes have no state). The assignment
-    $Post$ uses a variable from the action of hole $P$ to set the
-    value of the sender state variable $s1\_m$.
-    \TODO{need more comments ?} 
+    $Post$ uses the variable $m$ from the action of hole $P$ to set the
+    value of the sender state variable named $s1\_m$.
+    
 
  %%  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
 
@@ -1298,9 +1267,10 @@ holes, and each pLTS at leaves having a finite number of states and
    \label{SimpleProtCounter:SpecOA}
 \end{figure}
 
-Figure \ref{SimpleProtCounter:ImplOA} shows the full open automaton of the implementation $SimpleSystem$. Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{<actions of holes\} [<guard>] <action> \{assignments\}$''.
-\TODO{comment on difference from Exemple 1 page 15; and predicate simplification...}
-\begin{figure}[h]
+Figure \ref{SimpleProtCounter:ImplOA} shows the full open automaton of the implementation $SimpleSystem$. Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{actions of holes\} [guard] action \{assigns\}$'', rather than the full OT form with the red-dotted rule. Note that the resulting action of the OTs appear here betwen the guard and the set of assignments.
+Note that we have also simplified the form of the variable dependencies in the OTs, again for readability, replacing e.g. in OT1 $\{P\mapsto p\_send(m)\} \qquad [m=m']$ and $\alpha= \underline{in(m')}$ by the shorter \texttt{\{P->p\_send(m)\} in(m)}.
+
+    \begin{figure}[h]
   \centerline{\includegraphics[width=10cm]{ATG/SPImplOpen}}
   \caption{Open Automaton of the Simple Protocol Implementation}  \label{SimpleProtCounter:ImplOA}
 \end{figure}
@@ -1314,7 +1284,8 @@ Figure \ref{SimpleProtCounter:ImplOA} shows the full open automaton of the imple
 %%                       }
 %% {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m:sva\_SV6:1:1)}} \ostate{s_1,m_0,r_0}}
 %% $
-    \TODO{Comment...}
+    \ERIC{Also we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. The resulting behavior is quite simple: In every state, holes $P$ and $Q$ can do any action independent of the protocol (we only have labelled these on state \texttt{000}). Then we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On th eright of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
+    \TODO{j'ai comment\'e Fig 3, vous pouvez relire ?}
 
 
 \subsection{pNet Composition Properties: composition of open transitions}
@@ -1668,7 +1639,7 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
   
 %  In the case of WOT1, we start with a tau loop, then change state with an action of hole $P$ to state 1, initializing the $ec$ counter. On state 1, we have two tau loops, on of them increasing the $ec$ counter. The resulting weak transition is represented here as a regular expression including assignemnts, rather than the substitutions of the formal definition. It can the be abbreviated as: $P\mapsto \texttt{p-send}\ \{(ec:=ec+1)^*$.
 
-  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter occurs before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3. For simplification we ignore the pure $\tau$-loops before and after the central \texttt{q-recv(ec)} action, they have no effect on the construction. First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
+  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter, occuring before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3. For simplification we ignore the pure $\tau$-loops before and after the central \texttt{q-recv(ec)} action, they have no effect on the construction. First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
   $\openrule
          {\set{\tau}, True,
 			\subst{\texttt{ec++}\shortotimes\texttt{ec++}\shortotimes\emptyset} }
@@ -1903,21 +1874,21 @@ composability and weak FH-bisimilarity.
 The detailed proof of these theorem can be found in~\ref{app-WFH-equiv}. The proof strongly relies on the fact that weak FH-bisimulation is an equivalence, but also on the composition properties for open automata.
 
 \subsection{Running example}
-- If we already have shown the saturated relation, we only need to argue on bisimulation here.
+- In section \ref{} we have shown the full satured weak automaton for both the specification and the implementation of the simple protocol.
 
 \TODO{Je ne pense pas que nous ayons un algo de bisim weak operationnel pour la publi, mais ca n'est pas completement impossible nonp[l;us...  Au pire, argumenter intuitivement sur papier, en donnat les classes d'equivalence et les predicats.}
 
+  \TODO{Eric: this is still ABP ! rewrite completely, baesd on saturation example 2 pages before.}
+
 The ``saturation'' step in the construction of the weak relation will
 pick all $\tau^*$ and $\tau^*;a;\tau^*$ sequences from the OA, and build a weak
-open trnsition from each sequence. Here is one example of a short sequence,
-starting with the open transition $OT_2$ of page \pageref{OT:ABP},
-then transmitting the message to the receiver (if the sender and
-receiver control bits are equal), and to the environment. The two
+open transition from each sequence. Here is one example of a short sequence,
+starting with the open transition $OT_1$ of page \pageref{OT:SimpleProt},
+then transmitting the message to the receiver, and to the environment. The two
 firsts open transitionTs are internal, the last one is visible, so it constitute a
 $\tau;\tau;a$ weak transition.  
 
-\TODO{Eric: rewrite completely}
-\noindent
+noindent
      $  \openrule{
       \emptyset; Pred=\True; Post=\{m_1\_m:=s_1\_m, m_1\_b:=s_1\_sb, s_2\_sb:=s_1\_sb\}
                       }
@@ -1933,6 +1904,7 @@ $\tau;\tau;a$ weak transition.
     $
 
     \ERIC{Apres simplification:}
+    
 \medskip\noindent
      $  \openrule{
       \emptyset; Pred=[r_0\_rb=m_1\_b];
