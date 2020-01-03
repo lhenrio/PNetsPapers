@@ -592,20 +592,20 @@ To illustrate this work, we use a simple communication protocol, that provides s
 
 Fig. \ref{SimpleProt:Spec} (left) shows the example principle: two unspecified
 processes $P$ and $Q$ (holes) communicate messages, with a data value
-argument, through the two protocol entities. Process $P$ send an $p\_send(m)$ message to the $Sender$; this communication is denoted as $\underline{in(m)}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $p\_a$ and $q\_b$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (Hole Q) include the value of the ``error counter'' $ec$.
+argument, through the two protocol entities. Process $P$ send an $p\_send(m)$ message to the $Sender$; this communication is denoted as $\underline{in(m)}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $p\_a$ and $q\_b$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
 
 
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
 the full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectMedium}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< p\_send(m),in(m),\_> \rightarrow \underline{in(m)}$ only $P$ and {\it PrefectMedium} nodes are involved in the synchronization. In particular, this means the synchronization between these processes occurs when  process $P$  performs $p\_send(m)$  action sending a message, and  the medium accepts the message through $in(m)$ action  at the same time. And the result that will be returned at upper level is the internal action  $\underline{in(m)}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectMedium}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< p\_send(m),in(m),\_> \rightarrow \underline{in(m)}$ only $P$ and {\it PrefectMedium} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $p\_send(m)$  action sending a message, and  the medium accepts the message through $in(m)$ action  at the same time. And the result that will be returned at upper level is the internal action  $\underline{in(m)}$.
 
 
 Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $m\_error$ message to the $Sender$. The $Sender$ increments its local error counter $ec$, and resends the message (including $ec$) to the $Medium$, that will, eventually, transmit $m,ec$ to the $Receiver$.
 
 \begin{figure}[t]
-   \includegraphics[width=5.5cm]{XFIG/SimpleProt-Schema}
-   \includegraphics[width=6.5cm]{XFIG/SimpleProt2-Spec}
+   \includegraphics[width=5cm]{XFIG/SimpleProt-Schema}
+   \includegraphics[width=7cm]{XFIG/SimpleProt2-Spec}
    \caption{Specification pNet Schema and Specification}
    \label{SimpleProt:Spec}
 
@@ -837,6 +837,9 @@ The proof of this theorem can be found in~\ref{thm-equiv-proof}. The only non-tr
 
 \medskip
 
+\TODO{J'ai un probleme ici, comme on a dit que les AO etaient satures par substitution, ils sont par nature infinis... Donc le theoreme, tel qu'il est exprime, est vrai, mais inapplicable. La solution est dans le papier de PEPM, mais complique a expliquer...}
+\TODO{pour faire simple, on vire le theoreme, et on met une simple note disant qu'on a une definition dans PEPM d'une description structurelle finie, et un algo avec terminaison ?}
+
 If we assume that everything is finite (states and transitions in the
 open automata, and the predicates in $\mathcal{R}$, then it is easy to
 prove that it is decidable whether a relation is a 
@@ -860,8 +863,8 @@ $\mathcal{R}$ is a FH-bisimulation.
 \label{section:op-semantics}
 
 This section defines the semantics of an open pNet as a translation into an open automaton. 
-In this translation, the states of the open automata are obtained from the states of the pLTSs at the leaves of the composition. The predicates on the transition is obtained both from the predicates on the pLTSs transitions and from the synchronisation vectors involved in the transition.
-
+In this translation, the states of the open automata are obtained from the states of the pLTSs at the leaves of the composition. The predicates on the transitions are obtained both from the predicates on the pLTSs transitions and from the synchronisation vectors involved in the transition.
+\TODO{Meme remarque ici, on ne genere qu'une representation finie des OAs}
 
 The definition of bisimulation for open automata allows us to derive a bismulation theory for open pNets. As pNets are composition structures, it then makes sense to prove composition lemmas: we prove that the composition of strongly bisimilar pNets are themselves bisimilar.
 
@@ -1256,37 +1259,25 @@ holes, and each pLTS at leaves having a finite number of states and
 
 %\TODO{Eric: full (???) result of the tool execution on the running example on the Simple Prot Spec: Done, on the Counetr version !}
 
-
-
-\paragraph{Example} Figure \ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet in Figure \ref{SimpleProt:Spec}. 
-\RAB{Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{actions of holes\} [guard] action \{assigns\}$'', rather than the full OT form with the red-dotted rule. Note that the resulting action of the OTs appear here between the guard and the set of assignments. For example, in the OT where $\beta=\{P\mapsto p\_a\}$, $\Pred=P\_a\neq p\_send$, and $\alpha=P\_a$ is denoted in the open automata \texttt{\{P->p-a\} [P-a!=p-send] P-a}.
-}
-
-
-\begin{figure}[t]
+\begin{figure}[ht]
    \centerline{\includegraphics[width=11cm]{ATG/SPSpecOpen}}
-   \caption{Specification OA (version with the error counter)}
+   \caption{Specification OA}
    \label{SimpleProtCounter:SpecOA}
 \end{figure}
 
-Figure \ref{SimpleProtCounter:ImplOA} shows the full open automaton of the implementation $SimpleSystem$. Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{actions of holes\} [guard] action \{assigns\}$'', rather than the full OT form with the red-dotted rule. Note that the resulting action of the OTs appear here betwen the guard and the set of assignments.
-Note that we have also simplified the form of the variable dependencies in the OTs, again for readability, replacing e.g. in OT1 $\beta=\{P\mapsto p\_send(m)\}$ $\Pred=[m=m']$ and $\alpha= \underline{in(m')}$ by the shorter \texttt{\{P->p\_send(m)\} in(m)}.
 
-    \begin{figure}[h]
+\paragraph{Example} Figure \ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet in Figure \ref{SimpleProt:Spec}. 
+\RAB{Here, in the open automaton drawing, we use a user-friendly notation for the OTs, in the form ``$\{actions of holes\} [guard] action \{assigns\}$'', rather than the full OT form with the red-dotted rule. Note that the resulting action of the OTs appear here between the guard and the set of assignments. For examplein the upper left of the figure, the OT where $\beta=\{P\mapsto p\_a\}$, $\Pred=[\forall m. P\_a\neq p\_send(m)]$, and $\alpha=P\_a$ is denoted as ``\texttt{\{P->p-a\} [Forall m.P-a!=p-send(m)] P-a}''.
+}
+
+    \begin{figure}[ht]
   \centerline{\includegraphics[width=10cm]{ATG/SPImplOpen}}
   \caption{Open Automaton of the Simple Protocol Implementation}  \label{SimpleProtCounter:ImplOA}
 \end{figure}
 
-%% We show here the first open transition, written here in the form of the tool full output.
-
-%% $  OT_1  = \openrule{
-%%   (P\mapsto p\_send(m:sva\_SV6:1:1)) \\
-%%   [( msg =m: sva\_SV6 :1:1) \wedge (( in( msg ))=( in(m: sva_SV6 :1:1)))]\\
-%%   \{ s1\_msg := msg , s1\_c := 0\}
-%%                       }
-%% {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m:sva\_SV6:1:1)}} \ostate{s_1,m_0,r_0}}
-%% $
-    \ERIC{Also we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. The resulting behavior is quite simple: In every state, holes $P$ and $Q$ can do any action independent of the protocol (we only have labelled these on state \texttt{000}). Then we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On th eright of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
+    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the implementation $SimpleSystem$.
+    \ERIC{In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. For readability we only have written the \emph{external} actions of holes $P$ and $Q$ on the loop transitions of the first staes; they are also present on all other states. 
+The resulting behavior is quite simple: In every state, holes $P$ and $Q$ can do any action independent of the protocol (we only have labelled these on state \texttt{000}). Then we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
     \TODO{j'ai comment\'e Fig 3, vous pouvez relire ?}
 
 
@@ -1628,20 +1619,23 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 %%    \label{WOT1}
 %% \end{figure}
 
+%% \begin{figure}[ht]
+%%    \centerline{\includegraphics[width=11cm]{ATG/WOT2}}
+%%   \caption{Construction of WOT2}
+%%    \label{WOT2}
+%% \end{figure}
+
 \begin{figure}[ht]
-   \centerline{\includegraphics[width=11cm]{ATG/WOT2}}
+   \centerline{\includegraphics[width=8cm]{XFIG/WOT2-result}}
   \caption{Construction of WOT2}
    \label{WOT2}
 \end{figure}
 
 \begin{example}
-  Figures \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. We show on the top one possible sequence corresponding to a weak transition, on the bottom left the concerned subset of the original OA, and on the right the generated weak transition.
+  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. We show on the top the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) consider here, and at the bottom the generated weak transition.
 
 
-  
-%  In the case of WOT1, we start with a tau loop, then change state with an action of hole $P$ to state 1, initializing the $ec$ counter. On state 1, we have two tau loops, on of them increasing the $ec$ counter. The resulting weak transition is represented here as a regular expression including assignemnts, rather than the substitutions of the formal definition. It can the be abbreviated as: $P\mapsto \texttt{p-send}\ \{(ec:=ec+1)^*$.
-
-  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter, occuring before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3. For simplification we ignore the pure $\tau$-loops before and after the central \texttt{q-recv(ec)} action, they have no effect on the construction. First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
+  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter, occuring before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3.  First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
   $\openrule
          {\set{\tau}, True,
 			\subst{\texttt{ec++}\shortotimes\texttt{ec++}\shortotimes\emptyset} }
