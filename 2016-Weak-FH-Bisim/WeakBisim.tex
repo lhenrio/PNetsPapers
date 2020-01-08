@@ -1280,9 +1280,8 @@ holes, and each pLTS at leaves having a finite number of states and
 
     Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the implementation $SimpleSystem$.
     \ERIC{In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. For readability we only have written the \emph{external} actions of holes $P$ and $Q$ on the loop transitions of the first staes; they are also present on all other states. 
-The resulting behavior is quite simple: In every state, holes $P$ and $Q$ can do any action independent of the protocol (we only have labelled these on state \texttt{000}). Then we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
-    \TODO{j'ai comment\'e Fig 3, vous pouvez relire ?}
-
+The resulting behavior is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
+    
 
 \subsection{pNet Composition Properties: composition of open transitions}
 The semantics of open pNets allows us to prove two crucial properties relating pNet composition with pNet semantics: open transition of a composed pNet can be decomposed into open transitions of its composing sub-pNets, and conversely, from the open transitions of sub-pNets,  an open transition of the composed pNet can be built.
@@ -1629,23 +1628,23 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 %% \end{figure}
 
 \begin{figure}[ht]
-   \centerline{\includegraphics[width=8cm]{XFIG/WOT2-result}}
+   \centerline{\includegraphics[width=7cm]{XFIG/WOT2-result}}
   \caption{Construction of WOT2}
    \label{WOT2}
 \end{figure}
 
 \begin{example}
-  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. We show on the top the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) consider here, and at the bottom the generated weak transition.
+  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.
 
 
-  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the counter, occuring before the action of $Q$, and this action is using the value of the counter. Let us go into the details, using rules WT1/2/3.  First consider application of Rule WT3 on the first 3 transitions. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
+  WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the error counter, occuring before the action of $Q$, and this action is using the resulting value of the counter. Let us go into the details, using rules WT1/2/3.  First WT1 adds a $\tau$ loop on each state. Then consider application of Rule WT3 on a sequence 3 internal actions ``$\tau\subst{ec\gets ec+1};\tau\subst{ec\gets ec+1};\tau$''. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs. In the drawing we use \texttt{ec++} to abbreviate the Post: $\subst{ec\gets ec+1}$. Then WT3 produces the weak OT:
   $\openrule
-         {\set{\tau}, True,
+         {\{\}, True,
 			\subst{\texttt{ec++}\shortotimes\texttt{ec++}\shortotimes\emptyset} }
          {s \OTWeakarrow {\tau\subst{\texttt{ec++}}} s'}$
          that you can rewrite as:      
   $\openrule
-         {\emptyset, True,
+         {\{\}, True,
 			\subst{ec\gets ec+2} }
          {s \OTWeakarrow \tau s'}$
 
@@ -1659,37 +1658,30 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
       $\openrule
          {\{Q\mapsto\texttt{q-revc(ec)}\subst{ec\gets ec+n}\}, True,
 			\subst{ec\gets ec+n} }
-         {s \OTWeakarrow {\texttt{q-recv(ec)}\subst{ec\gets ec+n}} s'}$
-     
+         {s \OTWeakarrow {\texttt{out(m,ec)}\subst{ec\gets ec+n}} s'}$
 \end{example}
 
 
   \begin{example}
-    Figure \ref{SimpleProtCounter:WeakSpecOA} shows the weak automaton of the simple protocol specification.
+    Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:SpecOA-partial} respectively show the weak automata of the simple protocol specification and implementation.
     \TODO{comment...}
 \end{example}
 
 
 \begin{figure}[ht]
    \centerline{\includegraphics[width=10cm]{ATG/SPSpecWeakOpen}}
-  \caption{Weak Open Automaton of the Specification}
+  \caption{Weak Open Automaton of the Specification \TODO{out of date}}
    \label{SimpleProtCounter:WeakSpecOA}
 \end{figure}
 
-  \begin{example}
-  Figure \ref{SimpleProtCounter:SpecOA-partial} shows a partial view of the weak automaton of the simple protocol implementation.
-  
-\TODO{Eric: Explain the partial OA}
-\end{example}
-
 \begin{figure}[t]
    \centerline{\includegraphics[width=12cm]{ATG/SPImplWeakOpen}}
-  \caption{Weak Open Automaton of the implementation, partial}
+  \caption{Weak Open Automaton of the implementation, \TODO{partial, can we show it in full ?}}
    \label{SimpleProtCounter:SpecOA-partial}
 \end{figure}
 
 
-
+\newpage
 \subsection{Composition properties: composition of weak open transitions}
 We now have two different semantics for open pNets: a strong semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
 
