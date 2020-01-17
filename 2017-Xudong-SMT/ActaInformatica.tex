@@ -1254,7 +1254,7 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 \EndWhile
 \State $\mathit{L1}$=\textit{filterUnsatTransitions}($\mathit{L,Assignments}$);
 \State $\mathit{OA_1^0}$=\textit{makeReachableSubAutomaton}($\mathit{InitState}(P),L1)$;
-\Repeat $\mathit{OA_1^n}$=\textit{RefineReachableSubAutomaton}($\mathit{OA_1^{n-1}}$)
+\Repeat $\mathit{OA_1^n}$=\textit{refineReachableSubAutomaton}($\mathit{OA_1^{n-1}}$)
 \Until  $\mathit{OA_1^n}=\mathit{OA_1^{n-1}}$;   \hfill $\setminus \setminus$ Fixed point reached
 \State \Return $\mathit{OA_1^n}$;
 
@@ -1292,7 +1292,7 @@ the final open automaton (more details in Section~\ref{section:BuildingTheOpenAu
   \label{alg2}
 \begin{algorithmic}[1]
 \Require a pNet node $P$ with subnets $\overline{sn}$ and holes $\overline{hole}$; a global state $S$.
-\State Initialize empty list $l$ and set $L$ for sub-transitions and transitions, respectively;
+\State Initialize an empty list $l$ and a set $L$ for sub-transitions and transitions, respectively;
 	\For{each $\mathit{Subnet}$ in $\overline{sn}$}
         \hfill $\setminus \setminus$ Recursively apply the semantic rules on the subnets
            \State Store $\mathit{MakeTransitions}(Subnet, S)$ in $l$;
@@ -1362,7 +1362,6 @@ $comb = ({ot}_i)^{i \in [1,n]} \in \overline{comb}$ is a tuple of open transitio
   (\forall j\in J, b_j=b'_j) \land
   (v=v') \land G_k.
 \end{multline*}
-
 
 \paragraph{Filtering.}
 While matching a vector with a combination tuple, \emph{Matching}
@@ -1468,7 +1467,7 @@ The ``Modulo Theory'' part of SMT solvers is important here, as
 the solvers can use specific properties of each data type in the action algebra.
 
 In Algorithm~\ref{alg1}, functions \textit{filterUnsatTransitions} (in line 11) 
-\textit{RefineReachableSubAutomaton} (in line 13) make use of the Z3 engine to implement the
+\textit{refineReachableSubAutomaton} (in line 13) make use of the Z3 engine to implement the
 satisfiability checking, for all the OTs computed that far.
 For a transition
 \[		\inferrule*[myfraction=\reddottedrule]
@@ -1494,7 +1493,7 @@ will be dependent on the decidability of the SMT theories used, as is proved e.g
 \subsection{Building the Open Automaton}
 \label{section:BuildingTheOpenAutomaton}
 
-\QIN{As the removal of the unsatisfiable transitions \YX{may entail some transitions without preceeding} transitions, }
+\QIN{As the removal of the unsatisfiable transitions \YX{may entail some transitions without predecessor} transitions, }
 the set $L1$ might contain unreachable transitions. To remove those transitions, the last step of the  
 algorithm (lines 12-14) builds the final open automaton via a traversal of $L1$,
 starting at the initial state $InitState(p)$.
@@ -1528,7 +1527,41 @@ result. \QIN{\YX{Empirically, on real life systems, the unreachable transitions 
 full information from the predicates and the assignment sets, even if
 some spurious OTs are left here.
 
-\subsection{Computing Reachable State Space on the Fly}
+\begin{algorithm}[htbp]
+  \caption{\QINX{makeReachableSubAutomaton()}}
+  \label{alg:makeReachableSubAutomaton}
+\begin{algorithmic}[1]
+\Require \QINX{The initial state of the pNet $\textit{InitState}(P)$. A set of satisfiable transitions $L$.}
+\State Initialize a set $A$;
+\State Store $(\textit{InitState}(P), \textit{InitState}(P).Assignments)$ into $S$;  \hfill $\setminus \setminus$$S.Assignments$ is the assignment of the variable in the state $S$.
+\While{!$\mathit{isEmpty}(A)$}
+	\For {each $(S, Assignments) \in A$}
+          \For {each $OT$ from $S$}
+          \State Check the predicate of $OT$ taking $Assignments$ in to account;
+	  \IfThenElse{$\textit{false}$}{\textbf{skip};}{Add target of $OT$ and its assignments ($S'$, $S'.Assignments$) into $A$;}
+	\EndFor	\EndFor
+\EndWhile
+\State Build $\mathit{OA}$ with the set $L$;
+\State \QINX{\Return $\mathit{OA}$;}
+\end{algorithmic}  
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  \caption{\QINX{refineReachableSubAutomaton()}}
+  \label{alg:refineReachableSubAutomaton}
+\begin{algorithmic}[1]
+\Require \QINX{An open automaton $\mathit{OA}$.}
+\Repeat
+\For {\QINX{each global state $S$ in $\mathit{OA}$}}
+          \State \QINX{$b=$ whether $S$ has preceeding transitions.}
+	  \IfThenElse{$b$}{\textbf{skip};}{\QINX{remove $S$ and the transitions from $S$;}}
+\EndFor
+\Until  \QINX{$\mathit{OA}$ does not change;}
+\State \QINX{\Return $\mathit{OA}$;}
+\end{algorithmic}  
+\end{algorithm}
+
+\subsection{Computing Reachable State Space on-the-fly}
 
 The basic algorithm introduced above potentially explores some
 areas of the global state space that will not be reachable after
@@ -1556,7 +1589,9 @@ information (line 5).  Only the OTs found SAT from this check will be added
 to $L$, and the corresponding target global state added to $U$ if
 necessary. This ensures that all explored global states are
 effectively reachable by a chain of SAT OTs.
- 
+
+
+
 \begin{algorithm}[h]
   \caption{``Smart'' Reachable Open Automaton Generation}
   \label{alg3}
@@ -1580,7 +1615,7 @@ for unexplored and explored global states, respectively; $L=\emptyset$ for the r
 \EndWhile
 \State $\mathit{L2}$=\textit{filterUnsatTransitions}($\mathit{L,Assignments}$);
 \State $\mathit{OA_2^0}$=\textit{makeReachableSubAutomaton}($\mathit{InitState}(P),L2)$;
-\Repeat $\mathit{OA_2^n}$=\textit{RefineReachableSubAutomaton}($\mathit{OA_2^{n-1}}$)
+\Repeat $\mathit{OA_2^n}$=\textit{refineReachableSubAutomaton}($\mathit{OA_2^{n-1}}$)
 \Until  $\mathit{OA_2^n}=\mathit{OA_2^{n-1}}$;
 \State \Return $\mathit{OA_2^n}$;
 %\EndIf
@@ -1604,7 +1639,7 @@ variables. This does not mean ``data-independency'': we can still have
 guards in the PLTS transitions and in the synchronisation vectors,
 making the behaviour depending on the values of input variables. But
 the open automaton needs not to collect the set of possible values dealing
-with the values of local variables, so the final automaton is $AO_2^0$ as
+with the values of local variables, so the final automaton is $OA_2^0$ as
 computed in line 13.
 
 \begin{theorem}[Correctness without assignments]
