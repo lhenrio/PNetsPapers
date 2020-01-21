@@ -809,7 +809,7 @@ on finite branching of the transition relation.
 
 We first define the set of actions a PLTS can use.  Let $a$
 range over action constants, $\symb{op}$ over operators, and $x$  over
-variable names. Action terms are given by the following grammar:
+variable names. Action terms (parameterised actions) are given by the following grammar:
 \[
 \begin{array}[l]{rcl@{\quad}p{5.5cm}}
 \alpha\in\AlgA&::=&a(p_1,\ldots,p_n)&\text{action terms}\\
@@ -1283,8 +1283,7 @@ these UNSAT transitions: at the end of the open automaton generation,
 the predicate of each OT is translated 
 into SMTlib assertions (see Section~\ref{section:pruning}), and then checked for
 satisfiability (function \textit{filterUnsatTransitions}). 
-Then we compute (lines 12-14) the set of reachable transitions and states to build
-the final open automaton (more details in Section~\ref{section:BuildingTheOpenAutomaton}).
+\QINX{Then starting at the initial state, we compute (lines 12) the set of reachable transitions and states taking the assignments into account. We also iteratively prune (lines 13-14) the unreachable states by refining the possible set of values of states variables (more details in Section~\ref{section:BuildingTheOpenAutomaton}).} 
 
 
 \begin{algorithm}[h]
@@ -1466,7 +1465,7 @@ may depend on the specific theory of the action algebra datatypes.
 The ``Modulo Theory'' part of SMT solvers is important here, as
 the solvers can use specific properties of each data type in the action algebra.
 
-In Algorithm~\ref{alg1}, functions \textit{filterUnsatTransitions} (in line 11) 
+In Algorithm~\ref{alg1}, functions \textit{filterUnsatTransitions} (in line 11), 
 \textit{refineReachableSubAutomaton} (in line 13) make use of the Z3 engine to implement the
 satisfiability checking, for all the OTs computed that far.
 For a transition
@@ -1485,7 +1484,7 @@ where each $Assign$ represents one of the possible (symbolic) values of
 variable $v$.
 
 \ERIC{Each call to the SMT engine will return either SAT or UNSAT results, or may fail due to time bounds. Also, the accuracy of a ``SAT'' result may depend on the characteristics of the specific theory used to axiomatise the data domains and operators. Such theories may be intrinsically undecidable, or may not  be properly handled by the SMT engine (e.g. for recursive datatypes).
-However, while building the open automaton, which is a symbolic representation of the pNet behaviour, it is not logically incorrect to keep potentially unsatisfiable transitions, so we will treat undecidable results, and time bounds failures, as SAT. So the open automaton may have more transitions and states than the theoretical minimum.}
+\QINX{When building the open automaton, which is a symbolic representation of the pNet behaviour, a symbolic transition can be pruned if its predicate is checked unsatisfiable. However in some cases SMT finds it undecidable, so we may still have some spurious symbolic transitions in the result. We cannot pretend to get minimality, but still it is better to prune as many unsatisfiable transitions as possible, together with some states which become unreachable. So we will treat undecidable results, and time bounds failures, as SAT.} So the open automaton may have more transitions and states than the theoretical minimum.}
 
 \ERIC{This is not a problem in itself when constructing the automaton, but a similar limitation will arise later when using open automata as the input of model checking or equivalence checking algorithms. Note that decidability results for these 
 will be dependent on the decidability of the SMT theories used, as is proved e.g. in \cite{henrio:Forte2016}, for bisimulations.}
@@ -1498,17 +1497,17 @@ the set $L1$ might contain unreachable transitions. To remove those transitions,
 algorithm (lines 12-14) builds the final open automaton via a traversal of $L1$,
 starting at the initial state $InitState(p)$.
 %as defined in page~\pageref{def-states}
-More precisely, this is a residual algorithm building a graph from the reachable transitions in $L1$. 
+More precisely, this is a residual algorithm building a graph from the reachable transitions in $L1$.
 %and states are the set of target states of the transitions. 
 Each state in the graph is decorated with a set of its local
 variables, and a list of their possible assignments,
 gathered during the traversal using the ``Post'' parts of the
 OTs.
 
-A further reduction may now be gained by using the information from
+\QINX{A further reduction may now be gained by using the information from
 these sets of possible assignments: adding this information when
 checking satisfiability of transitions leaving a given state may
-result in more UNSAT transitions. The set of possible
+result in more UNSAT transitions. Furthermore, if there are assignments of state variables inside some loops of the automaton, and the set of their possible values may influence some predicates, we will need more iterations. Because in that case more predicates of transitions will be unsatisfiable after pruning some assignments in the previous iteration.} The set of possible
 assignments computed by the algorithm is an over approximation of
 possible values of the 
 variables of such state, so narrowing it means we get a better
@@ -1521,45 +1520,45 @@ transitions and the sets of assignments; the final open automaton
 is the fixed point of this iteration.
 
 In practice, this could be
-expensive \QIN{as it requires several traversals of the whole set of open transitions}, and it is not incorrect to leave some UNSAT OTs in the
-result. \QIN{\YX{Empirically, on real life systems, the unreachable transitions constitute  a small part of the ultimate} open transitions, very little will be gained to compute the fixed point. So we would only perform one step of iteration.} Further algorithms 
+expensive as it requires several traversals of the whole set of open transitions, and it is not incorrect to leave some UNSAT OTs in the
+result. Empirically, on real life systems, the unreachable transitions constitute  a small part of the ultimate open transitions, very little will be gained to compute the fixed point. So we would only perform one step of iteration. Further algorithms 
 (e.g. model-checking or equivalence checking) will be able to use the
 full information from the predicates and the assignment sets, even if
 some spurious OTs are left here.
 
-\begin{algorithm}[htbp]
-  \caption{\QINX{makeReachableSubAutomaton()}}
-  \label{alg:makeReachableSubAutomaton}
-\begin{algorithmic}[1]
-\Require \QINX{The initial state of the pNet $\textit{InitState}(P)$. A set of satisfiable transitions $L$.}
-\State Initialize a set $A$;
-\State Store $(\textit{InitState}(P), \textit{InitState}(P).Assignments)$ into $S$;  \hfill $\setminus \setminus$$S.Assignments$ is the assignment of the variable in the state $S$.
-\While{!$\mathit{isEmpty}(A)$}
-	\For {each $(S, Assignments) \in A$}
-          \For {each $OT$ from $S$}
-          \State Check the predicate of $OT$ taking $Assignments$ in to account;
-	  \IfThenElse{$\textit{false}$}{\textbf{skip};}{Add target of $OT$ and its assignments ($S'$, $S'.Assignments$) into $A$;}
-	\EndFor	\EndFor
-\EndWhile
-\State Build $\mathit{OA}$ with the set $L$;
-\State \QINX{\Return $\mathit{OA}$;}
-\end{algorithmic}  
-\end{algorithm}
-
-\begin{algorithm}[htbp]
-  \caption{\QINX{refineReachableSubAutomaton()}}
-  \label{alg:refineReachableSubAutomaton}
-\begin{algorithmic}[1]
-\Require \QINX{An open automaton $\mathit{OA}$.}
-\Repeat
-\For {\QINX{each global state $S$ in $\mathit{OA}$}}
-          \State \QINX{$b=$ whether $S$ has preceeding transitions.}
-	  \IfThenElse{$b$}{\textbf{skip};}{\QINX{remove $S$ and the transitions from $S$;}}
-\EndFor
-\Until  \QINX{$\mathit{OA}$ does not change;}
-\State \QINX{\Return $\mathit{OA}$;}
-\end{algorithmic}  
-\end{algorithm}
+%\begin{algorithm}[htbp]
+%  \caption{\QINX{makeReachableSubAutomaton()}}
+%  \label{alg:makeReachableSubAutomaton}
+%\begin{algorithmic}[1]
+%\Require \QINX{The initial state of the pNet $\textit{InitState}(P)$. A set of satisfiable transitions $L$.}
+%\State Initialize a set $A$;
+%\State Store $(\textit{InitState}(P), \textit{InitState}(P).Assignments)$ into $S$;  \hfill $\setminus \setminus$$S.Assignments$ is the assignment of the variable in the state $S$.
+%\While{!$\mathit{isEmpty}(A)$}
+%	\For {each $(S, Assignments) \in A$}
+%          \For {each $OT$ from $S$}
+%          \State Check the predicate of $OT$ taking $Assignments$ in to account;
+%	  \IfThenElse{$\textit{false}$}{\textbf{skip};}{Add target of $OT$ and its assignments ($S'$, $S'.Assignments$) into $A$;}
+%	\EndFor	\EndFor
+%\EndWhile
+%\State Build $\mathit{OA}$ with the set $L$;
+%\State \QINX{\Return $\mathit{OA}$;}
+%\end{algorithmic}  
+%\end{algorithm}
+%
+%\begin{algorithm}[htbp]
+%  \caption{\QINX{refineReachableSubAutomaton()}}
+%  \label{alg:refineReachableSubAutomaton}
+%\begin{algorithmic}[1]
+%\Require \QINX{An open automaton $\mathit{OA}$.}
+%\Repeat
+%\For {\QINX{each global state $S$ in $\mathit{OA}$}}
+%          \State \QINX{$b=$ whether $S$ has preceeding transitions.}
+%	  \IfThenElse{$b$}{\textbf{skip};}{\QINX{remove $S$ and the transitions from $S$;}}
+%\EndFor
+%\Until  \QINX{$\mathit{OA}$ does not change;}
+%\State \QINX{\Return $\mathit{OA}$;}
+%\end{algorithmic}  
+%\end{algorithm}
 
 \subsection{Computing Reachable State Space on-the-fly}
 
