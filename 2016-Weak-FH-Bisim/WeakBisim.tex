@@ -596,7 +596,7 @@ argument, through the two protocol entities. Process $P$ send an $\texttt{p\_sen
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
 the full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p\_send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $p\_send(m)$  action sending a message, and  the medium accepts the message through $\texttt{\texttt{in(m)}}$ action  at the same time. And the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p\_send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $\texttt{p\_send(m)}$  action sending a message, and  the medium accepts the message through $\texttt{in(m)}$ action  at the same time. And the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
 
 
 Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $Sender$. The $Sender$ increments its local error counter $ec$, and resends the message (including $ec$) to the $Medium$, that will, eventually, transmit $m,ec$ to the $Receiver$.
@@ -976,7 +976,7 @@ with the $Sender$ within the \emph{SimpleProtocol}) is:
 
  \smallskip\noindent
  \[  OT_1  = \openrule{
-      \{P\mapsto p\_send(m)\},  [m=m'],  \{s1\_m\gets m\}
+      \{\texttt{P}\mapsto \texttt{p-send(m)}\},  [m=m'],  \{s1\_m\gets m\}
                       }
     {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m')}} \ostate{s_1,m_0,r_0}}
     \]
@@ -1320,13 +1320,10 @@ holes, and each pLTS at leaves having a finite number of states and
 \end{figure}
 
 
-    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the implementation $SimpleSystem$ (Figure \ref{SimpleProt:Impl}).
-    \RAB{In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{OT}_i$ and tau open transition by  $\texttt{OT}_tau$. The resulting behavior is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions showing the handling of errors and corresponding increments of the error counter.}
+    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the implementation $SimpleSystem$ (Figure \ref{SimpleProt:Impl}). In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{OT}_i$ and tau open transition by  $\texttt{OT}_{\tau}$. The resulting behavior is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions showing the handling of errors and corresponding increments of the error counter.
     
     
-    \ERIC{In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. For readability we only have written the \emph{external} actions of holes $P$ and $Q$ on the loop transitions of the first staes; they are also present on all other states. 
-The resulting behavior is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive state variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ transitions showing the handling of errors and corresponding increments of the error counter.}
-    
+  
 
 \subsection{pNet Composition Properties: composition of open transitions}
 The semantics of open pNets allows us to prove two crucial properties relating pNet composition with pNet semantics: open transition of a composed pNet can be decomposed into open transitions of its composing sub-pNets, and conversely, from the open transitions of sub-pNets,  an open transition of the composed pNet can be built.
@@ -1673,14 +1670,13 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 %% \end{figure}
 
 \begin{figure}[ht]
-   \centerline{\includegraphics[width=8cm]{XFIG/WOT2-result}}
-  \caption{Construction of WOT2}
+   \centerline{\includegraphics[width=10cm]{XFIG/WOT2-result}}
+  \caption{Construction of an example of weak open transition}
    \label{WOT2}
 \end{figure}
 
 \begin{example}
-  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.
-\RAB{The weak open transition here is the transition delivering the result of the algorithm to hole $Q$ by applying or rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds an $\texttt{WT}_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition. The weak open transition here is the transition delivering the result of the algorithm to hole $Q$ by applying or rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds an $\texttt{WT}_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
          {\{\}, True,
 			(\texttt{ec}\gets \texttt{ec}+1) }
          {b1 \OTWeakarrow \tau b1}$; $\openrule
@@ -1696,37 +1692,11 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
   $\openrule
          {\emptyset, True,
 			(\texttt{ec}\gets \texttt{ec}+n) }
-         {b1 \OTWeakarrow \tau b1} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{q\_recv(ec)}  as $\alpha$, we get:
+         {\text{b}1 \OTWeakarrow \tau b1} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{q-recv(ec)}  as $\alpha$, we get:
       $\openrule
-         {\{Q\mapsto\texttt{q\_revc(ec)}\subst{ec\gets ec+n}\}, True,
+         {\{\texttt{Q}\mapsto\texttt{q-revc(ec)}\subst{ec\gets ec+n}\}, True,
 			(\texttt{ec}\gets \texttt{ec}+n) }
-         {b1 \OTWeakarrow {\texttt{out(m,ec)}\subst{ec\gets ec+n}} b0} \forall n \geq 0$. } 
-
-
-
-WOT2 here is the transition delivering the result of the algorithm to hole $Q$. Remark that it includes a loop increasing the error counter, occurring before the action of $Q$, and this action is using the resulting value of the counter. Let us go into the details, using rules WT1/2/3.  First WT1 adds a $\tau$ loop on each state. Then consider application of Rule WT3 on a sequence 3 internal actions ``$\tau\subst{ec\gets ec+1};\tau\subst{ec\gets ec+1};\tau$''. Hole actions and predicates are empty, we just concentrate on the Post operations. Rule WT2 transforms each 3 OTs into WOTs.  Then WT3 produces the weak OT:
-  $\openrule
-         {\{\}, True,
-			\subst{\texttt{ec++}\shortotimes\texttt{ec++}\shortotimes\emptyset} }
-         {s \OTWeakarrow {\tau\subst{\texttt{ec++}}} s'}$
-         that you can rewrite as:      
-  $\openrule
-         {\{\}, True,
-			\subst{ec\gets ec+2} }
-         {s \OTWeakarrow \tau s'}$
-
-         Now you can iterate this construction an arbitrary number of times, getting for any natural number $n$ the weak transition:
-  $\openrule
-         {\emptyset, True,
-			\subst{ec\gets ec+n} }
-         {s \OTWeakarrow \tau s'}$
-
-         For any of these, apply again WT3, using the central \texttt{q\_recv(ec)} transition as $\alpha$, and you get:
-      $\openrule
-         {\{Q\mapsto\texttt{q\_revc(ec)}\subst{ec\gets ec+n}\}, True,
-			\subst{ec\gets ec+n} }
-         {s \OTWeakarrow {\texttt{out(m,ec)}\subst{ec\gets ec+n}} s'}$
-
+         {b1 \OTWeakarrow {\underline{\texttt{out(m,ec)}}\subst{ec\gets ec+n}} b0} \forall n \geq 0$. 
 \end{example}
 
 
