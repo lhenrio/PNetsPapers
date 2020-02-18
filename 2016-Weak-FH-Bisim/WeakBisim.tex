@@ -590,13 +590,13 @@ To illustrate this work, we use a simple communication protocol, that provides s
 
 Fig. \ref{SimpleProt:Spec} (left) shows the example principle: two unspecified
 processes $P$ and $Q$ (holes) communicate messages, with a data value
-argument, through the two protocol entities. Process $P$ send an $\texttt{p\_send(m)}$ message to the $Sender$; this communication is denoted as $\texttt{\underline{in(m)}}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p\_a}$ and $\texttt{q\_b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
+argument, through the two protocol entities. Process $P$ send an $\texttt{p-send(m)}$ message to the $Sender$; this communication is denoted as $\texttt{\underline{in(m)}}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
 
 
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
 the full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p\_send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $\texttt{p\_send(m)}$  action sending a message, and  the medium accepts the message through $\texttt{in(m)}$ action  at the same time. And the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the medium accepts the message through $\texttt{in(m)}$ action  at the same time. And the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
 
 
 Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $Sender$. The $Sender$ increments its local error counter $ec$, and resends the message (including $ec$) to the $Medium$, that will, eventually, transmit $m,ec$ to the $Receiver$.
@@ -1666,7 +1666,7 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 \end{figure}
 
 \begin{example}
-  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition. The weak open transition here is the transition delivering the result of the algorithm to hole $Q$ by applying or rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds an $\texttt{WT}_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds an $\texttt{WT}_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
          {\{\}, True,
 			(\texttt{ec}\gets \texttt{ec}+1) }
          {b1 \OTWeakarrow \tau b1}$; $\openrule
@@ -1715,31 +1715,21 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
    \label{SimpleProtCounter:SpecOA-partial}
 \end{figure}
 
-%% \TODO{Eric: insert here a table with the details of the WOTs.Il manque encore au moins 3 WOT dans ce dessin...}
-
-%% \smallskip
-%% $1^st$ try, user-friendly style:
-
-%% $$ 3 = \tau^*; \underline{in(m)}\{s1\_c:=0, s1\_m:=m\}; \tau\{s1\_c++\}^*$$
-
-%% \smallskip
-%% $2^nd$ try, full formal style ?:
-%% \medskip
 
 Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. Here we denote as $post_n$ the effect (= substitution) of the strong open transition $OT_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
 \smallskip
 
 $post_1 = post_2 = ()$
 
-$post_3 = (\texttt{s1\_c}\gets 0, \texttt{s1\_m}\gets \texttt{m})$
+$post_3 = (\texttt{s1\_ec}\gets 0, \texttt{s1\_m}\gets \texttt{m})$
 
-$post_4 = (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_c}\gets \texttt{s1\_c})$
+$post_4 = (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec})$
 
-$post_5 = (\texttt{m2\_c}\gets \texttt{m1\_c})$
+$post_5 = (\texttt{m2\_ec}\gets \texttt{m1\_ec})$
 
-$post_6 = (\texttt{s1\_c}\gets \texttt{m2\_c+1})$
+$post_6 = (\texttt{s1\_ec}\gets \texttt{m2\_ec+1})$
 
-$post_7 = (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_c}\gets \texttt{m1\_c})$
+$post_7 = (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{m1\_ec})$
 
 $post_8 = post_9 = ()$
 \medskip
@@ -1748,77 +1738,35 @@ Then the effect of one single $100 \xrightarrow{OT_4} 210 \xrightarrow{OT_5} 220
 \smallskip
 
 $Post_{456} = post_6 \shortotimes\ post_5 \shortotimes\ post_4
-= (\texttt{s1\_c}\gets \texttt{s1\_c}+1)$.
+= (\texttt{s1\_ec}\gets \texttt{s1\_ec}+1)$.
 \medskip
 
-So if we denote ${Post_{456}}^*$ any iteration of this loop, we get ${Post_{456}}^* = (\texttt{s1\_c}\gets \texttt{s1\_c}+n)$ for any $n\ge 0$, and we will get e.g. the Post of the weak OT number 3' as $ post_4\shortotimes {Post_{456}}^*\shortotimes\ post_3 = (\texttt{m1\_msg}\gets m, \texttt{m1\_c}\gets n), \forall n\ge 0$
+So if we denote ${Post_{456}}^*$ any iteration of this loop, we get ${Post_{456}}^* = (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n)$ for any $n\ge 0$, and we will get e.g. the Post of the weak OT number 3' as $ post_4\shortotimes {Post_{456}}^*\shortotimes\ post_3 = (\texttt{m1\_msg}\gets m, \texttt{m1\_ec}\gets n), \forall n\ge 0$
 \medskip
 
-We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:SpecOA-partial} (the full table will be included in Appendix \ref{Appendix:FullExample}) :
+We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:SpecOA-partial} (the full table is included in Appendix \ref{Appendix:FullExample}) :
 \smallskip
 
 $ 1 = \openrule
-{\{\texttt{P}\mapsto \texttt{p\_a}\}, [\forall \texttt{m}. \texttt{p\_a} \neq \texttt{p\_send(m)} ], ()}
+{\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
 {000 \OTWeakarrow {\tau} 000}$
-
-$ 2 = \openrule
-{\{\texttt{Q}\mapsto \texttt{q\_b}\}, [\forall \texttt{m}. \texttt{q\_b} \neq \texttt{q\_recv(m)} ], ()}
-{000 \OTWeakarrow {\tau} 000}$
-
-$ 3 = \openrule
-  {\{\texttt{P}\mapsto \texttt{p\_send(m)}\}, True,
-    (\texttt{s1\_msg}\gets m, \texttt{s1\_c}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
-  \ \forall n\ge 0$
 
 $ 3' = \openrule
-  {\{\texttt{P}\mapsto \texttt{p\_send(m)}\}, True,
-    (\texttt{m1\_msg}\gets m, \texttt{m1\_c}\gets n)}
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{m1\_msg}\gets m, \texttt{m1\_ec}\gets n)}
   {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
   \ \forall n\ge 0$
 
-$ 3'' = \openrule
-  {\{\texttt{P}\mapsto \texttt{p\_send(m)}\}, True, 
-    (\texttt{m2\_c}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 220}
-  \ \forall n\ge 0$
-
          $ 4 = \openrule
-         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_c}\gets \texttt{s1\_c}+n)}
+         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
          \ \forall n\ge 0$
-
-$ 5 = \openrule
-         {\{\}, True, (\texttt{m2\_c}\gets \texttt{m1\_c}+n)}
-         {210 \OTWeakarrow {\tau} 220}
-         \ \forall n\ge 0$
-
-$ 6 = \openrule
-         {\{\}, True, (\texttt{s1\_c}\gets \texttt{m2\_c}+n)}
-         {220 \OTWeakarrow {\tau} 100}
-         \ \forall n\ge 0$
-
-$ 7 = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_c}\gets \texttt{s1\_c}+n)}
-         {100 \OTWeakarrow {\tau} 201}
-         \ \forall n\ge 0$
-         
-$ 7' = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_c}\gets \texttt{m1\_c}+n)}
-         {210 \OTWeakarrow {\tau} 201}
-         \ \forall n\ge 0$
-         
-$ 7'' = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_c}\gets \texttt{m2\_c}+n)}
-         {220 \OTWeakarrow {\tau} 201}
-         \ \forall n\ge 1$
          
 $ 8 = \openrule
          {\{\}, True, ()}
-         {201 \OTWeakarrow {\underline{\texttt{out(m,c)}}\subst{(m\gets \texttt{r1\_msg}, c\gets \texttt{r1\_c}}} 202}
+         {201 \OTWeakarrow {\underline{\texttt{out(m,c)}}\subst{(m\gets \texttt{r1\_msg}, c\gets \texttt{r1\_ec}}} 202}
          $
 
-\newpage
 \subsection{Composition properties: composition of weak open transitions}
 We now have two different semantics for open pNets: a strong semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
 
@@ -5489,11 +5437,11 @@ pLTS M1
   vars ?msg:Data ?c:Int
 
 state a0
-transition m_recv(msg,c) -> a1 {a1_msg:=msg, a1_c:=c}
+transition m_recv(msg,c) -> a1 {a1_msg:=msg, a1_ec:=c}
 
 state a1
-vars a1_msg:Data a1_c:Int
-transition m_send(a1_msg, a1_c) -> a0 
+vars a1_msg:Data a1_ec:Int
+transition m_send(a1_msg, a1_ec) -> a0 
 transition synchro($tau) -> a2
 
 state a2
@@ -5504,27 +5452,27 @@ pLTS Sender
   vars ?msg:Data
 
 state s0
-transition s_recv(msg) -> s1 {s1_msg:=msg, s1_c:=0}
+transition s_recv(msg) -> s1 {s1_msg:=msg, s1_ec:=0}
 
 state s1
-vars s1_msg:Data s1_c:Int
-transition s_send(s1_msg, s1_c) -> s2 {s2_c:=s1_c}
+vars s1_msg:Data s1_ec:Int
+transition s_send(s1_msg, s1_ec) -> s2 {s2_ec:=s1_ec}
 
 state s2
-vars  s2_c:Int
+vars  s2_ec:Int
 transition $s_ack -> s0
-transition $s_error -> s1 {s1_c:=s2_c+1}
+transition $s_error -> s1 {s1_ec:=s2_ec+1}
 
 pLTS Receiver
   initial r0
   vars ?msg:Data ?c:Int
 
 state r0
-transition r_recv(msg,c) -> r1 {r1_msg:=msg, r1_c:=c}
+transition r_recv(msg,c) -> r1 {r1_msg:=msg, r1_ec:=c}
 
 state r1
-vars r1_msg:Data r1_c:Int
-transition r_send(r1_msg, r1_c) -> r2
+vars r1_msg:Data r1_ec:Int
+transition r_send(r1_msg, r1_ec) -> r2
 
 state r2
 transition $r_ack -> r0
@@ -5571,25 +5519,25 @@ vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m,c)]
 %% - SV5 SVs: <_, _, out(m, c)>-->out(m, c)
 %% - SV10 SVs: <_, _tau_, _>-->_tau_
 %% - pLTS: Sender
-%% - - Transition: s0---in(msg)-->s1, { s1_msg := msg s1_c := 0}
-%% - - Transition: s1---s_send(s1_msg, s1_c)-->s2, {}
+%% - - Transition: s0---in(msg)-->s1, { s1_msg := msg s1_ec := 0}
+%% - - Transition: s1---s_send(s1_msg, s1_ec)-->s2, {}
 %% - - Transition: s2---s_ack-->s0, {}
-%% - - Transition: s2---s_error-->s1, { s1_c := s2_c+1}
-%% - - Variable: s1_c, State: s1, Value(s) = 0,s2_c+1,
+%% - - Transition: s2---s_error-->s1, { s1_ec := s2_ec+1}
+%% - - Variable: s1_ec, State: s1, Value(s) = 0,s2_ec+1,
 %% - - Variable: s1_msg, State: s1, Value(s) = msg,
 %% - pLTS: M1
-%% - - Transition: a0---m_recv(msg, c)-->a1, { a1_msg := msg a1_c := c}
-%% - - Transition: a1---m_send(a1_msg, a1_c)-->a0, {}
+%% - - Transition: a0---m_recv(msg, c)-->a1, { a1_msg := msg a1_ec := c}
+%% - - Transition: a1---m_send(a1_msg, a1_ec)-->a0, {}
 %% - - Transition: a1---_tau_-->a2, {}
 %% - - Transition: a2---m_error-->a0, {}
 %% - - Variable: a1_msg, State: a1, Value(s) = msg,
-%% - - Variable: a1_c, State: a1, Value(s) = c,
+%% - - Variable: a1_ec, State: a1, Value(s) = c,
 %% - pLTS: Receiver
-%% - - Transition: r0---r_recv(msg, c)-->r1, { r1_msg := msg r1_c := c}
-%% - - Transition: r1---out(r1_msg, r1_c)-->r2, {}
+%% - - Transition: r0---r_recv(msg, c)-->r1, { r1_msg := msg r1_ec := c}
+%% - - Transition: r1---out(r1_msg, r1_ec)-->r2, {}
 %% - - Transition: r2---r_ack-->r0, {}
 %% - - Variable: r1_msg, State: r1, Value(s) = msg,
-%% - - Variable: r1_c, State: r1, Value(s) = c,
+%% - - Variable: r1_ec, State: r1, Value(s) = c,
 %% Holes: Q
 %% \end{lstlisting}
 
@@ -5603,7 +5551,7 @@ This view uses variable names very close to the internal representation in the t
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 
 {P|->p_send(m:SV6:1:1)},
-[(msg=m:SV0:12:1)/\((s_recv(msg))=(s_recv(m:SV0:12:1)))], {s1_msg := msg, s1_c := 0}
+[(msg=m:SV0:12:1)/\((s_recv(msg))=(s_recv(m:SV0:12:1)))], {s1_msg := msg, s1_ec := 0}
 	OT:1 ------------------------------------------------------------
 		<s0_a0_r0>-----_in(m:SV6:1:1)_----><s1_a0_r0>
 
@@ -5628,11 +5576,11 @@ INFO  SimpleProtImpl2 -
 	OT:5 ------------------------------------------------------------
 		<s1_a0_r0>-----q_a:SV9:1:4----><s1_a0_r0>
 
-{},   [(s1_msg=m:SV1:114:2)/\(s1_c=c:SV1:114:2)
-  /\((s_send(s1_msg, s1_c))=(s_send(m:SV1:114:2, c:SV1:114:2)))
+{},   [(s1_msg=m:SV1:114:2)/\(s1_ec=c:SV1:114:2)
+  /\((s_send(s1_msg, s1_ec))=(s_send(m:SV1:114:2, c:SV1:114:2)))
   /\(msg=m:SV1:114:2)/\(c=c:SV1:114:2)
   /\((m_recv(msg, c))=(m_recv(m:SV1:114:2, c:SV1:114:2)))],
-{s2_c := s1_c, a1_msg := msg, a1_c := c}
+{s2_ec := s1_ec, a1_msg := msg, a1_ec := c}
 	OT:6 ------------------------------------------------------------
 		<s1_a0_r0>-----_tau_----><s2_a1_r0>
 
@@ -5646,11 +5594,11 @@ INFO  SimpleProtImpl2 -
 	OT:8 ------------------------------------------------------------
 		<s2_a1_r0>-----q_a:SV9:1:4----><s2_a1_r0>
 
-{},   [(a1_msg=m:SV2:114:3)/\(a1_c=c:SV2:114:3)
-  /\((m_send(a1_msg, a1_c))=(m_send(m:SV2:114:3, c:SV2:114:3)))
+{},   [(a1_msg=m:SV2:114:3)/\(a1_ec=c:SV2:114:3)
+  /\((m_send(a1_msg, a1_ec))=(m_send(m:SV2:114:3, c:SV2:114:3)))
   /\(msg=m:SV2:114:3)/\(c=c:SV2:114:3)
   /\((r_recv(msg, c))=(r_recv(m:SV2:114:3, c:SV2:114:3)))],
-{r1_msg := msg, r1_c := c}
+{r1_msg := msg, r1_ec := c}
 	OT:9 ------------------------------------------------------------
 		<s2_a1_r0>-----_tau_----><s2_a0_r1>
 
@@ -5664,8 +5612,8 @@ INFO  SimpleProtImpl2 -
 		<s2_a0_r1>-----p_a:SV7:1:2----><s2_a0_r1>
 
 {Q|->q_recv(m:SV8:1:3, c:SV8:1:3)},
-[(r1_msg=m:SV5:18:6)/\(r1_c=c:SV5:18:6)
-  /\((r_send(r1_msg, r1_c))=(r_send(m:SV5:18:6, c:SV5:18:6)))],   {}
+[(r1_msg=m:SV5:18:6)/\(r1_ec=c:SV5:18:6)
+  /\((r_send(r1_msg, r1_ec))=(r_send(m:SV5:18:6, c:SV5:18:6)))],   {}
 	OT:12 ------------------------------------------------------------
 		<s2_a0_r1>-----_out(m:SV8:1:3, c:SV8:1:3)_----><s2_a0_r2>
 
@@ -5684,7 +5632,7 @@ INFO  SimpleProtImpl2 -
 	OT:15 ------------------------------------------------------------
 		<s2_a2_r0>-----q_a:SV9:1:4----><s2_a2_r0>
 
-		{},   [],   {s1_c := s2_c+1}
+		{},   [],   {s1_ec := s2_ec+1}
 	OT:16 --------------------------------------
 		<s2_a2_r0>-----_tau_----><s1_a0_r0>
 
@@ -5711,23 +5659,23 @@ pLTS States: <s0 vars: {}> <a0 vars: {}> <r0 vars: {}>
 
 Global State: <s1_a0_r0>
 ===================
-pLTS States: <s1 vars: { s1_msg <-{msg} s1_c <-{0, s2_c+1}}> <a0 vars: {}> <r0 vars: {}>
+pLTS States: <s1 vars: { s1_msg <-{msg} s1_ec <-{0, s2_ec+1}}> <a0 vars: {}> <r0 vars: {}>
 
 Global State: <s2_a1_r0>
 ===================
-pLTS States: <s2 vars: { s2_c <-{s1_c}}> <a1 vars: { a1_msg <-{msg} a1_c <-{c}}> <r0 vars: {}>
+pLTS States: <s2 vars: { s2_ec <-{s1_ec}}> <a1 vars: { a1_msg <-{msg} a1_ec <-{c}}> <r0 vars: {}>
 
 Global State: <s2_a0_r1>
 ===================
-pLTS States: <s2 vars: { s2_c <-{s1_c}}> <a0 vars: {}> <r1 vars: { r1_c <-{c} r1_msg <-{msg}}>
+pLTS States: <s2 vars: { s2_ec <-{s1_ec}}> <a0 vars: {}> <r1 vars: { r1_ec <-{c} r1_msg <-{msg}}>
 
 Global State: <s2_a2_r0>
 ===================
-pLTS States: <s2 vars: { s2_c <-{s1_c}}> <a2 vars: {}> <r0 vars: {}>
+pLTS States: <s2 vars: { s2_ec <-{s1_ec}}> <a2 vars: {}> <r0 vars: {}>
 
 Global State: <s2_a0_r2>
 ===================
-pLTS States: <s2 vars: { s2_c <-{s1_c}}> <a0 vars: {}> <r2 vars: {}>
+pLTS States: <s2 vars: { s2_ec <-{s1_ec}}> <a0 vars: {}> <r2 vars: {}>
 
 INFO  SimpleProtImpl2 - Total: 19 SATISFIABLE OTs
 INFO  SimpleProtImpl2 -        185 UNSATISFIABLE OTs
@@ -5755,6 +5703,75 @@ INFO  SimpleProtImpl2 - Total Time: 1105 ms
 %%
 %%Many weak should be added, e.g. Tau loops on states <s2\_a1\_r0>, <s2\_a2\_r0>, 
 %%<s2\_a0\_r0>, encoding the loop.
+
+\begin{figure}[h]
+   \centerline{\includegraphics[width=9cm]{XFIG/SimpleProtImpl-WOA}}
+  \caption{Weak Open Automaton of the implementation}
+   \label{Appendix:SpecOA-partial}
+\end{figure}
+
+In Figure \ref{Appendix:SpecOA-partial} we show the weak oepn automaton of our implementation pNet. Details of the weak transitions is listed here:
+
+$ 1 = \openrule
+{\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
+{000 \OTWeakarrow {\tau} 000}$
+
+$ 2 = \openrule
+{\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m}. \texttt{q-b} \neq \texttt{q-recv(m)} ], ()}
+{000 \OTWeakarrow {\tau} 000}$
+
+$ 3 = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{s1\_msg}\gets m, \texttt{s1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
+  \ \forall n\ge 0$
+
+$ 3' = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{m1\_msg}\gets m, \texttt{m1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
+  \ \forall n\ge 0$
+
+$ 3'' = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True, 
+    (\texttt{m2\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 220}
+  \ \forall n\ge 0$
+
+         $ 4 = \openrule
+         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n)}
+         {100 \OTWeakarrow {\tau} 210}
+         \ \forall n\ge 0$
+
+$ 5 = \openrule
+         {\{\}, True, (\texttt{m2\_ec}\gets \texttt{m1\_ec}+n)}
+         {210 \OTWeakarrow {\tau} 220}
+         \ \forall n\ge 0$
+
+$ 6 = \openrule
+         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{m2\_ec}+n)}
+         {220 \OTWeakarrow {\tau} 100}
+         \ \forall n\ge 0$
+
+$ 7 = \openrule
+         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s1\_ec}+n)}
+         {100 \OTWeakarrow {\tau} 201}
+         \ \forall n\ge 0$
+         
+$ 7' = \openrule
+         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{m1\_ec}+n)}
+         {210 \OTWeakarrow {\tau} 201}
+         \ \forall n\ge 0$
+         
+$ 7'' = \openrule
+         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{m2\_ec}+n)}
+         {220 \OTWeakarrow {\tau} 201}
+         \ \forall n\ge 1$
+         
+$ 8 = \openrule
+         {\{\}, True, ()}
+         {201 \OTWeakarrow {\underline{\texttt{out(m,c)}}\subst{(m\gets \texttt{r1\_msg}, c\gets \texttt{r1\_ec}}} 202}
+         $
 
 \end{document}
 
