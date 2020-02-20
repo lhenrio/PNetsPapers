@@ -1694,7 +1694,8 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
     Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplOA} respectively show the weak automata of the simple protocol specification and implementation.
     \TODO{comment...}
 
-    For readability, we did not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplOA}, they will appear below. In this automaton, many WOT are similar, and numbered accordingly as 3, 3', 3'', and 8, 8', 8'' respectively: they only differ by the name of the state variables in their respective source or target states.
+    For readability, we did not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplOA}, they will appear below.
+    First, we the weak OT loops on state $ostate{000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3', 3'', and 8, 8', 8'',8''' respectively: they only differ by the name of the state variables in their respective source or target states.
 \end{example}
 
   
@@ -1719,10 +1720,8 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 \end{figure}
 
 
-Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. Here we denote as $post_n$ the effect (= substitution) of the strong open transition $OT_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
+Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. We concentrate on transitions $WT_3$ and $WT_4$. Let us denote as $post_n$ the effect (= substitution) of the strong open transitions $OT_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
 \smallskip
-
-$post_1 = post_2 = ()$
 
 $post_3 = (\texttt{s1\_ec}\gets 0, \texttt{s1\_m}\gets \texttt{m})$
 
@@ -1732,9 +1731,6 @@ $post_5 = (\texttt{m2\_ec}\gets \texttt{m1\_ec})$
 
 $post_6 = (\texttt{s1\_ec}\gets \texttt{m2\_ec+1})$
 
-$post_7 = (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{m1\_ec})$
-
-$post_8 = post_9 = ()$
 \medskip
 
 Then the effect of one single $100 \xrightarrow{OT_4} 210 \xrightarrow{OT_5} 220 \xrightarrow{OT_6} 100$ loop is:
@@ -1750,25 +1746,25 @@ So if we denote ${Post_{456}}^*$ any iteration of this loop, we get ${Post_{456}
 We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:ImplOA} (the full table is included in Appendix \ref{Appendix:FullExample}) :
 \smallskip
 
-$ WT_1 = \openrule
+$ WI_1 = \openrule
 {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
 {000 \OTWeakarrow {\tau} 000}$
 
-$ WT_{3'} = \openrule
+$ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{m1\_msg}\gets \texttt{m}, \texttt{m1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
+    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
   \ \forall n\ge 0$
 
-         $ WT_4 = \openrule
+  $ WI_4(n) = \openrule
          {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
          \ \forall n\ge 0$
          
-$ WT_8 = \openrule
-         {\{\}, True, ()}
-         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec)}}} 202}
-         $
+$ WI_8(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec +n)}\}, True, ()}
+         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec +n)}}} 202}
+         \ \forall n\ge 0$
 
 \subsection{Composition properties: composition of weak open transitions}
 We now have two different semantics for open pNets: a strong semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
@@ -1892,40 +1888,6 @@ Under this condition, it is safe to define the weak open automaton that provides
 Let $A$ be the open automaton expressing the semantics of an open pNet $\pNet$; let $<J,\mathcal{S},s_0,  \WT>$ be the weak open automaton derived from $A$; this weak open automaton defines the weak semantics of the pNet $\pNet$. Then, we denote $\pNet \models \WOT$ whenever $\WOT\in\WT$.
 \end{definition}
 
-%% \TODO{move text below}
-
-%% \begin{property}[Decomposition of weak open transitions] \TODO{TODO}
-%% Let $A$ be the open automaton that is the semantics of a \pNet $P$, and $<J,\mathcal{S},s_0,\WT>$ a weak open automaton derived from $A$.
-%% Suppose we have the following weak open transitions in $\WT$:
-%% \[\openrule
-%%          {
-%%            \set{\gamma_1},\Pred_1,\Post_1   }
-%%          {s \OTWeakarrow {\tau} s_1}
-%% \qquad 
-%% \openrule
-%%          {
-%%            \set{\gamma_2},\Pred_2,\Post_2   }
-%%          {s_1 \OTWeakarrow {\alpha} s_2}
-%% \qquad
-%% \openrule
-%%          {
-%%            \set{\gamma_3},\Pred_3,\Post_3   }
-%%          {s_2 \OTWeakarrow {\tau} s_3}
-%% \]
-%% Then there is ag weak  open transition of the following form in $\WT$:
-%% \[\openrule
-%%          {
-%%            \set{\gamma},\Pred,\Post   }
-%%          {s \OTWeakarrow {\alpha} s_3}
-%% \]
-%% Suppose additionally $\Post_3=({x_k\gets e_k})^{k\in K}$, we have the following
-%% \[
-%% \begin{array}{rcl}
-%% \gamma&=& \gamma_1\dotcup\gamma_2\dotcup\gamma_3\\
-%% \Pred&=&\Pred_1\land\Pred_2\subst{\Post_1}\land (\Pred_3\subst{\Post_2})\subst{\Post_1}\\
-%% \Post &=& ({x_k\gets ((e_k\subst{\Post_2})\subst{\Post_1})})^{k\in K}
-%% \end{array}\]
-%% \end{property}
 
 \subsection{Properties of weak bisimulation for open pNets}
 
@@ -5729,19 +5691,13 @@ $ 3 = \openrule
   {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
   \ \forall n\ge 0$
 
-$ 3' = \openrule
+$ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{m1\_msg}\gets m, \texttt{m1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
+    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
   \ \forall n\ge 0$
 
-$ 3'' = \openrule
-  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True, 
-    (\texttt{m2\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 220}
-  \ \forall n\ge 0$
-
-         $ 4 = \openrule
+$ WI_4(n) = \openrule
          {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
          \ \forall n\ge 0$
@@ -5771,11 +5727,15 @@ $ 7'' = \openrule
          {220 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 1$
          
-$ 8 = \openrule
-         {\{\}, True, ()}
-         {201 \OTWeakarrow {\underline{\texttt{out(m,c)}}\subst{(m\gets \texttt{r1\_msg}, c\gets \texttt{r1\_ec}}} 202}
-         $
+$ WI_8(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec +n)}\}, True, ()}
+         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec +n)}}} 202}
+         \ \forall n\ge 0$
 
+$ WI_9(n) = \openrule
+         {\{\}, True, (\texttt{m1\_ec}\gets \texttt{m1\_ec}+n)}
+         {210 \OTWeakarrow {\tau} 210}
+         \ \forall n\ge 0$
 \end{document}
 
 
