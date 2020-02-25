@@ -1694,8 +1694,6 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
     Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplOA} respectively show the weak automata of the simple protocol specification and implementation.
     \TODO{comment...}
 
-    \TODO{introduce the notation for parametrized OTs}
-    
     For readability, we did not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplOA}, they will appear below.
     First, we the weak OT loops on state $ostate{000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3', 3'', and 8, 8', 8'',8''' respectively: they only differ by the name of the state variables in their respective source or target states.
 \end{example}
@@ -1932,90 +1930,17 @@ composability and weak FH-bisimilarity.
 
 
 \subsection{Running example}
-In section \ref{def:weakOT} we have shown the full satured weak automaton for both the specification and the implementation of the simple protocol. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
+- In section \ref{def:weakOT} we have shown the full satured weak automaton for both the specification and the implementation of the simple protocol.
 
-\medskip
-\noindent
-Preliminary remarks:
+\TODO{Je ne pense pas que nous ayons un algo de bisim weak operationnel pour la publi, mais ca n'est pas completement impossible nonp[l;us...  Au pire, argumenter intuitivement sur papier, en donnat les classes d'equivalence et les predicats.}
+
   \begin{itemize}
-    \item Both pNets trivialy verify the ``non-observability''
+    \item[] Both pNets trivialy verify the ``non-observability''
       condition: the only vectors having $\tau$ as an action of a
       sub-net are of the form ``$< -, \tau, -> -> \tau$''.
-      \item We must take care of variable name conflicts: in our example, the state variables of the 2 systems already have different names, but the action parameters occuring in the transitions (m, msg, ec) are the same, that is not correct. In the tools, this is managed by the static semantic layer; in the following example, we have renamed all conflicting variables with 1 for the Spec, and 2 for the Impl.
   \end{itemize}
 
-  Now consider relation $\mathcal{R}$ defined by the following triples:
-
-  \begin{tabular}{|c|c|l|}
-\hline
-    Spec state & Impl state & Predicate\\
-    \hline
-    b0 & $\ostate{000}$ & True\\
-    b0 & $\ostate{202}$ & True\\
-    b1 & $\ostate{100}$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
-    b1 & $\ostate{210}$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
-    b1 & $\ostate{220}$ & $\texttt{b1\_msg = m2\_msg} \land \texttt{b1\_ec = m2\_ec}$\\
-    b1 & $\ostate{201}$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
-    \hline
-    \end{tabular}
-
-  \medskip
-  Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each WOT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
-  We give here two examples.
-
-  Consider the first triple from the table, and transition $WS_3(n)$ from state $\ostate{b0}$ for some fixed integer $n$. Its easy to guess that it will correspond to $WI_3(n)$ of $\ostate{000}$.
-
-  $ WS_3(n) = \openrule
-  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
-  $
-  
-$ WI_3(n) = \openrule
-  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
-  $
-  
-  Let check formally the conditions:
-
-\begin{itemize}
-  \item Their sets of active (non-silent) holes is the same: $\{P\}$.
-  \item Triple ($\ostate{b1},  \ostate{100},  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
-  \item The verification condition \\
-    $\Pred \land \Pred_{OT}%\\
-\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
-   \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
-     \!\land\! \alpha\!=\!\alpha_x\! \land\!  
-     \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)}$
-
-\medskip Gives us:
-
-\TODO{Insert here $\forall \phi(m1,m2)$ }
-
-$True \land True\hspace{1cm} \implies\\ 
-\texttt{p-send(m1)} = \texttt{p-send(m2)}
-\land True
-\land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}
-\land (\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec})
-\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)
-  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
-$
-
-\medskip That reduces to:
-
-$\forall \texttt{m1}. \exists \texttt{m2}.
-(\texttt{p-send(m1)} = \texttt{p-send(m2)}
-\land \texttt{in(m1)} = \texttt{in(m2)}
-\land \texttt{m}=\texttt{m} \land n=n)$
-
-\medskip That is a tautology.
-
-\end{itemize}
-
-      
-
-  
+  Now consider the following triples:
 
   
 
