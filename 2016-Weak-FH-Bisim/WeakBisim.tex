@@ -1830,11 +1830,24 @@ the predicate associated to the relation between the initial states is \True.
  \end{definition}
 
 Compared to strong bisimulation, except the obvious use of weak open transitions to simulate an open transition, the condition on predicate is slightly changed concerning actions of the holes. Indeed only the visible actions of the holes must be compared and they form a list of actions, but of length at most one.
-Weak FH-bisimilarity is an equivalence in the same way as strong FH-bisimilarity.
+
+In practice, we are dealing with finite representations of the (infinite) open automata. In \cite{PEPM}, we defined a slightly modified definition of the ``coverage'' proof obligation, in the case of strong FH-Bisimulation. This modification is required to manage in a finite way all possible instantiations of an OT. In the case of weak FH-Bisimulation, the proof obligation from definition \ref{def-Weak-bisim} becomes:
+      
+ $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
+\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
+  \left[\exists fv_{OT_x}.\\
+    \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
+     \!\land\! \alpha\!=\!\alpha_x\! \land\!  
+     \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)\right]\}}$
+
+In which $fv_{OT}$ denotes the set of free variables of all expressions in $OT$.
+
+\medskip
+Our first important result is that Weak FH-bisimilarity is an equivalence in the same way as strong FH-bisimilarity:
 
 
 \begin{theorem}[Weak FH-Bisimulation is an equivalence]\label{thm-weak-equiv} Suppose $\mathcal{R}$ 
-is a weak FH-bisimualtion. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
+is a weak FH-bisimulation. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
 reflexive, symmetric and transitive.
 \end{theorem}
 The proof  is detailed in Appendix \ref{app-WFH-equiv}, it follows a similar pattern as the proof that strong FH-bisimulation is an equivalence, but technical details are different, and in practice we rely on a different (but proven equivalent) definition of weak FH-bisimilarity; this equivalent version simulates a \emph{weak} open transition with a set of weak open transition. The careful use of the best definition of weak FH-bisimilarity makes the proof similar to the strong FH-bisimulation case.
@@ -1940,30 +1953,22 @@ Preliminary remarks:
       condition: the only vectors having $\tau$ as an action of a
       sub-net are of the form ``$< -, \tau, -> -> \tau$''.
     \item We must take care of variable name conflicts: in our example, the state variables of the 2 systems already have different names, but the action parameters occuring in the transitions (m, msg, ec) are the same, that is not correct. In the tools, this is managed by the static semantic layer; in the following example, we have renamed all conflicting variables with 1 for the Spec, and 2 for the Impl.
-    \item In practice, we are dealing with finite representations of the (infinite) open automata. In \cite{PEPM}, we defined a slightly modified definition of the ``coverage'' proof obligation, in the case of strong FH-Bisimulation. This modification is required to manage in a finite way all possible instantiations of an OT. In the case of weak FH-Bisimulation, the proof obligation from definition \ref{def-Weak-bisim} becomes:
-      
- $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
-\hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
-  \left[\exists fv_{OT_x}.\\
-    \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
-     \!\land\! \alpha\!=\!\alpha_x\! \land\!  
-     \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)\right]}$
-      
-  \end{itemize}
+    \end{itemize}
 
-  Now consider relation $\mathcal{R}$ defined by the following triples:
+  \medskip
+  Now consider the relation $\mathcal{R}$ defined by the following triples:
 
 
   \begin{tabular}{|c|c|l|}
 \hline
     Spec state & Impl state & Predicate\\
     \hline
-    b0 & $\ostate{000}$ & True\\
-    b0 & $\ostate{202}$ & True\\
-    b1 & $\ostate{100}$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
-    b1 & $\ostate{210}$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
-    b1 & $\ostate{220}$ & $\texttt{b1\_msg = m2\_msg} \land \texttt{b1\_ec = m2\_ec}$\\
-    b1 & $\ostate{201}$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
+    b0 & $000$ & True\\
+    b0 & $202$ & True\\
+    b1 & $100$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
+    b1 & $210$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
+    b1 & $220$ & $\texttt{b1\_msg = m2\_msg} \land \texttt{b1\_ec = m2\_ec}$\\
+    b1 & $201$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
     \hline
     \end{tabular}
 
@@ -1971,43 +1976,44 @@ Preliminary remarks:
   Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each WOT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
   We give here two examples.
 
-  Consider the first triple from the table, and transition $WS_3(n)$ from state $\ostate{b0}$ for some fixed integer $n$. Its easy to guess that it will correspond to $WI_3(n)$ of $\ostate{000}$.
+  \medskip
+  Consider the first triple from the table, and transition $WS_3(n)$ from state $b0$ for some fixed integer $n$. Its easy to guess that it will correspond to $WI_3(n)$ of $000$.
 
   $ WS_3(n) = \openrule
-  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
+  {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
+    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m1)}}} 100}
   $
   
 $ WI_3(n) = \openrule
-  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
+  {\{\texttt{P}\mapsto \texttt{p-send(m2)}\}, True,
+    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
   $
   
   Let check formally the conditions:
   
 \begin{itemize}
   \item Their sets of active (non-silent) holes is the same: $\{P\}$.
-  \item Triple ($\ostate{b1},  \ostate{100},  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
+  \item Triple ($b1,  100,  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
   \item The verification condition \\
-    $\Pred \land \Pred_{OT}%\\
+    $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
-   \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
+   \left[\exists fv_{OT_x}.
+  \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
      \!\land\! \alpha\!=\!\alpha_x\! \land\!  
-     \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)}$
+     \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)\right]\}}$
 
 \medskip Gives us:
 
-\TODO{Insert here $\forall \phi(m1,m2)$ }
-
-$True \land True\hspace{1cm} \implies\\ 
-\texttt{p-send(m1)} = \texttt{p-send(m2)}
+$\forall m1. \{True \land True\hspace{3mm} \implies
+\exists m2. \\
+(\texttt{p-send(m1)} = \texttt{p-send(m2)}
 \land True
-\land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}
+\land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}\\
 \land (\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec})
 \subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)
-  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
+  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)})\}
 $
 
 \medskip That reduces to:
@@ -2015,7 +2021,7 @@ $
 $\forall \texttt{m1}. \exists \texttt{m2}.
 (\texttt{p-send(m1)} = \texttt{p-send(m2)}
 \land \texttt{in(m1)} = \texttt{in(m2)}
-\land \texttt{m}=\texttt{m} \land n=n)$
+\land \texttt{m1}=\texttt{m2} \land n=n)$
 
 \medskip That is a tautology.
 
