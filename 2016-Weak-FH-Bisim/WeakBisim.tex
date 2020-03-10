@@ -78,7 +78,8 @@
 \email{ludovic.henrio@cnrs.fr}
 
 \author{Eric Madelaine}
-\address{INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France}
+\address{INRIA Sophia Antipolis M\'edit\'erann\'ee, UCA, BP 93, 06902 Sophia Antipolis, France}
+\email{eric.madelaine@inria.fr}
 %\date{}                                           % Activate to display a given date or no date
 \author{Rab\'ea Ameur-Boulifa}
                           % Activate to display a given date or no date
@@ -412,7 +413,16 @@ trivial).
 We use sets of assignments of the form $x_i:=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 
 
-Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
+Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post})\subst{\Post'}$.\\
+\ERIC{J'ai un probleme ici... quand $Post'$ agit sur des vars de $t$ qui ne sont pas substitutees par $Post$, alors les 2 defs de $\shortotimes$ ci-dessus ne sont pas equivalentes:}\\
+$F(x,z)(\subst{x\gets z}\shortotimes\subst{z\gets 1})=F(x,z)(\subst{x\gets 1})=F(1,z)$\\
+\ERIC{Alors que}\\
+$(F(x,z)\subst{x\gets z})\subst{z\gets 1})=F(z,z)\subst{z\gets 1}=F(1,1)$
+
+\ERIC{Une definition plus correcte serait peut-etre:}\\
+$(x_{k}\gets e_{k})^{k\in K}\shortotimes (x_{k'}\gets e_{k'})^{k'\in K'} =  
+(x_{k}\gets e_{k}\subst{(x_{k'}\gets e_{k'})^{k'\in K'}})^{k\in K} \cup (x_k\gets e_k)^{k\in K'\backslash K}$
+
 
 \subsection{Parameterised Networks (pNets)}
 \label{section:pnets}
@@ -1529,18 +1539,22 @@ The first statement of the definition states that the open automaton must allow 
 
 
 By definition, one weak open transition contains  several open transitions, where  each open transition can require an observable action from a given hole, the same hole might have to emit several observable actions for a single weak open transition to occur. 
-Consequently, for a weak open transition to trigger, a list of actions from a given hole might be required.
+Consequently, for a weak open transition to trigger, a sequence of actions from a given hole may be required.
 
-Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the union operator that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of lists:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the list of  actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two lists is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a list with a single element.
+\TODO{Check, nouvelle formulation, Eric}
+Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the union operator that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of lists:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the list of  actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$. $[a]$ denotes a list with a single element.
 
+\ERIC{Thus, we let $\gamma$ range over sequences of action terms and use $\dotcup$ as the concatenation operator that appends sequences of action terms: given two sequences of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of sequences:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the sequences of actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two sequences is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a sequence with a single element.}
 
 As required actions are now sequences of observable actions, we need an operator to build them from set of actions that occur in open transitions.
 Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions but where each element is either empty or a list of length 1:
  \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]
 
+\ERIC{As required actions are now sequences of observable actions, we need an operator to build them from set of (single) hole actions that occur in open transitions.
+Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions of the holes in $I$, but where each element is either empty or a list of length 1:
+ \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]}
 
-
-
+\ERIC{As an example the $\vis{\set\beta}$ built from the transition $OT_1$ in page \pageref{OT:SimpleProt} is $\texttt{P}\mapsto [\texttt{p-send(m)}]$. Remark that in our simple example no $\tau$ transition involves any visible action from a hole, so we have no $\beta$ sequences of length longer than 1 in the weak automaton.}
 
 \subsection{Weak open transition definition}
 
