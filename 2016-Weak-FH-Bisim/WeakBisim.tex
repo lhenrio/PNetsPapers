@@ -2001,28 +2001,28 @@ Preliminary remarks:
     \end{tabular}
 
   \medskip
-  Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each WOT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
+  Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each (strong) OT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
   We give here two examples.
 
   \medskip
-  Consider the first triple from the table, and transition $WS_3(n)$ from state $b0$ for some fixed integer $n$. Its easy to guess that it will correspond to $WI_3(n)$ of $000$.
+  Consider the second triple from the table, and transition $SS_3$ from state $b0$. Its easy to guess that it will correspond to $WI_3(0)$ of $202$.
 
-  $ WS_3(n) = \openrule
+  $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
-    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m1)}}} 100}
+    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)}
+  {b0 \OTWeakarrow {\underline{\texttt{in(m1)}}} b1}
   $
   
-$ WI_3(n) = \openrule
+$ WI_3(0) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m2)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
+    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets 0)}
+  {202 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
   $
   
   Let check formally the conditions:
   
 \begin{itemize}
-  \item Their sets of active (non-silent) holes is the same: $\{P\}$.
+  \item Their sets of active (non-silent) holes is the same: $J' = J_x = \{P\}$.
   \item Triple ($b1,  100,  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
   \item The verification condition \\
     $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
@@ -2036,12 +2036,12 @@ $ WI_3(n) = \openrule
 
 $\forall m1. \{True \land True\hspace{3mm} \implies
 \exists m2. \\
-(\texttt{p-send(m1)} = \texttt{p-send(m2)}
+(\texttt{[p-send(m1)]} = \texttt{[p-send(m2)]}
 \land True
 \land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}\\
 \land (\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec})
-\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)
-  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)})\}
+\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets 0)
+  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets 0)})\}
 $
 
 \medskip That reduces to:
@@ -2049,28 +2049,28 @@ $
 $\forall \texttt{m1}. \exists \texttt{m2}.
 (\texttt{p-send(m1)} = \texttt{p-send(m2)}
 \land \texttt{in(m1)} = \texttt{in(m2)}
-\land \texttt{m1}=\texttt{m2} \land n=n)$
+\land \texttt{m1}=\texttt{m2} \land 0=0)$
 
 \medskip That is a tautology.
 
 \end{itemize}
 
   \bigskip
-  Now consider the $3^{rd}$ triple from the table, and transition $WI_{8'}(n)$ from state $100$ to state $000$ for some fixed integer $n$. It should correspond to $WS_7(n)$ of $b1$.
+  Now consider the $3^{rd}$ triple from the table, and transition $SI_{4}$ from state $100$ to state $210$. It should correspond to $WS_4(0)$ of $b1$, where:
 
-  $ WI_{8'}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1-msg,s1-ec+n)}\}, True, ()}
-         {100 \OTWeakarrow {\underline{\texttt{out(s1-msg,s1-ec+n)}}} 000}
-         \ \forall n\ge 0$
-  
-  
-  $ WS_7(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(msg,ec+n)}\subst{ec\gets ec+n}\}, True, (ec\gets ec+n)}
-         {b1 \OTWeakarrow {\underline{\texttt{out(msg,ec)}\subst{ec\gets ec+n}}} b0}
-         \ \forall n\ge
+  $ SI_{4} = \openrule
+         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})}
+         {100 \OTWeakarrow {\tau} 210}
          $
   
-  \medskip       A similar reasonning gives us:
+  
+  $ WS_4(n) = \openrule
+         {\{\}, True, (b1\_ec\gets b1\_ec+n)}
+         {b1 \OTWeakarrow {\tau} b1}
+         \ \forall n\ge 0
+         $
+  
+  \medskip       A similar reasonning gives us\TODO{refaire}
 
          $\{b1_msg = s1_msg \land b1_ec = s1_ec \land True\hspace{3mm} \implies
 \\
