@@ -78,7 +78,8 @@
 \email{ludovic.henrio@cnrs.fr}
 
 \author{Eric Madelaine}
-\address{INRIA Sophia Antipolis M\'edit\'erann\'ee, BP 93, 06902 Sophia Antipolis, France}
+\address{INRIA Sophia Antipolis M\'edit\'erann\'ee, UCA, BP 93, 06902 Sophia Antipolis, France}
+\email{eric.madelaine@inria.fr}
 %\date{}                                           % Activate to display a given date or no date
 \author{Rab\'ea Ameur-Boulifa}
                           % Activate to display a given date or no date
@@ -412,7 +413,16 @@ trivial).
 We use sets of assignments of the form $x_i:=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions: $(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 
 
-Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = t\subst{\Post}\subst{\Post'}$
+Note that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post})\subst{\Post'}$.\\
+\ERIC{J'ai un probleme ici... quand $Post'$ agit sur des vars de $t$ qui ne sont pas substitutees par $Post$, alors les 2 defs de $\shortotimes$ ci-dessus ne sont pas equivalentes:}\\
+$F(x,z)(\subst{x\gets z}\shortotimes\subst{z\gets 1})=F(x,z)(\subst{x\gets 1})=F(1,z)$\\
+\ERIC{Alors que}\\
+$(F(x,z)\subst{x\gets z})\subst{z\gets 1})=F(z,z)\subst{z\gets 1}=F(1,1)$
+
+\ERIC{Une definition plus correcte serait peut-etre:}\\
+$(x_{k}\gets e_{k})^{k\in K}\shortotimes (x_{k'}\gets e_{k'})^{k'\in K'} =  
+(x_{k}\gets e_{k}\subst{(x_{k'}\gets e_{k'})^{k'\in K'}})^{k\in K} \cup (x_k\gets e_k)^{k\in K'\backslash K}$
+
 
 \subsection{Parameterised Networks (pNets)}
 \label{section:pnets}
@@ -1529,18 +1539,22 @@ The first statement of the definition states that the open automaton must allow 
 
 
 By definition, one weak open transition contains  several open transitions, where  each open transition can require an observable action from a given hole, the same hole might have to emit several observable actions for a single weak open transition to occur. 
-Consequently, for a weak open transition to trigger, a list of actions from a given hole might be required.
+Consequently, for a weak open transition to trigger, a sequence of actions from a given hole may be required.
 
-Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the union operator that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of lists:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the list of  actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two lists is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a list with a single element.
+\TODO{Check, nouvelle formulation, Eric}
+Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the union operator that appends lists of action terms: given two  lists of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of lists:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set of lists such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the list of  actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$. $[a]$ denotes a list with a single element.
 
+\ERIC{Thus, we let $\gamma$ range over sequences of action terms and use $\dotcup$ as the concatenation operator that appends sequences of action terms: given two sequences of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of sequences:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the sequences of actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two sequences is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a sequence with a single element.}
 
 As required actions are now sequences of observable actions, we need an operator to build them from set of actions that occur in open transitions.
 Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions but where each element is either empty or a list of length 1:
  \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]
 
+\ERIC{As required actions are now sequences of observable actions, we need an operator to build them from set of (single) hole actions that occur in open transitions.
+Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions of the holes in $I$, but where each element is either empty or a list of length 1:
+ \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]}
 
-
-
+\ERIC{As an example the $\vis{\set\beta}$ built from the transition $OT_1$ in page \pageref{OT:SimpleProt} is $\texttt{P}\mapsto [\texttt{p-send(m)}]$. Remark that in our simple example no $\tau$ transition involves any visible action from a hole, so we have no $\beta$ sequences of length longer than 1 in the weak automaton.}
 
 \subsection{Weak open transition definition}
 
@@ -1987,28 +2001,28 @@ Preliminary remarks:
     \end{tabular}
 
   \medskip
-  Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each WOT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
+  Checking that $\mathcal{R}$ is a weak FH-Bisimulation means checking, for each of these triples, that each (strong) OT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
   We give here two examples.
 
   \medskip
-  Consider the first triple from the table, and transition $WS_3(n)$ from state $b0$ for some fixed integer $n$. Its easy to guess that it will correspond to $WI_3(n)$ of $000$.
+  Consider the second triple from the table, and transition $SS_3$ from state $b0$. Its easy to guess that it will correspond to $WI_3(0)$ of $202$.
 
-  $ WS_3(n) = \openrule
+  $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
-    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m1)}}} 100}
+    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)}
+  {b0 \OTWeakarrow {\underline{\texttt{in(m1)}}} b1}
   $
   
-$ WI_3(n) = \openrule
+$ WI_3(0) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m2)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
+    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets 0)}
+  {202 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
   $
   
   Let check formally the conditions:
   
 \begin{itemize}
-  \item Their sets of active (non-silent) holes is the same: $\{P\}$.
+  \item Their sets of active (non-silent) holes is the same: $J' = J_x = \{P\}$.
   \item Triple ($b1,  100,  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
   \item The verification condition \\
     $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
@@ -2022,12 +2036,12 @@ $ WI_3(n) = \openrule
 
 $\forall m1. \{True \land True\hspace{3mm} \implies
 \exists m2. \\
-(\texttt{p-send(m1)} = \texttt{p-send(m2)}
+(\texttt{[p-send(m1)]} = \texttt{[p-send(m2)]}
 \land True
 \land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}\\
 \land (\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec})
-\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets n)
-  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)})\}
+\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets 0)
+  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets 0)})\}
 $
 
 \medskip That reduces to:
@@ -2035,28 +2049,28 @@ $
 $\forall \texttt{m1}. \exists \texttt{m2}.
 (\texttt{p-send(m1)} = \texttt{p-send(m2)}
 \land \texttt{in(m1)} = \texttt{in(m2)}
-\land \texttt{m1}=\texttt{m2} \land n=n)$
+\land \texttt{m1}=\texttt{m2} \land 0=0)$
 
 \medskip That is a tautology.
 
 \end{itemize}
 
   \bigskip
-  Now consider the $3^{rd}$ triple from the table, and transition $WI_{8'}(n)$ from state $100$ to state $000$ for some fixed integer $n$. It should correspond to $WS_7(n)$ of $b1$.
+  Now consider the $3^{rd}$ triple from the table, and transition $SI_{4}$ from state $100$ to state $210$. It should correspond to $WS_4(0)$ of $b1$, where:
 
-  $ WI_{8'}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1-msg,s1-ec+n)}\}, True, ()}
-         {100 \OTWeakarrow {\underline{\texttt{out(s1-msg,s1-ec+n)}}} 000}
-         \ \forall n\ge 0$
-  
-  
-  $ WS_7(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(msg,ec+n)}\subst{ec\gets ec+n}\}, True, (ec\gets ec+n)}
-         {b1 \OTWeakarrow {\underline{\texttt{out(msg,ec)}\subst{ec\gets ec+n}}} b0}
-         \ \forall n\ge
+  $ SI_{4} = \openrule
+         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})}
+         {100 \OTWeakarrow {\tau} 210}
          $
   
-  \medskip       A similar reasonning gives us:
+  
+  $ WS_4(n) = \openrule
+         {\{\}, True, (b1\_ec\gets b1\_ec+n)}
+         {b1 \OTWeakarrow {\tau} b1}
+         \ \forall n\ge 0
+         $
+  
+  \medskip       A similar reasonning gives us\TODO{refaire}
 
          $\{b1_msg = s1_msg \land b1_ec = s1_ec \land True\hspace{3mm} \implies
 \\
