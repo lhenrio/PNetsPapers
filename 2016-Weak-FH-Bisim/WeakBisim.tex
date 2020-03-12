@@ -425,7 +425,8 @@ $(x_{k}\gets e_{k})^{k\in K}\shortotimes (x_{k'}\gets e_{k'})^{k'\in K'} =
 
 \LUDO{En fait comme on supose qu il y a pas de variable globale et donc que les post doivent affecter toutes les variables ce contre-exemple n est pas applicable! apres on peut definir comme ca si on veut ceinture et bretelles mais ca alourdit un peu la definitions}
 
-\ERIC{Non... En pratique, dans la composition de posts de la regle WT3, les posts assignent bien toutes les variables de leur OT (strong), mais dans la composition, on fini par avoir des trous... Voir page 21-22. On est tombes tous les deux separemment, Rabea et moi, sur ce genre de cas.}
+\ERIC{Heu Non... 
+  En pratique, dans la composition de posts de la regle WT3, les posts assignent bien toutes les variables de leur OT (strong), mais dans la composition, on fini par avoir des trous... Voir page 21-22. On est tombes tous les deux separemment, Rabea et moi, sur ce genre de cas.}
  
 
 \subsection{Parameterised Networks (pNets)}
@@ -1000,15 +1001,16 @@ with the $Sender$ within the \emph{SimpleProtocol}) is:
 
  \smallskip\noindent
  \[  OT_1  = \openrule{
-      \{\texttt{P}\mapsto \texttt{p-send(m)}\},  [m=m'],  \{s1\_m\gets m\}
+      \{\texttt{P}\mapsto \texttt{p-send(m)}\},  [\texttt{m=m'}],
+        \{\texttt{s1\_m}\gets \texttt{m}\}
                       }
-    {\ostate{s_0,m_0,r_0} \OTarrow{\underline{in(m')}} \ostate{s_1,m_0,r_0}}
+    {\ostate{s_0,m_0,r_0} \OTarrow{\underline{\texttt{in(m')}}} \ostate{s_1,m_0,r_0}}
     \]
 
     \smallskip
     The global states here are triples, build as the product of states of the 3 pLTS (remember the Holes have no state). The assignment
-    $Post$ uses the variable $m$ from the action of hole $P$ to set the
-    value of the sender state variable named $s1\_m$.
+    $Post$ uses the variable $\texttt{m}$ from the action of hole $\texttt{P}$ to set the
+    value of the sender state variable named $\texttt{s1\_m}$.
     
 
  %%  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
@@ -1234,43 +1236,6 @@ In \cite{henrio:Forte2016}, we have shown a detailed example of the construction
 
 
 
-%\subsection{Computing and using open automata}
-%\TODO{REMOVE?  published at Avocs, we can shorten and add a bibref}
-%In this section we present a simple algorithm to construct the open
-%automaton representing the behaviour of an open pNet, and we prove that
-%under reasonable conditions this automaton is finite.
-%
-%\begin{algorithm}[Behavioural semantics of open pNets: Sketch]
-%This is a standard residual algorithm over a set of open-automaton
-%states, but where transitions are open transitions
-%constructively ``proven'' by deduction trees.
-%
-%1) Start with a set of unexplored states containing the initial state
-%of the automaton, and an empty set of explored states.
-%
-%2) While there are unexplored states, pick one state from the
-%unexplored set and add it to the explored set.
-%
-%2a- From this state
-%build all possible deduction trees by application of the structural
-%rules \TrUn\ and \TrDeux, using all applicable combinations
-%of synchronisation vectors.
-%In practice, the algorithm does not explicitely construct the
-%deduction tree, but for each pNet node, builds all possible
-%combinations of the OTs of its subnets, and filter these combinations
-%by matching with all synchronisation vectors. 
-% 
-%2b- For each OT built, add the transition in the
-%outgoing transitions of the current state, and add the
-%resulting state in the unexplored set if it is not already there.
-%
-%3) The predicate is submitted to Z3 for checking satisfiability. If it
-%is NOT satisfiable, the resulting OT is discarded. This will minimize
-%the number of resulting transitions, and by reachability analysis,
-%reduce the resulting open automaton.
-%
-%\end{algorithm}
-
 We have shown in \cite{henrio:Forte2016} that an open-pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
@@ -1317,14 +1282,10 @@ holes, and each pLTS at leaves having a finite number of states and
 
 
 \paragraph{Example} Figure \ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet given in Figure \ref{SimpleProt:Spec}. 
-
-
-%    \begin{figure}[ht]
-  %\centerline{\includegraphics[width=10cm]{ATG/SPImplOpen}}
-%  \caption{Open Automaton of the Simple Protocol Implementation}  %\label{SimpleProtCounter:ImplOA}
-%\end{figure}
-
-
+For later references, we give to the transitions of this (strong)
+Specification automaton as $SS_i$ while transitions of the
+Implementation automaton will be labelled $SI_i$. In the figure we
+have annotated each global state with the set of corresponding state variables.
 
 
  \begin{figure}[ht]
@@ -1551,7 +1512,9 @@ Thus, we let $\gamma$ range over lists of action terms and use $\dotcup$ as the 
 \ERIC{Thus, we let $\gamma$ range over sequences of action terms and use $\dotcup$ as the concatenation operator that appends sequences of action terms: given two sequences of action terms  $\gamma\dotcup\gamma '$ concatenates the two lists. The operation is lifted to indexed sets of sequences:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the sequences of actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two sequences is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a sequence with a single element.}
 
 As required actions are now sequences of observable actions, we need an operator to build them from set of actions that occur in open transitions.
-Thus we define $\vis{\set\beta}$ as the mapping $\set\beta$  with only observable actions but where each element is either empty or a list of length 1:
+Thus we define $\vis{\set\beta}$\footnote{\ERIC{La notation
+    $\vis{\beta}$ n'est pas tres parlante, mais je n'ai pas vraiment
+    de meilleure idee...}} as the mapping $\set\beta$  with only observable actions but where each element is either empty or a list of length 1:
  \[\vis{\beta_i^{i\in I}} = [\beta_i]^{i\in I'}\text{ where }I'=\left\{i| i\in I \land \beta_i\neq \tau\right\}\]
 
 \ERIC{As required actions are now sequences of observable actions, we need an operator to build them from set of (single) hole actions that occur in open transitions.
