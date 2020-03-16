@@ -486,7 +486,8 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
 		$\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
 		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		x_j\!\in\!\vars(s') \right)$. %,  and $s= s'\Rightarrow J=\emptyset$. 
+		x_j\!\in\!\vars(s') \right)$. %,  and $s= s'\Rightarrow J=\emptyset$.
+\LUDO{I suggest to add: $\{x_j|j\in J\} = \vars(s')$ or $\{x_j|j\in J\} \cup \iv(\alpha)= \vars(s')$} 
 \end{itemize}
 \end{definition}
 
@@ -614,30 +615,31 @@ pNets are composition entities equipped with a rich synchronisation mechanism: s
 \subsection{Running Example}
 To illustrate this work, we use a simple communication protocol, that provides safe transport of data between two processes, over unsafe media. 
 
-Fig. \ref{SimpleProt:Spec} (left) shows the example principle: two unspecified
+Fig. \ref{SimpleProt:Spec} (left) shows the example principle, which corresponds to the hierarchical structure of a pNet: two unspecified
 processes $P$ and $Q$ (holes) communicate messages, with a data value
-argument, through the two protocol entities. Process $P$ send an $\texttt{p-send(m)}$ message to the $Sender$; this communication is denoted as $\texttt{\underline{in(m)}}$, where underline actions represent internal actions (similar to the $\tau$ of CCS), that cannot be further synchronised with the environment. At the other end process $Q$ receives the message from the $Receiver$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors, and signal them to the sender. The return $ack$ message from $receiver$ to $sender$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
+argument, through the two protocol entities. Process $P$ sends an $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\underline{in(m)}}$, where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names.
+At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
 
 
-Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet of the system \emph{specification}:
+Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet that specifies the system:
 the full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of tree nodes: two Holes $P$ and $Q$ and one subnet, noted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronization between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. More precisely, the synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the medium accepts the message through $\texttt{in(m)}$ action  at the same time. And the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two Holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
 
 
 Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $Medium$ detects an error (modeled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $Sender$. The $Sender$ increments its local error counter $ec$, and resends the message (including $ec$) to the $Medium$, that will, eventually, transmit $m,ec$ to the $Receiver$.
 
 \begin{figure}[t]
-   \includegraphics[width=5cm]{XFIG/SimpleProt-Schema}
-   \includegraphics[width=7cm]{XFIG/SimpleProt2-Spec}
-   \caption{Specification pNet Schema and Specification}
+   \includegraphics[width=.37\textwidth]{XFIG/SimpleProt-Schema}
+   \includegraphics[width=.62\textwidth]{XFIG/SimpleProt2-Spec}
+   \caption{pNet structure of the example and specification expressed as a pNet}
    \label{SimpleProt:Spec}
 
 \end{figure}
 
   
 \begin{figure}[t]
-  \centerline{\includegraphics[width=12cm]{XFIG/SimpleProt2-pNet-tau}}
+  \centerline{\includegraphics[width=.9\textwidth]{XFIG/SimpleProt2-pNet-tau}}
   \caption{Composed pNet with the Simple Protocol Implementation}  \label{SimpleProt:Impl}
 \end{figure}
 
