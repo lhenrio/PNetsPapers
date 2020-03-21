@@ -1735,25 +1735,50 @@ We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:ImplOA} (t
 
 $ WI_1 = \openrule
 {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
-{000 \OTWeakarrow {\tau} 000}$
+{S \OTWeakarrow {\texttt{p-a}} S}
+$ (for any state $S$)
+
 
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
   {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
-  \ \forall n\ge 0$
+        $($\forall n\ge 0$)
 
-  $ WI_4(n) = \openrule
-         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+
+$ WI_4(n) = \openrule
+         {\{\}, True, 
+   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
-         \ \forall n\ge 0$
+        $($\forall n\ge 0$)
 
-$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
+
+$ WI_{456}(n) = \openrule
+         {\{\}, True, 
+    (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+  {100 \OTWeakarrow {\tau} 100}
+        $($\forall n\ge 0$)
+
+
+$Post_{6a}=\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6}\\
+= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) \right)
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \\
+= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets (\texttt{s2\_ec}+1)+n, \texttt{s2\_ec}\gets (\texttt{s2\_ec}+1)+n)$
+
+$ WI_6a(n) = \openrule
+         {\{\}, True, 
+         (\texttt{m1\_ec}\gets \texttt{s1\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {220 \OTWeakarrow {\tau} 210}
+         $($\forall n\ge 0$)
+
+$Post_{8c}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^* 
+= (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
          
-$ WI_{8'''}(n) = \openrule
+$ WI_{8c}(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s2\_ec+n)}}} 202}
-         \ \forall n\ge 1$
+         {210 \OTWeakarrow {\underline{\texttt{out(r1\_msg,r1\_ec)}\subst{(\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+n)}}} 202}
+        $($\forall n\ge 0$)
 
 \subsection{Composition properties: composition of weak open transitions}
 We now have two different semantics for open pNets: a strong semantics, defined  as an open automaton, and as a weak semantics, defined as a weak open automaton. Like the open automaton, the weak open automaton features valuable composition properties. We can exhibit  a composition property and a decomposition property that relate open pNet composition with their semantics, defined as weak open automata. These are however technically more complex than the ones for open automata because each hole performs a set of actions, and thus a composed transition is the composition of one transition of the top-level pNet and a sequence of transitions of the sub-pNet that fills its hole. They can be found as Lemmas~\ref{lem-decomposeWOT}, Lemma~\ref{lem-Weakcompose1}, and Lemma~\ref{lem-Weakcompose} in~\ref{sec:app-composition}.
@@ -1957,7 +1982,7 @@ Preliminary remarks:
     b0 & $202$ & True\\
     b1 & $100$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
     b1 & $210$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
-    b1 & $220$ & $\texttt{b1\_msg = m2\_msg} \land \texttt{b1\_ec = m2\_ec}$\\
+    b1 & $220$ & $\texttt{b1\_msg = s2\_msg} \land \texttt{b1\_ec = s2\_ec}$\\
     b1 & $201$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
     \hline
     \end{tabular}
@@ -5777,57 +5802,136 @@ INFO  SimpleProtImpl2 - Total Time: 1105 ms
 %%<s2\_a0\_r0>, encoding the loop.
 
 \begin{figure}[h]
-   \centerline{\includegraphics[width=9cm]{XFIG/SimpleProtImpl-WOA}}
+   \centerline{\includegraphics[width=10cm]{XFIG/SimpleProtImpl-WOA}}
   \caption{Weak Open Automaton of the implementation}
-   \label{Appendix:SpecOA-partial}
+   \label{Appendix:ImplOAl}
 \end{figure}
 
-In Figure \ref{Appendix:SpecOA-partial} we show the weak open automaton of our implementation pNet. Details of the weak transitions is listed here:
+In Figure \ref{Appendix:ImplOA} we show the weak open automaton of our implementation pNet. 
+\TODO{This version is very uncomplete, at least 12 WOTs are missing, inculding: all variants of WI3 starting from 202; the inverse of WI4, WI5, WI6, WI8, etc}
 
+\begin{figure}[h]
+   \centerline{\includegraphics[width=11cm]{XFIG/SimpleProtImpl-WOA2}}
+  \caption{Weak Open Automaton of the implementation: alternative}
+   \label{Appendix:ImplOA2}
+\end{figure}
+
+Figure \ref{Appendix:ImplOA} shows a more compact version of this weak automation, that will be easier to read for humans...
+It is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviors.
+In this configuration we can garanty that they are Weak Bisimilar, and merge their (incoming and outgoing) transitions in the Figure.
+\TODO{May be express this property more formely, but this could be also part of another paper, more oriented towards algorithms and optimisation of the Weak}
+
+\ERIC{Correspondance between the WOTs naming:
+$WI_3 ','',''' -> WI_3 a,b,c$\\
+$WI_7 ','' -> WI_7 a,b$\\
+$WI_8 ','',''' -> WI_8 a,b,c$\\
+$WI_9 ,','' -> W_{456,564,645}$\\
+$WI_{4a,5a,6a}$ are new.
+}
+
+Details of the weak transitions is listed here:
+
+For all global states $S$:
 
 $ WI_1 = \openrule
 {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
-{000 \OTWeakarrow {\tau} 000}$
+{S \OTWeakarrow {\texttt{p-a}} S}$
+
+$ WI_2 = \openrule
+{\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ], ()}
+{S \OTWeakarrow {\texttt{q-b}} S}$
+
+All following transitions are parametrized by an arbitrary non-negative integer $n\in \mathcal{N}$:
 
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
   {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
-  \ \forall n\ge 0$
+$
 
-  $ WI_4(n) = \openrule
-         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+$ WI_{3a}(n) = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{m1\_msg}\gets \texttt{m}, \texttt{m1\_ec}\gets n), \texttt{s2\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
+$
+
+$ WI_{3b}(n) = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{s2\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 220}
+$
+
+$ WI_{3c}(n) = \openrule
+  {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
+    (\texttt{r1\_msg}\gets \texttt{m}, \texttt{r1\_ec}\gets n)}
+  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 201}
+$
+
+$ WI_4(n) = \openrule
+         {\{\}, True, 
+   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
-         \ \forall n\ge 0$
+$
 
-$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
-         
-$ WI_{8'''}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s2\_ec+n)}}} 202}
-         \ \forall n\ge 1$
+$ WI_4a(n) = \openrule
+         {\{\}, True, 
+    (\texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+         {100 \OTWeakarrow {\tau} 220}
+$
 
-\TODO{no yet checked...:}
-         $ 1 = \openrule
-{\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
-{000 \OTWeakarrow {\tau} 000}$
-
-$ 2 = \openrule
-{\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m}. \texttt{q-b} \neq \texttt{q-recv(m)} ], ()}
-{000 \OTWeakarrow {\tau} 000}$
-
-
-$ 5 = \openrule
-         {\{\}, True, (\texttt{m2\_ec}\gets \texttt{m1\_ec}+n)}
+$ WI_5(n) = \openrule
+         {\{\}, True, (\texttt{s2\_ec}\gets \texttt{s2\_ec}+n)}
          {210 \OTWeakarrow {\tau} 220}
          \ \forall n\ge 0$
 
-$ 6 = \openrule
-         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{m2\_ec}+n)}
+$ WI_5a(n) = \openrule
+         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {210 \OTWeakarrow {\tau} 100}
+         \ \forall n\ge 0$
+
+
+$ WI_6(n) = \openrule
+         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1+n)}
          {220 \OTWeakarrow {\tau} 100}
          \ \forall n\ge 0$
 
-$ 7 = \openrule
+$ WI_{456}(n) = \openrule
+         {\{\}, True, 
+    (\texttt{s1\_msg}\gets \texttt{s1\_msg}, \texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+  {100 \OTWeakarrow {\tau} 100}
+        $($\forall n\ge 0$)
+
+\TODO{no yet checked (old version), or not yet fully validated ...:}
+
+$ WI_{564}(n) = \openrule
+         {\{\}, True, 
+    (\texttt{m1\_msg}\gets \texttt{m1\_msg}, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1+n)}
+  {210 \OTWeakarrow {\tau} 210}
+        $($\forall n\ge 0$)
+
+$ WI_{645}(n) = \openrule
+         {\{\}, True, 
+    (\texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+  {220 \OTWeakarrow {\tau} 220}
+        $($\forall n\ge 0$)
+
+
+$ WI_6a(n) = \openrule
+         {\{\}, True, 
+         (\texttt{m1\_ec}\gets \texttt{s1\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {220 \OTWeakarrow {\tau} 210}
+         \ \forall n\ge 0$
+
+Because 
+
+$Post_{6a}=\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6}\\
+= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) \right)
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \\
+= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets (\texttt{s2\_ec}+1)+n, \texttt{s2\_ec}\gets (\texttt{s2\_ec}+1)+n)$
+
+\medskip
+$ WI_7(n) = \openrule
          {\{\}, True, (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s1\_ec}+n)}
          {100 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 0$
@@ -5838,10 +5942,18 @@ $ 7' = \openrule
          \ \forall n\ge 0$
          
 $ 7'' = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{m2\_ec}+n)}
+         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_ec}+n)}
          {220 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 1$
+
+$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
          
+$ WI_{8'''}(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
+         {210 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s2\_ec+n)}}} 202}
+         \ \forall n\ge 1$
+
+          
 $ WI_8(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec +n)}\}, True, ()}
          {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec +n)}}} 202}
