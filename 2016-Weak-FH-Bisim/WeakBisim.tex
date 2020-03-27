@@ -1997,7 +1997,7 @@ Preliminary remarks:
   $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
     (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)}
-  {b0 \OTWeakarrow {\underline{\texttt{in(m1)}}} b1}
+  {b0 \OTarrow {\underline{\texttt{in(m1)}}} b1}
   $
   
 $ WI_3(0) = \openrule
@@ -2027,8 +2027,8 @@ $\forall m1. \{True \land True\hspace{3mm} \implies
 \land True
 \land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}}\\
 \land (\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec})
-\subst{(\texttt{b1\_msg}\gets \texttt{m}, \texttt{b1\_ec}\gets 0)
-  \uplus (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets 0)})\}
+\subst{(\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)
+  \uplus (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets 0)})\}
 $
 
 \medskip That reduces to:
@@ -2047,26 +2047,32 @@ $\forall \texttt{m1}. \exists \texttt{m2}.
 
   $ SI_{4} = \openrule
          {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})}
-         {100 \OTWeakarrow {\tau} 210}
+         {100 \OTarrow {\tau} 210}
          $
   
   
   $ WS_4(n) = \openrule
-         {\{\}, True, (b1\_ec\gets b1\_ec+n)}
+         {\{\}, True, (\texttt{b1\_ec}\gets \texttt{b1\_ec}+n)}
          {b1 \OTWeakarrow {\tau} b1}
          \ \forall n\ge 0
          $
   
-  \medskip       A similar reasonning gives us\TODO{refaire}
+  \medskip       A similar reasonning gives us\TODO{Refait, please check. But I think it does not show much more than first case, can we find a better case ?}
 
-         $\{b1_msg = s1_msg \land b1_ec = s1_ec \land True\hspace{3mm} \implies
-\\
-(\texttt{q-recv(s1-msg,s1-ec+n)} = \texttt{q-recv(msg,ec+n)}
-\land True\\
-\land \underline{\texttt{out(s1-msg,s1-ec+n)}} = {\underline{\texttt{out(msg,ec)}\subst{ec\gets ec+n}}}\\
-\land True \subst{ec\gets ec+n})\}
+\begin{itemize}
+  \item No active holes and the pair of ressulting states $<210,b1>$ is in $\mathcal{R}$.
+\item $fv(SI_4) = \{\}, fv(WS_4(n)) = \{n\}$, \TODO{Is that correct ? Is it true that considering $n$ as a free variable allows Z3 to find  a suitable value...?}
+\item and the verification condition\\
+
+         $(b1_msg = s1_msg \land b1_ec = s1_ec) \land True\hspace{3mm} \implies\\
+\exists n.
+( True \land \tau=\tau
+\land (b1_msg = m1_msg \land b1_ec = m1_ec)  \subst{\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec}}
+\uplus \subst{\texttt{b1\_ec}\gets \texttt{b1\_ec}+n})
 $
- 
+
+is easily proved True for $n=0$.
+ \end{itemize}
       
 \section{Related Works}\label{sec:RW}
 
