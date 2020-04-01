@@ -5806,11 +5806,12 @@ INFO  SimpleProtImpl2 - Total Time: 1105 ms
 \begin{figure}[h]
    \centerline{\includegraphics[width=10cm]{XFIG/SimpleProtImpl-WOA}}
   \caption{Weak Open Automaton of the implementation}
-   \label{Appendix:ImplOAl}
+   \label{Appendix:ImplOA}
 \end{figure}
 
 In Figure \ref{Appendix:ImplOA} we show the weak open automaton of our implementation pNet. 
-\TODO{This version is very uncomplete, at least 12 WOTs are missing, inculding: all variants of WI3 starting from 202; the inverse of WI4, WI5, WI6, WI8, etc}
+\TODO{This version is very uncomplete, at least 12 WOTs are missing, including: all variants of WI3 starting from 202; the inverse of WI4, WI5, WI6, WI8, etc}
+\TODO{See also the last bunch of ransitions, at the end of the list, for combinations of any $\tau$ transition with an external action of P or Q}
 
 \begin{figure}[h]
    \centerline{\includegraphics[width=11cm]{XFIG/SimpleProtImpl-WOA2}}
@@ -5818,22 +5819,21 @@ In Figure \ref{Appendix:ImplOA} we show the weak open automaton of our implement
    \label{Appendix:ImplOA2}
 \end{figure}
 
-Figure \ref{Appendix:ImplOA} shows a more compact version of this weak automation, that will be easier to read for humans...
+Figure \ref{Appendix:ImplOA2} shows a more compact version of this weak automation, that will be easier to read for humans...
 It is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviors.
-In this configuration we can garanty that they are Weak Bisimilar, and merge their (incoming and outgoing) transitions in the Figure. We denote this equivalence class of states as $\{000,202\}$.
+More tricky, they do not have the same state variables, as 202 has the variables of state $s2$, but none of these variables are used in transitions from 202.
+In this configuration we can garantee that they are Weak Bisimilar, and merge their (incoming and outgoing) transitions in the Figure. We denote this 
+equivalence class of states as $\{000,202\}$.
 \TODO{May be express this property more formely, but this could be also part of another paper, more oriented towards algorithms and optimisation of the Weak}
 
-\ERIC{Correspondance between the WOTs naming:
-$WI_3 ','',''' -> WI_3 a,b,c$\\
-$WI_7 ','' -> WI_7 a,b$\\
-$WI_8 ','',''' -> WI_8 a,b,c$\\
-$WI_9 ,','' -> W_{456,564,645}$\\
-$WI_{4a,5a,6a}$ are new.
-}
 
 Details of the weak transitions is listed here:
 
-For all global states $S$:
+In the first 3 weak transitions, $S$ denotes the set of all global states.
+
+$ W_\tau = \openrule
+{\{\}, True, ()}
+{S \OTWeakarrow {\tau} S}$
 
 $ WI_1 = \openrule
 {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], ()}
@@ -5898,6 +5898,23 @@ $ WI_6(n) = \openrule
          {220 \OTWeakarrow {\tau} 100}
          $
 
+$ WI_{6a}(n) = \openrule
+         {\{\}, True, 
+         (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {220 \OTWeakarrow {\tau} 210}
+         $
+
+Because 
+
+$Post_{6a}=\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6}\\
+= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) \right)
+\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \\
+= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets (\texttt{s2\_ec}+1)+n, \texttt{s2\_ec}\gets (\texttt{s2\_ec}+1)+n)$
+
+\medskip
+This result ($WI_{6a}$) is INCORRECT: the Post cannot use $s1\_msg$, this variable is not available in state 220
+
 $ WI_{456*}(n) = \openrule
          {\{\}, True, 
     (\texttt{s1\_msg}\gets \texttt{s1\_msg}, \texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
@@ -5930,22 +5947,7 @@ $ WI_{645*}(n) = \openrule
   {220 \OTWeakarrow {\tau} 220}
         $
 
-$ WI_{6a}(n) = \openrule
-         {\{\}, True, 
-         (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
-         {220 \OTWeakarrow {\tau} 210}
-         $
 
-Because 
-
-$Post_{6a}=\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6}\\
-= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) \right)
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \\
-= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets (\texttt{s2\_ec}+1)+n, \texttt{s2\_ec}\gets (\texttt{s2\_ec}+1)+n)$
-
-\medskip
-This result is INCORRECT: the Post cannot use $s1\_msg$, this variable is not available in state 220
 
 
 
@@ -5971,32 +5973,60 @@ $ WI_{7b}(n) = \openrule
 \RAB{Erreur sur les deux transition $WI_{7}$, $WI_{7a}$ et $WI_{7b}$}
 
          
+$ WI_8 = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec)}\}, True, ()}
+         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec)}}} \{202, 000\}}
+         \ \forall n\ge 0$
 
+$ WI_{8a}(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(m1\_msg,m1\_ec}+n)\}, True, ()}
+         {210 \OTWeakarrow {\underline{\texttt{out(m1\_msg,m1\_ec}+n)}} \{202, 000\}}
+         \ \forall n\ge 1$
 
-\TODO{no yet checked (old version), or not yet fully validated ...:}
+ $ WI_{8b}(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(??\_msg,s2\_ec}+n)\}, True, ()}
+         {220 \OTWeakarrow {\underline{\texttt{out(??\_msg,m2\_ec}+n)}} \{202, 000\}}
+         \ \forall n\ge 1$
 
-
-$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
-         
-$ WI_{8'''}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s2\_ec+n)}}} 202}
+ $ WI_{8c}(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s1\_ec}+n)\}, True, ()}
+         {100 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s1\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
           
-$ WI_8(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec +n)}\}, True, ()}
-         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec +n)}}} 202}
-         \ \forall n\ge 0$
 
-$ WI_9(n) = \openrule
-         {\{\}, True, (\texttt{m1\_ec}\gets \texttt{m1\_ec}+n)}
-         {210 \OTWeakarrow {\tau} 210}
-         \ \forall n\ge 0$
+
+%$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
+         
 
 
 
-         \subsection{\TODO{Details of the Bisimulation Checking}}
+\medskip
+Then for all $\tau$ transitions above we have a similar WOT that include a non-$\tau$ move from an external action of P or Q, like for example:
+
+$ WI_4P(n) = \openrule
+         {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], 
+   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+         {100 \OTWeakarrow {\texttt{p-a}} 210}
+$
+and
+$ WI_4Q(n) = \openrule
+         {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ],
+   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+         {100 \OTWeakarrow {\texttt{q-b}} 210}
+$
+
+but also e.g.:
+
+$ WI_{456*}P(n) = \openrule
+        {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], 
+    (\texttt{s1\_msg}\gets \texttt{s1\_msg}, \texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+  {100 \OTWeakarrow {\texttt{p-a}} 100}
+        $
+
+
+
+        \subsection{\TODO{Details of the Bisimulation Checking}}
          
          
 \end{document}
