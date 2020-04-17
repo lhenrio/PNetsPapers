@@ -44,6 +44,8 @@
 \newcommand{\shortotimes}{\!\otimes\!}
 \usepackage{macrospNets}
 
+\newcommand{\nounderline}[1]{#1}
+
 
 %\usepackage[math]{cellspace}
 %\setlength\cellspacetoplimit{ 37pt}
@@ -621,16 +623,19 @@ pNets are composition entities equipped with a rich synchronisation mechanism: s
 \subsection{Running Example}
 To illustrate this work, we use a simple communication protocol, that provides safe transport of data between two processes, over unsafe media. 
 
+\TODO{J'ai change les $\underline{in}$ et $\underline{out}$ en $in$ et $out$ dans le texte. Rabea, peux-tu le faire dans toutes les figures (1, 2, 3,4,5,6) ?}
+
 Fig. \ref{SimpleProt:Spec} (left) shows the example principle, which corresponds to the hierarchical structure of a pNet: two unspecified
 processes $P$ and $Q$ (holes) communicate messages, with a data value
-argument, through the two protocol entities. Process $P$ sends an $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\underline{in(m)}}$, where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names.
+argument, through the two protocol entities. Process $P$ sends an $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\nounderline{in(m)}}$% , where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names}
+.
 At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
 
 
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet that specifies the system:
 the full system should be equivalent (e.g. through weak bisimulation)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two Holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\underline{in(m)}}$ only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the internal action  $\texttt{\underline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two Holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$" only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
 
 
 Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modeled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
@@ -1019,7 +1024,7 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
       \{\texttt{P}\mapsto \texttt{p-send(m)}\},  [\texttt{m=m'}],
         \{\texttt{s1\_msg}\gets \texttt{m}\}
                       }
-    {\ostate{s_0,m_0,r_0} \OTarrow{\underline{\texttt{in(m')}}} \ostate{s_1,m_0,r_0}}
+    {\ostate{s_0,m_0,r_0} \OTarrow{\nounderline{\texttt{in(m')}}} \ostate{s_1,m_0,r_0}}
     \]
 
     \smallskip
@@ -1034,7 +1039,7 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
  %% $  OT_2  = \openrule{
  %%   \emptyset; Pred=[send(SV2\_m)=send(s_1\_m);in(SV2\_m)=in(?m)];  \\ Post=\{m_1\_m:=?m\}
  %%                      }
- %%    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
  %%    $
 
  %%    That can be simplified to:
@@ -1044,7 +1049,7 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
  %%     $  OT_2  = \openrule{
  %%      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m\}
  %%                      }
- %%    {\ostate{s_1,m_0,r_0} \OTarrow{\underline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
  %%    $
 
  %%    \smallskip
@@ -1189,7 +1194,7 @@ In \cite{henrio:Forte2016}, we have shown a detailed example of the construction
 %%     open-transitions}
 %%   In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
 %%   open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:ABP-composed}).
-%%   The rule uses \TrUn\ for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\underline{\delta(x)}$ vector of the top node.
+%%   The rule uses \TrUn\ for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\nounderline{\delta(x)}$ vector of the top node.
   
 %% \begin{figure}[h]
 %% \begin{mathpar}
@@ -1681,11 +1686,11 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
   $\openrule
          {\emptyset, True,
 			(\texttt{ec}\gets \texttt{ec}+n) }
-         {\text{b1} \OTWeakarrow \tau \text{b1}} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{\underline{out(m,ec)}}  as $\alpha$, we get the resulting weak open transition between b1 and b0 (as shown in Figure \ref{WOT2}).
+         {\text{b1} \OTWeakarrow \tau \text{b1}} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{\nounderline{out(m,ec)}}  as $\alpha$, we get the resulting weak open transition between b1 and b0 (as shown in Figure \ref{WOT2}).
  %     $\openrule
  %        {\{\texttt{Q}\mapsto\texttt{q-revc(ec)}\subst{ec\gets ec+n}\}, True,
 %			(\texttt{ec}\gets \texttt{ec}+n) }
- %        {b1 \OTWeakarrow {\underline{\texttt{out(m,ec)}}\subst{ec\gets ec+n}} b0} \forall n \geq 0$. 
+ %        {b1 \OTWeakarrow {\nounderline{\texttt{out(m,ec)}}\subst{ec\gets ec+n}} b0} \forall n \geq 0$. 
 \end{example}
 
 
@@ -1761,7 +1766,7 @@ $ (for any state $S$)
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
+  {000 \OTWeakarrow {\nounderline{\texttt{in(m)}}} 100}
         $$\forall n\ge 0$
 
 
@@ -1796,7 +1801,7 @@ $Post_{8c}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Po
          
 $ WI_{8c}(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\underline{\texttt{out(r1\_msg,r1\_ec)}\subst{(\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+n)}}} 202}
+         {210 \OTWeakarrow {\nounderline{\texttt{out(r1\_msg,r1\_ec)}\subst{(\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+n)}}} 202}
         $($\forall n\ge 0$)
 
 \subsection{Composition properties: composition of weak open transitions}
@@ -2015,13 +2020,13 @@ Preliminary remarks:
   $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
     (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)}
-  {\text{b0} \OTarrow {\underline{\texttt{in(m1)}}} \text{b1}}
+  {\text{b0} \OTarrow {\nounderline{\texttt{in(m1)}}} \text{b1}}
   $
   
 $ WI_3(0) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m2)}\}, True,
     (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets 0)}
-  {000 \OTWeakarrow {\underline{\texttt{in(m2)}}} 100}
+  {000 \OTWeakarrow {\nounderline{\texttt{in(m2)}}} 100}
   $
   
   Let check formally the conditions:
@@ -2043,7 +2048,7 @@ $\forall \texttt{m1}. \{True \land True\hspace{3mm} \implies
 \exists \texttt{m2}. \\
 (\texttt{[p-send(m1)]} = \texttt{[p-send(m2)]}
 \land True
-\land \underline{\texttt{in(m1)}} = \underline{\texttt{in(m2)}} \land 
+\land \nounderline{\texttt{in(m1)}} = \nounderline{\texttt{in(m2)}} \land 
 \\
 (\texttt{b1\_msg\!\! = \!\!s1\_msg} \land \texttt{b1\_ec\!\! =\!\! s1\_ec}) \subst{(\texttt{b1\_msg}\!\gets\! \texttt{m1}, \texttt{b1\_ec}\!\gets\! 0)\uplus (\texttt{s1\_msg}\!\gets\! \texttt{m2},\texttt{s1\_ec}\!\gets\! 0)})\}$
 
@@ -5867,25 +5872,25 @@ All following transitions are parametrized by an arbitrary non-negative integer 
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
-  { \{000,202\} \OTWeakarrow {\underline{\texttt{in(m)}}} 100}
+  { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 100}
 $
 
 $ WI_{3a}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{m1\_msg}\gets \texttt{m}, \texttt{m1\_ec}\gets n, \texttt{s2\_ec}\gets n)}
-  { \{000,202\} \OTWeakarrow {\underline{\texttt{in(m)}}} 210}
+  { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 210}
 $
 
 $ WI_{3b}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{s2\_ec}\gets n)}
-  { \{000,202\} \OTWeakarrow {\underline{\texttt{in(m)}}} 220}
+  { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 220}
 $
 
 $ WI_{3c}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
     (\texttt{r1\_msg}\gets \texttt{m}, \texttt{r1\_ec}\gets n)}
-  { \{000,202\} \OTWeakarrow {\underline{\texttt{in(m)}}} 201}
+  { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 201}
 $
 
 $ WI_4(n) = \openrule
@@ -5993,22 +5998,22 @@ $ WI_{7b}(n) = \openrule
          
 $ WI_8 = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec)}\}, True, ()}
-         {201 \OTWeakarrow {\underline{\texttt{out(r1-msg,r1-ec)}}} \{202, 000\}}
+         {201 \OTWeakarrow {\nounderline{\texttt{out(r1-msg,r1-ec)}}} \{202, 000\}}
          \ \forall n\ge 0$
 
 $ WI_{8a}(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(m1\_msg,m1\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\underline{\texttt{out(m1\_msg,m1\_ec}+n)}} \{202, 000\}}
+         {210 \OTWeakarrow {\nounderline{\texttt{out(m1\_msg,m1\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
  $ WI_{8b}(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(??\_msg,s2\_ec}+n)\}, True, ()}
-         {220 \OTWeakarrow {\underline{\texttt{out(??\_msg,m2\_ec}+n)}} \{202, 000\}}
+         {220 \OTWeakarrow {\nounderline{\texttt{out(??\_msg,m2\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
  $ WI_{8c}(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s1\_ec}+n)\}, True, ()}
-         {100 \OTWeakarrow {\underline{\texttt{out(s1\_msg,s1\_ec}+n)}} \{202, 000\}}
+         {100 \OTWeakarrow {\nounderline{\texttt{out(s1\_msg,s1\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
           
