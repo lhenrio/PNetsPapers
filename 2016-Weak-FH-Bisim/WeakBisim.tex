@@ -415,7 +415,7 @@ We use sets of assignments of the form $x_i:=e_i$, ranged over by $\Post$; $\sub
 
 For this property to be valid even if the substitution does not operate on all variables,
 we define the composition operation as follows: 
-\TODO{version d eric reprise et corrigee}
+%\TODO{version d eric reprise et corrigee}
 %$(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
 %\ERIC{J'ai un probleme ici... quand $Post'$ agit sur des vars de $t$ qui ne sont pas substitutees par $Post$, alors les 2 defs de $\shortotimes$ ci-dessus ne sont pas equivalentes:}\\
 %$F(x,z)(\subst{x\gets z}\shortotimes\subst{z\gets 1})=F(x,z)(\subst{x\gets 1})=F(1,z)$\\
@@ -424,8 +424,8 @@ we define the composition operation as follows:
 %
 %\ERIC{Une definition plus correcte serait peut-etre:}\\
 
-$(x_{k}\gets e_{k})^{k\in K}\shortotimes (x'_{k'}\gets e'_{k'})^{k'\in K'} =  
-(x_{k}\gets e_{k}\subst{(x'_{k'}\gets e'_{k'})^{k'\in K'}})^{k\in K} \cup (x'_{k'}\gets e'_{k'})^{k'\in K''}$\\
+\[(x_{k}\gets e_{k})^{k\in K}\shortotimes (x'_{k'}\gets e'_{k'})^{k'\in K'} =  
+(x_{k}\gets e_{k}\subst{(x'_{k'}\gets e'_{k'})^{k'\in K'}})^{k\in K} \cup (x'_{k'}\gets e'_{k'})^{k'\in K''}\]
 where $K''=\{k'\in K'|x'_{k'}\not\in\{x_k\}^{k\in K}\}$
 %
 %\LUDO{En fait comme on supose qu il y a pas de variable globale et donc que les post doivent affecter toutes les variables ce contre-exemple n est pas applicable! apres on peut definir comme ca si on veut ceinture et bretelles mais ca alourdit un peu la definitions}
@@ -468,7 +468,7 @@ on finite branching of the transition relation.
 \begin{definition}[pLTS]
 \label{pLTS}
 A pLTS is a tuple
-$\pLTS\triangleq\mylangle S,s_0, \to\myrangle$ where:
+$\pLTS\triangleq\mylangle S,s_0, V, \to\myrangle$ where:
 \begin{itemize}
 \item[$\bullet$]
 $S$ is a set of states.
@@ -478,6 +478,7 @@ $s_0 \in S$ is the initial state.
  %Variables in
 %$\iv(\alpha)$ are assigned by the action, other variables can be assigned
 %by the additional assignments.
+\item[$\bullet$] $V$ is a set of global variables for the pLTS,
 \item[$\bullet$] $\to \subseteq S \times L \times S$ is the transition relation and 
 $L$ is the set of labels of the form
 $\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in J}\rangle$,
@@ -488,11 +489,11 @@ If
 $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 		J}\rangle} s'\in \to $ then 
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
-		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! \vars(s)$, 
+		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! V$, 
 		$\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! \vars(s)\cup\vars(\alpha)\land 
-		x_j\!\in\!\vars(s') \right)$. %,  and $s= s'\Rightarrow J=\emptyset$.
-\hl{Additionally we require that:} $\{x_j|j\in J\} = \vars(s')$.
+		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! V\cup\vars(\alpha)\land 
+		x_j\!\in V \right)$. %,  and $s= s'\Rightarrow J=\emptyset$.
+
 %\LUDO{I suggest to add: $\{x_j|j\in J\} = \vars(s')$ or $\{x_j|j\in J\} \cup \iv(\alpha)= \vars(s')$} 
 \end{itemize}
 \end{definition}
@@ -530,7 +531,7 @@ hole $j$.
 \item[$\bullet$] $\symb{SV}_k^{k\in K}$ is a set of
   synchronisation vectors. $\forall k\!\in\! K,
   \symb{SV}_k\!=\!\SV{\alpha_{l}^{l\in I_k \uplus J_k}}{\alpha'_k}{e_k}$ \hl{where}
-  $\alpha'_k\in \mathcal{A}_\P$, $I_k\subseteq I$, $J_k\subseteq J$,
+  $\alpha'_k\in \AlgAS$, $I_k\subseteq I$, $J_k\subseteq J$,
   $\forall i\!\in\!
   I_k.\,\alpha_{i}\!\in\!\Sort(\pNet_i)$,  $\forall j\!\in\!
   J_k.\,\alpha_{j}\!\in\!\Sort_j$, and $\vars(\alpha'_k)\subseteq \bigcup_{l\in I_k\uplus 
@@ -547,7 +548,7 @@ The preceding definition relies on the auxiliary functions defined below:
 \begin{definition}[Sorts, Holes, Leaves, Variables of pNets]\label{def-sortholeleave}~~
 
   \begin{itemize}
-  \item The sort of a pNet is its signature, i.e. the set of actions it can
+  \item The sort of a pNet is its signature, i.e. the set of actions in $\AlgAS$ it can
 perform, where each action signature is an action 
 label plus the arity of the action. In the definition of sorts, we do not need to 
 distinguish
@@ -555,7 +556,7 @@ input variables and we remove the
 \emph{input marker} (?) of variables.
 \[
 \begin{array}{l}
-\Sortop(\mylangle S,s_0, \to\myrangle) = \{\alpha\subst{?x \gets x| 
+\Sortop(\mylangle S,s_0,V, \to\myrangle) = \{\alpha\subst{?x \gets x| 
 x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
     J}\rangle} s'\in \to \} \\
 \Sortop(\mylangle \set{\pNet}\!, %\pNet_i^{i\in I}, 
@@ -565,7 +566,7 @@ x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 \end{array}
 \]
 
-\item The set of variables of a pNet $P$, denoted $vars(P)$ is the set of variables of all states of all pLTSs that compose $P$.
+\item The set of variables of a pNet $P$, denoted $vars(P)$ is the set of variables of  all pLTSs that compose $P$.
 
 \item
 The set of holes $\Holes(\pNet)$ of a pNet is the indexes of the holes of the pNet 
@@ -573,7 +574,7 @@ itself plus the indexes of all the holes of its subnets.
 It is defined inductively (we suppose those indexes 
 disjoints):
   \[\begin{array}{l}
-\Holes(\mylangle S,s_0, \to\myrangle) \!=\! \emptyset\\
+\Holes(\mylangle S,s_0,V, \to\myrangle) \!=\! \emptyset\\
 \Holes(\mylangle \pNet_i^{i\in I}\!,\set{\Sort}, \set{\symb{SV}}\myrangle) 
 =J\uplus{\displaystyle \bigcup_{i\in 
 I}\Holes(\pNet_i)}\\
@@ -584,7 +585,7 @@ I}\Holes(\pNet_i)}\\
 The set of leaves of a pNet is the set of all pLTSs occurring in the structure, as an 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
 \[\begin{array}{l}
-\Leaves(\mylangle S,s_0, \to\myrangle) \!=\!\emptyset\\%\{\mylangle S,s_0, \to\myrangle\}\\
+\Leaves(\mylangle S,s_0,V, \to\myrangle) \!=\!\emptyset\\%\{\mylangle S,s_0, \to\myrangle\}\\
 \Leaves(\mylangle \pNet_i^{i\in I}\!,%Sort_j^{j\in J}
 \set{\Sort}\!, \set{\symb{SV}}\myrangle) = {\displaystyle \biguplus_{i\in 
 I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i \text{ is a }\pLTS\}}
@@ -663,14 +664,14 @@ action of some holes, the transition occurs if some predicates hold, and can inv
 set of state modifications. This section defines open automata and a bisimulation theory for them.
 
 \subsection{Open Automata}
- Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on variables (potentially with only symbolic values). Formaly, each state of an OA has a set of \emph{state variables}, and all state variable sets are disjoint.
+ Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on a set of variables (potentially with only symbolic values). 
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
 \begin{definition}[Open transitions]\label{def:OT}
 	\label{def:OpenTransitions}
 	An \emph{open transition} (OT) over a
-	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
+	set $J$ of holes with sorts $\Sort_j^{j\in J}$, a set V of variables, and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
 	\begin{mathpar}
 	\openrule
@@ -680,21 +681,27 @@ set of state modifications. This section defines open automata and a bisimulatio
 	Where $J'\subseteq J$, $s, s'\in\mathcal{S}$ and $\beta_j$
         is a transition of the hole $j$, with $\beta_j\in\Sort_j$. $\alpha$ is an action 
         label denoting the resulting action of this open transition.
-        We call \emph{source variables} of an OT the union of all variables
+%        We call \emph{source variables} of an OT the union of all variables
+%        in the different terms
+%        $\beta_j$ and $\alpha$, and the state variables of $s$.
+        \Pred\ is a predicate over the  variables $V$ and all variables
         in the different terms
-        $\beta_j$ and $\alpha$, and the state variables of $s$.
-        \Pred\ is a predicate over the source variables. \Post\ is a set of 
+       $\beta_j$ and $\alpha$. \Post\ is a set of 
 	assignments that are effective \emph{after the open transition}, they are
         represented as a substitution of the form $({x_k\gets e_k})^{k\in K}$ 
-	where $x_k$ are\ \ERIC{the state variables of $s'$}\footnote{all of them, completed by identity if needed}, and $e_k$ are expressions
-        over the \ERIC{source or target state variables}\footnote{On pourrait du coup y mettre ici n'importe quelle variable du OA...}. Open transitions are identified
+	where $\forall k.\, x_k\in V$, and $e_k$ are expressions
+        over the variables $V$ and all variables
+        in the different terms
+       $\beta_j$ and $\alpha$. Open transitions are identified
         modulo logical equivalence on their predicate. 
 \end{definition}
 
 It is important to understand the difference between the red dotted rule and a normal 
 inference rule. They correspond to two different logical levels.
- The open transition is itself a logical implication, but using a simple logic (this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality). \hl{We differentiate classical (black) inference rules that use  an expressive logic and are paper rules from open transition rules that use a simpler  logic,  will be embedded into automata transitions, and could typically be handled in a 
- mechanical way.}
+On one side, classical (black) inference rules  use  an expressive logic and are paper rules.
+ On the other side, open transition rules (with dotted lines) are logical implications, but using a simple logic (this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality).
+   open transitions could typically be handled in a 
+ mechanised way.
 
 
 An open automaton is then simply an automaton where each transition is an open transition.
@@ -720,8 +727,7 @@ We take in this article a semantics and logical understanding of these
 automata. Open automata are closed by a simple form of refinement that
 allows us to refine the predicate, or substitute any free variable by
 an expression. More formally, let $\Post$ be any substitution and
-$\Pred$ any predicate; suppose $\vars(t)\cap \dom(\Post)=\emptyset$ and
-$\vars(t')\cap \dom(\Post)=\emptyset$. Then we have the following
+$\Pred$ any predicate; suppose $V\cap \dom(\Post)=\emptyset$. Then we have the following
 implication: 
 	
 	 \begin{mathpar}
@@ -890,9 +896,8 @@ the definition).
 
 
 
-\subsubsection*{Note on finite versus infinite open automata:} as
-mentionned in page \pageref{def:open-automaton}, we have defined two flavors of
-automata. More precisely, in \cite{hou:hal-02406098}, we formely define
+\subsubsection*{Note on finite versus infinite open automata:} 
+As mentioned in Definition \pageref{def:open-automaton}, we adopt here a semantic view on open automata. More precisely, in \cite{hou:hal-02406098}, we formely define
 \emph{semantic open automata} (infinite as in Definition \ref{def:open-automaton}),
 and \emph{structural open automata} (finite) that can be generated as
 the semantics of pNets (see Definition \ref{def:operationalSemantics}), and used in the implementation. Then we define
@@ -913,7 +918,7 @@ Let $A_1$ and $A_2$ be finite open automata
 and $\mathcal{R}$ a relation over their states $\mathcal{S}_1$ and
 $\mathcal{S}_2$ constrained by a finite set of predicates. Assume that
 the predicates inclusion is decidable over  
-\hl{the action algebra} $\mathcal{A}_P$. Then it is decidable whether the relation 
+the action algebra $\AlgA$. Then it is decidable whether the relation 
 $\mathcal{R}$ is a FH-bisimulation.
   
 \end{theorem}
@@ -953,12 +958,12 @@ states from other tuples.
   A state of an open pNet is a tuple (not necessarily finite) of the
   states of its leaves.
 
-  For any pNet \pNet, let $\Leaves(\pNet) = \mylangle S_i,{s_i}_0, \to_i\myrangle^{i \in L}$ be 
+  For any pNet \pNet, let $\Leaves(\pNet) = \mylangle S_i,{s_i}_0,V, \to_i\myrangle^{i \in L}$ be 
   the set of pLTS at its leaves,
   then $States(\pNet) = \{\triangleleft s_i^{i\in L}
   \triangleright| \forall i\in L. s_i \in S_i\}$.
 A pLTS being its own single leave:
-  $States(\mylangle S,s_0, \to\myrangle) = \{\triangleleft s \triangleright| s \in S, \}$. To be precise, the state of a pLTS is not reduced to a state identity, it also contains the value of its variables $vars(P)$. 
+  $States(\mylangle S,s_0,V, \to\myrangle) = \{\triangleleft s \triangleright| s \in S, \}$. To be precise, the state of a pLTS is not reduced to a state identity, it also contains the value of its variables $vars(P)$. 
 %This could be encoded as a mapping from variables of the pNet to expressions, of the form: $\sigma=\{x_i\to e_i\}^{i\in I},\,(x_i\in vars(S))$.
 %\LUDO{j ai ajoute les variables mais c est pas tres beau}
 
@@ -1072,8 +1077,7 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 
 
 \begin{definition}[Semantics of open pNets]
-	\label{def:operationalSemantics}
-\hl{The semantics of a pNet} $\pNet$ is an open automaton $A\!= 
+	\label{def:operationalSemantics} The semantics of a pNet $\pNet$ is an open automaton $A\!= 
 	<\!\!Holes(\pNet),States(\pNet),InitState(\pNet),vars(P),\mathcal{T}\!\!>$ where $\mathcal{T}$   is the smallest set of open transitions such that $\mathcal{T}=\{OT\,|\,\pNet \models OT \}$ and	$\pNet \models OT$	is defined by the following  rules:
 %	\begin{itemize}
 %		\item $J$ is the set of holes: $Holes(p)= J$. 
@@ -1297,7 +1301,7 @@ holes, and each pLTS at leaves having a finite number of states and
 \end{figure}
 
 
-\paragraph{Example} \hl{Figure} \ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet given in Figure \ref{SimpleProt:Spec}. 
+\paragraph{Example} \hl{paragraph} Figure~\ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the Specification pNet given in Figure \ref{SimpleProt:Spec}. 
 For later references, we give to the transitions of this (strong)
 Specification automaton as $SS_i$ while transitions of the
 Implementation automaton will be labelled $SI_i$. In the figure we
