@@ -456,14 +456,12 @@ sub-trees.
 
 A pLTS is a labelled transition system with variables; variables can be
 used inside states, actions, guards, and
-assignments. Without loss of generality and to simplify the formalisation, we suppose 
- that variables are local to each 
-state: each state has its set of variables disjoint from the ones of the other states. Transmitting the value of
-variables from one state to another can be done by explicit assignment. 
+assignments. 
 %Similarly, to simplify the management of variables and without loss of expressivity, we 
 %suppose that transitions looping to the same state does not do assignments.
 Note that we make no assumption on finiteness of the set of states nor
 on finite branching of the transition relation.
+
 
 \begin{definition}[pLTS]
 \label{pLTS}
@@ -498,6 +496,9 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 \end{itemize}
 \end{definition}
 
+The semantics of the assignments is that a set of assignments between two states is performed in parallel so that their order do not matter and they all use the values of variables before the transition (or the values received as action parameters).
+
+
 Now we define
 pNet nodes as constructors for hierarchical behavioural structures.
 A pNet has a set of sub-pNets that can be either pNets or pLTSs, and a
@@ -511,7 +512,7 @@ exposes a single resulting global action.
 
 
 We now define the structure of pNets, the following definition relies on the definition 
-of holes, leaves and sorts formalised below in Definition~\ref{def-sortholeleave}. Informally, holes are process parameters, leavs provide the set of pLTSs at the leaves of the hierarchical structure of a pNet, and sorts give the signature of a pNete, i.e. the actions it exposes.
+of holes, leaves and sorts formalised below in Definition~\ref{def-sortholeleave}. Informally, holes are process parameters, leaves provide the set of pLTSs at the leaves of the hierarchical structure of a pNet, and sorts give the signature of a pNete, i.e. the actions it exposes.
 
 \begin{definition}[pNets]\label{def-pnets}
 A pNet $\pNet$ is a hierarchical structure where leaves are pLTSs and holes:\\
@@ -630,16 +631,16 @@ Fig. \ref{SimpleProt:Spec} (left) shows the example principle, which corresponds
 processes $P$ and $Q$ (holes) communicate messages, with a data value
 argument, through the two protocol entities. Process $P$ sends an $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\nounderline{in(m)}}$% , where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names}
 .
-At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole Q) includes the value of the ``error counter'' $ec$.
+At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole $Q$) includes the value of the ``error counter'' $ec$.
 
 
 Fig. \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet that specifies the system:
-the full system should be equivalent (e.g. through weak bisimulation)
+the full system should be equivalent (e.g.  weakly bisimilar)
 to the two processes connected simply through a perfect medium.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$" only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$" only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through an $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
 
 
-Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modeled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
+Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
 
 \begin{figure}[t]
    \includegraphics[width=.37\textwidth]{XFIG/SimpleProt-Schema}
@@ -671,7 +672,7 @@ set of state modifications. This section defines open automata and a bisimulatio
 \begin{definition}[Open transitions]\label{def:OT}
 	\label{def:OpenTransitions}
 	An \emph{open transition} (OT) over a
-	set $J$ of holes with sorts $\Sort_j^{j\in J}$, a set V of variables, and a set of states $\mathcal{S}$ is 
+	set $J$ of holes with sorts $\Sort_j^{j\in J}$, a set $V$ of variables, and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
 	\begin{mathpar}
 	\openrule
@@ -692,7 +693,7 @@ set of state modifications. This section defines open automata and a bisimulatio
 	where $\forall k.\, x_k\in V$, and $e_k$ are expressions
         over the variables $V$ and all variables
         in the different terms
-       $\beta_j$ and $\alpha$. Open transitions are identified
+       $\beta_j$ and $\alpha$. Because the variables in $V$ can be in both side of the assignments, the assignments are always applied in a parallel manner. Open transitions are identified
         modulo logical equivalence on their predicate. 
 \end{definition}
 
@@ -704,7 +705,7 @@ On one side, classical (black) inference rules  use  an expressive logic and are
  mechanised way.
 
 
-An open automaton is then simply an automaton where each transition is an open transition.
+An open automaton is  an automaton where each transition is an open transition.
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
@@ -760,10 +761,10 @@ Though the definition is simple, the fact that transitions are complex structure
 
 
 The equivalence we need is a strong bisimulation between
-pNets having exactly the same holes with the same sorts, but using a
+open automata having exactly the same holes with the same sorts, but using a
 flexible matching 
-between open transitions, to accommodate comparisons between pNet
-expressions with different architectures.
+between open transitions, this will allow us to compare pNets
+with different architectures.
 
 
 
@@ -792,7 +793,7 @@ More precisely, for any pair $(s,t)\in S_1\times S_2$, there is a
    are open automata with identical holes of the same sort, with disjoint state variables.  
 
  Then 
-$\mathcal{R}$ is an FH-bisimulation iff for any  states
+$\mathcal{R}$ is an FH-bisimulation if and only if for any  states
 $s\in\mathcal{S}_1$ and $t\in\mathcal{S}_2$, $(s,t|\Pred_{s,t})\in\mathcal{R}$, we 
 have
 the following:
@@ -823,8 +824,8 @@ the following:
          {t \OTarrow {\alpha_x} t_x}
 %         \right)
 \end{mathpar}
- such that  $\forall x, J'=J_{x}, \exists \Pred_{s',t_x}. (s',t_x|\Pred_{s',t_x})\in 
- \mathcal{R}$; 
+ such that  $\forall x, J'=J_{x}$ and there exists $\Pred_{s',t_x}$ such that $(s',t_x|\Pred_{s',t_x})\in 
+ \mathcal{R}$
  and  \\
  $\Pred_{s,t} \land \Pred_{OT}\implies$\\
 %\hspace{1cm}
@@ -963,14 +964,14 @@ states from other tuples.
   then $States(\pNet) = \{\triangleleft s_i^{i\in L}
   \triangleright| \forall i\in L. s_i \in S_i\}$.
 A pLTS being its own single leave:
-  $States(\mylangle S,s_0,V, \to\myrangle) = \{\triangleleft s \triangleright| s \in S, \}$. To be precise, the state of a pLTS is not reduced to a state identity, it also contains the value of its variables $vars(P)$. 
+  $States(\mylangle S,s_0,V, \to\myrangle) = \{\triangleleft s \triangleright| s \in S, \}$.  
 %This could be encoded as a mapping from variables of the pNet to expressions, of the form: $\sigma=\{x_i\to e_i\}^{i\in I},\,(x_i\in vars(S))$.
 %\LUDO{j ai ajoute les variables mais c est pas tres beau}
 
 The initial state is defined as:
 $InitState(\pNet) = \triangleleft {{s_i}_0}^{i\in L}  \triangleright$.
 \end{definition}
-
+To be precise, the state of each pLTS is entirely characterised by both the state of the automaton, and the value of its variables $V$. Consequently, the complete characterization of the state of a pNet should take into account the value of its variables $vars(P)$.
 
 
 %% \begin{example} \emph{State of a pNet}
@@ -1526,8 +1527,6 @@ The first statement of the definition states that the open automaton must allow 
 By definition, one weak open transition contains  several open transitions, where  each open transition can require an observable action from a given hole, the same hole might have to emit several observable actions for a single weak open transition to occur. 
 Consequently, for a weak open transition to trigger, a sequence of actions from a given hole may be required.
 
-\TODO{Check, nouvelle formulation, Eric}
-\LUDO{checked, slight changes}
 Thus, we let $\gamma$ range over sequences of action terms and use $\dotcup$ as the concatenation operator that appends sequences of action terms: given two sequences of action terms  $\gamma\dotcup\gamma '$ concatenates the two sequences. The operation is lifted to indexed sets of sequences:  $\set {\gamma_1}\dotcup \set {\gamma_2}$ is an indexed set such that, at each index $i$, $\set {\gamma_1}\dotcup \set {\gamma_2}$ concatenates the sequences of actions at index $i$ of $\set{\gamma_1}$ and the one at index $i$ of $\set {\gamma_2}$\footnote{One of the two sequences is empty when $i\not \in \dom(\set{\gamma_1})$ or $i\not \in \dom(\set{\gamma_2})$ .}. $[a]$ denotes a sequence with a single element.
 
 As required actions are now sequences of observable actions, we need an operator to build them from set of actions that occur in open transitions, i.e. an operator that takes a set of actions performed by one hole and produces a sequence of observable actions.
@@ -1880,6 +1879,7 @@ the predicate associated to the relation between the initial states is \True.
 
 Compared to strong bisimulation, except the obvious use of weak open transitions to simulate an open transition, the condition on predicate is slightly changed concerning actions of the holes. Indeed only the visible actions of the holes must be compared and they form a list of actions, but of length at most one.
 
+\LUDO{il faudrait mieux introduire le paragraphe ci dessous pour expliquer ce qu'il fait ici}
 In practice, we are dealing with finite representations of the (infinite) open automata. In \cite{hou:hal-02406098}, we defined a slightly modified definition of the ``coverage'' proof obligation, in the case of strong FH-Bisimulation. This modification is required to manage in a finite way all possible instantiations of an OT. In the case of weak FH-Bisimulation, the proof obligation from definition \ref{def-Weak-bisim} becomes:
       
  $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
@@ -1899,7 +1899,7 @@ Our first important result is that Weak FH-bisimilarity is an equivalence in the
 is a weak FH-bisimulation. Then $\mathcal{R}$ is an equivalence, that is, $\mathcal{R}$ is 
 reflexive, symmetric and transitive.
 \end{theorem}
-The proof  is detailed in Appendix \ref{app-WFH-equiv}, it follows a similar pattern as the proof that strong FH-bisimulation is an equivalence, but technical details are different, and in practice we rely on a different (but proven equivalent) definition of weak FH-bisimilarity; this equivalent version simulates a \emph{weak} open transition with a set of weak open transition. The careful use of the best definition of weak FH-bisimilarity makes the proof similar to the strong FH-bisimulation case.
+The proof  is detailed in Appendix \ref{app-WFH-equiv}, it follows a similar pattern as the proof that strong FH-bisimulation is an equivalence, but technical details are different, and in practice we rely on a variant of the definition of weak FH-bisimilarity; this equivalent version simulates a \emph{weak} open transition with a set of weak open transition. The careful use of the best definition of weak FH-bisimilarity makes the proof similar to the strong FH-bisimulation case.
 
 
 
@@ -1954,7 +1954,7 @@ Let $A$ be the open automaton expressing the semantics of an open pNet $\pNet$; 
 
 \subsection{Properties of weak bisimulation for open pNets}
 
-When silent actions cannot be observed, weak bisimulation is a congruence for open pNets: if $P$ and $Q$ are weakly bisimilar to $P'$ and $Q'$ then the composition of $P$ and $Q$ is weakly bisimilar to the composition of$P'$ and $Q'$, where composition is the hole replacement operator: 	$\pNet[\pNetQ]_{j}$ and 
+When silent actions cannot be observed, weak bisimulation is a congruence for open pNets: if $P$ and $Q$ are weakly bisimilar to $P'$ and $Q'$ then the composition of $P$ and $Q$ is weakly bisimilar to the composition of $P'$ and $Q'$, where composition is the hole replacement operator: 	$\pNet[\pNetQ]_{j}$ and 
 	$\pNet'[\pNetQ']_{j}$ are weak FH-bisimilar. This can be shown by proving the two following theorems.
 The detailed proof of these theorem can be found in Appendix~\ref{sec:app-composition}. The proof strongly relies on the fact that weak FH-bisimulation is an equivalence, but also on the composition properties for open automata.
 
@@ -1965,7 +1965,7 @@ The detailed proof of these theorem can be found in Appendix~\ref{sec:app-compos
 	Let $j_0\in J$ be a hole. Let $\pNetQ$ and $Q'$ be two weak FH-bisimilar pNets such that 
 	$\Sortop(\pNetQ)=\Sortop(\pNetQ')=\Sort_{j_0}$\footnote{Note that $\Sortop(\pNetQ)=\Sortop(\pNetQ')$ is 
 	ensured by 
-	strong bisimilarity.}. Then 
+	weak bisimilarity.}. Then 
 	$\pNet[\pNetQ]_{j_0}$ and 
 	$\pNet[\pNetQ']_{j_0}$ are weak FH-bisimilar.
 \end{theorem}
