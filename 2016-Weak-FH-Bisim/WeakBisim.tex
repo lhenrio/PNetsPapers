@@ -406,12 +406,12 @@ $\setminus$ is the standard subtraction operation on indexed sets: $\dom(A\setmi
 
 
 \subsubsection*{Substitutions}
+\label{def:substitutions}
 
 We denote $y\gets e$ a substitution. The application of the substitution is denoted
 $\subst{y\gets e}$, the operation replaces in a term all occurrences 
-of the variable $y$ by the expression $e$ (note that the absence of binders makes this operation 
-trivial). 
-We use sets of assignments of the form $x_i:=e_i$, ranged over by $\Post$; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions, such that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post})\subst{\Post'}$.
+of the variable $y$ by the expression $e$. 
+$\Post$ ranges over (indexed) sets of substitutions; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions, such that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post'})\subst{\Post}$.
 
 For this property to be valid even if the substitution does not operate on all variables,
 we define the composition operation as follows: 
@@ -489,7 +489,7 @@ $s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 % REMOVED BECAUSE USELESS: $\iv(\alpha)\!\subseteq\! \vars(s')$, 
 		$\vars(\alpha)\backslash \iv(\alpha)\!\subseteq\! V$, 
 		$\vars(e_b)\!\subseteq\! \vars(s)\cup\vars(\alpha)$, and
-		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! V\cup\vars(\alpha)\land 
+		$\forall j\!\in\! J .\,\left(\vars(e_j)\!\subseteq\! V\cup\iv(\alpha)\land 
 		x_j\!\in V \right)$. %,  and $s= s'\Rightarrow J=\emptyset$.
 
 %\LUDO{I suggest to add: $\{x_j|j\in J\} = \vars(s')$ or $\{x_j|j\in J\} \cup \iv(\alpha)= \vars(s')$} 
@@ -512,7 +512,7 @@ exposes a single resulting global action.
 
 
 We now define the structure of pNets, the following definition relies on the definition 
-of holes, leaves and sorts formalised below in Definition~\ref{def-sortholeleave}. Informally, holes are process parameters, leaves provide the set of pLTSs at the leaves of the hierarchical structure of a pNet, and sorts give the signature of a pNete, i.e. the actions it exposes.
+of holes, leaves and sorts formalised below in Definition~\ref{def-sortholeleave}. Informally, holes are process parameters, leaves provide the set of pLTSs at the leaves of the hierarchical structure of a pNet, and sorts give the signature of a pNet, i.e. the actions it exposes.
 
 \begin{definition}[pNets]\label{def-pnets}
 A pNet $\pNet$ is a hierarchical structure where leaves are pLTSs and holes:\\
@@ -520,7 +520,7 @@ $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, \symb{SV}
 K}\myrangle$
 where
 \begin{itemize}
-\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets indexed over $I$.
+\item[$\bullet$] $\pNet_i^{i\in I}$ is the family of sub-pNets indexed over $I$. $vars(P_i)$ and $vars(P_j)$ must be disjoint for $i\neq j$.
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which sub-pNets are indexed.
 
 \item[$\bullet$] $J$ is a set of indexes, called \emph{holes}.
@@ -567,7 +567,7 @@ x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
 \end{array}
 \]
 
-\item The set of variables of a pNet $P$, denoted $vars(P)$ is the set of variables of  all pLTSs that compose $P$.
+\item The set of variables of a pNet $P$, denoted $vars(P)$ is disjoint union the set of variables of  all pLTSs that compose $P$.
 
 \item
 The set of holes $\Holes(\pNet)$ of a pNet is the indexes of the holes of the pNet 
@@ -640,7 +640,8 @@ to the two processes connected simply through a perfect medium.
 The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystemSpec} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one subnet, denoted {\it PrefectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterized actions of a subset of the nodes. For instance, in the vector "$< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$" only $P$ and {\it PrefectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PrefectBuffer} accepts the message through an $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
 
 
-Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
+Fig. \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m\_error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. 
+%Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
 
 \begin{figure}[t]
    \includegraphics[width=.37\textwidth]{XFIG/SimpleProt-Schema}
@@ -685,7 +686,7 @@ set of state modifications. This section defines open automata and a bisimulatio
 %        We call \emph{source variables} of an OT the union of all variables
 %        in the different terms
 %        $\beta_j$ and $\alpha$, and the state variables of $s$.
-        \Pred\ is a predicate over the  variables $V$ and all variables
+        \Pred\ is a predicate over the  variables in $V$ and all variables
         in the different terms
        $\beta_j$ and $\alpha$. \Post\ is a set of 
 	assignments that are effective \emph{after the open transition}, they are
@@ -727,8 +728,7 @@ An open automaton is  an automaton where each transition is an open transition.
 We take in this article a semantics and logical understanding of these
 automata. Open automata are closed by a simple form of refinement that
 allows us to refine the predicate, or substitute any free variable by
-an expression. More formally, let $\Post$ be any substitution and
-$\Pred$ any predicate; suppose $V\cap \dom(\Post)=\emptyset$. Then we have the following
+an expression. More formally, let $\Pred$ be any predicate and $\Post$ any substitution such that $V\cap \dom(\Post)=\emptyset$. Then we have the following
 implication: 
 	
 	 \begin{mathpar}
@@ -745,7 +745,7 @@ implication:
 \end{definition}
 
 %\LUDO{I added this paragraph}
-Because of the semantic interpretation of open automata, the set of open transition of an open automaton is infinite (for example because every free variable can be renamed). However an open automaton is characterized by a  subset of these open transition which is sufficient to generate, by substitution the other ones. In the following, we will abusively write that we define an ``open automaton'' when we provide only the set of open transitions that is sufficient to generate a proper open automaton by saturating each open transition by all possible substitutions.
+Because of the semantic interpretation of open automata, the set of open transition of an open automaton is infinite (for example because every free variable can be renamed). However an open automaton is characterized by a  subset of these open transition which is sufficient to generate, by substitution the other ones. In the following, we will abusively write that we define an ``open automaton'' when we provide only the set of open transitions that is sufficient to generate a proper open automaton by saturating each open transition by all possible substitutions and refinements.
 
 Another consequence of the semantics and logical interpretation of the
 formulas is that we make no distinction between the equality and the
@@ -952,7 +952,7 @@ To derive an open automaton from a pNet, we need to describe the set of states o
 %to relate the parameters and names appearing in the actions of the
 %leaves and the holes involved in the rules, but also appearing in  the resulting action.
 
-We define first states of open pNets as tuples of states. We denote them
+We first define states of open pNets as tuples of states. We denote them
  as $\triangleleft\ldots\triangleright$ for distinguishing tuple 
 states from other tuples.
 \begin{definition}[States of open pNets]\label{def-states}
@@ -1007,7 +1007,7 @@ Somehow, this predicate entails a verification of satisfiability in the sense th
 predicate $\Predsv$ is not satisfiable, then the transition associated with the 
 synchronisation will not occur in the considered state, or will occur with a \False\ precondition which is equivalent.
 If the action families do not match or if there is no valuation of
-variables such that the above formula can be ensured the predicate is undefined.
+variables such that the above formula can be ensured then the predicate is undefined.
 
 The definition of this predicate is not constructive but it is easy to build the predicate constructively by brute-force unification of the sub-pNets actions with the corresponding vector actions, possibly followed by a simplification step.
 
@@ -1024,7 +1024,7 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
  \smallskip\noindent
  \[  OT_1  = \openrule{
       \{\texttt{P}\mapsto \texttt{p-send(m)}\},  [\texttt{m=m'}],
-        \{\texttt{s1\_msg}\gets \texttt{m}\}
+        \{\texttt{s\_msg}\gets \texttt{m}\}
                       }
     {\ostate{s_0,m_0,r_0} \OTarrow{\nounderline{\texttt{in(m')}}} \ostate{s_1,m_0,r_0}}
     \]
@@ -1032,16 +1032,16 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
     \smallskip
     The global states here are triples, build as the product of states of the 3 pLTS (remember the holes have no state). The assignment
     $Post$ uses the variable $\texttt{m}$ from the action of hole $\texttt{P}$ to set the
-    value of the sender state variable named $\texttt{s1\_msg}$.
+    value of the sender variable named $\texttt{s\_msg}$.
     
 
  %%  The \emph{SimpleProtocol} pNet of Fig. \ref{SimpleProt:Spec} has 3 controllers and no holes. One of its possible open-transition (the sender sending $(m)$ to the medium) is:
 
  %% \smallskip\noindent
  %% $  OT_2  = \openrule{
- %%   \emptyset; Pred=[send(SV2\_m)=send(s_1\_m);in(SV2\_m)=in(?m)];  \\ Post=\{m_1\_m:=?m\}
+ %%   \emptyset; Pred=[send(SV\_m)=send(s_\_m);in(SV\_m)=in(?m)];  \\ Post=\{m_\_m:=?m\}
  %%                      }
- %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(SV2\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(SV\_m)}} \ostate{s_2,m_1,r_0}}
  %%    $
 
  %%    That can be simplified to:
@@ -1049,9 +1049,9 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
  %%    \ERIC{Apres application des substitutions et simplification du predicat:}
 
  %%     $  OT_2  = \openrule{
- %%      \emptyset; Pred=\True;  \\ Post=\{m_1\_m:=s_1\_m\}
+ %%      \emptyset; Pred=\True;  \\ Post=\{m_\_m:=s_\_m\}
  %%                      }
- %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(s_1\_m)}} \ostate{s_2,m_1,r_0}}
+ %%    {\ostate{s_1,m_0,r_0} \OTarrow{\nounderline{send(s_\_m)}} \ostate{s_2,m_1,r_0}}
  %%    $
 
  %%    \smallskip
@@ -1059,8 +1059,8 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
  %%    first medium have evolved during this transition, the sender
  %%    moving from $s_1$ to $s_2$, and the first (forward) medium from
  %%    $m_0$ to $m_1$.
- %%    The predicate $Pred$ involves the state variables $s_1\_m$ and
- %%    $s_1\_sb$ of the sender, while the assignment $Post$ sets the
+ %%    The predicate $Pred$ involves the state variables $s_\_m$ and
+ %%    $s_\_sb$ of the sender, while the assignment $Post$ sets the
  %%    state variables of the medium.
 
     \smallskip
@@ -1189,72 +1189,6 @@ behaviours, for any possible values of the variables.
 
 In \cite{henrio:Forte2016}, we have shown a detailed example of the construction of a complex open transition, building a deduction tree using rules \TrUn ~and \TrDeux.
 
-%% \LUDO{Je sais pas de quoi parle le prochain todo :-( l'exemple?}
-%% \TODO{Ceci n'est pas nouveau, n'est-ce pas, est-ce utile pour le lecteur ici ? Ou est-ce qu'on bouge tous ces ``details techniques'' dans une annexe ? Si oui, je refais avec un morceau de ABP}
-%% \begin{example} \emph{Using the operational rules to compute
-%%     open-transitions}
-%%   In Fig. \ref{usingrules:OT2} we show the deduction tree used to construct and prove the 
-%%   open transition $OT_2$ of \texttt{EnableCompL} (see example page \pageref{OT:ABP-composed}).
-%%   The rule uses \TrUn\ for the $\delta$ transition of $C_3$, for the $l$ transition of $C_4$, then combines the result using the $a_4$ vector of the bottom pNet node, and the $\nounderline{\delta(x)}$ vector of the top node.
-  
-%% \begin{figure}[h]
-%% \begin{mathpar}
-%%   \small
-%%   \inferrule
-%%     {\inferrule
-%%         {0 \xrightarrow {\delta}_{C_3} 1}
-%%         {C_3
-%%           \models
-%%             \openrule{
-%%               0 \xrightarrow {\delta}_{C_3} 1,\,
-%%               \{\xrightarrow{\delta(x_1)}_P\},\,
-%%               v_1=\delta(x_1)}
-%%                       {\ostate{0}\OTarrow{v_1}\ostate{1}}
-%%         }\\
-%% %      \sm{fresh}v         \\
-%%       \inferrule%*[right={L_1}]
-%%         {
-%% %          \sm{fresh}{a_Q} \\
-%%           \inferrule
-%%               {0 \xrightarrow{l}_{C_4} 0}
-%%               % {\ostate{0}\xrightarrow{l}\ostate{0}}
-%%               {C_4
-%%                 \models
-%%                 \openrule{
-%%                       0 \xrightarrow l_{C_4} 0,\,
-%%                       \sm{Pred}_{C_4}}
-%%                       {\ostate{0}\OTarrow{l}\ostate{0}}
-%%               }
-%%         }
-%%         {
-%%           \textrm{Q>>R}\models
-%%               \openrule
-%%                   { 0 \xrightarrow {l}_{C_4} 0,\,
-%%                     \{\xrightarrow{acc(x_2)}_Q\},\,
-%%                     \ v_2=acc(x_2)
-%%                   }
-%%                   {\ostate{0}\OTarrow{v_2}\ostate{0}}
-%%         }   
-%%     }
-%%     {
-%%      \textrm{P>>(Q>>R)}
-%%      \models
-%%      \openrule
-%%          { 0 \xrightarrow{\delta}_{C_3} 1, \\ 0 \xrightarrow{l}_{C_4} 0,\\
-%%            \{\xrightarrow{\delta(x)}_P,\,\xrightarrow{acc(x)}_Q\}, \\
-%%             a_3=v_1 \wedge v=a_3 \wedge x_1=x_2
-%%            }
-%%          {\ostate{00} \OTarrow{v} \ostate{10}}
-%%       }\vspace{-4ex}
-%% \end{mathpar}
-%%   \caption{Proof of transition $OT_2$ (with interaction of processes $P$ and $Q$) for 
-%%   ``P>>(Q>>R)'' \TODO{Change for the new example or remove?}}
-%%   \label{usingrules:OT2}
-%% \end{figure}
-
-%% \end{example}
-
-
 
 
 We have shown in \cite{henrio:Forte2016} that an open-pNet
@@ -1306,7 +1240,7 @@ holes, and each pLTS at leaves having a finite number of states and
 For later references, we give to the transitions of this (strong)
 Specification automaton as $SS_i$ while transitions of the
 Implementation automaton will be labelled $SI_i$. In the figure we
-have annotated each global state with the set of corresponding state variables.
+have annotated each global state with the set of corresponding pLTS variables.
 
 
  \begin{figure}[ht]
@@ -1551,7 +1485,7 @@ Because of the non-observability property (Definition~\ref{def:Non-ObsTau}), it 
 %
 %\RAB{We let $\gamma$ range over words (of action terms) and use $\dotcup$ as the union that appends words.}
 
-\begin{definition}[Weak open transition]\label{def:weakOT}
+\begin{definition}[Weak open transition (WOT)]\label{def:weakOT}
 A weak open transition over a
 	set $J$ of holes with sorts $\Sort_j^{j\in J}$ and a set of states $\mathcal{S}$ is 
 	a structure of the form:	
@@ -1650,7 +1584,7 @@ and
 \end{mathpar}
  
 \end{definition}
-Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after a weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their value thus depend of the initial state but also of the effect (as a substitution $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the joint substitution $\Post_2\bigotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition.
+Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after any weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their values thus depend on the initial state but also on the effect (as a substitution $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the joint substitution $\Post_2\bigotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition.
 
 %% \begin{figure}[ht]
 %%    \centerline{\includegraphics[width=12cm]{ATG/WOT1}}
@@ -1671,23 +1605,23 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
 \end{figure}
 
 \begin{example}
-  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For reasons of readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds an $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+  Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
          {\{\}, True,
-			(\texttt{ec}\gets \texttt{ec}+1) }
+			(\texttt{b\_ec}\gets \texttt{b\_ec}+1) }
          {\text{b1}\OTWeakarrow \tau \text{b1}}$; $\openrule
          {\{\}, True,
-			(\texttt{ec}\gets \texttt{ec}+1) }
+			(\texttt{b\_ec}\gets \texttt{b\_ec}+1) }
          {\text{b1} \OTWeakarrow \tau \text{b1}}$;  $\openrule
          {\{\}, True,
 			() }
          {\text{b1} \OTWeakarrow \tau \text{b1}}$. Then Rule \WTTrois~ produces  $\openrule
          {\{\}, True,
-			(\texttt{ec}\gets \texttt{ec}+2) }
+			(\texttt{b\_ec}\gets \texttt{b\_ec}+2) }
          {\text{b1} \OTWeakarrow \tau \text{b1}}$. We can  can iterate this construction an arbitrary number of times, getting for any natural number $n$ the weak open transition:
   $\openrule
          {\emptyset, True,
 			(\texttt{ec}\gets \texttt{ec}+n) }
-        {\text{b1} \OTWeakarrow \tau \text{b1}} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{\nounderline{out(b1\_m,b1\_ec)}}  as $\alpha$, we get the resulting weak open transition between b1 and b0 (as shown in Figure \ref{WOT2}).  
+        {\text{b1} \OTWeakarrow \tau \text{b1}} \forall n \geq 0$.  Finally,  applying again \WTTrois, and using the central open transition having \texttt{\nounderline{out(b\_m,b\_ec)}}  as $\alpha$, we get the resulting weak open transition between b1 and b0 (as shown in Figure \ref{WOT2}).  Applying the substitutions finaly yields the weak transition $WS_7$ in Figure  \ref{SimpleProtCounter:WeakSpecOA}.
 
  %     $\openrule
  %        {\{\texttt{Q}\mapsto\texttt{q-revc(ec)}\subst{ec\gets ec+n}\}, True,
@@ -1717,8 +1651,8 @@ Rule $\WTUn$ states that it is always possible to do a null $\tau$ transition, w
    \label{SimpleProtCounter:WeakSpecOA}
 \end{figure}
 
- For readability, we did not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplWOA2}, they will appear below.
-First, we point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state ${000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3a, 3b, 3c and 8, 8a, 8b, 8c respectively: they only differ by the name of the state variables in their respective source or target states.
+ For readability, we do not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplWOA2}, but we show some examples below and the full list is included in Appendix \ref{}.
+First, let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state ${000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3a, 3b, 3c and 8, 8a, 8b, 8c respectively: they only differ by the name of the state variables in their respective source or target states; the "variant" WOTs appear in blue in   Figure \ref{SimpleProtCounter:ImplWOA2}.
 \end{example}
 
 
@@ -1735,16 +1669,16 @@ First, we point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state
    \label{SimpleProtCounter:ImplWOA2}
 \end{figure}
 
-Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (= substitution) of the strong open transitions $OT_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
+Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (= substitution) of the strong open transitions $SI_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
 \smallskip
 
-$post_3 = (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets 0)$
+$post_3 = (\texttt{s\_msg}\gets \texttt{m}, \texttt{s\_ec}\gets 0)$
 
-$post_4 = (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})$
+$post_4 = (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec})$
 
 $post_5 = ()$
 
-$post_6 = (\texttt{s1\_ec}\gets \texttt{s2\_ec+1})$
+$post_6 = (\texttt{s\_ec}\gets \texttt{s\_ec+1})$
 
 \medskip
 
@@ -1752,11 +1686,12 @@ Then the effect of one single $100 \xrightarrow{OT_4} 210 \xrightarrow{OT_5} 220
 \smallskip
 
 $post_{456} = post_6 \shortotimes\ post_5 \shortotimes\ post_4
-= (\texttt{s1\_ec}\gets \texttt{s1\_ec}+1)$.
+= (\texttt{s\_ec}\gets \texttt{s\_ec}+1)$.
+\footnote{when showing  the result of $Posts$ composition, we will systematicaly omit the identity substitutions introduced bythe $\shortotimes$ definition in page \pageref{def:substitutions}}
 \medskip
 
-So if we denote ${post_{456*}}$ any iteration of this loop, we get ${post_{456*}} = (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n)$ for any $n\ge 0$, and the \Post~ of the weak OT  $WI_{3}$ is:\\
- ${post_{456*}}\shortotimes\ post_3 = (\texttt{s1\_msg}\gets m, \texttt{s1\_ec}\gets n), \forall n\ge 0$ and \Post~ of  $WI_{3a}$  is:\\ $post_4\shortotimes {post_{456*}}\shortotimes\ post_3 = (\texttt{m1\_msg}\gets m, \texttt{m1\_ec}\gets n), \forall n\ge 0$.
+So if we denote ${post_{456*}}$ any iteration of this loop, we get ${post_{456*}} = (\texttt{s\_ec}\gets \texttt{s\_ec}+n)$ for any $n\ge 0$, and the \Post~ of the weak OT  $WI_{3}$ is:\\
+ $Post_3 = post_{456*}\shortotimes\ post_3 = (\texttt{s\_msg}\gets m, \texttt{s\_ec}\gets n), \forall n\ge 0$ and \Post~ of  $WI_{3a}$  is:\\ $post_4\shortotimes {post_{456*}}\shortotimes\ post_3 = (\texttt{m\_msg}\gets m, \texttt{m\_ec}\gets n), \forall n\ge 0$.
 \medskip
 
 We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:ImplWOA2} (the full table is included in Appendix \ref{Appendix:FullExample}) :
@@ -1770,21 +1705,21 @@ $ (for any  $s \in S$)
 
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
+    (\texttt{s\_msg}\gets \texttt{m}, \texttt{s\_ec}\gets n)}
   {000 \OTWeakarrow {\nounderline{\texttt{in(m)}}} 100}
         $$\forall n\ge 0$
 
 
 $ WI_4(n) = \openrule
          {\{\}, True, 
-   (\texttt{m1\_msg}\!\gets\! \texttt{s1\_msg}, \texttt{m1\_ec}\!\gets\! \texttt{s1\_ec}+n, \texttt{s2\_ec}\!\gets\! \texttt{s1\_ec}+n)}
+   (\texttt{m\_msg}\!\gets\! \texttt{s\_msg}, \texttt{m\_ec}\!\gets\! \texttt{s\_ec}+n, \texttt{s\_ec}\!\gets\! \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
         $$\forall n\ge 0$
 
 
 $ WI_{456}(n) = \openrule
          {\{\}, True, 
-    (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+    (\texttt{s\_ec}\gets \texttt{s\_ec}+n)}
   {100 \OTWeakarrow {\tau} 100}
         $$\forall n\ge 0$
         
@@ -1793,26 +1728,26 @@ The  \Post~of of the weak OT $ WI_{6a}$ is:\\
 
 $
 \begin{array}{ll}
-Post_{6a}= post_{4}\shortotimes\ post_{456*}\shortotimes\ post_{6} =&  (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})\,
-\shortotimes \\ &(\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) 
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) =\\
-&(\texttt{m1\_msg}\!\gets \texttt{s1\_msg}, \texttt{m1\_ec}\!\gets \texttt{s2\_ec}+1\!+\!n, \texttt{s2\_ec}\!\gets \texttt{s2\_ec}+1\!+\!n)
+Post_{6a}= post_{4}\shortotimes\ post_{456*}\shortotimes\ post_{6} =&  (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec})\,
+\shortotimes \\ &(\texttt{s\_ec}\gets \texttt{s\_ec}+n) 
+\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+1) =\\
+&(\texttt{m\_msg}\!\gets \texttt{s\_msg}, \texttt{m\_ec}\!\gets \texttt{s\_ec}+1\!+\!n, \texttt{s\_ec}\!\gets \texttt{s\_ec}+1\!+\!n)
 \end{array}$\\
 
 $ WI_{6a}(n) = \openrule
          {\{\}, True, 
-         (\texttt{m1\_ec}\gets \texttt{s1\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+         (\texttt{m\_ec}\gets \texttt{s\_ec}+1+n, \texttt{s\_ec}\gets \texttt{s\_ec}+1+n)}
          {220 \OTWeakarrow {\tau} 210} \forall n\ge 0
          $
          
 \medskip
 $Post_{8c}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ post_{456*} 
-= (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
+= (\texttt{r\_msg}\gets \texttt{s\_msg}, \texttt{r\_ec}\gets \texttt{s\_msg}+1+n), \forall n\ge 0$
 
  \medskip  
 $ WI_{8c}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s2\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\nounderline{\texttt{out(r1\_msg,r1\_ec)}\subst{(\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+n)}}} 202}\forall n\ge 0
+         {\{\texttt{Q}\mapsto \texttt{q-recv(s\_msg,s\_ec}+n)\}, True, ()}
+         {210 \OTWeakarrow {\nounderline{\texttt{out(r\_msg,r\_ec)}\subst{(\texttt{r\_msg}\gets \texttt{s\_msg}, \texttt{r\_ec}\gets \texttt{s\_msg}+n)}}} 202}\forall n\ge 0
         $
 
 \subsection{Composition properties: composition of weak open transitions}
@@ -2015,10 +1950,10 @@ Preliminary remarks:
     \hline
     b0 & $000$ & True\\
     b0 & $202$ & True\\
-    b1 & $100$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
-    b1 & $210$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
-    b1 & $220$ & $\texttt{b1\_msg = s2\_msg} \land \texttt{b1\_ec = s2\_ec}$\\
-    b1 & $201$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
+    b1 & $100$ & $\texttt{b\_msg = s\_msg} \land \texttt{b\_ec = s\_ec}$\\
+    b1 & $210$ & $\texttt{b\_msg = m\_msg} \land \texttt{b\_ec = m\_ec}$\\
+    b1 & $220$ & $\texttt{b\_msg = s\_msg} \land \texttt{b\_ec = s\_ec}$\\
+    b1 & $201$ & $\texttt{b\_msg = r\_msg} \land \texttt{b\_ec = r\_ec}$\\
     \hline
     \end{tabular}
 
@@ -2031,13 +1966,13 @@ Preliminary remarks:
 
   $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
-    (\texttt{b1\_msg}\gets \texttt{m1}, \texttt{b1\_ec}\gets 0)}
+    (\texttt{b\_msg}\gets \texttt{m1}, \texttt{b\_ec}\gets 0)}
   {\text{b0} \OTarrow {\nounderline{\texttt{in(m1)}}} \text{b1}}
   $
   
 $ WI_3(0) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m2)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m2}, \texttt{s1\_ec}\gets 0)}
+    (\texttt{s\_msg}\gets \texttt{m2}, \texttt{s\_ec}\gets 0)}
   {000 \OTWeakarrow {\nounderline{\texttt{in(m2)}}} 100}
   $
   
@@ -2045,7 +1980,7 @@ $ WI_3(0) = \openrule
   
 \begin{itemize}
   \item Their sets of active (non-silent) holes is the same: $J' = J_x = \{\texttt{P}\}$.
-  \item Triple ($\text{b1},  100,  \texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$) is in $\mathcal{R}$.
+  \item Triple ($\text{b1},  100,  \texttt{b\_msg = s\_msg} \land \texttt{b\_ec = s\_ec}$) is in $\mathcal{R}$.
   \item The verification condition \\
     $\forall fv_{OT}. \{ \Pred \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
@@ -2062,7 +1997,7 @@ $\forall \texttt{m1}. \{True \land True\hspace{3mm} \implies
 \land True
 \land \nounderline{\texttt{in(m1)}} = \nounderline{\texttt{in(m2)}} \land 
 \\
-(\texttt{b1\_msg\!\! = \!\!s1\_msg} \land \texttt{b1\_ec\!\! =\!\! s1\_ec}) \subst{(\texttt{b1\_msg}\!\gets\! \texttt{m1}, \texttt{b1\_ec}\!\gets\! 0)\uplus (\texttt{s1\_msg}\!\gets\! \texttt{m2},\texttt{s1\_ec}\!\gets\! 0)})\}$
+(\texttt{b\_msg\!\! = \!\!s\_msg} \land \texttt{b\_ec\!\! =\!\! s\_ec}) \subst{(\texttt{b\_msg}\!\gets\! \texttt{m1}, \texttt{b\_ec}\!\gets\! 0)\uplus (\texttt{s\_msg}\!\gets\! \texttt{m2},\texttt{s\_ec}\!\gets\! 0)})\}$
 
 \medskip That reduces to:
 
@@ -2079,27 +2014,26 @@ $\forall \texttt{m1}. \exists \texttt{m2}.
   Now consider the $3^{rd}$ triple from the table, and transition $SI_{4}$ from state $100$ to state $210$. It should correspond to $WS_4(0)$ of $b1$, where:
 
   $ SI_{4} = \openrule
-         {\{\}, True, (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})}
+         {\{\}, True, (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}, \texttt{s\_ec}\gets \texttt{s\_ec})}
          {100 \OTarrow {\tau} 210}
          $
   
   
   $ WS_4(n) = \openrule
-         {\{\}, True, (\texttt{b1\_ec}\gets \texttt{b1\_ec}+n)}
+         {\{\}, True, (\texttt{b\_ec}\gets \texttt{b\_ec}+n)}
          {\text{b1} \OTWeakarrow {\tau} \text{b1}}
          \ \forall n\ge 0
          $
   
-  \medskip       A similar reasonning gives us\TODO{Refait, please check. But I think it does not show much more than first case, can we find a better case ?}
-
+  \medskip       A similar reasonning gives us
 \begin{itemize}
   \item No active holes and the pair of ressulting states $<210,b1>$ is in $\mathcal{R}$.
-\item $fv(SI_4) = \{\}, fv(WS_4(n)) = \{n\}$, \TODO{Is that correct ? Is it true that considering $n$ as a free variable allows Z3 to find  a suitable value...?}
+\item $fv(SI_4) = \{\}, fv(WS_4(n)) = \{n\}$,
 \item and the verification condition\\
 
-         $(\texttt{b1\_msg} = \texttt{s1\_msg} \land \texttt{b1\_ec} = \texttt{s1\_ec}) \land True\hspace{3mm} \implies
-\exists n.(True \land \tau=\tau \land \\ (\texttt{b1\_msg} = \texttt{m1\_msg} \land \texttt{b1\_ec} = \texttt{m1\_ec})  \subst{\texttt{m1\_msg}\!\gets\! \texttt{s1\_msg}, \texttt{m1\_ec}\!\gets\! \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec}}
-\uplus \subst{\texttt{b1\_ec}\gets \texttt{b1\_ec}+n})
+         $(\texttt{b\_msg} = \texttt{s\_msg} \land \texttt{b\_ec} = \texttt{s\_ec}) \land True\hspace{3mm} \implies
+\exists n.(True \land \tau=\tau \land \\ (\texttt{b\_msg} = \texttt{m\_msg} \land \texttt{b\_ec} = \texttt{m\_ec})  \subst{\texttt{m\_msg}\!\gets\! \texttt{s\_msg}, \texttt{m\_ec}\!\gets\! \texttt{s\_ec}, \texttt{s\_ec}\gets \texttt{s\_ec}}
+\uplus \subst{\texttt{b\_ec}\gets \texttt{b\_ec}+n})
 $
 
 is easily proved True for $n=0$.
@@ -2822,7 +2756,7 @@ the set of subnets to the set of holes).
 %Then $SV=clone(\alpha_j^{j\in I_k\uplus\{j_0\}\uplus J_k})$.
 We have $\Leaves(P[Q]_{j_0})=\Leaves(P)\uplus \Leaves(Q)$. 
 
-\hl{Now focus on OTs}\footnote{In the appendix we use OT to abbreviate ``open transition'' and WOT to stand for ``weak open transition.''} of the subnets. For each $m\in I_1\uplus I_2$ we have one of the two 
+Now focus on the OTs of the subnets. For each $m\in I_1\uplus I_2$ we have one of the two 
 following OT:\\
 either $m$ in $I_1$
 \[
@@ -2840,7 +2774,7 @@ or, $m$ in $I_2$
     		\ostate{s_m'}}}\]
 
 	
-\hl{Only elements of} $(I_1\uplus I_2)\backslash\{j_0\}$ and  are useful to assert the premise for reduction of $P$; the last 
+Only elements of $(I_1\uplus I_2)\backslash\{j_0\}$   are useful to assert the premise for reduction of $P$; the last 
 one ensures the open transition for the pNet $Q$ (note that $Q$ is at place $j_0$, and by 
 definition of the open transition 
 for $P[Q]_{j_0}$, 
@@ -3520,7 +3454,7 @@ We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes
 
 \subsection{Weak bisimulation is an equivalence}\label{app-WFH-equiv}
 
-In this section, we first define two alternative definitions for weak bisimulation. We use these two alternative definitions to show that weak bisimulation is an equivalence, we will also re-use these alternative definitions in the  proofs of the theorems in next sections.
+In this section, we first define two alternative definitions, one for weak open transition, one for for weak bisimulation. We use these two alternative definitions to show that weak bisimulation is an equivalence, we will also re-use these alternative definitions in the  proofs of the theorems in next sections.
 
 \begin{lemma}[Alternative definition of weak open transitions]
 \label{lem-rel-OT-WOT} Let $A = <J,\mathcal{S}, s_0,V_1,
@@ -3578,7 +3512,7 @@ $
 \end{enumerate}
 \end{lemma}
 
-\begin{proof} ($\Rightarrow$) We present an induction on $n$ and $m$, focusing on the incrementation on $n$: we prove that the property is valid for $-1$, $-1$ prove a general induction for going from $n$ to $n+1$, a similar induction can be applied to go from $m$ to $m+1$
+\begin{proof} ($\Rightarrow$) We present an induction on $n$ and $m$, focusing on the incrementation on $n$: we prove that the property is valid for $m=-1$, $n=-1$ apply a first induction proof for going from $n$ to $n+1$, a similar induction can be applied to go from $m$ to $m+1$ (omitted).
 \begin{itemize}
 \item The base case there is one transition, so $n=-1$ and $m=-1$, we have:
 \begin{mathpar}
@@ -3754,7 +3688,7 @@ The right part of the disjunction, i.e.,
 is handled trivially by rule \WTUn. 
 \end{itemize}
 
-\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition. So we consider the different rules:
+\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition (as described in the original definition). The recurrence hypothesis being that the  the original definition implies the characterisation (1),with the conditions stated at the bottom of the theorem. We consider the different rules:
 
 \begin{itemize}
 \item Case rule \WTUn. We have:
@@ -3964,7 +3898,7 @@ s_{2i-m_1}' & \mbox{if }i\geq m_1
 
 Also, we have the following assertions:
 \begin{align*}
-s\!=\!s_{40}& \wedge s_{4(n_1+n_2+1)}\!=s_2 \wedge s_2' = s_{50} \wedge s_{5(m_1+m_2+1)}\!=\!s'\\
+s\!=\!s_{40}& ~\wedge~s_{4(n_1+n_2+1)}\!=s_2 ~\wedge~s_2' = s_{50} ~\wedge~ s_{5(m_1+m_2+1)}\!=\!s'\\
 \alpha''=&\alpha\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}\\
 \set{\gamma}=&\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}}\dotcup \\
 &\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{5i}\shortotimes\Post\,'\shortotimes\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4i}} }\\
@@ -4076,17 +4010,17 @@ Moreover, by using Lemma \ref{lem-rel-OT-WOT} we know that:
          {s_{3i} \OTarrow {\tau} s_{3(i+1)}} \in \mathcal{T}_1
 \bigg)
 \end{mathpar}
-where\\
-$
-\displaystyle{\alpha=\alpha'\subst{\bigotimes_{j=n}^{0}\Post_{1j}}}\\
-s=s_{10} \wedge s_{1(n+1)}=s_{20} \wedge s_{21} = s_{30} \wedge s_{3(m+1)}=s'\\
-\displaystyle{
-\gamma_j^{j\in J'}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup}\\
-{}~\qquad\qquad\!\displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+where
+\begin{align*}
+s=s_{10} &\wedge s_{1(n+1)}=s_{20} \wedge s_{21} = s_{30} \wedge s_{3(m+1)}=s'\\
+\alpha=&\alpha'\subst{\bigotimes_{j=n}^{0}\Post_{1j}}\\
+\gamma_j^{j\in J'}=&\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup\\
+&\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }
 \\
-\Pred_{OT}=\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
-{}~\qquad\qquad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
-\Post_{OT}=\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}$
+\Pred_{OT}=&\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
+&\qquad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
+\Post_{OT}=&\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}
+\end{align*}
 
 
 For the sake of simplicity, we prove the rule in the  restricted case where $n$ and $m$ are equal to $0$, hence a single tau open transition will be considered on each side of the potentially visible one. The proof may be easily generalized to the multiple tau open transitions by using the same reasoning and \WTTrois~ rule. Consider each open transition separately:
@@ -4169,7 +4103,7 @@ From previous case, we have $(s_{21},v_{b}|\Pred_{s_{21},b})\in \mathcal{R}$, an
 \end{mathpar}
  such that  $\forall c, J_{c}= \{j\in J_3'|\beta_{3j}\neq\tau\}, 
 (s_{31},w_{c}|\Pred_{s_{31},c})\in \mathcal{R}$ and \\
- $\Pred_{s_{21},b} \land \Pred_3\implies\\
+ $\Pred_{s_{21},b} \land \Pred_3\implies %\\
 \displaystyle{\bigvee_{c\in C}}
    \!\left( \forall j\in J_{c}. \vis{\beta_{3j}}\!=\!\gamma_{jc} \! \land\! \Pred_{OT_{c}}\!
      \land\!  
@@ -4224,17 +4158,21 @@ $\Pred_{s,t} \land \Pred_1\implies
  \! \! \left( \forall j\in J_a. \vis{\beta_{1j}}=\gamma_{ja}  \land \Pred_{OT_a}
       \land  
      \Pred_{s_{11},a}\subst{\Post_1\uplus\Post_{OT_a}}\right)$\\
-With the conjunction of the predicate $\Pred_2\subst{\Post_1}$ on both sides of the implication, we get:\\  
-$(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies \\
- \displaystyle{\bigvee_{a\in A}}
+With the conjunction of the predicate $\Pred_2\subst{\Post_1}$ on both sides of the implication, we get:
+\begin{multline*}
+(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies \\
+ \bigvee_{a\in A}
   \!\! ( \forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja}\!  \land\! \Pred_{OT_a}\! \land\!
-     \Pred_{s_{11},a}\subst{\Post_1\uplus\Post_{OT_a}}) \wedge \Pred_2\subst{\Post_1\uplus\Post_{OT_a}}  
-$
-Note that  on the right side of the implication we added  the substitution  of $\Post_{OT_x}$ without affecting the validity of the statement, because  the domain  of the substitution $\Post_{OT_x}$ is disjoint from the others. Hence a little rewriting gives:\\
-$(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies\\
-\displaystyle{\bigvee_{a\in A}}
+     \Pred_{s_{11},a}\subst{\Post_1\uplus\Post_{OT_a}}) \wedge \Pred_2\subst{\Post_1\uplus\Post_{OT_a}}  \hspace{-2ex}
+\end{multline*}
+Note that  on the right side of the implication we added  the substitution  of $\Post_{OT_x}$ without affecting the validity of the statement, because  the domain  of the substitution $\Post_{OT_x}$ is disjoint from the others. Hence a little rewriting gives:
+\begin{multline*}
+(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies\\
+\bigvee_{a\in A}
 \!\!   \left(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja}\land \Pred_{OT_a}
-     \!\land(\Pred_{s_{11},a}\wedge\Pred_2)\subst{\Post_1\uplus\Post_{OT_a}} \right)$\\
+     \!\land(\Pred_{s_{11},a}\wedge\Pred_2)\subst{\Post_1\uplus\Post_{OT_a}} \right)
+\end{multline*}
+
 By replacing the inner predicate $(\Pred_{s_{11},u_a}\wedge\Pred_2)$ by the conclusion of the  statement given in case 2,  the formula becomes: 
 \begin{multline*}(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies\\
 {\bigvee_{a\in A}}
@@ -5878,28 +5816,19 @@ INFO  SimpleProtImpl2 - Total Time: 1105 ms
 
 %% In Figure \ref{Annex:SimpleProtCounter:ImplWOA}, we have added some of the weak transitions generated by the saturation, namely:
 %% - a tau-loop on each state
-%% - a transition from <s0\_a0\_r0> to <s2\_a1\_r0>, resulting from the sequence OT\-1;OT\-6 followed by any number of the loop (OT\_9;ot\_12;OT\_6).
+%% - a transition from <s0\_a0\_r0> to <s\_a\_r0>, resulting from the sequence OT\-1;OT\-6 followed by any number of the loop (OT\_9;ot\_12;OT\_6).
 %%
-%%Many weak should be added, e.g. Tau loops on states <s2\_a1\_r0>, <s2\_a2\_r0>, 
-%%<s2\_a0\_r0>, encoding the loop.
+%%Many weak should be added, e.g. Tau loops on states <s\_a\_r0>, <s\_a\_r0>, 
+%%<s\_a0\_r0>, encoding the loop.
 
-\begin{figure}[h]
-   \centerline{\includegraphics[width=10cm]{XFIG/SimpleProtImpl-WOA}}
-  \caption{Weak Open Automaton of the implementation}
-   \label{Appendix:ImplOA}
-\end{figure}
+% \begin{figure}[h]
+%   \centerline{\includegraphics[width=10cm]{XFIG/SimpleProtImpl-WOA}}
+%   \caption{Weak Open Automaton of the implementation}
+ %   \label{Appendix:ImplOA}
+% \end{figure}
 
 In Figure \ref{Appendix:ImplOA} we show the weak open automaton of our implementation pNet. 
-\TODO{This version is very uncomplete, at least 12 WOTs are missing, including: all variants of WI3 starting from 202; the inverse of WI4, WI5, WI6, WI8, etc}
-\TODO{See also the last bunch of ransitions, at the end of the list, for combinations of any $\tau$ transition with an external action of P or Q}
 
-\begin{figure}[h]
-   \centerline{\includegraphics[width=11cm]{XFIG/SimpleProtImpl-WOA2}}
-  \caption{Weak Open Automaton of the implementation: alternative}
-   \label{Appendix:ImplOA2}
-\end{figure}
-
-Figure \ref{Appendix:ImplOA2} shows a more compact version of this weak automation, that will be easier to read for humans...
 It is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviors.
 More tricky, they do not have the same state variables, as 202 has the variables of state $s2$, but none of these variables are used in transitions from 202.
 In this configuration we can garantee that they are Weak Bisimilar, and merge their (incoming and outgoing) transitions in the Figure. We denote this 
@@ -5928,156 +5857,126 @@ All following transitions are parametrized by an arbitrary non-negative integer 
 
 $ WI_3(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{s1\_msg}\gets \texttt{m}, \texttt{s1\_ec}\gets n)}
+    (\texttt{s\_msg}\gets \texttt{m}, \texttt{s\_ec}\gets n)}
   { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 100}
 $
 
 $ WI_{3a}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{m1\_msg}\gets \texttt{m}, \texttt{m1\_ec}\gets n, \texttt{s2\_ec}\gets n)}
+    (\texttt{m\_msg}\gets \texttt{m}, \texttt{m\_ec}\gets n, \texttt{s\_ec}\gets n)}
   { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 210}
 $
 
 $ WI_{3b}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{s2\_ec}\gets n)}
+    (\texttt{s\_ec}\gets n)}
   { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 220}
 $
 
 $ WI_{3c}(n) = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m)}\}, True,
-    (\texttt{r1\_msg}\gets \texttt{m}, \texttt{r1\_ec}\gets n)}
+    (\texttt{r\_msg}\gets \texttt{m}, \texttt{r\_ec}\gets n)}
   { \{000,202\} \OTWeakarrow {\nounderline{\texttt{in(m)}}} 201}
 $
 
 $ WI_4(n) = \openrule
          {\{\}, True, 
-   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+   (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+n, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\tau} 210}
 $
 
 $ WI_{4a}(n) = \openrule
          {\{\}, True, 
-    (\texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+    (\texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\tau} 220}
 $
 
 $ WI_5(n) = \openrule
-         {\{\}, True, (\texttt{s2\_ec}\gets \texttt{s2\_ec}+n)}
+         {\{\}, True, (\texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {210 \OTWeakarrow {\tau} 220}
          \ \forall n\ge 0$
 
 $ WI_{5a}(n) = \openrule
-         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {\{\}, True, (\texttt{s\_ec}\gets \texttt{s\_ec}+1+n)}
          {210 \OTWeakarrow {\tau} 100}
          \ \forall n\ge 0$
 
 
 $ WI_6(n) = \openrule
-         {\{\}, True, (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1+n)}
+         {\{\}, True, (\texttt{s\_ec}\gets \texttt{s\_ec}+1+n)}
          {220 \OTWeakarrow {\tau} 100}
          $
 
 $ WI_{6a}(n) = \openrule
          {\{\}, True, 
-         (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1+n, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+         (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+1+n, \texttt{s\_ec}\gets \texttt{s\_ec}+1+n)}
          {220 \OTWeakarrow {\tau} 210}
          $
 
 Because 
 
-$Post_{6a}=\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6}\\
-= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s1\_ec}+n) \right)
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \\
-= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets (\texttt{s2\_ec}+1)+n, \texttt{s2\_ec}\gets (\texttt{s2\_ec}+1)+n)$
+$Post_{6a}=\ post_{4}\shortotimes\ post_{456}^*\shortotimes\ post_{6}\\
+= \left( (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec})
+\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+n) \right)
+\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+1) \\
+= (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets (\texttt{s\_ec}+1)+n, \texttt{s\_ec}\gets (\texttt{s\_ec}+1)+n)$
 
 \medskip
-This result ($WI_{6a}$) is INCORRECT: the Post cannot use $s1\_msg$, this variable is not available in state 220
-
 $ WI_{456*}(n) = \openrule
          {\{\}, True, 
-    (\texttt{s1\_msg}\gets \texttt{s1\_msg}, \texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+    (\texttt{s\_ec}\gets \texttt{s\_ec}+n)}
   {100 \OTWeakarrow {\tau} 100}
         $
 
-Note that the loop itself does not assign $s1\_msg$, but as we are in a self-loop of state 100, we can add the identity assignment on it.
-\medskip
 
 $ WI_{564*}(n) = \openrule
          {\{\}, True, 
-    (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1+n)}
+    (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{s\_ec}\gets \texttt{s\_ec}+1+n, \texttt{m\_ec}\gets \texttt{s\_ec}+1+n)}
   {210 \OTWeakarrow {\tau} 210}
         $
-
-Because 
-
-$Post_{564}=\ post_{4}\shortotimes\ post_{6}\shortotimes\ post_{5}\\
-= \left( (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}, \texttt{s2\_ec}\gets \texttt{s1\_ec})
-\shortotimes (\texttt{s1\_ec}\gets \texttt{s2\_ec}+1) \right)
-\shortotimes () \\
-= (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s2\_ec}+1, \texttt{s2\_ec}\gets \texttt{s2\_ec}+1$
-
-This result is INCORRECT: the Post cannot use $s1\_msg$, this variable is not available in state 210
 
 
 $ WI_{645*}(n) = \openrule
          {\{\}, True, 
-    (\texttt{s2\_ec}\gets \texttt{s2\_ec}+1+n)}
+    (\texttt{s\_ec}\gets \texttt{s\_ec}+1+n)}
   {220 \OTWeakarrow {\tau} 220}
         $
 
-
-
-
-
 \medskip
 $ WI_7(n) = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_ec}+n)}
+         {\{\}, True, (\texttt{r\_msg}\gets \texttt{s\_msg}, \texttt{r\_ec}\gets \texttt{s\_ec}+n)}
          {210 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 0$
          
-$WI_{7a}$ shows the same problem, as it  includes a dependency on $s1\_msg$:
-
 $ WI_{7a}(n) = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{m1\_ec}+n)}
+         {\{\}, True, (\texttt{r\_msg}\gets \texttt{s\_msg}, \texttt{r\_ec}\gets \texttt{m\_ec}+n)}
          {220 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 0$
          
 $ WI_{7b}(n) = \openrule
-         {\{\}, True, (\texttt{r1\_msg}\gets \texttt{m1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_ec}+n)}
+         {\{\}, True, (\texttt{r\_msg}\gets \texttt{m\_msg}, \texttt{r\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\tau} 201}
          \ \forall n\ge 1$
-         
-         
-\RAB{Erreur sur les deux transition $WI_{7}$, $WI_{7a}$ et $WI_{7b}$}
-
-         
+                 
 $ WI_8 = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-recv(r1-msg,r1-ec)}\}, True, ()}
          {201 \OTWeakarrow {\nounderline{\texttt{out(r1-msg,r1-ec)}}} \{202, 000\}}
          \ \forall n\ge 0$
 
 $ WI_{8a}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(m1\_msg,m1\_ec}+n)\}, True, ()}
-         {210 \OTWeakarrow {\nounderline{\texttt{out(m1\_msg,m1\_ec}+n)}} \{202, 000\}}
+         {\{\texttt{Q}\mapsto \texttt{q-recv(m\_msg,m\_ec}+n)\}, True, ()}
+         {210 \OTWeakarrow {\nounderline{\texttt{out(m\_msg,m\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
  $ WI_{8b}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(??\_msg,s2\_ec}+n)\}, True, ()}
-         {220 \OTWeakarrow {\nounderline{\texttt{out(??\_msg,m2\_ec}+n)}} \{202, 000\}}
+         {\{\texttt{Q}\mapsto \texttt{q-recv(??\_msg,s\_ec}+n)\}, True, ()}
+         {220 \OTWeakarrow {\nounderline{\texttt{out(??\_msg,m\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
 
  $ WI_{8c}(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-recv(s1\_msg,s1\_ec}+n)\}, True, ()}
-         {100 \OTWeakarrow {\nounderline{\texttt{out(s1\_msg,s1\_ec}+n)}} \{202, 000\}}
+         {\{\texttt{Q}\mapsto \texttt{q-recv(s\_msg,s\_ec}+n)\}, True, ()}
+         {100 \OTWeakarrow {\nounderline{\texttt{out(s\_msg,s\_ec}+n)}} \{202, 000\}}
          \ \forall n\ge 1$
-
-          
-
-
-%$Post_{8'''}= post_{8}\shortotimes\ post_{7}\shortotimes\ post_{4}\shortotimes\ Post_{456}^*\shortotimes\ post_{6} = (\texttt{r1\_msg}\gets \texttt{s1\_msg}, \texttt{r1\_ec}\gets \texttt{s2\_msg}+1+n), \forall n\ge 0$
-         
 
 
 
@@ -6086,13 +5985,13 @@ Then for all $\tau$ transitions above we have a similar WOT that include a non-$
 
 $ WI_4P(n) = \openrule
          {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], 
-   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+   (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+n, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\texttt{p-a}} 210}
 $
 and
 $ WI_4Q(n) = \openrule
          {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ],
-   (\texttt{m1\_msg}\gets \texttt{s1\_msg}, \texttt{m1\_ec}\gets \texttt{s1\_ec}+n, \texttt{s2\_ec}\gets \texttt{s1\_ec}+n)}
+   (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+n, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\texttt{q-b}} 210}
 $
 
@@ -6100,16 +5999,9 @@ but also e.g.:
 
 $ WI_{456*}P(n) = \openrule
         {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], 
-    (\texttt{s1\_msg}\gets \texttt{s1\_msg}, \texttt{s1\_ec}\gets \texttt{s1\_ec}+n)}
+    (\texttt{s\_msg}\gets \texttt{s\_msg}, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
   {100 \OTWeakarrow {\texttt{p-a}} 100}
         $
-
-%\TODO{ajouter les boucles de $WI_1$ et $WI_2$, dans le cas ou $p_a$ (resp $q_b$) sont des $\tau$:}
-%
-%$WI_{12*}(n) = \openrule
-%{\{(\texttt{P}\mapsto \tau|\texttt{Q}\mapsto \tau)^n\},true, ()}
-%  {s \OTWeakarrow {\tau} s} 
-%s \in S$
 
 \bigskip
 The following table give a summary of  WOTs, when sharing their names as much as possible.
@@ -6149,7 +6041,7 @@ The following table give a summary of  WOTs, when sharing their names as much as
 
         \subsection{Details of the Bisimulation Checking}
          
-We reacall here the realtion $\mathcal{R}$ that is the candidate for our weak bisimulation relation:
+We recall here the relation $\mathcal{R}$ that is the candidate for our weak bisimulation relation:
 
 \bigskip
   \begin{tabular}{|c|c|l|}
@@ -6158,10 +6050,10 @@ We reacall here the realtion $\mathcal{R}$ that is the candidate for our weak bi
     \hline
     b0 & $000$ & True\\
     b0 & $202$ & True\\
-    b1 & $100$ & $\texttt{b1\_msg = s1\_msg} \land \texttt{b1\_ec = s1\_ec}$\\
-    b1 & $210$ & $\texttt{b1\_msg = m1\_msg} \land \texttt{b1\_ec = m1\_ec}$\\
-    b1 & $220$ & $\texttt{b1\_msg = s2\_msg} \land \texttt{b1\_ec = s2\_ec}$\\
-    b1 & $201$ & $\texttt{b1\_msg = r1\_msg} \land \texttt{b1\_ec = r1\_ec}$\\
+    b1 & $100$ & $\texttt{b\_msg = s\_msg} \land \texttt{b\_ec = s\_ec}$\\
+    b1 & $210$ & $\texttt{b\_msg = m\_msg} \land \texttt{b\_ec = m\_ec}$\\
+    b1 & $220$ & $\texttt{b\_msg = s\_msg} \land \texttt{b\_ec = s\_ec}$\\
+    b1 & $201$ & $\texttt{b\_msg = r\_msg} \land \texttt{b\_ec = r\_ec}$\\
     \hline
     \end{tabular}
 
