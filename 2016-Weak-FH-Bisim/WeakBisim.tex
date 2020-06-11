@@ -5518,14 +5518,14 @@ const tau:Action
 pLTS M1
 initial a0 
 vars ?msg:Data
+vars m_msg:Data m_ec:Int
 
 state a0
-transition in(msg) -> a1 {a1_msg:=msg, m1_ec:=0}
+transition in(msg) -> a1 {m_msg:=msg, m_ec:=0}
 
 state a1
-vars a1_msg:Data m1_ec:Int
-transition out(a1_msg, m1_ec) -> a0
-transition synchro($tau)  -> a1 {m1_ec:=m1_ec+1}
+transition out(m_msg, m_ec) -> a0
+transition synchro($tau)  -> a1 {m_ec:=m_ec+1}
 
 pNet SimpleProtSpec2
 holes P,Q
@@ -5556,44 +5556,47 @@ const s_recv,s_send,s_ack,s_error,r_recv,r_ack,r_send: Action
 pLTS M1
   initial a0
   vars ?msg:Data ?c:Int
+%vars a1_msg:Data a1_ec:Int
+vars m_msg:Data m_ec:Int
 
-state a0
-transition m_recv(msg,c) -> a1 {a1_msg:=msg, a1_ec:=c}
+state m0
+transition m_recv(msg,c) -> m1 {m_msg:=msg, m_ec:=c}
 
-state a1
-vars a1_msg:Data a1_ec:Int
-transition m_send(a1_msg, a1_ec) -> a0 
-transition synchro($tau) -> a2
+state m1
+transition m_send(m_msg, m_ec) -> m0 
+transition synchro($tau) -> m2
 
-state a2
-transition $m_error -> a0
+state m2
+transition $m_error -> m0
 
 pLTS Sender
   initial s0
   vars ?msg:Data
+%vars s1_msg:Data s1_ec:Int
+%vars  s2_ec:Int
+vars  s_msg:Data s_ec:Int
 
 state s0
-transition s_recv(msg) -> s1 {s1_msg:=msg, s1_ec:=0}
+transition s_recv(msg) -> s1 {s_msg:=msg, s_ec:=0}
 
 state s1
-vars s1_msg:Data s1_ec:Int
-transition s_send(s1_msg, s1_ec) -> s2 {s2_ec:=s1_ec}
+transition s_send(s_msg, s_ec) -> s2 
 
 state s2
-vars  s2_ec:Int
 transition $s_ack -> s0
-transition $s_error -> s1 {s1_ec:=s2_ec+1}
+transition $s_error -> s1 {s_ec:=s_ec+1}
 
 pLTS Receiver
   initial r0
   vars ?msg:Data ?c:Int
+%vars r1_msg:Data r1_ec:Int
+vars r_msg:Data r_ec:Int
 
 state r0
-transition r_recv(msg,c) -> r1 {r1_msg:=msg, r1_ec:=c}
+transition r_recv(msg,c) -> r1 {r_msg:=msg, r_ec:=c}
 
 state r1
-vars r1_msg:Data r1_ec:Int
-transition r_send(r1_msg, r1_ec) -> r2
+transition r_send(r_msg, r_ec) -> r2
 
 state r2
 transition $r_ack -> r0
@@ -5669,7 +5672,7 @@ This view uses variable names very close to the internal representation in the t
 \item the other variable names reflect our naming policy: state variables are prefixed by the name of the state, holes actions by the name of the hole.
 \end{itemize}
 
-\TODO{To be updated completely}
+\TODO{To be updated completely, or removed ???}
 
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 
