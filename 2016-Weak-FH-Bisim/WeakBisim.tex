@@ -1924,6 +1924,7 @@ composability and weak FH-bisimilarity.
 
 
 \subsubsection*{Running example}
+\label{subsubsection:runnig example}
 In Section~\ref{sec:weak} we have shown the full satured weak automaton for both the specification and the implementation of the simple protocol. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
 
 \medskip
@@ -5452,9 +5453,9 @@ We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P
 %%   \caption{Composed pNet with the Simple Protocol Implementation}  \label{App:SimpleProt:Impl}
 %% \end{figure}
 
-The first piece of code is the textual definition of the SimpleProtSec
+The first piece of code is the textual definition of the SimpleProtSpec
 pNet, that was drawn in Figure \ref{SimpleProt:Impl}, page \pageref{SimpleProt:Impl}. This code should be intuitive enough to read, with the following
-conventions, that brings some user-friendly features that are maps by the editor into pure pNet constructs.
+conventions, that brings some user-friendly features that are mappeds by the editor into pure pNet constructs.
 
 \begin{itemize}
   \item Constants of any type (including Action) must be declared as
@@ -5462,12 +5463,10 @@ conventions, that brings some user-friendly features that are maps by the editor
     typically \texttt{in(msg)}, or constants without argument, denoted
     as \texttt{\$tau}. Identifiers without the ``?'' marker are
     variables.
-  \item Variables can be declared either: inside a pLTS state (normal
-    state variable), as global variable of a pLTS (see e.g. ...), or
-    as an input variable in a transition, as \texttt{?msg} in pLTS M1
-    here.
-  \item the variables in the guards of synchronisation vectors do not need to be explicitely quantified: all variable in a guard that does not appear inside the vector actions will be recognised as bound by a \emph{foral} quantifier inside the guard.
-    \item the tools will check that everything is correctly declared, and that variables are used properly, that vectors have coherent length, etc.
+  \item Variables can be declared as global variables of a pLTS (e.g. \texttt{m\_msg} in \texttt{M1}), or a pNet Node in the case of synchronisation vector variables (e.g. \texttt{p\_a}),
+    or as input variables in a pLTS, as \texttt{?msg} in \texttt{M1}.
+  \item the variables in the guards of synchronisation vectors do not need to be explicitely quantified: all variables in a guard that do not appear inside the vector actions will be recognised as bound by a \emph{forall} quantifier inside the guard.
+    \item the tools will check that everything is correctly declared, and that variables are used properly and do not conflict between different objetcs, that vectors have coherent length, etc.
 \end{itemize}
 
 %\TODO{Je ne peux pas refaire tourner le code, il faut que je modifie le pNet Editor pour qu'ils n'utilise plus les variables d'etat... Donc les 3 prochaines pages sont obsoletes...}
@@ -5521,9 +5520,8 @@ Next is the code for the SimpleProtImpl pNet:
 
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 SimpleProtImpl2:
-import "Data_Alg.algp"
-root SimpleProtImpl2
-
+  import "Data_Alg.algp"
+  root SimpleProtImpl2
 const in,out:Action
 const tau,p_send,q_recv,m_recv,m_send,m_error: Action
 const s_recv,s_send,s_ack,s_error,r_recv,r_ack,r_send: Action
@@ -5531,46 +5529,37 @@ const s_recv,s_send,s_ack,s_error,r_recv,r_ack,r_send: Action
 pLTS M1
   initial a0
   vars ?msg:Data ?c:Int
-vars m_msg:Data m_ec:Int
-
+  vars m_msg:Data m_ec:Int
 state m0
-transition m_recv(msg,c) -> m1 {m_msg:=msg, m_ec:=c}
-
+  transition m_recv(msg,c) -> m1 {m_msg:=msg, m_ec:=c}
 state m1
-transition m_send(m_msg, m_ec) -> m0 
-transition synchro($tau) -> m2
-
+  transition m_send(m_msg, m_ec) -> m0 
+  transition synchro($tau) -> m2
 state m2
-transition $m_error -> m0
+  transition $m_error -> m0
 
 pLTS Sender
   initial s0
   vars ?msg:Data
-vars  s_msg:Data s_ec:Int
-
+  vars  s_msg:Data s_ec:Int
 state s0
-transition s_recv(msg) -> s1 {s_msg:=msg, s_ec:=0}
-
+  transition s_recv(msg) -> s1 {s_msg:=msg, s_ec:=0}
 state s1
-transition s_send(s_msg, s_ec) -> s2 
-
+  transition s_send(s_msg, s_ec) -> s2 
 state s2
-transition $s_ack -> s0
-transition $s_error -> s1 {s_ec:=s_ec+1}
+  transition $s_ack -> s0
+  transition $s_error -> s1 {s_ec:=s_ec+1}
 
 pLTS Receiver
   initial r0
   vars ?msg:Data ?c:Int
-vars r_msg:Data r_ec:Int
-
+  vars r_msg:Data r_ec:Int
 state r0
-transition r_recv(msg,c) -> r1 {r_msg:=msg, r_ec:=c}
-
+  transition r_recv(msg,c) -> r1 {r_msg:=msg, r_ec:=c}
 state r1
-transition r_send(r_msg, r_ec) -> r2
-
+  transition r_send(r_msg, r_ec) -> r2
 state r2
-transition $r_ack -> r0
+  transition $r_ack -> r0
 
 pNet medium
   subnets Sender, M1, Receiver
@@ -5667,9 +5656,9 @@ vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m,c)]
 
 In Figure \ref{Appendix:ImplOA2} we recall the weak open automaton of our implementation pNet. 
 
-It is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviours.
+This drawing is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviours.
 More tricky, they do not have the same state variables, as 202 has the variables of state $s2$, but none of these variables are used in transitions from 202.
-In this configuration we can guarantee that they are Weak bisimilar, and merge their (incoming and outgoing) transitions in the Figure. We denote this 
+In this configuration we can guarantee that they are Weak bisimilar, and we have merged their (incoming and outgoing) transitions in the Figure. We denote this 
 equivalence class of states as $\{000,202\}$.
 
 % \TODO{May be express this property more formerly, but this could be also part of another paper, more oriented towards algorithms and optimisation of the Weak}
@@ -5691,8 +5680,8 @@ $ WI_2 = \openrule
 {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ], ()}
 {S \OTWeakarrow {\texttt{q-b}} S}$
 
-All the following transitions are parametrized by an integer $n\in \mathcal{N}$, meaning they stand for the (infinite) set of weak OTs. 
-In some cases, this set is further restricted (see e.g. $WI_{7b}(n)$), in which case we have added an explicit quantifier.
+All the following transitions are parametrized by an integer $n\in \mathcal{N}$, meaning they stand for the corresponding (infinite) set of weak OTs. 
+In some cases, this set is further restricted (see e.g. $WI_{7b}(n)$), in which cases we have added an explicit quantifier.
 \smallskip
 
 $ WI_3(n) = \openrule
@@ -5824,13 +5813,14 @@ $ \forall n\ge 1. WI_{8a}(n) = \openrule
 Then for all $\tau$ transitions above we have a similar WOT that include a non-$\tau$ move from an external action of P or Q, like for example:
 
 $ WI_4P(n) = \openrule
-         {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], 
+         {\{\texttt{P}\mapsto \texttt{p-a}\}, [\forall \texttt{m}. \texttt{p-a} \neq \texttt{p-send(m)} ], \\
    (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+n, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\texttt{p-a}} 210}
 $
+
 and
 $ WI_4Q(n) = \openrule
-         {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ],
+         {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{m,ec}. \texttt{q-b} \neq \texttt{q-recv(m,ec)} ],\\
    (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec}+n, \texttt{s\_ec}\gets \texttt{s\_ec}+n)}
          {100 \OTWeakarrow {\texttt{q-b}} 210}
 $
@@ -5931,7 +5921,7 @@ weak automata, we would have a more transitions coverage to examine, as we have 
 parameterized WOTs) from 000 in the implementation automaton.
          
        
-We will check here 2 of these conditions.
+
 Preliminary remarks:
   \begin{itemize}
     \item Both pNets trivialy verify the ``non-observability''
@@ -5942,9 +5932,10 @@ transitions (m, msg, ec) are the same, that is not correct. In the tools, this i
 variables using suffix 1 for the Specification, and 2 for the Implementation.
     \end{itemize}
 
+  In our running example in page \pageref{subsubsection:runnig example}, we have shown the proof for one of the
+transitions of ($\text{b0},  202,  True$), namely that $SS_3$ is covered by $WI_3(0)$.
+We give here another example with $SS_1 << WI_1$, from the first triple ($\text{b0},  000,  True$). It includes less trivial predicates in the OTs:
   
-  \medskip
-Let us start with the first pair: $SS_1 << WI_1$, where:
  
   $ SS_1 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-a1}\}, 
@@ -5958,7 +5949,7 @@ $ WI_1 = \openrule
 {000 \OTWeakarrow {\texttt{p-a2}} 000}$
 
   
-  Let check formally the conditions:
+  Let us check formally the conditions:
   
 \begin{itemize}
   \item Their sets of active (non-silent) holes is the same: $J' = J_x = \{\texttt{P}\}$.
@@ -5980,12 +5971,12 @@ $\forall \texttt{p-a1}. \{True \land \forall \texttt{m1}. \texttt{p-a1} \neq \te
 \land \nounderline{\texttt{p-a1}} = \nounderline{\texttt{p-a2}} 
 \land True\}$
 
-\medskip That is trivialy true, choosing pa-2 = pa-1 for each p-a1.
+\medskip That is trivialy true, choosing \texttt{p-a1=p-a2} for each given \texttt{p-a1}.
 
 \end{itemize}
 
   \bigskip
-  All others pairs from this set are just as trivialy prove true.
+  All others pairs from this set are just as easily proved true.
 
          
 \end{document}
