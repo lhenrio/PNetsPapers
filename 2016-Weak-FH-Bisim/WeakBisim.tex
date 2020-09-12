@@ -5474,20 +5474,18 @@ We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P
 %%   \caption{Composed pNet with the Simple Protocol Implementation}  \label{App:SimpleProt:Impl}
 %% \end{figure}
 
-The first piece of code is the textual definition of the SimpleProtSpec
-pNet, that was drawn in Figure \ref{SimpleProt:Impl}, page \pageref{SimpleProt:Impl}. This code should be intuitive enough to read, with the following
-conventions, that brings some user-friendly features that are mapped by the editor into pure pNet constructs.
+The first piece of code is the textual definition of the SimpleSystemSpec
+pNet (named SimpleProtSpec2 in the code), that was drawn in Figure \ref{SimpleProt:Impl}, page \pageref{SimpleProt:Impl}. This code should be intuitive enough to read, with the following
+language conventions, that brings some user-friendly features, mapped by the editor into pure pNet constructs.
 
 \begin{itemize}
   \item Constants of any type (including Action) must be declared as
     ``const''. They are used either as functions with argument, as
-    typically \texttt{in(msg)}, or constants without argument, denoted
-    as \texttt{\$tau}. Identifiers without the ``\$'' marker are
-    variables.
-  \item Variables can be declared as global variables of a pLTS (e.g. \texttt{m\_msg} in \texttt{M1}), or a pNet Node in the case of synchronisation vector variables (e.g. \texttt{p\_a}),
-    or as input variables in a pLTS, as \texttt{?msg} in \texttt{M1}.
-  \item The variables in the guards of synchronisation vectors do not need to be explicitly quantified: by convention, all variables in a guard that do not appear inside the vector actions will be recognised as bound by a \emph{forall} quantifier inside the guard.
-    \item The tools will check that everything is correctly declared, and that variables are used properly and do not conflict between different objects, that vectors have coherent length, etc.
+    typically \texttt{in(msg)}, or constants without argument, typically as "tau()".
+  \item Variables can be declared as global variables of a pLTS (e.g. \texttt{m\_msg} in \texttt{PerfectBuffer}), or a pNet Node in the case of synchronisation vector variables (e.g. \texttt{p\_a}),
+    or as input variables in a pLTS, as \texttt{?msg} in \texttt{PerfectBuffer}.
+  \item The variables in the guards of synchronisation vectors (e.g. in SV1) do not need to be explicitly quantified: by convention, all variables in a guard that do not appear inside the vector actions will be recognised as bound by a \emph{forall} quantifier inside the guard.
+    \item The tools will check that everything is correctly declared, that variables are used properly and do not conflict between different objects, that vectors have coherent length, etc.
 \end{itemize}
 \bigskip
 %\TODO{Je ne peux pas refaire tourner le code, il faut que je modifie le pNet Editor pour qu'ils n'utilise plus les variables d'etat... Donc les 3 prochaines pages sont obsoletes...}
@@ -5510,27 +5508,27 @@ const in, out:Action
 const p_send, q_recv: Action
 const tau:Action
 
-pLTS M1
-initial a0 
-vars ?msg:Data
-vars m_msg:Data m_ec:Int
+pLTS PerfectBuffer
+initial b0 
+vars ?m:Data
+vars b_msg:Data b_ec:Nat
 
-state a0
-transition in(msg) -> a1 {m_msg:=msg, m_ec:=0}
+state b0
+transition in(m) -> b1 {b_msg:=m, b_ec:=0}
 
-state a1
-transition out(m_msg, m_ec) -> a0
-transition synchro($tau)  -> a1 {m_ec:=m_ec+1}
+state b1
+transition out(b_msg, b_ec) -> a0
+transition synchro(tau())  -> b1 {b_ec:=b_ec+1}
 
 pNet SimpleProtSpec2
 holes P,Q
-subnets P,M1,Q
-vars p_a,q_a:Action m:Data ec:Int
+subnets P,PerfectBuffer,Q
+vars p_a,q_b:Action m:Data ec:Nat
 
 vector SV0 <p_send(m), in(m),_>->synchro(in(m))
-vector SV1 <p_a,_,_>->p_a [p_a != p_send(m)]
-vector SV2 <_, out(m,ec), q_recv(m)>->synchro(out(m,ec))
-vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m)]
+vector SV1 <p_a,_,_>->p_a [p_a != p_send(x)]
+vector SV2 <_, out(m,ec), q_recv(m,ec)>->synchro(out(m,ec))
+vector SV3 <_,_,q_b>->q_a [q_b != q_recv(x,y)]
 
   \end{lstlisting}
 
@@ -5541,7 +5539,7 @@ vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m)]
 The corresponding generated Open Automaton was given in Figure \ref{SimpleProtCounter:SpecOA},
 page \pageref{SimpleProtCounter:SpecOA}.\\
 
-Next is the code for the SimpleProtImpl pNet:
+Next is the code for the SimpleSystem implementation pNet (named SimpleProtImpl2):
 \medskip
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 SimpleProtImpl2:
@@ -5551,59 +5549,59 @@ const in,out:Action
 const tau,p_send,q_recv,m_recv,m_send,m_error: Action
 const s_recv,s_send,s_ack,s_error,r_recv,r_ack,r_send: Action
 
-pLTS M1
-  initial a0
-  vars ?msg:Data ?c:Int
-  vars m_msg:Data m_ec:Int
-state m0
-  transition m_recv(msg,c) -> m1 {m_msg:=msg, m_ec:=c}
-state m1
-  transition m_send(m_msg, m_ec) -> m0 
-  transition synchro($tau) -> m2
-state m2
-  transition $m_error -> m0
-
 pLTS Sender
   initial s0
-  vars ?msg:Data
-  vars  s_msg:Data s_ec:Int
+  vars ?m:Data
+  vars  s_msg:Data s_ec:Nat
 state s0
-  transition s_recv(msg) -> s1 {s_msg:=msg, s_ec:=0}
+  transition s_recv(m) -> s1 {s_msg:=m, s_ec:=0}
 state s1
   transition s_send(s_msg, s_ec) -> s2 
 state s2
-  transition $s_ack -> s0
-  transition $s_error -> s1 {s_ec:=s_ec+1}
+  transition s_ack() -> s0
+  transition s_error() -> s1 {s_ec:=s_ec+1}
+
+pLTS Medium
+  initial m0
+  vars ?m:Data ?ec:Nat
+  vars m_msg:Data m_ec:Nat
+state m0
+  transition m_recv(m,ec) -> m1 {m_msg:=m, m_ec:=ec}
+state m1
+  transition m_send(m_msg, m_ec) -> m0 
+  transition synchro(tau()) -> m2
+state m2
+  transition m_error() -> m0
 
 pLTS Receiver
   initial r0
-  vars ?msg:Data ?c:Int
-  vars r_msg:Data r_ec:Int
+  vars ?m:Data ?ec:Nat
+  vars r_msg:Data r_ec:Nat
 state r0
-  transition r_recv(msg,c) -> r1 {r_msg:=msg, r_ec:=c}
+  transition r_recv(m,ec) -> r1 {r_msg:=msg, r_ec:=ec}
 state r1
   transition r_send(r_msg, r_ec) -> r2
 state r2
-  transition $r_ack -> r0
+  transition r_ack() -> r0
 
 pNet medium
-  subnets Sender, M1, Receiver
-  vars m:Data c:Int
+  subnets Sender, Medium, Receiver
+  vars m:Data c:Nat
 vector SV0 <s_recv(m), _, _>->in(m)
-vector SV1 <s_send(m,c), m_recv(m,c), _>->synchro($tau)
-vector SV2 <_, m_send(m,c), r_recv(m,c)>->synchro($tau)
-vector SV3 <$s_ack, _, $r_ack>->synchro($tau)
-vector SV4 <$s_error, $m_error, _>->synchro($tau)
-vector SV5 <_, _, r_send(m,c)>->out(m,c)
+vector SV1 <s_send(m,ec), m_recv(m,ec), _>->synchro(tau())
+vector SV2 <_, m_send(m,ec), r_recv(m,ec)>->synchro(tau())
+vector SV3 <s_ack(), _, r_ack()>->synchro(tau())
+vector SV4 <s_error(), m_error(), _>->synchro(tau())
+vector SV5 <_, _, r_send(m,ec)>->out(m,ec)
 
 pNet SimpleProtImpl2
   holes P,Q
   subnets P,medium,Q
-  vars p_a,q_a:Action  m:Data c:Int
+  vars p_a,q_a:Action  m:Data c:Nat
 vector SV0 <p_send(m), in(m),_>->synchro(in(m))
-vector SV1 <p_a,_,_>->p_a [p_a != p_send(m)]
-vector SV2 <_, out(m,c), q_recv(m,c)>->synchro(out(m,c))
-vector SV3 <_,_,q_a>->q_a [q_a != q_recv(m,c)]
+vector SV1 <p_a,_,_>->p_a [p_a != p_send(x)]
+vector SV2 <_, out(m,ec), q_recv(m,ec)>->synchro(out(m,ec))
+vector SV3 <_,_,q_b>->q_b [q_b != q_recv(x,y)]
 \end{lstlisting}
 
 %% From this code,A more compact view (maybe more readable ???) is given
@@ -5705,7 +5703,7 @@ $ WI_2 = \openrule
 {\{\texttt{Q}\mapsto \texttt{q-b}\}, [\forall \texttt{x,y}. \texttt{q-b} \neq \texttt{q-recv(x,y)} ], ()}
 {S \OTWeakarrow {\texttt{q-b}} S}$
 
-All the following transitions are parametrized by an integer $n\in \mathcal{N}$, meaning they stand for the corresponding (infinite) set of weak OTs. 
+All the following transitions are parameterised by an integer $n\in \mathcal{N}$, meaning they stand for the corresponding (infinite) set of weak OTs. 
 In some cases, this set is further restricted (see e.g. $WI_{7b}(n)$), in which cases we have added an explicit quantifier.
 \smallskip
 
@@ -5945,7 +5943,7 @@ $SI_3 << WS_3$
          
          Note: if we were using the alternative Weak bisim from Appendix \ref{app-WFH-equiv}, Lemma \ref{lem-rel-OT-WOT}, that is checking strong bisimulation between the corresponding 
 weak automaton, we would have a more transitions coverage to examine, as we have 4 weak transitions for $b0$ in the specification weak automaton, and 7 WOTs (including 4 
-parameterized WOTs) from 000 in the implementation automaton.
+parameterised WOTs) from 000 in the implementation automaton.
          
        
 
