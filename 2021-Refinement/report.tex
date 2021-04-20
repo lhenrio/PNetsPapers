@@ -6,16 +6,23 @@
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{unicode-math}
-\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{external}
+%\usepackage{hyperref}
+% \usepackage{xcolor}
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 \usepackage{polyglossia}
 \setmainlanguage{english}
 
+\input{common.tex}
 \input{preamble.tex}
+\input{tikzmacros.tex}
 
 % possible examples for refinement: + <= |, ; <= |
 % transitions between sections
 % Re-read what refinement are used for
+
+% Give the examples
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -38,6 +45,8 @@ Family of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \i
 The latter will only be used when unambiguous; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\), but \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) must be represented with one of the two first notation.
 The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
 
+For a relation \(\wrel{}{}{}\) which uses a property \(P\) to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists w: P\mpar{x, x'}\), the fact that there is a valid witness \(w: P\mpar{x, x'}\) is noted \(\wrel{x}{x'}{w}\).
+
 
 \section{Open Automaton}
 To define an open automaton we need some preliminary definitions.
@@ -50,23 +59,24 @@ An example of term algebra can be Peano integers (zero, variable and successor f
 
 \begin{defi}[Free variables, Closed terms, Closed formulae]
 \defitem \(\fvars{e}\) is the set of unbound variables in \(e \in E\).
-\defitem The terms restricted to variables in \(V\) are \(\rterms{V} \defnotation \mset{t \in \terms}{\fvars{t} = \emptyset}\); \(\rterms{V} \subset \terms\).
-\defitem The formulae restricted to variables in \(V\) are \(\rformulae{V} \defnotation \mset{f \in \formulae}{\fvars{f} = \emptyset}\); \(\rformulae{V} \subset \terms\).
-\defitem The closed terms are terms restricted to variables in \(\emptyset\), \(\cterms\).
-\defitem The closed formulae are formulae restricted to variables in \(\emptyset\), \(\cformulae\).
+\defitem The expressions restricted to variables in \(V\) are \(E_V \defnotation \mset{e \in E}{\fvars{e} = \emptyset}\); \(E_V \subset E\).
+\defitem The closed expressions are expressions restricted to variables in \(\emptyset\), \(E_\emptyset\).
 \end{defi}
-By extension, expressions restricted to variables and closed expressions are also defined.
+By restriction, terms and formulae restricted to variables and closed versions are also defined.
 A closed expression is an expression without unbound variable.
+We can use the previous example of first order formula on Peano integers to illustrate these definitions.
+\(x\), \(S\mpar{y}\) are valid terms, \(0\) is a closed term, \(\fvars{x} = \mbrc{x}, \fvars{S\mpar{y}} = \mbrc{y}, \fvars{0} = \emptyset\).
+\(x = 0\), \(\forall y, \exists x, \mathit{sum}\mpar{y, z, x}\) are valid formulae, \(\forall x, \neg S\mpar{x} = 0\) is a valid closed formula, \(\fvars{x = 0} = \mbrc{x}, \fvars{\forall y, \exists x, \mathit{sum}\mpar{y, z, x}} = \mbrc{z}, \fvars{\forall x, \neg S\mpar{x} = 0} = \emptyset\).
 \begin{defi}[Interpretation, Values, Satisfiability, (Parallel) substitution]
 We assume that the following are given:
-\defitem The values \(\values\), which are interpretations of closed terms;
-\defitem The validity relation on closed formulae, \({\vdash} \subseteq \cformulae\);
-\defitem The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), \(e\subst{t}{x}\);
+\defitem The values \(\values\), which are interpretations of closed terms.
+\defitem The validity relation on closed formulae, \({\vdash} \subseteq \cformulae\).
+\defitem The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), \(e\subst{t}{x}\).
 \defitem The parallel substitution in \(e \in E\) of variables in \(V\) by \(\psi: V \to \terms\), \(e\psubst{\psi}\).
 \end{defi}
 For the parallel substitution, the set \(V\) is not required to be a subset of \(\fvars{e}\).
 In the case where it is not, the variables in \(V \setminus \fvars{e}\) are not substituted.
-The substitutions might give a nonsensical expression; for instance let the terms be integers and pairs with (pointwise) addition, \(\mpar{a + b}\psubst{a \mapsto 7, b \mapsto \mpar{4, 5}}\) is not a valid term.
+The substitutions might give a nonsensical expression; for instance let the terms be integers and pairs with (pointwise) addition, \(\mpar{a + b}\psubst{a \mapsto 7, b \mapsto \mpar{4, 5}}\) is a ill-formed term.
 This can be guarded with the atom \(e\subst{t}{x} \in E\) and \(e\psubst{\psi} \in E\) and it will implicitely be the case, for instance when there is quantification on \(t\) and \(\psi\), to simplify notations.
 
 The interpretation of terms is supposed to be decidable.
@@ -74,6 +84,7 @@ The validity of formulae might not be decidable nor complete nor consistent, how
 
 A value \(v\) may be used for keeping a variable state, and then injected in terms for substitution.
 While this is correct when \(\values \subseteq \cterms\), in the other cases this will be used as a shorthand for substitution with any term which can be interpreted as \(v\).
+We suppose that the interpretation of terms is compatible w.r.t.\@ substitution, that is if two terms \(t\), \(t'\) are interpreted with the same value, then replacing \(t\) by \(t'\) in a well-formed expression makes an equivalent well-formed expression.
 A quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set, for instance \(\forall A, \exists B, P\) with \(A = \mbrc{a_1, \dots, a_\card{A}}, B = \mbrc{b_1, \dots, b_\card{B}}\) means \(\forall a_1, \dots, \forall a_\card{A}, \exists b_1, \dots, \exists b_\card{B}, P\).
 
 The validity relations will be noted using the classical relational notation \(\vdash f \defnotation {f \in {\vdash}}\).
@@ -95,13 +106,48 @@ A semantic open transition is a tuple \nmm{\OT{s}{s'}{\alpha\mpar{v_\alpha}}{\mp
 The set of action labels \(\actions\) is arbitrary and implicit.
 To simplify formulae, the notations \(\alpha \defnotation \alpha\mpar{v_\alpha}\) and \(\alpha = \beta \defnotation \alpha = \beta \wedge v_\alpha = v_\beta\) will be used.
 
+To illustrate these definitions let's look at two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
+The enable operator runs its the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
+During the synchronised action \Quentin{data can be exchanged}{I need to read a little bit more on that; is that a return code?}. % TODO: read
+\begin{figure}
+\centering
+\input{enable_state.tex}
+\vrule
+\input{enable_var.tex}
+\caption{Enable operator, on the left state oriented, on the right variable oriented.}
+\label{fig:enable}
+\end{figure}
+\begin{exi}[Enable, state-oriented]
+To draw automata, the usual circle for states and simple arrows for transitions convention is used.
+The initial state is indicated by a double circle.
+States names are indicated inside the circles and transitions labels are drawn near their corresponding arrow.
+
+The open transitions do not indicate the source and target states since that is the role of the transitions arrows; only the action is on the bottom side of the open transition.
+Also in the example, transitions are specified using variables in place of actions or values.
+This is used to represent all the transitions created by a correct substitution of these variables, as there are often infinitly many.
+
+There is a model where open automata have finitely many transitions and variables like that are allowed in the expressions and in the action data, not as a tool to graphically represent an infinity of transitions but as a real construct.
+This model is the model of structural open automata as opposed to the model used here of semantic open automata.
+The structural version is more adapted to uses where the object manipulated must be finite, for example in algorithms, whereas the semantic version avoids the manipulation of substitutions, which simplifies proofs.
+
+Let's get back to the example.
+The open automata drawn on the left is \(\OA{\mbrc{L, R}}{L}{\emptyset}{\mbrc{}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are all the valid transitions for any substitution of \(x\) and \(y\) of
+\begin{align*}
+	\OT{L}{L}{x}{\mbrc{l \mapsto x}}{x \neq \delta}{\mbrc{}} &&
+	\OT{L}{R}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{x = y}{\mbrc{}} &&
+	\OT{R}{R}{x}{\mbrc{r \mapsto x}}{\top}{\mbrc{}}
+\end{align*}
+% TODO: Explain example
+\end{exi}
+\begin{exi}[Enable, variable-oriented]
+% TODO: Explain example
+\end{exi}
+
 Now we can define some utilitary functions:
 \begin{defi}[Guard, Out-transition]
 \(\fOT{s}\) are called the out-transitions of \(s\).
 \begin{align*}
 	\fguard{\OTg} & \defnotation g &
-	\mathit{target}\mpar{\OTg} & \defnotation s' \\
-	\mathit{Post}\mpar{\OTg} & \defnotation \psi &
 	\fOT{s} & \defnotation \mbrc{\OTg \in T}
 \end{align*}
 \end{defi}
@@ -177,7 +223,7 @@ Two states \(s_1 \in S_1, s_2 \in S_2\) are related under a valuation \(\sigma: 
 \end{defi}
 Now let's adapt the properties about states of automata to open automata.
 \begin{defi}[Simulation on open automata]
-A relation \(\leq\) is a simulation iff for any two related automata \(\OA{S_1}{i_1}{J_1}{V_1}{\varphi_1}{T_1} \leq \OA{S_2}{i_2}{J_2}{V_2}{\varphi_2}{T_2}\), there is a relation under predicate between their states \(R: S_1 \times S_2 \to \rformulae{V_1 \uplus V_2}\) that satisfies both
+A relation \(\leq\) is a simulation if for any related automata \(\wrel{A_1}{A_2}{R}\) where \(A_1 \defobject \OA{S_1}{i_1}{J_1}{V_1}{\varphi_1}{T_1}\), \(A_2 \defobject \OA{S_2}{i_2}{J_2}{V_2}{\varphi_2}{T_2}\) and \(R: S_1 \times S_2 \to \rformulae{V_1 \uplus V_2}\), \(R\) satisfies both
 \defitem Initial states are related under initial valuations: \(\varphi_1 \uplus \varphi_2 \vdash R\mpar{i_1, i_2}\);
 \defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
 \begin{multline*}
@@ -190,8 +236,8 @@ The last formula means that for every pair of related states under valuation of 
 This is a natural extenion of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
 It will serve as a watchdog for any relation that will be defined with ``simulation" in its name, except weak-simulation where the transition from the first automaton that produce \(\tau\) actions are excluded.
 
-\begin{defi}[Deadlock reduction]
-A simulation \(\leq\) is deadlock reducing if for all related automata \(A_1 \leq A_2\), where \(A_1 \defobject \OA{S_1}{i_1}{V_1}{\varphi_1}{J_1}{T_1}\) and \(A_2 \defobject \OA{S_2}{i_2}{V_2}{\varphi_2}{J_2}{T_2}\), there is a witness \(R: S_1 \times S_2 \to \rformulae{V_1 \uplus V_2}\) of the fact that it is a simulation that also satisfies
+\begin{defi}[Deadlock reduction, intuitive definition]
+A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae{V_1 \uplus V_2}\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \sigma: V_1 \uplus V_2 \to \values, \\
 	\mpar{\exists t_2 \in \fOT{s_2}, \sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \\
@@ -219,12 +265,20 @@ This effectively merges independant holes, or equivalently allows to consider th
 
 ``Deadlock reduction" conflicts with ``composition completeness" by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transitions expects.
 In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a no deadlock reducing simulation refinement.
-A way to solve this issue is to caracterise a correct composition that will be used instead of the composition introduced earlier.
-\begin{defi}[Correct composition]
-The composition \(A_p\subst{A_c}{k} \defobject \OA{S}{i}{V}{\varphi}{J}{T}\) where \(A_c \defobject \OA{S_c}{i_c}{V_c}{\varphi_c}{J_c}{T_c}\), \(k \in J_p\) and \(A_p \defobject \OA{S_p}{i_p}{V_p}{\varphi_p}{J_p}{T_p}\), is a correct composition if there is a predicate on its states \(p: S \to \rformulae{V}\) that satisfies both
-\defitem Being valid on initial states under initial valuation: \(\varphi \vdash p\mpar{i}\)
+A way to solve this issue is to caracterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
+\begin{defi}[Reachability]
+For any open automata \(A \defobject \OA{S}{i}{V}{\varphi}{J}{T}\), we define the caracterisation of reachable valuations \(\reach{A}: S \to \rformulae{V}\) as the strongest predicate on states such that
+\defitem \(\varphi \vdash \reach{A}\mpar{i}\);
+\defitem \(\forall \OTg \in T, \vdash \reach{A}\mpar{s} \implies \reach{A}\mpar{s'}\psubst{\psi}\).
+\end{defi}
+The caracterisation of reachable valuations is used to caracterise the states and valuations that are reachable in a run of an automaton.
+For a valuation \(\sigma: V \to \values\) and a state \ % TODO HERE
+\begin{defi}[Non-locking composition] % TODO: définir un prédicat d'accessibilité plutôt qu'utiliser un p, faire deux définitions puis un lemme d'équivalence plutôt que def+lem
+The composition \(A_p\subst{A_c}{k} \defobject \OA{S}{i}{V}{\varphi}{J}{T}\) where \(A_c \defobject \OA{S_c}{i_c}{V_c}{\varphi_c}{J_c}{T_c}\), \(k \in J_p\) and \(A_p \defobject \OA{S_p}{i_p}{V_p}{\varphi_p}{J_p}{T_p}\), is a correct composition if there is a predicate on its states \(p: S \to \rformulae{V}\) that satisfies
+\defitem Being valid on initial states under initial valuation: \(\varphi \vdash p\mpar{i}\);
+\defitem Transfering validity across transitions: \(\forall \OTg \in T, \vdash p\mpar{s} \implies p\mpar{s'}\psubst{\psi}\);
 \defitem From states where the predicate is valid, if a transition was possible in \(A_p\) then a transition is possible in \(A\) and the predicate holds in the target state:
-\[ \forall s \in S, \sigma: V \to \values, \mpar{\exists t_p \in \fOT{\pi_{S_p}\mpar{s}}, \sigma \vdash p\mpar{s} \wedge \fguard{t_p}} \implies \bigsymb{\exists} \OTg \in T, \sigma \vdash g \wedge p\mpar{s'}\psubst{\psi} \]
+\[ \forall s \in S, \sigma: V \to \values, \mpar{\exists t_p \in \fOT{\pi_{S_p}\mpar{s}}, \sigma \vdash p\mpar{s} \wedge \fguard{t_p}} \implies \bigsymb{\exists} \OTg \in T, \sigma \vdash g \]
 \end{defi}
 For the reader not used to simulations and bisimulations, this definition with a witness can seem strange.
 In fact the role of the witness is to caracterise reachable configurations without having to caracterise the fact that the state and valuation are the result of a valid path in an automaton.
@@ -260,28 +314,29 @@ The formula in the definition of deadlock reduction is equivalent to the followi
 	We cannot yet prove \goal{G1} because at this point we don't know whether \(t_2\) and \(t_1\) do match.
 	In order to get a matching \(t_2\) we use the fact that \(R\) is also witness of the simulation \(A_1 \leq A_2\) with the current value of \(s_1, s_2, \sigma\) and \(t_1\) as \hyp{sim}:
 	\[ \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
-	The left part of the implication is the left side of \hyp{g2} so we get \(t'_2 \in T_2\) and what's after as the hypothesis \hyp{t}.
-	The witnesses for \goal{G1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{t} and \hyp{g1}.
+	The left part of the implication is the left side of \hyp{g2} so we get \(t'_2 \in T_2\) and what's after as the hypothesis \hyp{target}.
+	The witnesses for \goal{G1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{g1}.
 \end{proof}
 
 \begin{lem}
 The second part of the formula in the definition of correct composition is equivalent to the following:
-\[ \forall s \in S, \vdash p\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \mpar{\fguard{t} \wedge p\mpar{\mathit{target}\mpar{t}}\psubst{\mathit{Post}\mpar{t}}} \]
+\[ \forall s \in S, \vdash p\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
 \end{lem}
-\begin{proof}
-% TODO HERE
+\begin{proof} % TODO HERE
+\item[\(\implies\):] % TODO
+\item[\(\impliedby\):] % TODO
 \end{proof}
 From this point and in the previous definitions, composition will only refer to correct composition.
 
 % TODO: Some equivalences
-``Composition completeness" can be modified into ``Deadlock reduction completeness" to be compatible with ``Deadlock reduction": \(\forall a\, b, a\mbrk{b} \sqsubseteq a \implies a\mbrk{b} \leq a\).
-Only the latter will be considered.
-Similar issues arise on other properties and can be fixed by changing the prerequisites to insure that the most deadlock-prone composition of automata is composition complete:
-\begin{description}
-\item[Composition context equivalence modified:] \(\forall a\, b\, c, a \leq b \wedge a\mbrk{c} \leq a \implies a\mbrk{c} \leq b\mbrk{c}\);
-\item[Composition congruence modified:] \(\forall a\, b\, c, a \leq b \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq c\mbrk{b}\);
-\item[Composition compatibility modified:] \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq d\mbrk{b}\);
-\end{description}
+% ``Composition completeness" can be modified into ``Deadlock reduction completeness" to be compatible with ``Deadlock reduction": \(\forall a\, b, a\mbrk{b} \sqsubseteq a \implies a\mbrk{b} \leq a\).
+% Only the latter will be considered.
+% Similar issues arise on other properties and can be fixed by changing the prerequisites to insure that the most deadlock-prone composition of automata is composition complete:
+% \begin{description}
+% \item[Composition context equivalence modified:] \(\forall a\, b\, c, a \leq b \wedge a\mbrk{c} \leq a \implies a\mbrk{c} \leq b\mbrk{c}\);
+% \item[Composition congruence modified:] \(\forall a\, b\, c, a \leq b \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq c\mbrk{b}\);
+% \item[Composition compatibility modified:] \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq d\mbrk{b}\);
+% \end{description}
 
 % Transition: Working definitions next section
 
@@ -311,7 +366,7 @@ The predicate \(R\mpar{i_1, i_2}\) is used to take into account the fact that a 
 This is already used in FH-bisimulation introduced in previous articles about open automata.
 So the meaning of \(\varphi_1 \uplus \varphi_2 \vdash R\mpar{i_1, i_2}\) is that the initial states with the initial valuation are effectively related.
 \begin{defi}[Hole-identical simulation]
-\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} is defined as:
+\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} is defined as: % TODO: faire des macros, + A_1 \overset{=}\leq_R A_2
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
