@@ -310,37 +310,37 @@ A relation \(\leq\) is a simulation if for any related automata \(\wrel{A_1}{A_2
 \defitem Initial states are related under initial valuations: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
 \defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
 \begin{multline*}
-	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \sigma: V_1 \uplus V_2 \to \values, \\
-	\bigsymb{\forall} \OTx{1}{}{1}{1} \in T_1, \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \\
-	\sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
+	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_2} \to \values, \\
+	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
-The last formula means that for every pair of related states under valuation of the automaton variables and every possible transitions (\(\sigma \vdash g_1\)) from the first automaton, there is a possible transition (\(\sigma \vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the holes actions from same hole names (\(J'_1 \cap J'_2\)) match (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update.
+The last formula means that for every pair of related states under valuation of the automaton variables and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the holes actions from same hole names (\(J'_1 \cap J'_2\)) match (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update.
 This is a natural extenion of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
 It will serve as a watchdog for any relation that will be defined with ``simulation" in its name, except weak-simulation where the transition from the first automaton that produce \(\tau\) actions are excluded.
 
 \begin{defi}[Deadlock reduction, intuitive definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
 \begin{multline*}
-	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
-		\bigsymb{\exists} \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in T_1 \times T_2, \\
-		\sigma \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
+		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 	\end{array}} \\
-	\vee \forall t_2 \in \fOT{s_2}, \sigma \nvdash \fguard{t_2}
+	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
 \end{multline*}
 \end{defi}
 This definition extends the requirements of a simulation by requiring from the relation that on related states, either there is a pair of possible matching transition or there was no out-transition possible in the specification.
 This requirement effectively prevents the presence of deadlock state in the first automaton if there is a related non-deadlock state in the second.
 
-% TODO LATER: livelock and tau-stuttering
+% LATER: livelock and tau-stuttering
 % \item[Livelock reduction:] If \(a \leq b\) then \(a\) does not introduces new livelocks, noted \(a \preceq b\) in the following; % TODO: Find a better place to introduce a better definition of livelock reduction.
 % \defitem \textbf{\(\tau\)-stuttering} iff . % TODO
 
-% Decide later to modify or remove it
+% LATER: modify or remove it
 % On the other hand there is a property that we considered for some time, that may arise when designing a refinement relation and that is interesting but actually unwanted:
 % \begin{description}
-% \item[Daisy equivalence:] \(a\mbrk{D} \leq a \wedge a \leq a\mbrk{D}\), where \(D\) is the single state automaton that can produce any action. % TODO: Find another name
+% \item[Daisy equivalence:] \(a\mbrk{D} \leq a \wedge a \leq a\mbrk{D}\), where \(D\) is the single state automaton that can produce any action.
 % \end{description}
 % This property state that composing a hole with an automaton which can do anything is not a strict refinement.
 % While it might seem to be a natural property because this automaton is the closest to the meaning of a hole in term of automaton, there is actually a difference between the two.
@@ -356,7 +356,7 @@ A way to solve this issue is to caracterise a composition that do not introduce 
 \begin{defi}[Reachability]
 For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), we define the caracterisation of reachable valuations \(\reach{A}: S \to \rformulae[V]\) as the strongest predicate on states such that
 \defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\).
-\defitem \nmm{\bigsymb{\forall} \OTg \in T, \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}.
+\defitem \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \forall \nu: \fvars{t} \to \values, \nu \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}.
 \end{defi}
 For the reader not used to simulations and bisimulations, this definition with a witness can seem strange.
 The reachability predicate is used to caracterise the states and valuations that are reachable in a run of an automaton.
@@ -366,78 +366,73 @@ To do that we impose that the initial state is reachable in the initial valuatio
 This effectively makes reachability account for all paths, and to not account for impossible path the strongest predicate is used.
 Another way to understand this predicate is that it is the least fixpoint of the union of valuations that contains the initial valuation.
 \begin{defi}[Non-locking composition, intuitive definition]
-
-The composition resulting in \(A_p\subst{A_c}{k} \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if:
+The composition resulting in \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if:
 \defitem From reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
 \begin{multline*}
-	\forall s \in S, \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \\
-	\mpar{\exists t \in T, \sigma \vdash \fguard{t}} \vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \sigma \nvdash \fguard{t_p}
+	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \mpar{\exists t \in T, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
+	\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p}
 \end{multline*}
 \end{defi}
+
+\begin{exi}
+\begin{figure}
+\input{randomtick_clock.tex}
+\vrule
+\input{register_anytick.tex}
+\caption{On the left: A clock which imposes a tick; On the right: A modified version of the register at figure \ref{fig:tlh}}
+\label{fig:anytick}
+\end{figure}
+% TODO HERE: explain
+\begin{figure}
+\input{Composition_deadlock.tex}
+\vrule
+\input{Composition_nolock.tex}
+\caption{On the left: Deadlock introduced by composition; On the right: No deadlock introduced by composition}
+\label{fig:deadlock}
+\end{figure}
+% TODO: explain
+\end{exi}
+
 When expanding the aliases \(S, i, V\) in the definition, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one.
 It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
 Actually it is possible to simplify both definition and make them shockingly similar.
 
 \begin{defi}[Deadlock reduction, working definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
-\[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, \sigma: V_1 \uplus V_2 \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
+\[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
 \end{defi}
 \begin{lem}
-The intuitive and working
-\begin{proof} % Always introduce hypothesis and goals on a big math env, recall definitions (also simulation) and call hypothesis H1, H2, ...
-Let \(R\) be a witness of the simulation \(A_1 \leq A_2\).
-\item[\(\implies\):] If \(R\) satisfies the deadlock reduction definition, let \(\mpar{s_1, s_2} \in S_1 \times S_2\).
-	The free variables of the equivalent formula are all in \(V_1 \uplus V_2\) so let \(\sigma: V_1 \uplus V_2 \to \values\) be such that
-	\[ \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
-	We can decompose it by admitting the left part of the implication then decomposing the big disjunction to get \(\sigma \vdash R\mpar{s_1, s_2}\) as \hyp{p} and \(t_2 \in \fOT{s_2}\) such that \hyp{g2}: \(\sigma \vdash \fguard{t_2}\).
-	We are left to prove \[ \sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{G1} \]
-	To do that we will use the fact that \(R\) satisfies the deadlock reduction definition with the current value of \(s_1, s_2, \sigma\).
-	Now we additionally need to prove \goal{G2}: \(\exists t_2 \in \fOT{s_2}, \sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) before getting hypothesis \hyp{E}:
-	\[ \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
-	The witness of \goal{G2} is \(t_2\) obtained previously in the big disjunction, and \(\sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) is proved by combining \hyp{p} and \hyp{g2}.
-	Now we can decompose \hyp{E} to get \(t_1 \in T_1\), which we know is also in \(\fOT{s_1}\), a transition that we won't use and \(\sigma \vdash \fguard{t_1}\) which is what we needed to prove the branch \(t_1\) of \goal{G1}.
-\item[\(\impliedby\):] If \(R\) satisfies the equivalent formula, let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \to \values\).
-	Let admit that there is a transition \(t_2 \in T_2\) such that \hyp{g2}: \(\sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\).
-	We need to prove \goal{G1}:
-	\[ \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
-	We use the fact that \(R\) satisfies the equivalent formula with the current value of \(s_1, s_2\) and \(\sigma\) to get
-	\[ \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
-	As this formula is true for all values of each free variable, it is especially true when valuated with \(\sigma\).
-	We know that \(t_2 \in \fOT{s_2}\) so \hyp{g2} proves the left part of that implication and we immediately decompose the right side to get \(t_1 \in \fOT{s_1}\) and \hyp{g1}: \(\fguard{t_1}\).
-
-	We cannot yet prove \goal{G1} because at this point we don't know whether \(t_2\) and \(t_1\) do match.
-	In order to get a matching \(t_2\) we use the fact that \(R\) is also witness of the simulation \(A_1 \leq A_2\) with the current value of \(s_1, s_2, \sigma\) and \(t_1\) as \hyp{sim}:
-	\[ \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
-	The left part of the implication is the left side of \hyp{g2} so we get \(t'_2 \in T_2\) and what's after as the hypothesis \hyp{target}.
-	The witnesses for \goal{G1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{g1}.
-\end{proof}
+The intuitive and working definition of deadlock reduction are equivalent.
+\end{lem}
+Proof is given in the appendix. % TODO: ref
 
 \begin{defi}[Non-locking composition, working definition]
-The composition \(A \defobject A_p\subst{A_c}{k}\) is 
-The second part of the formula in the definition of correct composition is equivalent to the following:
-\[ \forall s \in S, \vdash p\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
+The composition \(A \defobject A_p\subst{A_c}{k}\) is a non-locking composition if:
+\[ \forall s \in S, \forall \sigma: V \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
 \end{defi}
-\begin{proof} % TODO HERE
-\item[\(\implies\):] % TODO
-\item[\(\impliedby\):] % TODO
-\end{proof}
+\begin{lem}
+The intuitive and working definition of non-locking composition are equivalent.
+\end{lem}
+Proof is given in the appendix. % TODO: ref and proof in apendix
+
+% TODO: sufficient condition
+
 From this point and in the previous definitions, composition will only refer to correct composition.
 
-% TODO: Some equivalences
 % ``Composition completeness" can be modified into ``Deadlock reduction completeness" to be compatible with ``Deadlock reduction": \(\forall a\, b, a\mbrk{b} \sqsubseteq a \implies a\mbrk{b} \leq a\).
 % Only the latter will be considered.
-% Similar issues arise on other properties and can be fixed by changing the prerequisites to insure that the most deadlock-prone composition of automata is composition complete:
+% Similar issues arise on other properties and can be fixed by changing the prerequisites to ensure that the most deadlock-prone composition of automata is composition complete:
 % \begin{description}
 % \item[Composition context equivalence modified:] \(\forall a\, b\, c, a \leq b \wedge a\mbrk{c} \leq a \implies a\mbrk{c} \leq b\mbrk{c}\);
 % \item[Composition congruence modified:] \(\forall a\, b\, c, a \leq b \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq c\mbrk{b}\);
 % \item[Composition compatibility modified:] \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq d\mbrk{b}\);
 % \end{description}
 
-% Transition: Working definitions next section
+With all these properties we can now look at some concrete refinemet relations.
 
 
 \section{Preliminary refinement relations}
-The main objective of the refinement relation in this section is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)).
+The main objective of the refinement relations in this section is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)).
 However composing an open automaton can give an automaton where not much can be said in terms of hole indicies.
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
 For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), the following refinement relations are defined.
@@ -445,7 +440,7 @@ For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T
 This relation is the basis for all the other ones.
 It applies on automaton with same holes.
 The goal is to caracterise open automata that have a more determined (more deterministic) behaviour without adding deadlocks.
-\begin{defi}[Hole-identical refinement]
+\begin{defi}[Hole-identical refinement] % TODO: transition variables
 If \(J_1 = J_2\) then ``\(A_1\) is a hole-identical refinement of \(A_2\)", noted \(A_1 \leq_= A_2\), is defined as:
 \[ \exists R: \mpar{S_1 \times S_2} \to \rformulae[V_1 \uplus V_2], \sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}} \qwedge R \text{ hole-identical simulation of } A_1 \text{ in } A_2 \]
 \end{defi}
@@ -702,5 +697,46 @@ The objective of the other part of this definition is to prevent the appearance 
 
 \section{Conclusion}
 
+
+\section{Appendix}
+Proof of lemma 1:
+\begin{proof} % TODO HERE: Always introduce hypothesis and goals on a big math env, recall definitions (also simulation) and call hypothesis H1, H2, ...
+Let \(R, A_1, A_2\) be such that \(\wrel{A_1}{A_2}{R}\).
+We want to prove:
+\begin{gather*}
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \\
+\iff
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
+	\mpar{\everymath{\displaystyle}\begin{array}{c}
+		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
+	\end{array}} \\
+	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
+\end{gather*}
+\item[\(\implies\):] If \(R\) satisfies the deadlock reduction definition, let \(\mpar{s_1, s_2} \in S_1 \times S_2\).
+	The free variables of the equivalent formula are all in \(V_1 \uplus V_2\) so let \(\sigma: V_1 \uplus V_2 \to \values\) be such that
+	\[ \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
+	We can decompose it by admitting the left part of the implication then decomposing the big disjunction to get \(\sigma \vdash R\mpar{s_1, s_2}\) as \hyp{p} and \(t_2 \in \fOT{s_2}\) such that \hyp{g2}: \(\sigma \vdash \fguard{t_2}\).
+	We are left to prove \[ \sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{G1} \]
+	To do that we will use the fact that \(R\) satisfies the deadlock reduction definition with the current value of \(s_1, s_2, \sigma\).
+	Now we additionally need to prove \goal{G2}: \(\exists t_2 \in \fOT{s_2}, \sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) before getting hypothesis \hyp{E}:
+	\[ \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
+	The witness of \goal{G2} is \(t_2\) obtained previously in the big disjunction, and \(\sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) is proved by combining \hyp{p} and \hyp{g2}.
+	Now we can decompose \hyp{E} to get \(t_1 \in T_1\), which we know is also in \(\fOT{s_1}\), a transition that we won't use and \(\sigma \vdash \fguard{t_1}\) which is what we needed to prove the branch \(t_1\) of \goal{G1}.
+\item[\(\impliedby\):] If \(R\) satisfies the equivalent formula, let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \to \values\).
+	Let admit that there is a transition \(t_2 \in T_2\) such that \hyp{g2}: \(\sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\).
+	We need to prove \goal{G1}:
+	\[ \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
+	We use the fact that \(R\) satisfies the equivalent formula with the current value of \(s_1, s_2\) and \(\sigma\) to get
+	\[ \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
+	As this formula is true for all values of each free variable, it is especially true when valuated with \(\sigma\).
+	We know that \(t_2 \in \fOT{s_2}\) so \hyp{g2} proves the left part of that implication and we immediately decompose the right side to get \(t_1 \in \fOT{s_1}\) and \hyp{g1}: \(\fguard{t_1}\).
+
+	We cannot yet prove \goal{G1} because at this point we don't know whether \(t_2\) and \(t_1\) do match.
+	In order to get a matching \(t_2\) we use the fact that \(R\) is also witness of the simulation \(A_1 \leq A_2\) with the current value of \(s_1, s_2, \sigma\) and \(t_1\) as \hyp{sim}:
+	\[ \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
+	The left part of the implication is the left side of \hyp{g2} so we get \(t'_2 \in T_2\) and what's after as the hypothesis \hyp{target}.
+	The witnesses for \goal{G1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{g1}.
+\end{proof}
 
 \end{document}
