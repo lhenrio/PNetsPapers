@@ -36,6 +36,12 @@ Open automata are used to give an interpretation for open pNets.
 
 
 \section{Notations}
+Notations will be defined with the operator \(\defnotation\) and names are given with the operator \(\defobject\) as follows:
+\begin{align*}
+	notation\_with\_variables & \defnotation notated\_object\_using\_the\_variables \\
+	name & \defobject fully\_defined\_mathematical\_object
+\end{align*}
+
 Throughout this paper, tuples might be noted differently depending on what they represent.
 Quantification will be used loosely, any bound name in a quantification means that the object is constrained to have that previous value, and any new name is bound by the quantifier.
 For instance \(\forall \mpar{x, y}, \exists \mpar{x', y}, P\) means \(\forall \mpar{x, y}, \exists \mpar{x', y'}, y = y' \wedge P\).
@@ -109,12 +115,14 @@ We suppose that the interpretation of terms is compatible w.r.t.\@ substitution,
 \end{noti}
 With these common definitions and notations settled, the objects of interest can now be defined.
 \begin{defi}[Open automaton]
-A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V \to \values\) the initial valuation of variables, \(J\) the set of hole names and \(T\) a set of open-transitions.
+A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) a set of open-transitions.
 
 \(S, V, J\) are arbitrary finite sets.
 \end{defi}
 The variable names may clash when considering two automata, in that case we suppose that we can still distinguish the variables in the formulas.
 All the possible open transitions, from which transitions in \(T\) are selected, are defined below.
+The initial valuation may be a partial valuation of the variables, if the undefined variables are set before being read this behave like a normal variable.
+If the undefined variable is not set before being read then its value may be any fixed value, the potential use of this construct will be explain in more details in section ???\marginpar{refinement section, hole identical is sufficient for the parametric construct}.
 \begin{defi}[Open transition]
 An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved, \(\beta_j \in \actions\) the actions of the holes, \(g \in \rformulae\) the guard and \(\psi: V \to \terms\) the new value of the variables.
 \end{defi}
@@ -254,12 +262,29 @@ Unreachable states and transition with unsatisfiable guards are not drawn.
 The result of the composition has 36 states (\(3 \times 2 \times 6\)) but only 6 are reachable from the initial configuration.
 Also satisfiable guards were replaced with simplified equivalent.
 
-The most notable effect of composition are the following transitions (generic and simplified version):
+The transitions obtained by composition are the following (generic and simplified version):
 \begin{itemize}
 \item \nmm{\OT{XS}{XC}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{C \mapsto \theta\mpar{x}, R \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the register and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \item \nmm{\OT{XC}{XC}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} which is the composition of \nmm{\OT{X}{X}{\act{tick}}{\mbrc{R \mapsto \act{tick}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
 \item \nmm{\OT{XC}{ZS}{\act{TurnXxx}}{\mbrc{}}{c = t}{\mbrc{}}} which is the composition of \nmm{\OT{X}{Z}{\act{TurnXxx}}{\mbrc{R \mapsto \act{over}\mpar{x}, C \mapsto \delta\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{S}{\act{over}\mpar{c}}{\mbrc{}}{c = t}{\mbrc{}}} from the register and \nmm{\OT{X}{Z}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \end{itemize}
+
+Let's look at the \(\tau\) transition from the state \(R\) for a more in depth example on how composition and value passing work.
+The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{R \mapsto \act{set}\mpar{x}, C \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}.
+The composition makes 12 states from the \(R\) state, these states are in \(\mbrc{R} \times \mbrk{1; 6} \times \mbrc{S, C}\), however only \(\mpar{R, 1, S}\) and \(\mpar{R, 2, C}\) are reachable so we will only consider these two.
+In the figure they are noted \(RS\) and \(RC\).
+The holes \(R\) and \(C\) are filles at the same time so the \(\tau\) transition must synchronise with a transition from both the register and the controller.
+
+In the state \(RC\) the composition makes 2 transition from the \(\tau\) transition with a false guard, let's look at one of them.
+\nmm{\OT{RC}{\mpar{R, 3, C}}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x_C}}{\mbrc{c \gets c + 1}}} is made with \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller and \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
+Obviously the guard is false so the it is equivalent to have no transition.
+Also the guard is long and can be simplified.
+In this article the guard and transition are always simplified except for the sake of illustrating a concept that is lost in the simplification as it is the case here.
+We can see that the \(x\) variables from the specification, the controller and the register are in conlict.
+To resolve the conflict we renamed the variables.
+
+In the state \(RS\) the composition makes 1 transition from the \(\tau\) transition; this transition is described before but let's look at the details of the composition.
+% TODO: explain value passing then say that in the register \set{t} wouldn't have worked
 \end{exi}
 
 
@@ -581,7 +606,7 @@ The difference with the hole-identical simulation is that the holes involved in 
 The new constraint is that the holes in common (that is \(J'_1\)) should be involved at the same time and their action have to match.
 What happens on the other holes is unspecified except for the fact that, by being free variables they still need to be valued such that the transition is possible.
 
-\begin{exi} % TODO
+\begin{exi} % TODO: Traffic light example
 \end{exi}
 
 An alternative version of this definition could enforce \(\exists J'_2 \subseteq J_2, \forall x \in X, J'_{2x} = J'_2\).
