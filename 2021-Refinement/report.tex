@@ -20,8 +20,6 @@
 
 % possible examples for refinement: + <= |, ; <= |
 % transitions between sections
-% Re-read what refinement are used for, LOTOS
-% read CCSL and BIP
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -29,13 +27,25 @@
 \begin{document}
 \maketitle
 
-
 \section{Introduction}
-Open automata are used to give an interpretation for open pNets.
-% TODO: expand
+The model of open automata is used to give the semantic of open pNets \cite{2007.10770}.
+Open pNets are not petri nets but an intermediate representation used in the VerCors project to perform verification and model checking \cite{henrio:01252323}.
+Open pNets with the open automaton semantic and equivalence relation introduced in previous work \cite{2007.10770} were sucessfully used to verify BIP and GCM \cite{qin:01823507, ameurboulifa:01526055}.
+However equivalences relations are not sufficient to perform model checking, refinement relations are also used.
+For instance an example of open pNet where equivalence is not sufficient was encountered in ...\marginpar{Paper where the motivating example came up}.
+
+In this article we introduce a refinement relation for open automata. % TODO: expand
+
+We begin in section \ref{sec:notations} by giving some notations used throughout this paper.
+Then there are several sections dedicated to define all the interesting objects and properties:
+In section \ref{sec:def} we give a clean and up to date definition of open automata.
+In section \ref{sec:semcompo} we recall the semantic for open automata and their composition without requiring the use of open pNets.
+In section \ref{sec:proofelts} we adapt the standard properties related to refinement relation from LTS to open automata.
+After that the section \ref{sec:prelref} is dedicated to progressively build a refinement relation.
+Finally the section \ref{sec:refinement} introduces and analyses the refinement relation on open automata.
 
 
-\section{Notations}
+\section{Notations}\label{sec:notations}
 Notations will be defined with the operator \(\defnotation\) and names are given with the operator \(\defobject\) as follows:
 \begin{align*}
 	notation\_with\_variables & \defnotation notated\_object\_using\_the\_variables \\
@@ -53,7 +63,7 @@ The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \
 For a relation \(\wrel{}{}{}\) which uses a property \(P\) to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists w: P\mpar{x, x'}\), the fact that there is a valid witness \(w: P\mpar{x, x'}\) is noted \(\wrel{x}{x'}{w}\).
 
 
-\section{Open Automaton}
+\section{Open Automaton}\label{sec:def}
 To define an open automaton we need some preliminary definitions.
 \begin{defi}[Expression algebra, Action algebra, Formulae, Terms]
 An expression algebra \(E\) is a disjoint union \(E \defobject \terms \uplus \actions \uplus \formulae\) of the terms, the actions and the formulae.
@@ -133,6 +143,15 @@ Initially the automaton is in the initial state with the initial valuation.
 In any state with any valuation, it can perform transitions which source state is the current state and which guard is valid in the current valuation if the holes emit the indicated action.
 By performing the transition the automaton emits the indicated action and updates its variables and state.
 
+\begin{noti}[Bisimilarity, FH-bisimulation]
+The bisimilarity relation on open automata is noted \(\cong\) and the FH-bisimulation \cite{henrio:01055091} is noted \(\overset{FH}=\).
+\end{noti}
+Note that FH-bisimilarity implies bisimilarity.
+
+To illustrate these definitions let's look at two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
+The enable operator runs its the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
+During the synchronised action \Quentin{data can be exchanged}{I need to read a little bit more on that; is that a return code?}.
+\begin{exi}[Enable, state-oriented]
 \begin{figure}
 \centering
 \input{enable_state.tex}
@@ -141,10 +160,6 @@ By performing the transition the automaton emits the indicated action and update
 \caption{Enable operator implementation with open automata, on the left state oriented, on the right variable oriented}
 \label{fig:enable}
 \end{figure}
-To illustrate these definitions let's look at two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
-The enable operator runs its the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
-During the synchronised action \Quentin{data can be exchanged}{I need to read a little bit more on that; is that a return code?}.
-\begin{exi}[Enable, state-oriented]
 To draw automata, the usual circle for states and simple arrows for transitions convention is used.
 The initial state is indicated by a double circle.
 States names are indicated inside the circles and transitions labels are drawn near their corresponding arrow.
@@ -167,7 +182,7 @@ Only the synchronisation is hidden to the exterior by sending a \(\tau\) which i
 Well here \(\tau\) is not always allowed from the holes in the state \(L\) the hole \(r\) cannot emmit it for the sake of simplifying the first example of open automaton.
 \end{exi}
 \begin{exi}[Enable, variable-oriented]
-The automata drawn on the right side of the figure is an alternative implementation of the enable operator which has already been proven equivalent in previous work by ...\marginpar{cite sth here}.
+The automata drawn on the right side of the figure is an alternative implementation of the enable operator which is FH-bisimilar.
 The drawing introduces the double arrows which is used to denote the initial valuation.
 The automata drawn is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are like previously all the transitions generated by
 \begin{align*}
@@ -188,7 +203,7 @@ Another imaginary run can be the automaton in the hole \(l\) emits a sequence of
 \end{exi}
 
 Finally we can define some utilitary functions:
-\begin{defi}[Guard, Out-transition]
+\begin{defi}[Guard, Out-transition, Transition variables]
 Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(s\) be one of its states.
 \(\fOT{s}\) are called the out-transitions of \(s\).
 \begin{align*}
@@ -200,10 +215,10 @@ Let \(V\) be the variable names of the considered automaton, \(T\) its transitio
 From this point open automata and open transitions will be called automata and transitions for simplicity.
 
 
-\section{Semantic and composition of Open Automata}
+\section{Semantic and composition of Open Automata}\label{sec:semcompo}
 The interpretation of open automata is a partially specified automaton, where the partially specification comming from the holes.
 This specification can be completed by composing automata into holes so it is natural to take a look at the composition process.
-This was already defined on pNets in previous work\marginpar{cite 2007.10770} but never completely formalised on open automata.
+This was already defined on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The below definition of composition is a direct translation of composition on pNets for open automata.
 \begin{defi}[Composition of open automata]
 The composition of \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\) in the hole \(k \in J_p\) of \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) is
@@ -218,12 +233,6 @@ The actions emitted when \(A_c\) makes a transition is sychronised with the acti
 No transition of \(A_c\) is performed when a transition that do not refer to the hole \(k\) is performed in \(A_p\) (second transition set, \(k \notin J'\)).
 The composition may look like a handshake, with both automata running in parallel (product of states and joint variables) but it is actually not symmetric.
 \begin{exi}
-\begin{figure}
-\centering
-\input{Traffic_Lights_Spec.tex}
-\caption{The specification of a traffic light system}
-\label{fig:tls}
-\end{figure}
 This example is derived and adapted from a traffic light controller in a collection of examples for pNets.
 It is supposed to be a single traffic light.
 
@@ -234,6 +243,12 @@ The three states are used to remember which colored light is on and this color c
 The color switches when the register and the control circuit agree that the time is over.
 The new time limit can be set by the control circuit and the exposed action to the exterior is a \(\tau\).
 
+\begin{figure}
+\centering
+\input{Traffic_Lights_Spec.tex}
+\caption{The specification of a traffic light system}
+\label{fig:tls}
+\end{figure}
 \begin{figure}
 \centering
 \input{Traffic_Lights_Controller.tex}
@@ -251,14 +266,7 @@ On the right is the register agent which will be composed in the hole \(R\).
 Its role is to get a target, then count ticks until that target is reached, then emit an action with the elapsed time and restart.
 This implementation does exactly that and forbids any extra tick.
 
-\begin{figure}
-\centering
-\input{Traffic_Lights_Full.tex}
-\caption{The full traffic lights system}
-\label{fig:tlf}
-\end{figure}
-The composition of the specification on figure \ref{fig:tls} and the agents on figure \ref{fig:tlh} is the automaton on figure \ref{fig:tlf}.
-Unreachable states and transition with unsatisfiable guards are not drawn.
+The automaton on figure \ref{fig:tlf} is bisimilar to the composition of the specification on figure \ref{fig:tls} and the agents on figure \ref{fig:tlh}.
 The result of the composition has 36 states (\(3 \times 2 \times 6\)) but only 6 are reachable from the initial configuration.
 Also satisfiable guards were replaced with simplified equivalent.
 
@@ -269,13 +277,19 @@ The transitions obtained by composition are the following (generic and simplifie
 \item \nmm{\OT{XC}{ZS}{\act{TurnXxx}}{\mbrc{}}{c = t}{\mbrc{}}} which is the composition of \nmm{\OT{X}{Z}{\act{TurnXxx}}{\mbrc{R \mapsto \act{over}\mpar{x}, C \mapsto \delta\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{S}{\act{over}\mpar{c}}{\mbrc{}}{c = t}{\mbrc{}}} from the register and \nmm{\OT{X}{Z}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \end{itemize}
 
+\begin{figure}
+\centering
+\input{Traffic_Lights_Full.tex}
+\caption{The full traffic lights system}
+\label{fig:tlf}
+\end{figure}
 Let's look at the \(\tau\) transition from the state \(R\) for a more in depth example on how composition and value passing work.
 The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{R \mapsto \act{set}\mpar{x}, C \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}.
 The composition makes 12 states from the \(R\) state, these states are in \(\mbrc{R} \times \mdbrk{1; 6} \times \mbrc{S, C}\), however only \(\mpar{R, 1, S}\) and \(\mpar{R, 2, C}\) are reachable so we will only consider these two.
 In the figure they are noted \(RS\) and \(RC\).
 The holes \(R\) and \(C\) are filles at the same time so the \(\tau\) transition must synchronise with a transition from both the register and the controller.
 
-In the state \(RC\) the composition makes 2 transition from the \(\tau\) transition with a false guard, let's look at one of them.
+In the state \(RC\) the composition makes 2 transition from the \(\tau\) transition but both have a false guard; let's look at one of them.
 \nmm{\OT{RC}{\mpar{R, 3, C}}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x_C}}{\mbrc{c \gets c + 1}}} is made with \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller and \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
 Obviously the guard is false so the it is equivalent to have no transition.
 Also the guard is long and can be simplified.
@@ -283,21 +297,24 @@ In this article the guard and transition are always simplified except for the sa
 We can see that the \(x\) variables from the specification, the controller and the register are in conlict.
 To resolve the conflict we renamed the variables.
 
-In the state \(RS\) the composition makes 1 transition from the \(\tau\) transition; this transition is described before but let's look at the details of the composition.
-% TODO: explain value passing then say that in the register \set{t} wouldn't have worked
+In the state \(RS\) the composition makes 1 transition from the \(\tau\) transition.
+This transition is described before but let's look at the details of the composition.
+The obtained guard is \(\top \wedge \top \wedge \top \wedge \theta\mpar{x} = \theta\mpar{17} \wedge \act{set}\mpar{x} = \act{set}\mpar{x_R}\) and the obtained new values of the variables is \(\mbrc{t \gets x_R, c \gets 0}\).
+We can see here how value passing work: the only possible value of \(x\) and \(x_R\) making the guard hold is \(17\), this value has been synchronised from the controller to \(x\) then to the second occurence of \(x\) to the distinct \(x\) of the register.
+This guard and value update can be simplified to the one shown on the drawing.
+Note that \nmm{\OT{S}{C}{\act{set}\mpar{t}}{\mbrc{}}{\top}{\mbrc{c \gets 0}}} wouldn't have worked as a transition for the controller because \(t\) is fixed before the transition and its value cannot be set outside of the variable update, hence the use of a local variable \(x\).
 \end{exi}
 
 
-\section{What is a refinement for Open Automata}
+\section{What is a refinement for Open Automata}\label{sec:proofelts}
 There are several properties that we may want from a refinement relation.
 Depending on these properties, several kind of refinement may be used.
 For example if we are interested in being able to produce the same sequence of action we may want to use trace set inclusion as a refinement.
 Here the main properties that we want are related to composition and action refinement.
-A suitable kind of refinement relation for this kind of properties is simulation refinement:
-A bisimulation has already been proposed for open automata \marginpar{cite an article here} that is compatible with composition.
+Because of composition, a relation as strong as simulation refinement must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
 
-% THIS WILL BE RE-WRITTEN LATER
-Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
+% LATER
+% Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
 
 The important properties we will consider here are:
 \begin{defi} A relation \(\leq\) is
@@ -359,8 +376,8 @@ This definition extends the requirements of a simulation by requiring from the r
 This requirement effectively prevents the presence of deadlock state in the first automaton if there is a related non-deadlock state in the second.
 
 % LATER: livelock and tau-stuttering
-% \item[Livelock reduction:] If \(a \leq b\) then \(a\) does not introduces new livelocks, noted \(a \preceq b\) in the following; % TODO: Find a better place to introduce a better definition of livelock reduction.
-% \defitem \textbf{\(\tau\)-stuttering} iff . % TODO
+% \item[Livelock reduction:] If \(a \leq b\) then \(a\) does not introduces new livelocks, noted \(a \preceq b\) in the following; % Find a better place to introduce a better definition of livelock reduction.
+% \defitem \textbf{\(\tau\)-stuttering} iff .
 
 % LATER: modify or remove it
 % On the other hand there is a property that we considered for some time, that may arise when designing a refinement relation and that is interesting but actually unwanted:
@@ -389,7 +406,12 @@ In fact the role of the witness is to caracterise reachable configurations witho
 
 To do that we impose that the initial state is reachable in the initial valuation and that reachability is preserved by taking valid transitions.
 This effectively makes reachability account for all paths, and to not account for impossible path the strongest predicate is used.
-Another way to understand this predicate is that it is the least fixpoint of the union of valuations that contains the initial valuation.
+Another way of understanding this predicate is that it is the least fixpoint of the union of valuations that contains the initial valuation:
+\begin{align*}
+	f\mpar{p} = s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, T}} p\mpar{s}\psubst{\psi} \wedge g &&
+	\reach{A} = \lim_n f^n\mpar{s \mapsto \choice{\sigma_0 & s = s_0 \\ \bot & \text{otherwise}}}
+\end{align*}
+
 \begin{defi}[Non-locking composition, intuitive definition]
 The composition resulting in \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if:
 \defitem From reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
@@ -399,7 +421,9 @@ The composition resulting in \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T
 \end{multline*}
 \end{defi}
 
-\begin{exi}
+To illustrate the introduction of a deadlock in a composition and the definition of non-locking composition, let's look at an example.
+\begin{exi}[Deadlocks introduced by composition]
+% TODO HERE: read CCSL & BIP
 \begin{figure}
 \input{randomtick_clock.tex}
 \vrule
@@ -407,12 +431,12 @@ The composition resulting in \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T
 \caption{On the left: A clock which imposes a tick; On the right: A modified version of the register at figure \ref{fig:tlh}}
 \label{fig:anytick}
 \end{figure}
-% TODO HERE: explain
+% TODO: explain
 \begin{figure}
 \input{Composition_deadlock.tex}
 \vrule
 \input{Composition_nolock.tex}
-\caption{On the left: Deadlock introduced by composition; On the right: No deadlock introduced by composition}
+\caption{On the left: Deadlocks introduced by composition; On the right: No deadlock introduced by composition}
 \label{fig:deadlock}
 \end{figure}
 % TODO: explain
@@ -429,7 +453,6 @@ A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to
 \begin{lem}
 The intuitive and working definition of deadlock reduction are equivalent.
 \end{lem}
-Proof is given in the appendix. % TODO: ref
 
 \begin{defi}[Non-locking composition, working definition]
 The composition \(A \defobject A_p\subst{A_c}{k}\) is a non-locking composition if:
@@ -438,11 +461,48 @@ The composition \(A \defobject A_p\subst{A_c}{k}\) is a non-locking composition 
 \begin{lem}
 The intuitive and working definition of non-locking composition are equivalent.
 \end{lem}
-Proof is given in the appendix. % TODO: ref and proof in apendix
+Proof of both lemma are given in appendix \ref{apx:lemeqd}.
 
-% TODO: sufficient condition
+% TODO?: sufficient condition
 
-From this point and in the previous definitions, composition will only refer to correct composition.
+This new substitution can replace the standard substitution in the case where only one hole is filled and also in the parallel case:
+\begin{thm}[Parallel non-locking substitution]
+Let \(A, B, C\) be open automata, \(J_A\) the hole names of \(A\) and \(k, l \in J_A\) two distinct hole names.
+\[ A\subst{B}{k}\subst{C}{l} \iff A\subst{C}{l}\subst{B}{k} \]
+\end{thm}
+If we prove that, then they are bisimilar because non-locking composition is a restriction of standard composition.
+\begin{proof}
+Both ways are symmetric so we will only prove one way.
+Let \(s' \defobject \mpar{\mpar{s_A, s_C}, s_B}\) and \(\sigma: V_A \uplus V_C \uplus V_B \to \values\) be respectively a state and a valuation of \(A\subst{C}{l}\subst{B}{k}\).
+We need to prove both:
+\begin{gather}
+	\sigma \vdash \reach{A\subst{C}{l}} \wedge \bigvee_\subbox{t \in \fOT{s_A}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} \goal{1} \\
+	\sigma \vdash \reach{A\subst{C}{l}\subst{B}{k}} \wedge \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s'}} \fguard{t} \goal{2}
+\end{gather}
+\(\mpar{s_A, s_B}\) is a state of \(A\subst{B}{k}\), \(s \defobject \mpar{\mpar{s_A, s_B}, s_C}\) is a state of \(A\subst{B}{k}\subst{C}{l}\) and \(\sigma\) is a valuation of their variables so the following hold by hyptoheses:
+\begin{gather}
+	\sigma \vdash \reach{A\subst{B}{k}} \wedge \bigvee_\subbox{t \in \fOT{s_A}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s_A, s_B}} \fguard{t} \hyp{1} \\
+	\sigma \vdash \reach{A\subst{B}{k}\subst{C}{l}} \wedge \bigvee_\subbox{t \in \fOT{s_A, s_B}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{2}
+\end{gather}
+By admitting and decomposing the left part of \goal{1} and \goal{2} we get the following:
+\begin{align*}
+	\sigma \vdash \reach{A\subst{C}{l}} & \text{ \hyp{\_}} &
+	t_A \in \fOT{s_A} &&
+	\sigma \vdash \fguard{t_A} \text{ \hyp{2}} \\
+	\sigma \vdash \reach{A\subst{C}{l}\subst{B}{k}} & \text{ \hyp{3}} &
+	t_{AC} \in \fOT{s_A, s_C} &&
+	\sigma \vdash \fguard{t_{AC}} \text{ \hyp{4}}
+\end{align*}
+And now we need to prove:
+\begin{align*}
+	\sigma \vdash \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} & \text{ \goal{1'}} &
+	\sigma \vdash \bigvee_\subbox{t \in \fOT{s'}} \fguard{t} & \text{ \goal{2'}}
+\end{align*}
+We use the fact that \(A\subst{C}{l}\subst{B}{k} \cong A\subst{B}{k}\subst{C}{l}\) on \hyp{3} to get: % TODO HERE: Add lemma about reachability implication for composition
+\[ \sigma \vdash \reach{A\subst{B}{k}\subst{C}{l}} \hyp{5} \]
+% TODO
+\end{proof}
+From this point and in the previous definitions, composition will only refer to non-locking composition.
 
 % ``Composition completeness" can be modified into ``Deadlock reduction completeness" to be compatible with ``Deadlock reduction": \(\forall a\, b, a\mbrk{b} \sqsubseteq a \implies a\mbrk{b} \leq a\).
 % Only the latter will be considered.
@@ -456,9 +516,12 @@ From this point and in the previous definitions, composition will only refer to 
 With all these properties we can now look at some concrete refinemet relations.
 
 
-\section{Preliminary refinement relations}
-The main objective of the refinement relations in this section is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)).
-However composing an open automaton can give an automaton where not much can be said in terms of hole indicies.
+\section{Preliminary refinement relations}\label{sec:prelref}
+The main goal of this section is to help the reader understand the problems, constraints and different elements involved to solve them so that they are not all introduced at once in the real refinement relation.
+The main objective of the refinement relations in this section is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)) in restricted interesting cases.
+Hopefully they can be used as simpler (and less expensive) versions of the real refinement relation in the case the manipulated automata respect the constraints.
+
+Composing an open automaton can give an automaton where not much can be said in terms of hole indicies.
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
 For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), the following refinement relations are defined.
 
@@ -682,7 +745,8 @@ This definitions is essentially the same as the hole-identical except that the c
 % J'_1x still necessary for the same reason essentially
 % f() subset J'1 \ J2 : equality is possible and give a valid alternative that must match each action with another action, even if the latter has no more the choice, basically the version given here allows to hide some choices from the hole
 
-\section{Refinement relation for open automata}
+
+\section{Refinement relation for open automata}\label{sec:refinement}
 % meaning of f, what happens depending on f
 % hole function from implem to spec on disjoint holes
 \begin{defi}[Open automata refinement]
@@ -722,15 +786,21 @@ The objective of the other part of this definition is to prevent the appearance 
 
 \section{Conclusion}
 
+\pagebreak
+\bibliographystyle{plain}
+\bibliography{biblio}
 
-\section{Appendix}
-Proof of lemma 1:
-\begin{proof} % TODO HERE: Always introduce hypothesis and goals on a big math env, recall definitions (also simulation) and call hypothesis H1, H2, ...
+\pagebreak
+\appendix
+\part*{Appendix}
+
+\section{Proof of equivalent definitions}\label{apx:lemeqd}
+\begin{proof}[Lemma 1] % TODO HERE: Always introduce hypothesis and goals on a big math env, recall definitions (also simulation) and call hypothesis H1, H2, ...
 Let \(R, A_1, A_2\) be such that \(\wrel{A_1}{A_2}{R}\).
 We want to prove:
 \begin{gather*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \\
-\iff
+\iff \\
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
 		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
@@ -763,5 +833,7 @@ We want to prove:
 	The left part of the implication is the left side of \hyp{g2} so we get \(t'_2 \in T_2\) and what's after as the hypothesis \hyp{target}.
 	The witnesses for \goal{G1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{g1}.
 \end{proof}
+
+% TODO
 
 \end{document}
