@@ -277,9 +277,15 @@ This implementation does exactly that and forbids any extra tick.
 
 The automaton on Figure \ref{fig:tlf} is bisimilar to the composition of the specification on Figure \ref{fig:tls} and the agents on Figure \ref{fig:tlh}.
 The result of the composition has 36 states (\(3 \times 2 \times 6\)) but only 6 are reachable from the initial configuration.
-The transitions obtained by composition are the following (generic and simplified version). \Ludo{Also satisfiable guards were replaced with simplified equivalent}{moved but a rephrasing may be better}:
+The transitions obtained by composition are the following (generic and simplified version). \Ludo{Also satisfiable guards were replaced with simplified equivalent}{moved but a rephrasing may be better: simplified twice?}:
+
+\Ludo{TODO: exlpain X}{}
+
+\Ludo{TODO: express composition in terms of fililng holes like in def 7}{}
+
+
 \begin{itemize}
-\item \nmm{\OT{XS}{XC}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{C \mapsto \theta\mpar{x}, R \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the register and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
+\item \nmm{\OT{XS}{XC}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{C \mapsto \theta\mpar{x}, R \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the \Ludo{register}{what is the register? do you mean counter?} and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from \Ludo{the controller}{why is there no $n$ and $n+1$ in the global state?}.
 \item \nmm{\OT{XC}{XC}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} which is the composition of \nmm{\OT{X}{X}{\act{tick}}{\mbrc{R \mapsto \act{tick}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
 \item \nmm{\OT{XC}{ZS}{\act{TurnXxx}}{\mbrc{}}{c = t}{\mbrc{}}} which is the composition of \nmm{\OT{X}{Z}{\act{TurnXxx}}{\mbrc{R \mapsto \act{over}\mpar{x}, C \mapsto \delta\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{S}{\act{over}\mpar{c}}{\mbrc{}}{c = t}{\mbrc{}}} from the register and \nmm{\OT{X}{Z}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \end{itemize}
@@ -290,18 +296,18 @@ The transitions obtained by composition are the following (generic and simplifie
 \caption{The full traffic lights system}
 \label{fig:tlf}
 \end{figure}
-Let's look at the \(\tau\) transition from the state \(R\) for a more in depth example on how composition and value passing work.
-The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{R \mapsto \act{set}\mpar{x}, C \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}.
-The composition makes 12 states from the \(R\) state, these states are in \(\mbrc{R} \times \mdbrk{1; 6} \times \mbrc{S, C}\), however only \(\mpar{R, 1, S}\) and \(\mpar{R, 2, C}\) are reachable so we will only consider these two.
+\Ludo{Let's look}{avoid informal english} at the \(\tau\) transition from the state \(R\) for a more in depth example on how composition and value passing work.
+The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{R \mapsto \act{set}\mpar{x}, C \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}. \Ludo{confused}{it is not clear in the text when you write about transistions or states : clarify}
+The composition can produce 12 states containing the \(R\) state, these states are in \(\mbrc{R} \times \mdbrk{1; 6} \times \mbrc{S, C}\), however only \(\mpar{R, 1, S}\) and \(\mpar{R, 2, C}\) are reachable so we will only consider these two.
 In the figure they are noted \(RS\) and \(RC\).
-The holes \(R\) and \(C\) are filles at the same time so the \(\tau\) transition must synchronise with a transition from both the register and the controller.
+The holes \(R\) and \(C\) are \Ludo{filles}{active? required?} at the same time so the \(\tau\) transition must synchronise with a transition from both the \Ludo{register}{counter?} and the controller.
 
-In the state \(RC\) the composition makes 2 transition from the \(\tau\) transition but both have a false guard; let's look at one of them.
+In the state \(RC\) the composition makes 2 transition \Ludo{from}{be more precise} the \(\tau\) transition but both have a false guard; let's look at one of them.
 \nmm{\OT{RC}{\mpar{R, 3, C}}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x_C}}{\mbrc{c \gets c + 1}}} is made with \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller and \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
-Obviously the guard is false so the it is equivalent to have no transition.
-Also the guard is long and can be simplified.
+Obviously the guard is false so  it is equivalent to have no transition.
+Also the guard  can be simplified.
 In this article the guard and transition are always simplified except for the sake of illustrating a concept that is lost in the simplification as it is the case here.
-We can see that the \(x\) variables from the specification, the controller and the register are in conlict.
+We can see that the \(x\) variables from the specification, the controller and the register are in conflict.
 To resolve the conflict we renamed the variables.
 
 In the state \(RS\) the composition makes 1 transition from the \(\tau\) transition.
