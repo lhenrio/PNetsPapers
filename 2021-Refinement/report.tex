@@ -55,13 +55,15 @@ Notations will be defined with the operator \(\defnotation\) and names are given
 Throughout this paper, tuples might be noted differently depending on what they represent.
 Quantification will be used loosely, any bound name in a quantification means that the object is constrained to have that previous value, and any new name is bound by the quantifier.
 For instance \(\forall \mpar{x, y}, \exists \mpar{x', y}, P\) means \(\forall \mpar{x, y}, \exists \mpar{x', y'}, y = y' \wedge P\).
+\Ludo{Strange}{do we really need this interpretation of quantifiers? I find it disturbing}
 
 Family of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\).
 The latter will only be used when unambiguous; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\), but \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) must be represented with one of the two first notation.
+\Ludo{Strange}{ you mean the last notation is forbidden? but isn't it introduced before?}
 The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
 
 For a relation \(\wrel{}{}{}\) which uses a property \(P\) to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists w: P\mpar{x, x'}\), the fact that there is a valid witness \(w: P\mpar{x, x'}\) is noted \(\wrel{x}{x'}{w}\).
-
+\Ludo{Strange}{not clear: it seems that $w$ is useless  I guess you mean $P$ depend on $w$ but it is not exactly what is written}
 
 \section{Open Automaton}\label{sec:def}
 To define an open automaton we need some preliminary definitions.
@@ -74,7 +76,7 @@ The formulae \(\formulae\) are at least the first order formulae over \(\terms\)
 \end{defi}
 The term algebra and action labels are arbitrary.
 An element \(\mpar{l, t} \in \actions\) is noted \(l\mpar{t}\).
-The formulae form at least a first order logic with an equality relation that is not necessarily the equality on \(\terms\).
+The formulae contain at least first order logic terms with an equality relation that is not necessarily \Ludo{?}{restricted to?} the equality on \(\terms\).
 
 An example of term algebra can be Peano integers (zero, variable and successor function), the formulae associated can use equality relation, the sum relation \(\mathit{sum}\mpar{a, b, c} \defobject a = b + c\) and the product relation \(\mathit{prod}\mpar{a, b, c} \defobject a = b \times c\).
 
@@ -100,13 +102,16 @@ We assume that the following are given:
 For the parallel substitution, the set \(V\) is not required to be a subset of \(\fvars{e}\).
 In the case where it is not, the variables in \(V \setminus \fvars{e}\) are not substituted.
 The substitutions might give a ill-formed expression; for instance let the terms be integers and pairs with (pointwise) addition, \(\mpar{a + b}\psubst{a \mapsto 7, b \mapsto \mpar{4, 5}}\) is a ill-formed term.
-This can be guarded with the check \(e\subst{t}{x} \in E\) and \(e\psubst{\psi} \in E\) and it will implicitely be the case, for instance when there is quantification on \(t\) and \(\psi\), to simplify notations.
+This can be guarded with the check \(e\subst{t}{x} \in E\) and \(e\psubst{\psi} \in E\) and it will implicitly be the case, for instance when there is quantification on \(t\) and \(\psi\), to simplify notations.
 
 The interpretation of terms is supposed to be decidable.
 The satisfiability of formulae might not be decidable nor complete nor consistent, however we will pretend like they are because these are really hard problems for logicians that we don't want to deal with.
 For instance a formula with quantifiers on variables might not be provable even if it is true for all values of these variables.
 In practise the formulae will be given to a SMT solver and we make sure they have all the previous properties.
 Actually \(\vdash\) is used to separate the external logic and the logic on \(\formulae\).
+
+\Ludo{?}{I do not understand the meaning of the net paragraph: I must have missed something}
+
 
 A value \(v\) may be used for keeping a variable state, and then injected in terms for substitution.
 While this is correct when \(\values \subseteq \rterms\), in the other cases this will be used as a shorthand for substitution with any term which can be interpreted as \(v\).
@@ -148,9 +153,11 @@ The bisimilarity relation on open automata is noted \(\cong\) and the FH-bisimul
 \end{noti}
 Note that FH-bisimilarity implies bisimilarity.
 
-To illustrate these definitions let's look at two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
-The enable operator runs its the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
+To illustrate these definitions we consider  two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
+The enable operator runs  the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
 During the synchronised action \Quentin{data can be exchanged}{I need to read a little bit more on that; is that a return code?}.
+
+
 \begin{exi}[Enable, state-oriented]
 \begin{figure}
 \centering
@@ -160,15 +167,16 @@ During the synchronised action \Quentin{data can be exchanged}{I need to read a 
 \caption{Enable operator implementation with open automata, on the left state oriented, on the right variable oriented}
 \label{fig:enable}
 \end{figure}
-To draw automata, the usual circle for states and simple arrows for transitions convention is used.
+
+Graphical notations for showing automata are as follows.
+Automata are shown in the figure, the usual circle for states and simple arrows for transitions convention is used.
 The initial state is indicated by a double circle.
 States names are indicated inside the circles and transitions labels are drawn near their corresponding arrow.
-
 The open transitions do not indicate the source and target states since that is the role of the transitions arrows; only the action is on the bottom side of the open transition.
 Also in the example, transitions are specified using variables in place of actions.
-This is used to represent all the transitions created by a correct substitution of these variables, which cannot be drawn otherwise as there are often infinitly many.
+This is used to represent all the transitions created by a correct substitution of these variables, which cannot be drawn as there are often infinitely many.
 
-Let's get back to the example.
+We can now explain the enable operator example.
 The automata on the left side is \(\OA{\mbrc{L, R}}{L}{\emptyset}{\mbrc{}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are generated by
 \begin{align*}
 	\OT{L}{L}{x}{\mbrc{l \mapsto x}}{x \neq \delta}{\mbrc{}} &&
@@ -177,12 +185,13 @@ The automata on the left side is \(\OA{\mbrc{L, R}}{L}{\emptyset}{\mbrc{}}{\mbrc
 \end{align*}
 Note that we could have expressed the transition in the middle with \(\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{x}}\) which would have avoided many transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\) which has the guard \(1 = 2\).
 
-This automaton is an implementation of the enable operator because it begins in the state \(L\) where it allows any transition from its hole \(l\) which is not \(\delta\) then synchronises its holes on the same data, effectively allowing a data exchange when it goes into state \(R\), and finally allows any transition from its hole \(r\).
-Only the synchronisation is hidden to the exterior by sending a \(\tau\) which is usually a silent action always allowed, unsynchronised with other holes and passed unmodified.
-Well here \(\tau\) is not always allowed from the holes in the state \(L\) the hole \(r\) cannot emmit it for the sake of simplifying the first example of open automaton.
+This automaton is an implementation of the enable operator because it begins in the state \(L\) where it allows any transition from its hole \(l\) which is not \(\delta\) then the automaton synchronises its holes on the same data, effectively allowing a data exchange when it goes into state \(R\), and finally allows any transition from its hole \(r\).
+We use the standard convention that uses $\tau$ as a non-observable transition, never synchronised with other actions and passed unmodified.
+Here the synchronisation is hidden to the exterior by sending a \(\tau\).
+\Ludo{Well}{avoid informal English in scientific writing} here \(\tau\) is not always allowed from the holes in the state \(L\) the hole \(r\) cannot emit it for the sake of simplifying the first example of open automaton.
 \end{exi}
 \begin{exi}[Enable, variable-oriented]
-The automata drawn on the right side of the figure is an alternative implementation of the enable operator which is FH-bisimilar.
+The automata drawn on the right side of the figure is an alternative implementation of the enable operator which is FH-bisimilar to the previous one\footnote{FH-bisimulation is defined in ~\cite{addcitation}}.
 The drawing introduces the double arrows which is used to denote the initial valuation.
 The automata drawn is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are like previously all the transitions generated by
 \begin{align*}
@@ -192,7 +201,7 @@ The automata drawn is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}
 \end{align*}
 Note that in this example \(r\) is a hole name and also a closed term, but not a variable.
 The same applies for \(l\).
-\(v\) is a variable name for the automaton and a variable in the guard, so its value is not substituted.
+\(v\) is a variable name for the automaton and a variable in the guard, \Ludo{so its value is not substituted}{I do not understand this: it seems to mean that the substitution of v has no effect}.\Ludo{?}{I believe this needs to be explained more clearly, perhaps based on the def 6 below}
 For instance \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is in \(T\) but not \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the substitution \(v \mapsto l\)).
 
 An imaginary run of this open automaton can be the automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = l\).
@@ -216,10 +225,10 @@ From this point open automata and open transitions will be called automata and t
 
 
 \section{Semantic and composition of Open Automata}\label{sec:semcompo}
-The interpretation of open automata is a partially specified automaton, where the partially specification comming from the holes.
+The interpretation of open automata is a partially specified automaton, where the partial specification comes from the holes.
 This specification can be completed by composing automata into holes so it is natural to take a look at the composition process.
 This was already defined on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
-The below definition of composition is a direct translation of composition on pNets for open automata.
+The  definition of composition below is a direct translation of composition on pNets for open automata.
 \begin{defi}[Composition of open automata]
 The composition of \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\) in the hole \(k \in J_p\) of \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) is
 \begin{align*}
@@ -236,8 +245,8 @@ The composition may look like a handshake, with both automata running in paralle
 This example is derived and adapted from a traffic light controller in a collection of examples for pNets.
 It is supposed to be a single traffic light.
 
-The figure \ref{fig:tls} is the light controller with some synchronisation logic.
-It still takes an unimplemented control circuit in the hole \(C\) which gives the timings and an also unimplemented register in the hole \(R\) to count external \(\act{tick}\) actions.
+\Ludo{Figure \ref{fig:tls} shows}{rephrased: typo} the light controller with some synchronisation logic.
+It  takes an unimplemented control circuit in the hole \(C\) which gives the timings and an also unimplemented register in the hole \(R\) to count external \(\act{tick}\) actions.
 The three states are used to remember which colored light is on and this color can be retrieved by the environment by synchronising with the actions \(\act{onXxx}\) if it is not stored externally.
 
 The color switches when the register and the control circuit agree that the time is over.
@@ -257,7 +266,7 @@ The new time limit can be set by the control circuit and the exposed action to t
 \caption{On the left: The controller agent; On the right: The counter agent}
 \label{fig:tlh}
 \end{figure}
-The component we choose to compose in the holes are in figure \ref{fig:tlh}.
+The component we choose to compose in the holes are in \Ludo{F}{}igure \ref{fig:tlh}.
 On the left is the controller agent which will be composed in the hole \(C\).
 Its role is to decide the duration before switching the lights.
 This implementation is simply a constant time for each color.
@@ -266,11 +275,9 @@ On the right is the register agent which will be composed in the hole \(R\).
 Its role is to get a target, then count ticks until that target is reached, then emit an action with the elapsed time and restart.
 This implementation does exactly that and forbids any extra tick.
 
-The automaton on figure \ref{fig:tlf} is bisimilar to the composition of the specification on figure \ref{fig:tls} and the agents on figure \ref{fig:tlh}.
+The automaton on Figure \ref{fig:tlf} is bisimilar to the composition of the specification on Figure \ref{fig:tls} and the agents on Figure \ref{fig:tlh}.
 The result of the composition has 36 states (\(3 \times 2 \times 6\)) but only 6 are reachable from the initial configuration.
-Also satisfiable guards were replaced with simplified equivalent.
-
-The transitions obtained by composition are the following (generic and simplified version):
+The transitions obtained by composition are the following (generic and simplified version). \Ludo{Also satisfiable guards were replaced with simplified equivalent}{moved but a rephrasing may be better}:
 \begin{itemize}
 \item \nmm{\OT{XS}{XC}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{C \mapsto \theta\mpar{x}, R \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the register and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \item \nmm{\OT{XC}{XC}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} which is the composition of \nmm{\OT{X}{X}{\act{tick}}{\mbrc{R \mapsto \act{tick}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
