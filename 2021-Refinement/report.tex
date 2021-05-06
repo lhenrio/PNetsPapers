@@ -352,22 +352,26 @@ Congruence is the refinement being compatible with being composed in the same au
 Compatibility with composition is the conjunction of the two latter (assuming the relation is a preorder).
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 
-The relations will have to be at least preorders, simulations and forbid the introduction of deadlocks (state where no transition is possible) to be called refinement simulation.
+
+The relations will have to be at least preorders, simulations and \Ludo{introduction of deadlocks}{define more precisely introduction of deadlocks or refer to a future definition} (state where no transition is possible) to be called refinement simulation.
 On top of that weak refinement are refinement where some actions, typically one named \(\tau\), are considered not observable and can occur in the implementation while not having to be matched in the specification.
 In the weak refinement the relations have to forbid the introduction of livelocks (only a sequence of \(\tau\) possible) and respect \(\tau\)-stuttering \marginpar{cite many things arround here}.
+\Ludo{to add}{I believe we want more arguments on why we want some properties, at least deadlock and livelock related, perhaps also weak vs strong. How did you decide of the list of useful properties / when ais such or such property useful?}
+
 While being preorder is simple to express for a relation, being a simulation, do not introduce new deadlocks/livelocks and \(\tau\)-stuttering are properties about the states of the related automata, therefore they are more complex to express.
 We will need a preliminary concept before defining them.
 \begin{defi}[Relation under predicate]
 A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\).
 
-Two states \(s_1 \in S_1, s_2 \in S_2\) are related under a valuation \(\sigma: V_1 \uplus V_2 \to \values\) iff \(\sigma \vdash R\mpar{s_1, s_2}\).
+
+Two states \(s_1 \in S_1, s_2 \in S_2\) are related under a \Ludo{?}{relation is mission: under a relation $R$ for a valuation ... ?} valuation \(\sigma: V_1 \uplus V_2 \to \values\) iff \(\sigma \vdash R\mpar{s_1, s_2}\).
 For a relation \(\wrel{}{}{}\) which uses a relation under predicate to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists R, P\mpar{R}\), the fact that there is a valid witness \(R\) is noted \(\wrel{x}{x'}{R}\).
 \end{defi}
 Now the properties about states of automata can be adapted to open automata.
 \begin{defi}[Simulation on open automata]
-A relation \(\leq\) is a simulation if for any related automata \(\wrel{A_1}{A_2}{R}\) where \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\), \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\), \(R\) satisfies both
+A relation \(\leq\) is a simulation if for any two related automata \(\wrel{A_1}{A_2}{R}\) where \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\), \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\), \(R\) satisfies both
 \defitem Initial states are related under initial valuations: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
-\defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
+\defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are \Ludo{related}{I am a bit surprised that $J_1$ and $J_2$ are unrelated and we only need to take only the intersection TBD}:
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
 	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
@@ -375,7 +379,7 @@ A relation \(\leq\) is a simulation if for any related automata \(\wrel{A_1}{A_2
 \end{multline*}
 \end{defi}
 The last formula means that for every pair of related states under valuation of the automaton variables and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the holes actions from same hole names (\(J'_1 \cap J'_2\)) match (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update.
-This is a natural extenion of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
+This is a natural extension of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
 It will serve as a watchdog for any relation that will be defined with ``simulation" in its name, except weak-simulation where the transition from the first automaton that produce \(\tau\) actions are excluded.
 
 \begin{defi}[Deadlock reduction, intuitive definition]
@@ -389,7 +393,7 @@ A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to
 	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
 \end{multline*}
 \end{defi}
-This definition extends the requirements of a simulation by requiring from the relation that on related states, either there is a pair of possible matching transition or there was no out-transition possible in the specification.
+This definition \Ludo{extends the requirements of a simulation}{je suis pas d accord avec cette affirmation, ou tout du moins c est pas evident} by requiring from the relation that on related states, either there is a pair of possible matching transition or there was no out-transition possible in the specification.
 This requirement effectively prevents the presence of deadlock state in the first automaton if there is a related non-deadlock state in the second.
 
 % LATER: livelock and tau-stuttering
@@ -410,20 +414,21 @@ This requirement effectively prevents the presence of deadlock state in the firs
 % \end{exi}
 
 ``Deadlock reduction" conflicts with ``composition completeness" by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transitions expects.
-In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a no deadlock reducing simulation refinement.
-A way to solve this issue is to caracterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
+In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a \Ludo{no deadlock reducing simulation refinement}{define or use the name of the definition}.
+A way to solve this \Ludo{issue}{why is this an issue? can be solved by stating which properties are desirable for which reason above} is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
 \begin{defi}[Reachability]
 For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), a reachability predicate \(\reach{A}: S \to \rformulae[V]\) is a predicate on states such that
 \defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\).
 \defitem \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \forall \nu: \fvars{t} \to \values, \nu \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}.
 \end{defi}
+
 For the reader not used to simulations and bisimulations, this definition of a predicate can seem strange.
-The reachability predicate is used to caracterise the states and valuations that are reachable in a run of an automaton.
-In fact the role of the predicate is to caracterise potentially reachable configurations without having to caracterise the fact that the state and valuation are the result of a valid path in an automaton.
+The reachability predicate is used to characterise the states and valuations that are reachable in a run of an automaton.
+In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise the fact that the state and valuation are the result of a valid path in an automaton.
 
 To do that we impose that the initial state is reachable in the initial valuation and that reachability is preserved by taking valid transitions.
 This effectively makes reachability account for all paths and potentially over-approximate the reachable configurations.
-However the exact rechability may not be reprensentable in the formulae, hence the need of potentially over-approximating.
+However the exact reachability may not be reprensentable in the formulae, hence the need of potentially over-approximating.
 
 Another way of understanding this predicate is that it is a fixpoint of the union of valuations that contains the initial valuation:
 \begin{align*}
@@ -433,16 +438,18 @@ Another way of understanding this predicate is that it is a fixpoint of the unio
 \end{align*}
 
 \begin{defi}[Non-locking composition, intuitive definition]
-The composition resulting in \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if there is a rechability predicate such that from reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
+
+The composition  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if there is a reachability predicate such that from reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
 \begin{multline*}
 	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
 	\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p}
 \end{multline*}
 \end{defi}
 
-To illustrate the introduction of a deadlock in a composition and the definition of non-locking composition, let's look at an example.
+To illustrate the introduction of a deadlock in a composition and the definition of non-locking composition, we consider the following example.
 \begin{exi}[Deadlocks introduced by composition]
 % TODO: give a context, a circuit cannot block physical time from progressing
+\Ludo{TODOludo}{lire l explication quand elle y sera}
 \begin{figure}
 \input{randomtick_clock.tex}
 \vrule
@@ -461,16 +468,18 @@ To illustrate the introduction of a deadlock in a composition and the definition
 % TODO: explain
 \end{exi}
 
-When expanding the aliases \(S, i, V\) in the definition, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one.
+When expanding the aliases \(S, i, V\) in \Ludo{the definition}{which def? pas lu la suite car je savais pas ou ca allait}, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one.
 It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
 Actually it is possible to simplify both definition and make them even more similar.
 
-\begin{defi}[Deadlock reduction, working definition] % TODO HERE: Maybe there is a union vars OT(s_2) missing in the domain of sigma
+\begin{defi}[Deadlock reduction, working definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \uplus \bigcup_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values, \\
 	\sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
+\Ludo{Question}{on the composed side you might have more variables, eg communicated by the sub-automata or by a sub-hole or stored in the state, how are they quantified?}
+\Quentin{Merge-conflict}{I edited the formula above before reading your message, is your question still relevant?}
 \end{defi}
 \begin{lem}
 The intuitive and working definition of deadlock reduction are equivalent.
