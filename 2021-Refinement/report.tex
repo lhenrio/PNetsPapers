@@ -34,7 +34,7 @@ Open pNets with the open automaton semantic and equivalence relation introduced 
 However equivalences relations are not sufficient to perform model checking, refinement relations are also used.
 For instance an example of open pNet where equivalence is not sufficient was encountered in ...\marginpar{Paper where the motivating example came up}.
 
-In this article we introduce a refinement relation for open automata. % TODO: expand
+In this article we introduce a refinement relation for open automata\marginpar{TODO: expand}.
 
 We begin in section \ref{sec:notations} by giving some notations used throughout this paper.
 Then there are several sections dedicated to define all the interesting objects and properties:
@@ -53,17 +53,15 @@ Notations will be defined with the operator \(\defnotation\) and names are given
 \end{align*}
 
 Throughout this paper, tuples might be noted differently depending on what they represent.
-Quantification will be used loosely, any bound name in a quantification means that the object is constrained to have that previous value, and any new name is bound by the quantifier.
-For instance \(\forall \mpar{x, y}, \exists \mpar{x', y}, P\) means \(\forall \mpar{x, y}, \exists \mpar{x', y'}, y = y' \wedge P\).
-\Ludo{Strange}{do we really need this interpretation of quantifiers? I find it disturbing}
 
 Family of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\).
-The latter will only be used when unambiguous; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\), but \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) must be represented with one of the two first notation.
-\Ludo{Strange}{ you mean the last notation is forbidden? but isn't it introduced before?}
+The latter will only be used when there is a generating expression; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
+However \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no generating expression and is represented with the first notation in a finite context.
 The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
 
-For a relation \(\wrel{}{}{}\) which uses a property \(P\) to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists w: P\mpar{x, x'}\), the fact that there is a valid witness \(w: P\mpar{x, x'}\) is noted \(\wrel{x}{x'}{w}\).
-\Ludo{Strange}{not clear: it seems that $w$ is useless  I guess you mean $P$ depend on $w$ but it is not exactly what is written}
+In a formula, a quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set:
+\(\forall \mbrc{a_1, \dots, a_n}, \exists \mbrc{b_1, \dots, b_m}, P\) means \(\forall a_1, \dots, \forall a_n, \exists b_1, \dots, \exists b_m, P\).
+
 
 \section{Open Automaton}\label{sec:def}
 To define an open automaton we need some preliminary definitions.
@@ -76,7 +74,8 @@ The formulae \(\formulae\) are at least the first order formulae over \(\terms\)
 \end{defi}
 The term algebra and action labels are arbitrary.
 An element \(\mpar{l, t} \in \actions\) is noted \(l\mpar{t}\).
-The formulae contain at least first order logic terms with an equality relation that is not necessarily \Ludo{?}{restricted to?} the equality on \(\terms\).
+The formulae contain at least first order logic terms with an equality relation.
+This equality relation is not necessarily a syntactic equality (\(2 + 2 \neq 4\) with a syntactic equality) on \(\terms\).
 
 An example of term algebra can be Peano integers (zero, variable and successor function), the formulae associated can use equality relation, the sum relation \(\mathit{sum}\mpar{a, b, c} \defobject a = b + c\) and the product relation \(\mathit{prod}\mpar{a, b, c} \defobject a = b \times c\).
 
@@ -110,16 +109,11 @@ For instance a formula with quantifiers on variables might not be provable even 
 In practise the formulae will be given to a SMT solver and we make sure they have all the previous properties.
 Actually \(\vdash\) is used to separate the external logic and the logic on \(\formulae\).
 
-\Ludo{?}{I do not understand the meaning of the net paragraph: I must have missed something}
-
-
-A value \(v\) may be used for keeping a variable state, and then injected in terms for substitution.
-While this is correct when \(\values \subseteq \rterms\), in the other cases this will be used as a shorthand for substitution with any term which can be interpreted as \(v\).
+Values will be used for keeping a variable state, and then injected in terms for substitution.
+This is correct when \(\values \subseteq \rterms\) and we suppose it is the case.
+Otherwise it doesn't invalidates theorem because it can stand as a shorthand for substitution with any term which is interpreted as \(v\).
 We suppose that the interpretation of terms is compatible w.r.t.\@ substitution, that is if two terms \(t\), \(t'\) are interpreted with the same value, then replacing \(t\) by \(t'\) in a well-formed expression makes an equivalent well-formed expression.
-\begin{noti}
-\defitem In a formula, a quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set:
-\[ \forall \mbrc{a_1, \dots, a_n}, \exists \mbrc{b_1, \dots, b_m}, P \text{ means } \forall a_1, \dots, \forall a_n, \exists b_1, \dots, \exists b_m, P \]
-% Also valuations \(\sigma: V \to \values\) will be used as formulas, the interpretation is as expected the constraint of variable to their associated value: \nmm{\bigwedge_{v \in V} v = \sigma\mpar{v}}.
+\begin{noti}[Notations for separating external logic and logic on \(\formulae\)]
 \defitem The satisfiability relation will be noted using the classical relational notation \(\vdash f\).
 \defitem The satisfiability of a formula \(f \in \formulae\) under some valuation \(\sigma: V \to \values\) is noted:
 \[ \sigma \vdash f \defnotation \vdash \exists \fvars{f\psubst{\sigma}}, f\psubst{\sigma} \]
@@ -130,18 +124,19 @@ We suppose that the interpretation of terms is compatible w.r.t.\@ substitution,
 \end{noti}
 With these common definitions and notations settled, the objects of interest can now be defined.
 \begin{defi}[Open automaton]
-A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) a set of open-transitions.
+A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions.
 
 \(S, V, J\) are arbitrary finite sets.
 \end{defi}
 The variable names may clash when considering two automata, in that case we suppose that we can still distinguish the variables in the formulas.
-All the possible open transitions, from which transitions in \(T\) are selected, are defined below.
+% The open transitions will be considered to be a finite set of representative open transitions. Removing this restriction may break some theorems.
 The initial valuation may be a partial valuation of the variables, if the undefined variables are set before being read this behave like a normal variable.
 If the undefined variable is not set before being read then its value may be any fixed value, the potential use of this construct will be explain in more details in section ???\marginpar{refinement section, hole identical is sufficient for the parametric construct}.
 \begin{defi}[Open transition]
 An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved, \(\beta_j \in \actions\) the actions of the holes, \(g \in \rformulae\) the guard and \(\psi: V \to \terms\) the new value of the variables.
 \end{defi}
-An open transition can have many unbound variable, actually any well-formed substitution of the unbound variables of the transition minus the automaton variables is a transition that the open automaton can perform.
+An open transition can have many unbound variable, actually an effective transition of the automaton is any well-formed substitution of the unbound variables of the transition minus the automaton variables.
+This is used to constrain the infinite branching to be representable, making it possible to reason about.
 
 The intuition of a semantic open automaton is a partially defined LTS with variables, guards on transitions and parametrised actions.
 Initially the automaton is in the initial state with the initial valuation.
@@ -153,7 +148,7 @@ The bisimilarity relation on open automata is noted \(\cong\) and the FH-bisimul
 \end{noti}
 Note that FH-bisimilarity implies bisimilarity.
 
-To illustrate these definitions we consider  two implementations (figure \ref{fig:enable}) of the LOTOS\marginpar{cite something here} operator enable in the open automata model.
+To illustrate these definitions we consider  two implementations (figure \ref{fig:enable}) of the LOTOS \cite{ISOLOTOS} operator enable in the open automata model.
 The enable operator runs  the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\) that is synchronised with the first action of the right hand side agent which must be \(\act{acc}\), then only the latter agent runs.
 During the synchronised action \Quentin{data can be exchanged}{I need to read a little bit more on that; is that a return code?}.
 
@@ -176,7 +171,7 @@ The open transitions do not indicate the source and target states since that is 
 Also in the example, transitions are specified using variables in place of actions.
 This is used to represent all the transitions created by a correct substitution of these variables, which cannot be drawn as there are often infinitely many.
 
-We can now explain the enable operator example.
+We can proceed to explain the left enable operator example.
 The automata on the left side is \(\OA{\mbrc{L, R}}{L}{\emptyset}{\mbrc{}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are generated by
 \begin{align*}
 	\OT{L}{L}{x}{\mbrc{l \mapsto x}}{x \neq \delta}{\mbrc{}} &&
@@ -186,12 +181,29 @@ The automata on the left side is \(\OA{\mbrc{L, R}}{L}{\emptyset}{\mbrc{}}{\mbrc
 Note that we could have expressed the transition in the middle with \(\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{x}}\) which would have avoided many transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\) which has the guard \(1 = 2\).
 
 This automaton is an implementation of the enable operator because it begins in the state \(L\) where it allows any transition from its hole \(l\) which is not \(\delta\) then the automaton synchronises its holes on the same data, effectively allowing a data exchange when it goes into state \(R\), and finally allows any transition from its hole \(r\).
-We use the standard convention that uses $\tau$ as a non-observable transition, never synchronised with other actions and passed unmodified.
-Here the synchronisation is hidden to the exterior by sending a \(\tau\).
-\Ludo{Well}{avoid informal English in scientific writing} here \(\tau\) is not always allowed from the holes in the state \(L\) the hole \(r\) cannot emit it for the sake of simplifying the first example of open automaton.
+We use the standard convention that uses \(\tau\) as a non-observable transition, never synchronised with other actions and passed unmodified.
+This allows the synchronisation of the two holes to be hidden to the exterior by sending a \(\tau\).
+However here \(\tau\) is not always allowed from the holes, for instance in the state \(L\) the hole \(r\) cannot emit it.
+These transition have been omitted for the sake of simplifying the first example of open automaton.
 \end{exi}
+
+Finally we can define some utilitary functions:
+\begin{defi}[Guard, Out-transition, Transition variables]
+Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(s\) be one of its states.
+\(\fOT{s}\) are called the out-transitions of \(s\).
+\(\fIT{s'}\) are called the in-transitions of \(s'\).
+\begin{align*}
+	\fOT{t} & \defnotation \mset{\OTg \in T}{s = t} &
+	\fIT{t} & \defnotation \mset{\OTg \in T}{s' = t} \\
+\end{align*}
+\begin{gather*}
+	\fvars{\OTg} \defnotation \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V \\
+	\fguard{\OTg} \defnotation g
+\end{gather*}
+\end{defi}
+
 \begin{exi}[Enable, variable-oriented]
-The automata drawn on the right side of the figure is an alternative implementation of the enable operator which is FH-bisimilar to the previous one\footnote{FH-bisimulation is defined in ~\cite{addcitation}}.
+The automata drawn on the right side of the figure is an alternative implementation of the enable operator which is FH-bisimilar to the previous one.
 The drawing introduces the double arrows which is used to denote the initial valuation.
 The automata drawn is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are like previously all the transitions generated by
 \begin{align*}
@@ -199,10 +211,13 @@ The automata drawn is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}
 	\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = l \wedge x = y}{\mbrc{v \gets r}} &&
 	\OT{\_}{\_}{x}{\mbrc{r \mapsto x}}{v = r}{\mbrc{}}
 \end{align*}
-Note that in this example \(r\) is a hole name and also a closed term, but not a variable.
-The same applies for \(l\).
-\(v\) is a variable name for the automaton and a variable in the guard, \Ludo{so its value is not substituted}{I do not understand this: it seems to mean that the substitution of v has no effect}.\Ludo{?}{I believe this needs to be explained more clearly, perhaps based on the def 6 below}
-For instance \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is in \(T\) but not \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the substitution \(v \mapsto l\)).
+Note that in this example \(r\) and \(l\) are a hole names and also closed terms: this is a naming conflict, we do not have \(J \subseteq \rterms\).
+
+The variables of a transition are all the free variables in the expressions minus the auomaton variables.
+For instance \(v\) is a variable name for the automaton which is used in the guard.
+It is not a transituon variable.
+When generating transition without free variables its value is not substituted with a closed term.
+For instance \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is a transition generated by the second transition and is in \(T\) but not \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto l\)).
 
 An imaginary run of this open automaton can be the automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = l\).
 Then the automaton in hole \(l\) emits a \(\delta\mpar{t}\), this is synchonised with the action that sets \(v \gets r\) and the automata in hole \(r\) must emit a \(\act{acc}\mpar{t}\).
@@ -211,16 +226,6 @@ Finally the automaton in the hole \(r\) emits any sequence of action.
 Another imaginary run can be the automaton in the hole \(l\) emits a sequence of action and the automaton in the hole \(r\) cannot emit a \(\act{acc}\mpar{t}\) so it never runs.
 \end{exi}
 
-Finally we can define some utilitary functions:
-\begin{defi}[Guard, Out-transition, Transition variables]
-Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(s\) be one of its states.
-\(\fOT{s}\) are called the out-transitions of \(s\).
-\begin{align*}
-	\fguard{\OTg} & \defnotation g &
-	\fOT{s} & \defnotation \mbrc{\OTg \in T}
-\end{align*}
-\[ \fvars{\OTg} \defnotation \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V \]
-\end{defi}
 From this point open automata and open transitions will be called automata and transitions for simplicity.
 
 
@@ -245,9 +250,9 @@ The composition may look like a handshake, with both automata running in paralle
 This example is derived and adapted from a traffic light controller in a collection of examples for pNets.
 It is supposed to be a single traffic light.
 
-\Ludo{Figure \ref{fig:tls} shows}{rephrased: typo} the light controller with some synchronisation logic.
-It  takes an unimplemented control circuit in the hole \(C\) which gives the timings and an also unimplemented register in the hole \(R\) to count external \(\act{tick}\) actions.
-The three states are used to remember which colored light is on and this color can be retrieved by the environment by synchronising with the actions \(\act{onXxx}\) if it is not stored externally.
+Figure \ref{fig:tls} shows the light controller with some synchronisation logic.
+It  takes an unimplemented control circuit in the hole \(ctl\) which gives the timings and an also unimplemented counter in the hole \(cnt\) to count external \(\act{tick}\) actions.
+The three states are used to remember which colored light is on and this color can be retrieved by the environment by synchronising with the actions \(\act{onXxx}\) (Xxx is either Red, Yellow or Green) if it is not stored externally.
 
 The color switches when the register and the control circuit agree that the time is over.
 The new time limit can be set by the control circuit and the exposed action to the exterior is a \(\tau\).
@@ -266,28 +271,22 @@ The new time limit can be set by the control circuit and the exposed action to t
 \caption{On the left: The controller agent; On the right: The counter agent}
 \label{fig:tlh}
 \end{figure}
-The component we choose to compose in the holes are in \Ludo{F}{}igure \ref{fig:tlh}.
-On the left is the controller agent which will be composed in the hole \(C\).
+The component we choose to compose in the holes are in Figure \ref{fig:tlh}.
+On the left is the controller agent which will be composed in the hole \(ctl\).
 Its role is to decide the duration before switching the lights.
 This implementation is simply a constant time for each color.
 
-On the right is the register agent which will be composed in the hole \(R\).
+On the right is the counter agent which will be composed in the hole \(cnt\).
 Its role is to get a target, then count ticks until that target is reached, then emit an action with the elapsed time and restart.
 This implementation does exactly that and forbids any extra tick.
 
 The automaton on Figure \ref{fig:tlf} is bisimilar to the composition of the specification on Figure \ref{fig:tls} and the agents on Figure \ref{fig:tlh}.
 The result of the composition has 36 states (\(3 \times 2 \times 6\)) but only 6 are reachable from the initial configuration.
-The transitions obtained by composition are the following (generic and simplified version). \Ludo{Also satisfiable guards were replaced with simplified equivalent}{moved but a rephrasing may be better: simplified twice?}:
-
-\Ludo{TODO: exlpain X}{}
-
-\Ludo{TODO: express composition in terms of fililng holes like in def 7}{}
-
-
+The transitions obtained by composition were simplified to give the following (where \(n, n+1\) stands for numbers between 1 and 6 and Xxx is either Red, Yellow or Green):
 \begin{itemize}
-\item \nmm{\OT{XS}{XC}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{C \mapsto \theta\mpar{x}, R \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the \Ludo{register}{what is the register? do you mean counter?} and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from \Ludo{the controller}{why is there no $n$ and $n+1$ in the global state?}.
-\item \nmm{\OT{XC}{XC}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} which is the composition of \nmm{\OT{X}{X}{\act{tick}}{\mbrc{R \mapsto \act{tick}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
-\item \nmm{\OT{XC}{ZS}{\act{TurnXxx}}{\mbrc{}}{c = t}{\mbrc{}}} which is the composition of \nmm{\OT{X}{Z}{\act{TurnXxx}}{\mbrc{R \mapsto \act{over}\mpar{x}, C \mapsto \delta\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{S}{\act{over}\mpar{c}}{\mbrc{}}{c = t}{\mbrc{}}} from the register and \nmm{\OT{X}{Z}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
+\item \nmm{\OT{XnS}{X(n+1)C}{\tau}{\mbrc{}}{\top}{\mbrc{t \gets k, c \gets 0}}} which is the composition of \nmm{\OT{X}{X}{\tau}{\mbrc{ctl \mapsto \theta\mpar{x}, cnt \mapsto \act{set}\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}} from the counter and \nmm{\OT{n}{n+1}{\theta\mpar{k}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
+\item \nmm{\OT{XnC}{XnC}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} which is the composition of \nmm{\OT{X}{X}{\act{tick}}{\mbrc{cnt \mapsto \act{tick}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the counter.
+\item \nmm{\OT{YnC}{X(n+1)S}{\act{TurnXxx}}{\mbrc{}}{c = t}{\mbrc{}}} which is the composition of \nmm{\OT{Y}{X}{\act{TurnXxx}}{\mbrc{cnt \mapsto \act{over}\mpar{x}, ctl \mapsto \delta\mpar{x}}}{\top}{\mbrc{}}} from the specification with \nmm{\OT{C}{S}{\act{over}\mpar{c}}{\mbrc{}}{c = t}{\mbrc{}}} from the counter and \nmm{\OT{n}{n+1}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller.
 \end{itemize}
 
 \begin{figure}
@@ -296,26 +295,29 @@ The transitions obtained by composition are the following (generic and simplifie
 \caption{The full traffic lights system}
 \label{fig:tlf}
 \end{figure}
-\Ludo{Let's look}{avoid informal english} at the \(\tau\) transition from the state \(R\) for a more in depth example on how composition and value passing work.
-The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{R \mapsto \act{set}\mpar{x}, C \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}. \Ludo{confused}{it is not clear in the text when you write about transistions or states : clarify}
-The composition can produce 12 states containing the \(R\) state, these states are in \(\mbrc{R} \times \mdbrk{1; 6} \times \mbrc{S, C}\), however only \(\mpar{R, 1, S}\) and \(\mpar{R, 2, C}\) are reachable so we will only consider these two.
-In the figure they are noted \(RS\) and \(RC\).
-The holes \(R\) and \(C\) are \Ludo{filles}{active? required?} at the same time so the \(\tau\) transition must synchronise with a transition from both the \Ludo{register}{counter?} and the controller.
+To illustrate composition, simplification and value passing, the \(\tau\) transition from the state \(R\) will be examined.
+The transition in the specification is \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \mapsto \act{set}\mpar{x}, ctl \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}.
+The composition can produce 12 states containing the \(R\) state, these states are in \(\mbrc{R} \times \mdbrk{1; 6} \times \mbrc{S, C}\), however only \(R1S\) and \(R2C\) are reachable so we will only consider \(\tau\) transitions from these two.
+The holes \(cnt\) and \(ctl\) are both involved in the \(\tau\) transition and filled with automata so the composed automata must synchronise with a transition.
 
-In the state \(RC\) the composition makes 2 transition \Ludo{from}{be more precise} the \(\tau\) transition but both have a false guard; \Ludo{Let's look}{avoid informal english} at one of them.
-\nmm{\OT{RC}{\mpar{R, 3, C}}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x_C}}{\mbrc{c \gets c + 1}}} is made with \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller and \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the register.
-Obviously the guard is false so  it is equivalent to have no transition.
-\Ludo{rest of the paragraph}{why so much discussion on a useless transition? did I miss something?} Also the guard  can be simplified.
-In this article the guard and transition are always simplified except for the sake of illustrating a concept that is lost in the simplification as it is the case here.
-We can see that the \(x\) variables from the specification, the controller and the register are in conflict.
-To resolve the conflict we renamed the variables.
+In the state \(R2C\) the composition produces 2 transition by composition out of the \(\tau\) transition but both have a false guard; It is still interesting to look at one of them to show the product of composition without simplification.
 
-In the state \(RS\) the composition makes 1 transition from the \(\tau\) transition.
-This transition is described before but \Ludo{Let's look}{avoid informal english} at the details of the composition.
-The obtained guard is \(\top \wedge \top \wedge \top \wedge \theta\mpar{x} = \theta\mpar{17} \wedge \act{set}\mpar{x} = \act{set}\mpar{x_R}\) and the obtained new values of the variables is \(\mbrc{t \gets x_R, c \gets 0}\).
-We can see here how value passing works: the only possible value of \(x\) and \(x_R\) making the guard hold is \(17\), this value has been synchronised from the controller to \(x\) then to the second occurrence of \(x\) to the distinct \(x\) of the register.
-This guard and \Ludo{value update}{what do you mean?} can be simplified to the one shown on the drawing.
-Note that \nmm{\OT{S}{C}{\act{set}\mpar{t}}{\mbrc{}}{\top}{\mbrc{c \gets 0}}} wouldn't have worked as a transition for the controller because \(t\) is fixed before the transition and its value cannot be set outside of the variable update, hence the use of a local variable \(x\).
+\nmm{\OT{R2C}{R3C}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x_C}}{\mbrc{c \gets c + 1}}} is made with \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} from the controller and \nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} from the counter.
+Obviously the equality of actions in the guard cannot be satisfied so the guard is false, it is equivalent to have no transition.
+We could go on to another transition but something worth explaining happened to build its guard.
+The first two \(\top\) come from the guards of the specification and the controller.
+\(c < t\) comes from the counter.
+The rest of the guard comes from the equality constraint between holes actions and automata actions.
+When composing this expression, we can see that the \(x\) variables from the specification, the controller and the counter are in conflict.
+To resolve the conflict the conflicted variables are renamed depending on where they come from.
+
+In the state \(R1S\) the composition produces 1 transition out of the \(\tau\) transition.
+The simplified transition is described before, yet examining the composition process can illustrate how value passing work.
+The obtained guard is \(\top \wedge \top \wedge \top \wedge \theta\mpar{x} = \theta\mpar{17} \wedge \act{set}\mpar{x} = \act{set}\mpar{x_R}\) and the obtained variable assignment is \(\mbrc{t \gets x_R, c \gets 0}\).
+We can see how value passing works in the equality constraints: the only possible value of \(x\) and \(x_R\) making the guard hold is \(17\), this value has been synchronised from the controller to \(x\) then to the second occurrence of \(x\) to the distinct \(x\) of the counter.
+Note that \nmm{\OT{S}{C}{\act{set}\mpar{t}}{\mbrc{}}{\top}{\mbrc{c \gets 0}}} wouldn't have worked as a transition for the controller because \(t\) is not a transition variable, its value is fixed before the transition and cannot be set outside of the variable update, hence the use of an auxiliary variable \(x\).
+
+From this point the guard and transition will always be simplified.
 \end{exi}
 
 
@@ -334,39 +336,44 @@ The important properties we will consider here are:
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
 \defitem \textbf{a preorder} iff it is reflexive and transitive;
-\defitem \textbf{\Ludo{complete}{not sure whyy this is called completeness} w.r.t.\@ composition} iff \(\forall a\, b, a\mbrk{b} \leq a\);
-\defitem \textbf{\Ludo{correct}{This eems very difficult to achieve so calling it correctness and implying that the other relations are not interesting is very strong} w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c, a \overset{FH}= b\mbrk{c}\);
-\defitem \textbf{context \Ludo{equivalent}{equivalent is strange here as there is no equivalence as far as I can see} for composition} iff \(\forall a\, b\, c, a \leq b \implies a\mbrk{c} \leq b\mbrk{c}\);
+\defitem \textbf{correct w.r.t.\@ composition} iff \(\forall a\, b, a\mbrk{b} \leq a\);
+\defitem \textbf{complete w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c, a \overset{FH}= b\mbrk{c}\);
+\defitem \textbf{context refining for composition} iff \(\forall a\, b\, c, a \leq b \implies a\mbrk{c} \leq b\mbrk{c}\);
 \defitem \textbf{congruent for composition} iff \(\forall a\, b\, c, a \leq b \implies c\mbrk{a} \leq c\mbrk{b}\);
 \defitem \textbf{compatible with composition} iff \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \implies c\mbrk{a} \leq d\mbrk{b}\);
 \defitem \textbf{compatibile with FH-bisimulation} iff \(\forall a\, b\, c, d, a \overset{FH}= b \wedge c \overset{FH}= d \wedge a \leq c \implies b \leq d\).
 \end{defi}
 Reflexivity, transitivity and preorder are classical properties on relations.
-Completeness w.r.t.\@ composition is the fact that every composition is considered a refinement.
-Correctness w.r.t.\@ composition is the fact that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
-Context equivalence is the refinement being compatible with composition with the same automaton.
+Correctness w.r.t.\@ composition is the fact that every composition is considered a refinement.
+Completeness w.r.t.\@ composition is the fact that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
+Context refinement is the refinement being compatible with composition of the same automaton.
 Congruence is the refinement being compatible with being composed in the same automaton.
-Compatibility with composition is the two latter at the same time \Ludo{?}{(plus transitivity?) it depends what you mean by ``at the same time''}.
+Compatibility with composition is the conjunction of the two latter (assuming the relation is a preorder).
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 
-The relations will have to be at least preorders, simulations and forbid the \Ludo{introduction of deadlocks}{define more precisely introduction of deadlocks or refer to a future definition} (states where no transition is possible) to be called refinement simulation.
-On top of that weak refinements are refinement where some actions, typically one named \(\tau\), are considered not observable and do not have to be matched.
-In  weak refinements, the relations have to forbid the introduction of livelocks (only a sequence of \(\tau\) possible) and respect \(\tau\)-stuttering \marginpar{cite many things arround here}.\Ludo{to add}{I believe we want more arguments on why we want some properties, at least deadlock and livelock related, perhaps also weak vs strong. How did you decide of the list of useful properties / when ais such or such property useful?}
+
+The relations will have to be at least preorders, simulations and \Ludo{introduction of deadlocks}{define more precisely introduction of deadlocks or refer to a future definition} (state where no transition is possible) to be called refinement simulation.
+On top of that weak refinement are refinement where some actions, typically one named \(\tau\), are considered not observable and can occur in the implementation while not having to be matched in the specification.
+In the weak refinement the relations have to forbid the introduction of livelocks (only a sequence of \(\tau\) possible) and respect \(\tau\)-stuttering \marginpar{cite many things arround here}.
+\Ludo{to add}{I believe we want more arguments on why we want some properties, at least deadlock and livelock related, perhaps also weak vs strong. How did you decide of the list of useful properties / when ais such or such property useful?}
+
 While being preorder is simple to express for a relation, being a simulation, do not introduce new deadlocks/livelocks and \(\tau\)-stuttering are properties about the states of the related automata, therefore they are more complex to express.
 We will need a preliminary concept before defining them.
 \begin{defi}[Relation under predicate]
 A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\).
 
-Two states \(s_1 \in S_1, s_2 \in S_2\) are related under a \Ludo{?}{relation is mission: under a relation $R$ for a valuation ... ?} valuation  \(\sigma: V_1 \uplus V_2 \to \values\) iff \(\sigma \vdash R\mpar{s_1, s_2}\).
+
+Two states \(s_1 \in S_1, s_2 \in S_2\) are related under a \Ludo{?}{relation is mission: under a relation $R$ for a valuation ... ?} valuation \(\sigma: V_1 \uplus V_2 \to \values\) iff \(\sigma \vdash R\mpar{s_1, s_2}\).
+For a relation \(\wrel{}{}{}\) which uses a relation under predicate to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists R, P\mpar{R}\), the fact that there is a valid witness \(R\) is noted \(\wrel{x}{x'}{R}\).
 \end{defi}
-Now, we adapt the properties about states of automata to open automata.
+Now the properties about states of automata can be adapted to open automata.
 \begin{defi}[Simulation on open automata]
 A relation \(\leq\) is a simulation if for any two related automata \(\wrel{A_1}{A_2}{R}\) where \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\), \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\), \(R\) satisfies both
 \defitem Initial states are related under initial valuations: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
 \defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are \Ludo{related}{I am a bit surprised that $J_1$ and $J_2$ are unrelated and we only need to take only the intersection TBD}:
 \begin{multline*}
-	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
-	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_2} \to \values, \\
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
+	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
 	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
@@ -379,7 +386,7 @@ A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
-		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
 		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 	\end{array}} \\
 	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
@@ -409,39 +416,43 @@ This requirement effectively prevents the presence of deadlock state in the firs
 In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a \Ludo{no deadlock reducing simulation refinement}{define or use the name of the definition}.
 A way to solve this \Ludo{issue}{why is this an issue? can be solved by stating which properties are desirable for which reason above} is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
 \begin{defi}[Reachability]
-For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), we define the caracterisation of reachable valuations \(\reach{A}: S \to \rformulae[V]\) as the strongest predicate on states such that
+For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), a reachability predicate \(\reach{A}: S \to \rformulae[V]\) is a predicate on states such that
 \defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\).
 \defitem \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \forall \nu: \fvars{t} \to \values, \nu \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}.
 \end{defi}
-For the reader not used to simulations and bisimulations, this definition with \Ludo{a witness}{what is the witness in the definition above?} can seem strange.
-The reachability predicate is used to caracterise the states and valuations that are reachable in a run of an automaton.
-In fact the role of the witness is to caracterise reachable configurations without having to caracterise the fact that the state and valuation are the result of a valid path in an automaton.
+
+For the reader not used to simulations and bisimulations, this definition of a predicate can seem strange.
+The reachability predicate is used to characterise the states and valuations that are reachable in a run of an automaton.
+In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise the fact that the state and valuation are the result of a valid path in an automaton.
 
 To do that we impose that the initial state is reachable in the initial valuation and that reachability is preserved by taking valid transitions.
-This effectively makes reachability account for all paths, and to not account for impossible path the strongest predicate is used.
-Another way of understanding this predicate is that it is the least fixpoint of the union of valuations that contains the initial valuation:
+This effectively makes reachability account for all paths and potentially over-approximate the reachable configurations.
+However the exact reachability may not be reprensentable in the formulae, hence the need of potentially over-approximating.
+
+Another way of understanding this predicate is that it is a fixpoint of the union of valuations that contains the initial valuation:
 \begin{align*}
-	f\mpar{p} = s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, T}} p\mpar{s}\psubst{\psi} \wedge g &&
-	\reach{A} = \lim_n f^n\mpar{s \mapsto \choice{\sigma_0 & s = s_0 \\ \bot & \text{otherwise}}}
+	f\mpar{p} = s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g &&
+	\sigma_0 \vdash \reach{A}\mpar{s_0} &&
+	f\mpar{\reach{A}} = \reach{A}
 \end{align*}
 
 \begin{defi}[Non-locking composition, intuitive definition]
-The composition  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if:
-\defitem From reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
+
+The composition  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if there is a reachability predicate such that from reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
 \begin{multline*}
-	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \mpar{\exists t \in T, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
+	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
 	\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p}
 \end{multline*}
 \end{defi}
 
 To illustrate the introduction of a deadlock in a composition and the definition of non-locking composition, we consider the following example.
 \begin{exi}[Deadlocks introduced by composition]
-% TODO HERE: read CCSL & BIP
+% TODO: give a context, a circuit cannot block physical time from progressing
 \begin{figure}
 \input{randomtick_clock.tex}
 \vrule
 \input{register_anytick.tex}
-\caption{On the left: A clock which imposes a tick; On the right: A modified version of the register at figure \ref{fig:tlh}}
+\caption{On the left: A clock which imposes a tick; On the right: A modified version of the counter at figure \ref{fig:tlh}}
 \label{fig:anytick}
 \end{figure}
 % TODO: explain
@@ -457,7 +468,7 @@ To illustrate the introduction of a deadlock in a composition and the definition
 
 When expanding the aliases \(S, i, V\) in the definition, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one.
 It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
-Actually it is possible to simplify both definition and make them shockingly similar.
+Actually it is possible to simplify both definition and make them even more similar.
 
 \begin{defi}[Deadlock reduction, working definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
@@ -478,53 +489,22 @@ Proof of both lemma are given in appendix \ref{apx:lemeqd}.
 
 % TODO?: sufficient condition
 
-This new substitution can replace the standard substitution in the case where only one hole is filled and also in the parallel case:
-\begin{thm}[Parallel non-locking substitution]
-Let \(A, B, C\) be open automata, \(J_A\) the hole names of \(A\) and \(k, l \in J_A\) two distinct hole names.
-\[ A\subst{B}{k}\subst{C}{l} \iff A\subst{C}{l}\subst{B}{k} \]
-\end{thm}
-If we prove that, then they are bisimilar because non-locking composition is a restriction of standard composition.
-\begin{proof}
-Both ways are symmetric so we will only prove one way.
-Let \(s' \defobject \mpar{\mpar{s_A, s_C}, s_B}\) and \(\sigma: V_A \uplus V_C \uplus V_B \to \values\) be respectively a state and a valuation of \(A\subst{C}{l}\subst{B}{k}\).
-We need to prove both:
-\begin{gather}
-	\sigma \vdash \reach{A\subst{C}{l}} \wedge \bigvee_\subbox{t \in \fOT{s_A}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} \goal{1} \\
-	\sigma \vdash \reach{A\subst{C}{l}\subst{B}{k}} \wedge \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s'}} \fguard{t} \goal{2}
-\end{gather}
-\(\mpar{s_A, s_B}\) is a state of \(A\subst{B}{k}\), \(s \defobject \mpar{\mpar{s_A, s_B}, s_C}\) is a state of \(A\subst{B}{k}\subst{C}{l}\) and \(\sigma\) is a valuation of their variables so the following hold by hyptoheses:
-\begin{gather}
-	\sigma \vdash \reach{A\subst{B}{k}} \wedge \bigvee_\subbox{t \in \fOT{s_A}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s_A, s_B}} \fguard{t} \hyp{1} \\
-	\sigma \vdash \reach{A\subst{B}{k}\subst{C}{l}} \wedge \bigvee_\subbox{t \in \fOT{s_A, s_B}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{2}
-\end{gather}
-By admitting and decomposing the left part of \goal{1} and \goal{2} we get the following:
-\begin{align*}
-	\sigma \vdash \reach{A\subst{C}{l}} & \text{ \hyp{\_}} &
-	t_A \in \fOT{s_A} &&
-	\sigma \vdash \fguard{t_A} \text{ \hyp{2}} \\
-	\sigma \vdash \reach{A\subst{C}{l}\subst{B}{k}} & \text{ \hyp{3}} &
-	t_{AC} \in \fOT{s_A, s_C} &&
-	\sigma \vdash \fguard{t_{AC}} \text{ \hyp{4}}
-\end{align*}
-And now we need to prove:
-\begin{align*}
-	\sigma \vdash \bigvee_\subbox{t \in \fOT{s_A, s_C}} \fguard{t} & \text{ \goal{1'}} &
-	\sigma \vdash \bigvee_\subbox{t \in \fOT{s'}} \fguard{t} & \text{ \goal{2'}}
-\end{align*}
-We use the fact that \(A\subst{C}{l}\subst{B}{k} \cong A\subst{B}{k}\subst{C}{l}\) on \hyp{3} to get: % TODO HERE: Add lemma about reachability implication for composition
-\[ \sigma \vdash \reach{A\subst{B}{k}\subst{C}{l}} \hyp{5} \]
-% TODO
-\end{proof}
+This new substitution can replace the standard substitution in the case where only one hole is filled and also in the parallel case.
+In the parallel case the condition is checked after the parallel substitution because there is no guarantee that any order of sequential composition is non-locking for every substitution even if the parallel substitution is non-locking.
+\begin{exi} % TODO
+\begin{figure}
+\centering
+\input{}
+\vrule
+\input{}
+\vrule
+\input{}
+\caption{}
+\label{fig:pnls}
+\end{figure}
+An example of non-locking parallel substitution where no individual substitution is non-locking is given in Figure \ref{fig:pnls}.% TODO HERE
+\end{exi}
 From this point and in the previous definitions, composition will only refer to non-locking composition.
-
-% ``Composition completeness" can be modified into ``Deadlock reduction completeness" to be compatible with ``Deadlock reduction": \(\forall a\, b, a\mbrk{b} \sqsubseteq a \implies a\mbrk{b} \leq a\).
-% Only the latter will be considered.
-% Similar issues arise on other properties and can be fixed by changing the prerequisites to ensure that the most deadlock-prone composition of automata is composition complete:
-% \begin{description}
-% \item[Composition context equivalence modified:] \(\forall a\, b\, c, a \leq b \wedge a\mbrk{c} \leq a \implies a\mbrk{c} \leq b\mbrk{c}\);
-% \item[Composition congruence modified:] \(\forall a\, b\, c, a \leq b \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq c\mbrk{b}\);
-% \item[Composition compatibility modified:] \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \wedge c\mbrk{a} \leq c \implies c\mbrk{a} \leq d\mbrk{b}\);
-% \end{description}
 
 With all these properties we can now look at some concrete refinemet relations.
 
@@ -557,11 +537,11 @@ The predicate \(R\mpar{i_1, i_2}\) is used to take into account the fact that a 
 This is already used in FH-bisimulation introduced in previous articles about open automata.
 So the meaning of \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\) is that the initial states with the initial valuation are effectively related.
 \begin{defi}[Hole-identical simulation]
-\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} is defined as: % TODO: faire des macros, + A_1 \overset{=}\leq_R A_2
+\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} is defined as: % TODO: \wrel
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{} \in T_1, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{} \in T_2}^{x \in X}, \\[12pt]
+		\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{} \in \fOT{s_2}}^{x \in X}, \\[12pt]
 		\forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
 		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'} \beta_{1j} = \beta_{2xj} \\[12pt]
@@ -589,7 +569,7 @@ Also if there was a deadlock then there is no transition because no trasition ca
 \begin{gather*}
 \forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
 \mpar{\everymath{\displaystyle}\begin{array}{l}
-	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{} \in T_1, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{} \in T_2}^{x \in X}, \\[12pt]
+	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{} \in \fOT{s_2}}^{x \in X}, \\[12pt]
 	\forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
 	\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 		\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'} \beta_{1j} = \beta_{2xj} \\[12pt]
@@ -598,8 +578,8 @@ Also if there was a deadlock then there is no transition because no trasition ca
 \end{array}} \\
 \iff \\
 \mpar{\everymath{\displaystyle}\begin{array}{l}
-	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\[6pt]
-	\quad \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \\[12pt]
+	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\[6pt]
+	\quad \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in \fOT{s_2}, \\[12pt]
 	\qquad \sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{array}}
 \end{gather*}
@@ -610,8 +590,8 @@ The other way is there because I hope that it will be easier to use this formula
 One may wonder why it was not used in the definition if it is equivalent.
 The reason is that the formulation used is compatible with SMT solver, the place where it will most probably be used in practise.
 \begin{proof} Let \(\mpar{s_1, s_2} \in S_1 \times S_2\),
-\item[\(\implies\):] We admit the up formula as \(H_{def}\), let \(t_1 \defobject \OTx{1}{}{1}{1} \in T_1\) and \(\sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values\) be such that \(H_{source} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1\).
-	\(H_{def}\) applied to \(t_1\) gives \(\mpar{t_{2x} \defobject \OTx{2}{x}{2x}{1} \in T_2}^{x \in X}\) and the property \(H_{tmp}\) to which we give \(\sigma\) to get
+\item[\(\implies\):] We admit the up formula as \(H_{def}\), let \(t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}\) and \(\sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values\) be such that \(H_{source} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1\).
+	\(H_{def}\) applied to \(t_1\) gives \(\mpar{t_{2x} \defobject \OTx{2}{x}{2x}{1} \in \fOT{s_2}}^{x \in X}\) and the property \(H_{tmp}\) to which we give \(\sigma\) to get
 	\begin{multline*}
 		H_{smt} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \\
 		\operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
@@ -668,7 +648,7 @@ This definitions is essentially the same as the hole-identical one excepted the 
 \begin{multline*}
 	\forall s_1 \in S_1, s_2 \in S_2, \\
 	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in T_1, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in T_2}^{x \in X}, \\
+		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
 		\mpar{\forall x \in X, J'_1 = J'_{2x} \cap J_1} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
 		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \\
@@ -743,7 +723,7 @@ This definitions is essentially the same as the hole-identical except that the c
 \begin{multline*}
 	\forall s_1 \in S_1, s_2 \in S_2, \\
 	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in T_1, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in T_2}^{x \in X}, \\
+		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
 		\mpar{\forall x \in X, J'_1 \cap J_2 = J'_{2x} \cap J_1 \wedge f\mpar{J'_1 \setminus J_2} \subseteq J'_{2x}} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
 		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J_2} \beta_{1j} = \beta_{2xj} \\
@@ -775,7 +755,7 @@ For any two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01
 \begin{multline*}
 	\forall s_1 \in S_1, s_2 \in S_2, \\
 	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in T_1, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in T_1}^{x \in X}, \\
+		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_1}}^{x \in X}, \\
 		\mpar{\forall x \in X, J'_1 \cap J_2 = J'_{2x} \cap J_1 \wedge f\mpar{J'_1 \setminus J_2} \subseteq J'_{2x}} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
 		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J_2} \beta_{1j} = \beta_{2xj} \\
@@ -816,7 +796,7 @@ We want to prove:
 \iff \\
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
-		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in T_1, t_2 \defobject \OTx{2}{}{2}{2} \in T_2, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
 		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 	\end{array}} \\
 	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
