@@ -385,7 +385,7 @@ It will serve as a watchdog for any relation that will be defined with ``simulat
 \begin{defi}[Deadlock reduction, intuitive definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulae[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
 \begin{multline*}
-	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
 		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
 		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
@@ -805,7 +805,7 @@ We want to prove:
 \end{multline}
 \[ \iff \]
 \begin{multline}
-	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
 	\mpar{\everymath{\displaystyle}\begin{array}{c}
 		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
 		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
@@ -813,7 +813,7 @@ We want to prove:
 	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2} \tag{ID}\label{eq:ID}
 \end{multline}
 \item[\bf(\ref{eq:WD})\(\implies\)(\ref{eq:ID}):]
-	Let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V \to \values\) be such that:
+	Let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \to \values\) be such that:
 	\[ \sigma \vdash R\mpar{s_1, s_2} \hyp{1} \]
 	By excluded middle, either the right hand side of the disjunction in (\ref{eq:WD}) holds, in which case the property holds, or it is false and we have the hypothesis:
 	\[ \exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2} \hyp{2} \]
@@ -840,19 +840,32 @@ We want to prove:
 	The left part of the implication is \hyp{1} and \hyp{3'}, so we get \(t'_2 \in \fOT{s_2}\), \(\nu': \fvars{t_2} \to \values\) and:
 	\[ \sigma \uplus \mu \uplus \nu' \vdash \alpha_1 = \alpha'_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J''_2} \beta_{1j} = \beta'_{2j} \wedge g'_2 \wedge R\mpar{s'_1, s''_2}\psubst{\psi_1 \uplus \psi'_2} \hyp{target} \]
 	The witnesses for \goal{1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{3'}.
-\item[\bf(\ref{eq:WD})\(\impliedby\)(\ref{eq:ID}):] % TODO: proof debt, restart here
-	If \(R\) satisfies the equivalent formula, let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \to \values\).
-	The free variables of the equivalent formula are all in \(V_1 \uplus V_2\) so let \(\sigma: V_1 \uplus V_2 \to \values\) be such that
-	\[ \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
-	We can decompose it by admitting the left part of the implication then decomposing the big disjunction to get \(\sigma \vdash R\mpar{s_1, s_2}\) as \hyp{p} and \(t_2 \in \fOT{s_2}\) such that \hyp{g2}: \(\sigma \vdash \fguard{t_2}\).
-	We are left to prove \[ \sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{G1} \]
-	To do that we will use the fact that \(R\) satisfies the deadlock reduction definition with the current value of \(s_1, s_2, \sigma\).
-	Now we additionally need to prove \goal{G2}: \(\exists t_2 \in \fOT{s_2}, \sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) before getting hypothesis \hyp{E}:
-	\[ \bigsymb{\exists} \OTx{2}{}{2}{2} \in T_2, \OTx{1}{}{1}{1} \in T_1, \sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \]
-	The witness of \goal{G2} is \(t_2\) obtained previously in the big disjunction, and \(\sigma \vdash R\mpar{s_1, s_2} \wedge \fguard{t_2}\) is proved by combining \hyp{p} and \hyp{g2}.
-	Now we can decompose \hyp{E} to get \(t_1 \in T_1\), which we know is also in \(\fOT{s_1}\), a transition that we won't use and \(\sigma \vdash \fguard{t_1}\) which is what we needed to prove the branch \(t_1\) of \goal{G1}.
+\item[\bf(\ref{eq:WD})\(\impliedby\)(\ref{eq:ID}):]
+	Let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \uplus \bigcup_{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values\).
+	We want to prove:
+	\[ \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1} \]
+	We can admit the left part of the implication in which we decompose the big disjunction to get \(t_2 \in \fOT{s_2}\) and:
+	\begin{align*}
+		\sigma \vdash R\mpar{s_1, s_2} & \text{ \hyp{1}} &
+		\sigma \vdash \fguard{t_2} & \text{ \hyp{2}}
+	\end{align*}
+	We are left to prove:
+	\[ \sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1'} \]
+	To do that we use (\ref{eq:ID}) with the current value of \(\mpar{s_1, s_2}\) and \(\sigma\), and prove the premisse of the implication with \hyp{1} to get:
+	\begin{multline}
+		\mpar{\everymath{\displaystyle}\begin{array}{c}
+			\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+			\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
+		\end{array}} \\
+		\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2} \hyp{3}
+	\end{multline}
+	There are two cases in this disjunction, the second is in contradiction with \hyp{2} and the first gives \(t_1\), \(t'_2\) and \(\nu\) such that (only the interesting part of the conjunction has been extracted):
+	\[ \sigma \uplus \nu \vdash \fguard{t_1} \hyp{4} \]
+	Which proves \goal{1'} with the values of \(\nu\) for the variables of \(\fguard{t_1}\) and dummy values for the other guards.
 \end{proof}
 
-% TODO
+\begin{proof}[Lemma 2]
+% TODO: recall what we want to prove, then prove it
+\end{proof}
 
 \end{document}
