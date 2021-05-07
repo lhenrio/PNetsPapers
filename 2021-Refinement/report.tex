@@ -478,8 +478,7 @@ A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \uplus \bigcup_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values, \\
 	\sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
-\Ludo{Question}{on the composed side you might have more variables, eg communicated by the sub-automata or by a sub-hole or stored in the state, how are they quantified?}
-\Quentin{Merge-conflict}{I edited the formula above before reading your message, is your question still relevant?}
+\Ludo{New Question}{what is the meaning of sigma here: it is not used on the right hand side of the implication; this seem to mean if there is  a sigma such that s1 and s2 are related then we have thr peoperty on disujunction on pred qithout caring about the valuation. Am I right? same question for the def below}
 \end{defi}
 \begin{lem}
 The intuitive and working definition of deadlock reduction are equivalent.
@@ -498,36 +497,37 @@ Proof of both lemma are given in appendix \ref{apx:lemeqd}.
 
 This new substitution can replace the standard substitution in the case where only one hole is filled and also in the parallel case.
 In the parallel case the condition is checked after the parallel substitution because there is no guarantee that any order of sequential composition is non-locking for every substitution even if the parallel substitution is non-locking.
-\begin{exi} % TODO
-\begin{figure}
-\centering
-\input{}
-\vrule
-\input{}
-\vrule
-\input{}
-\caption{}
-\label{fig:pnls}
-\end{figure}
+%\begin{exi} % TODO
+%\begin{figure}
+%\centering
+%\input{}
+%\vrule
+%\input{}
+%\vrule
+%\input{}
+%\caption{}
+%\label{fig:pnls}
+%\end{figure}
 An example of non-locking parallel substitution where no individual substitution is non-locking is given in Figure \ref{fig:pnls}.% TODO HERE
-\end{exi}
+%\end{exi}
 From this point and in the previous definitions, composition will only refer to non-locking composition.
 
 With all these properties we can now look at some concrete refinemet relations.
 
 
 \section{Preliminary refinement relations}\label{sec:prelref}
+\Ludo{organisation}{Is this only preliminaries, if yes could it be placed earlier? if no perhaps rename into refinement for open automata something}
 The main goal of this section is to help the reader understand the problems, constraints and different elements involved to solve them so that they are not all introduced at once in the real refinement relation.
-The main objective of the refinement relations in this section is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)) in restricted interesting cases.
+The main objective of the refinement relations \Ludo{in this section}{du coup la on se pose la question est ce juste ici ou est ce le but global, c est quio le schema general? ceci dit ca sera peut etre resolu par l introduction ... mais dans tous les cas une petite couche sur ou on est et ou on va ca serait bien. il faut quelque part clairemetn definir ce qu on veut et sous quelle condition plus tot que ici} is to be able to say that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)) in restricted interesting cases.
+\Ludo{lost}{I do not understand the last sentence}
 Hopefully they can be used as simpler (and less expensive) versions of the real refinement relation in the case the manipulated automata respect the constraints.
 
-Composing an open automaton can give an automaton where not much can be said in terms of hole indicies.
+Composing an open automaton can give an automaton where the holes of the obtained automatonn cannot be relatd with the holes of the original one.
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
-For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), the following refinement relations are defined.
 
+For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), we first define a refinement relation where holes of the compared automata are identical.
 This relation is the basis for all the other ones.
-It applies on automaton with same holes.
-The goal is to caracterise open automata that have a more determined (more deterministic) behaviour without adding deadlocks.
+The goal is to characterise open automata that have a more determined (more deterministic) behaviour without adding deadlocks. This corresponds to ???? in the classical definitions of refinement \\Ludo{TODO}{j imagine que rabea peut donner des refs ici}
 \begin{defi}[Hole-identical refinement] % TODO: transition variables
 If \(J_1 = J_2\) then ``\(A_1\) is a hole-identical refinement of \(A_2\)", noted \(A_1 \leq_= A_2\), is defined as:
 \[ \exists R: \mpar{S_1 \times S_2} \to \rformulae[V_1 \uplus V_2], \sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}} \qwedge R \text{ hole-identical simulation of } A_1 \text{ in } A_2 \]
@@ -537,14 +537,18 @@ The standard requirements for (bi)simulations are that \(R\) relates initial sta
 For a bisimulation transitions are matched one-to-many from each automaton to the other, but for a simulation only one way is used.
 The definition above requires explicitely that initial states are related, the other requirement are encapsulated in the definition (below) of hole-identical simulation.
 
-The specificities of open automata comes in when relating the (initial) states.
-The relation \(R\) relates \(i_1\) to \(i_2\) under the condition that the curent value of variables satisfies \(R\mpar{i_1, i_2}\).
+The specificities of open automata at on the relation between the (initial) states.
+\Ludo{lost}{When reading the next sentences I am not sure where we are going, what is notation introduction of concepts or definitions, please clarify}
+The relation \(R\) relates \(i_1\) to \(i_2\) under the condition that the current value of variables satisfies \(R\mpar{i_1, i_2}\).
 If two states \(s_1 \in S_1, s_2 \in S_2\) are not(/never) related then \(\nvdash R\mpar{s_1, s_2}\).
 The predicate \(R\mpar{i_1, i_2}\) is used to take into account the fact that a state is also constituted of the value of the variables.
 This is already used in FH-bisimulation introduced in previous articles about open automata.
+\Ludo{OK}{I guess I understand that you want to reach the next sentence as an explanation of the notations used in the definition, I mainly believe it is necessary to re-organise the ideas before}
 So the meaning of \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\) is that the initial states with the initial valuation are effectively related.
+\newpage % TODO: remove when less comments :)
+
 \begin{defi}[Hole-identical simulation]
-\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} is defined as: % TODO: \wrel
+\Quentin{``\(R\) is a hole-identical simulation of \(A_1\) in \(A_2\)"}{Any idea on how to note that? \(R \vDash A_1 \leq_= A_2\) for instance.} \Ludo{reply}{I believe the notation  \(R \vDash A_1 \leq_= A_2\) is not bad bbut for the text I would rather write a1 is a simulation of a2 according to (as witnessed by) R ???} is defined as: % TODO: \wrel
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
@@ -559,15 +563,15 @@ So the meaning of \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}
 \end{multline*}
 \end{defi}
 The first two lines quantify on source states, transitions (and target states) and source states valuations.
-The 3\textsuperscript{rd} line is the condition to ensure that transitions are not matched to incompatible ones:
-For all variable assignement of the two automata and all hole actions (quantification of \(\sigma\)), assuming that the states were related and the transition in \(A_1\) is possible (\(R\mpar{s_1, s_2} \wedge g_1\) part) then there is always a transition, not necessarily only one, which can be performed (\(g_{2x}\)), produce the same action (\(\alpha_1 = \alpha_{2x}\)), accept the same action from the holes (\(\beta_{1j} = \beta_{2xj}\)) and satisfy the predicate for relating the target states after variable update (\(R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}\)).
+The \Ludo{3\textsuperscript{rd}}{is this the good line number?} line is the condition to ensure that transitions are not matched to incompatible ones:
+For all variable assignments of the two automata and all hole actions (quantification of \(\sigma\)), assuming that the states were related and the transition in \(A_1\) is possible (\(R\mpar{s_1, s_2} \wedge g_1\) part) then there is always a set of transitions, not necessarily only one as several transitions might simulate the same one depending on the value of variables for example; these transitions can be performed (\(g_{2x}\)), produce the same action (\(\alpha_1 = \alpha_{2x}\)), accept the same action from the holes (\(\beta_{1j} = \beta_{2xj}\)) and satisfy the predicate for relating the target states after variable update (\(R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}\)).
 
-The notion of refinement here is stating that \(A_1\) is a refinement of \(A_2\) if \(A_1\) can be simulated in \(A_2\).
-The hole-identical part is referring to the fact that holes indicies are the same and identical holes indicies have to perform the same actions.
-On top of that the last line ensures no deadlock introduction.
-It can be interpreted ``assuming the predicate holds and there is any possible transition in \(A_2\) (= no deadlock), then there must be a possible transition in \(A_1\) (= no deadlock)".
+The notion of refinement here is stating that \(A_1\) is a refinement of \(A_2\) if \(A_1\) can be simulated \Ludo{in}{by?} \(A_2\).
+The hole-identical part is referring to the fact that holes indices are the same and identical holes indices have to perform the same actions.
+On top of that the last line ensures that no deadlock is introduced.
+It can be interpreted ``assuming the predicate holds and there is any possible transition in \(A_2\) (= no deadlock), then there must be a possible transition in \(A_1\) (= no deadlock)''.
 It does not have to ensure that this transition isn't garbage or that the target states are related because the first part of the simulation already does it.
-Also if there was a deadlock then there is no transition because no trasition can be simulated in a deadlock, that's why it is more a deadlock equivalence than a deadlock reduction.
+Also if there was a deadlock then there is no transition because no transition can be simulated in a deadlock, that's why it is more a deadlock equivalence than a deadlock reduction.\Ludo{?}{the last sentence is not very clear}
 
 \begin{exi} % TODO
 \end{exi}
@@ -591,11 +595,11 @@ Also if there was a deadlock then there is no transition because no trasition ca
 \end{array}}
 \end{gather*}
 \end{lem}
-The first property is one part of the hole-identical simulation, the second property is the central part of the refinement simulation requirement.
+The first property is one part of the hole-identical simulation, the second property is the central part of the \Ludo{refinement simulation requirement}{add reference to def}.
 If we prove the direct way of this equivalence and \(\leq_=\) is a preorder then \(\leq_=\) is a refinement simulation.
 The other way is there because I hope that it will be easier to use this formulation to prove that \(\leq_=\) is a preorder. % Will need to be modified
-One may wonder why it was not used in the definition if it is equivalent.
-The reason is that the formulation used is compatible with SMT solver, the place where it will most probably be used in practise.
+\Ludo{One may wonder why it was not used}{rephrase and state in what sense this second one could be considered as better} in the definition if it is equivalent.
+The reason is that the formulation used in definition??? is compatible with SMT solver, the place where it will most probably be used in practise.
 \begin{proof} Let \(\mpar{s_1, s_2} \in S_1 \times S_2\),
 \item[\(\implies\):] We admit the up formula as \(H_{def}\), let \(t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}\) and \(\sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values\) be such that \(H_{source} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1\).
 	\(H_{def}\) applied to \(t_1\) gives \(\mpar{t_{2x} \defobject \OTx{2}{x}{2x}{1} \in \fOT{s_2}}^{x \in X}\) and the property \(H_{tmp}\) to which we give \(\sigma\) to get
@@ -606,7 +610,7 @@ The reason is that the formulation used is compatible with SMT solver, the place
 			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}
 	\end{multline*}
-	Unfolding the definition of \(\sigma \vdash f\) where \(f\) is not a closed formula in \(H_{smt}\) gives an exists that we use to get \nmm{\nu: \biguplus_{x \in X} \fvars{t_{2x}} \to \values} and
+	\Ludo{Unfolding the definition}{I really cannot understand this step you will need to explain us I believe, and add details here. TODOLudo: read the rest of the proof after explanation} of \(\sigma \vdash f\) where \(f\) is not a closed formula in \(H_{smt}\) gives an exists that we use to get \nmm{\nu: \biguplus_{x \in X} \fvars{t_{2x}} \to \values} and
 	\[ H_{valid} \defobject \sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 		\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \\[12pt]
 		\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
