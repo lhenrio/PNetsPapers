@@ -131,7 +131,7 @@ A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the se
 The variable names may clash when considering two automata, in that case we suppose that we can still distinguish the variables in the formulas.
 % The open transitions will be considered to be a finite set of representative open transitions. Removing this restriction may break some theorems.
 The initial valuation may be a partial valuation of the variables, if the undefined variables are set before being read this behave like a normal variable.
-If the undefined variable is not set before being read then its value may be any fixed value, the potential use of this construct will be explain in more details in section ???\marginpar{refinement section, hole identical is sufficient for the parametric construct}.
+If the undefined variable is not set before being read then its value may be any fixed value, the potential use of this construct will be explain in more details in Section \ref{sec:prelref}.
 \begin{defi}[Open transition]
 An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved, \(\beta_j \in \actions\) the actions of the holes, \(g \in \rformulae\) the guard and \(\psi: V \to \terms\) the new value of the variables.
 \end{defi}
@@ -483,9 +483,25 @@ The counter on the right of Figure \ref{fig:anytick} is a modification to accept
 Composing this modified counter gives the automaton on the right of Figure \ref{fig:deadlock} which has no deadlocks.
 
 We should successfully caracterise the second composition as non-locking but fail for the first.
-In the state \(0S\) any valuation is reachable (no initial valuation).
-In both automata the transition \nmm{\OT{0S}{1S}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
-In the state \(0C\) % TODO: run the definition of non-locking composition
+\begin{itemize}
+\item In the state \(0S\) any valuation is reachable (no initial valuation).
+	In both automata the transition \nmm{\OT{0S}{1S}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
+\item In the state \(0C\), for the left automaton, valuations where \(t \geq c \geq 0 \vee \mpar{t < 0 \wedge c = 0}\) are reachable; for the right automaton, valuations where \(c \geq 0\) are reachable.
+	For all these valuations the transition \nmm{\OT{0C}{1C}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
+\item In the state \(1C\), the same valuations as the ones reachable in \(0C\) are also reachable.
+	In the right automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{\top}{\mbrc{c \gets c + 1}}} has a true guard.
+	In the left automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} covers the cases where \(c < t\).
+	For the other cases (\(c = t \vee t \leq 0 \mbrk{\leq c}\)) there are no transition with a true guard, and in the clock the transition same transition as for the state \(1S\) has a true guard, hence the composition is not non-locking.
+\item In the state \(1S\) any valuation is reachable.
+	In the left automaton, no transition is possible, and in the parent automaton \nmm{\OT{1}{0}{\act{tick}}{\mbrc{H \mapsto \act{tick}}}{\top}{\mbrc{}}} had a true guard, so the composition is not a non-locking composition (we already know it at this point).
+	In the right automaton, \nmm{\OT{1S}{0S}{\act{tick}}{\mbrc{}}{\top}{\mbrc{}}} has a true guard.
+\end{itemize}
+The left automaton indeed fails at being the result of a non-locking composition where the right automaton passes.
+
+One more thing worth noting is that for the left automaton, in the state \(1C\) with a valuation such that \(t < 0\), the counter agent is in a deadlock state.
+We could have defined the non-locking composition so that this is considered as an intended deadlock, making the requirement symetric.
+However the the semantic of composition in a hole is assymetric and the considered specification -as in the deadlock reduction- is the parent automaton.
+A symetric version is presented in Section ???\marginpar{TODO LATER}, where we introduce a more symetric model of open automata.
 \end{exi}
 
 When expanding the aliases \(S, i, V\) in \Ludo{the definition}{which def? pas lu la suite car je savais pas ou ca allait}, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one.
