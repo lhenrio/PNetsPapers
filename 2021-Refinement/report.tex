@@ -267,18 +267,18 @@ Composition is a complex process that generates big automata with complex and po
 However simplification is a hard problem that is not yet automatised on open automata, so from this point the guards and transitions will always be simplified by hand without further explaination.
 
 
-% TODO HERE: relecture
 \section{Properties of a refinement relation for Open Automata}\label{sec:proofelts}
-There are several properties that we may want from a refinement relation.
+There are several properties we may want from a refinement relation.
 Depending on these properties, different kinds of refinement can be used.
-For example if we are interested in producing the same sequence of actions we may want to use trace set inclusion as a refinement.
-Here the main properties that we want are related to composition and action refinement. % LATER: explain here or remove if not tackled
-Because of composition, a relation as strong as simulation refinement must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
+For example if we are interested in producing the same sequences of actions as another automaton we may want to use trace set inclusion as a refinement.
+Here the main expected properties are related to composition and action refinement. % LATER: explain here or remove if not tackled
+Because of composition, a relation as strong as simulation must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
+Informally, a simulation relation states that an automaton states and transitions can be simulated by another automaton.
 
 % LATER
 % Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
 
-The important properties we will consider here are:
+The important properties we consider are:
 \begin{defi} A relation \(\leq\) is
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
@@ -291,30 +291,28 @@ The important properties we will consider here are:
 \defitem \textbf{compatible with FH-bisimulation} iff \(\forall a\, b\, c, d, a \cong b \wedge c \cong d \wedge a \leq c \implies b \leq d\).
 \end{defi}
 Reflexivity, transitivity and preorder are classical properties on relations.
-Correctness w.r.t.\@ composition is the fact that every composition is considered a refinement.
-This property is what we want to capture with a refinement relation for a structure with composition like the open automata.
-Completeness w.r.t.\@ composition is the fact that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
+Correctness w.r.t.\@ composition means that every composition is considered a refinement.
+This property captures the expectated behaviour of a refinement relation on a compositionnal structure like the open automata.
+Completeness w.r.t.\@ composition means that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
 This property is useful if we want to caracterise the kind of operations that can generate any refined automaton starting from the specification.
-We wont have it because setting more automaton variables in the initial configuration will be a refinement and it can't be expressed by composing.
-Yet a completeness with respect to some base of operation is still a strong and interesting property.
+We won't have it because setting more automaton variables in the initial configuration will be a refinement and it can't be expressed with composition.
+Yet a completeness with respect to some base of operations is still a strong and interesting property.
 Context refinement is the refinement being compatible with composition of the same automaton.
 Congruence is the refinement being compatible with being composed in the same automaton.
 Compatibility with composition is the conjunction of the two latter (assuming the relation is a preorder).
-This property is also a must have on compositionnal structures to be of any use in proofs and for model checking.
+This property is a must have on compositionnal structures to be of any use in verification, proofs and for model checking.
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
-Since FH-bisimulation is the pre-existing practical equivalence relation, we should not introduce an incompatible proof strategy.
+Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
-The relations will have to be at least preorders, simulations and prevent the introduction of deadlocks to be called refinement simulation.
+The non introduction of deadlocks is also an important property.
 Deadlocks are states and valuations that are reachable in a run and from which no further transition is possible.
-On top of that weak refinement are refinement where some actions, typically one named \(\tau\), are considered not observable and can occur in the implementation while not having to be matched in the specification.
-In the weak refinement the relations have to forbid the introduction of livelocks (only a sequence of \(\tau\) possible) and respect \(\tau\)-stuttering \marginpar{cite many things arround here}.
+They can arise unpredictably when parallelism is involved (which is the case in our composition) and they break the intended behaviour of a system.
+By preventing them we could hope that the refinement preserves some liveness properties.
+While being preorder is simple to express for a relation, not introducing new deadlocks and being a simulation are properties about the states of the related automata.
+Therefore they are more complex to express.
+Thus the need of preliminary concepts before defining them.
 
-The non introduction of deadlocks/livelocks are important properties because deadlocks/livelocks can arise in unpredicable ways when parallelism is involved.
-The deadlocks/livelocks break the intended behaviour of a system and by preventing them we could hope that the refinement preserves some liveness properties.
-\Ludo{to add}{I believe we want more arguments on why we want some properties, at least deadlock and livelock related, perhaps also weak vs strong. How did you decide of the list of useful properties / when ais such or such property useful?}
-
-While being preorder is simple to express for a relation, being a simulation, do not introduce new deadlocks/livelocks and \(\tau\)-stuttering are properties about the states of the related automata, therefore they are more complex to express.
-We will need a preliminary concept before defining them.
+% TODO HERE: relecture
 \begin{defi}[Relation under predicate]
 A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 
@@ -501,9 +499,11 @@ In the parallel case the condition is checked after the parallel substitution be
 %\end{exi}
 From this point and in the previous definitions, composition will only refer to non-locking composition.
 
+The relations will have to be at least preorders, simulations and prevent the introduction of deadlocks to be called refinement simulation.
 With all these properties we can now look at some concrete refinemet relations.
 
 
+% TODO: re-ecriture
 \section{Refinement relations in restricted cases}\label{sec:prelref}
 The main goal of this section is to help the reader understand the problems, constraints and different elements involved to solve them so that they are not all introduced at once in the real refinement relation.
 The main objective of the refinement relations \Ludo{in this section}{du coup la on se pose la question est ce juste ici ou est ce le but global, c est quio le schema general? ceci dit ca sera peut etre resolu par l introduction ... mais dans tous les cas une petite couche sur ou on est et ou on va ca serait bien. il faut quelque part clairemetn definir ce qu on veut et sous quelle condition plus tot que ici} is to be able to state that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)) in restricted interesting cases. % TODO: probably remove, this is was written when the previous section was not yet written
