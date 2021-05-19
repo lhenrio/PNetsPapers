@@ -9,7 +9,6 @@
 \usepackage{tikz}
 \usetikzlibrary{external}
 \usepackage[colorlinks]{hyperref}
-% \usepackage{xcolor}
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 \usepackage{polyglossia}
 \setmainlanguage{english}
@@ -267,19 +266,35 @@ Composition is a complex process that generates big automata with complex and po
 However simplification is a hard problem that is not yet automatised on open automata, so from this point the guards and transitions will always be simplified by hand without further explaination.
 
 
+% TODO HERE: relecture
 \section{Properties of a refinement relation for Open Automata}\label{sec:proofelts}
 There are several properties we may want from a refinement relation.
 Depending on these properties, different kinds of refinement can be used.
 For example if we are interested in producing the same sequences of actions as another automaton we may want to use trace set inclusion as a refinement.
 Here the main expected properties are related to composition and action refinement. % LATER: explain here or remove if not tackled
 Because of composition, a relation as strong as simulation must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
-Informally, a simulation relation states that an automaton states and transitions can be simulated by another automaton.
 
-% LATER
-% Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
+Informally, a simulation relation relating two automata means that one automaton states and transitions can be simulated by the other automaton.
+Simulations are defined by relating states of automata.
+Two classical automata are called in simulation if there is a simulation relating their states.
 
-The important properties we consider are:
-\begin{defi} A relation \(\leq\) is
+Note that here there are two relations:
+The first is between states of two specific automata (\(R \subseteq S_1 \times S_2\)), the second is between automatas (\(A_1 \leq A_2\)).
+Generally the second is implicit because its definition is always \(\exists R \subseteq S_1 \times S_2, P\mpar{R}\) with \(P\) a property, and only talking about \(R\) and \(P\) is sufficient.
+However later on in this article we will define more complex relations on automata so we clarify the distinction now.
+A relation of second kind will be called ``relation on automata" whereas a relation of the first kind could be called ``relation on states" though valuations also play the same role as states.
+In the work on FH-bisimulation\marginpar{re-cite FH-bisim as near as the previous citation?} such a relation \(R\) was defined as triples in \(S_1 \times S_2 \times \formulas\) where for \(\mpar{s_1, s_2} \in S_1 \times S_2\) there is a unique \(f \in \formulas\) such that \(\mpar{s_1, s_2, f} \in R\).
+This is classically the definition of a function from \(S_1 \times S_2\) to \(\formulas\) so we will define it as such.
+\begin{defi}[Relation under predicate]
+A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+
+Two states \(s_1 \in S_1, s_2 \in S_2\) with their respective valuations \(\sigma_1: V_1 \to \values, \sigma_2: V_2 \to \values\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
+\end{defi}
+For a relation on automata \(\wrel{}{}{}\) which uses a relation under predicate to state that two element are related \(\forall x \, x', \wrel{x}{x'}{} \iff \exists R, P\mpar{R}\), there is no unicity on \(R\).
+To specify which witness is used in \(\wrel{x}{x'}{}\), we note \(\wrel{x}{x'}{R}\) where \(R\) is that witness.
+
+The important properties we consider for the relation on automata are:
+\begin{defi} A relation on open automata \(\leq\) is
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
 \defitem \textbf{a preorder} iff it is reflexive and transitive;
@@ -295,8 +310,8 @@ Correctness w.r.t.\@ composition means that every composition is considered a re
 This property captures the expectated behaviour of a refinement relation on a compositionnal structure like the open automata.
 Completeness w.r.t.\@ composition means that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
 This property is useful if we want to caracterise the kind of operations that can generate any refined automaton starting from the specification.
-We won't have it because setting more automaton variables in the initial configuration will be a refinement and it can't be expressed with composition.
-Yet a completeness with respect to some base of operations is still a strong and interesting property.
+We won't have it because extending the domain of the initial valuation will be a refinement which can't be expressed with composition.
+Yet a ``completeness w.r.t.\@ some set of operations" is still a strong and interesting property.
 Context refinement is the refinement being compatible with composition of the same automaton.
 Congruence is the refinement being compatible with being composed in the same automaton.
 Compatibility with composition is the conjunction of the two latter (assuming the relation is a preorder).
@@ -304,72 +319,50 @@ This property is a must have on compositionnal structures to be of any use in ve
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
-The non introduction of deadlocks is also an important property.
-Deadlocks are states and valuations that are reachable in a run and from which no further transition is possible.
-They can arise unpredictably when parallelism is involved (which is the case in our composition) and they break the intended behaviour of a system.
-By preventing them we could hope that the refinement preserves some liveness properties.
-While being preorder is simple to express for a relation, not introducing new deadlocks and being a simulation are properties about the states of the related automata.
-Therefore they are more complex to express.
-Thus the need of preliminary concepts before defining them.
-
-% TODO HERE: relecture
-\begin{defi}[Relation under predicate]
-A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
-
-Two states \(s_1 \in S_1, s_2 \in S_2\) with their respective valuations \(\sigma_1: V_1 \to \values, \sigma_2: V_2 \to \values\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
-For a relation \(\wrel{}{}{}\) which uses a relation under predicate to prove that two element are related \(\forall x \, x', x \wrel{}{}{} x' \iff \exists R, P\mpar{R}\), the fact that there is a valid witness \(R\) is noted \(\wrel{x}{x'}{R}\). % TODO REDO: objectif, introduire wrel
-\end{defi}
-Now the properties about states of automata can be adapted to open automata.
-\begin{defi}[Simulation on open automata] % TODO: faire une définition standard
-A relation \(\leq\) is a simulation if for any two related automata \(\wrel{A_1}{A_2}{R}\) where \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\), \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\), \(R\) satisfies both
+The important properties we consider for the relation on states are being a simulation and the reduction of deadlocks as defined in the following definitions.
+\begin{defi}[Pre-simulation on open automata] % TODO: Is the definition satifying now?
+For two automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), a relation under predicate \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a pre-simulation if it satisfies both
 \defitem Initial states are related under initial valuations: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
-\defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are \Ludo{related}{I am a bit surprised that $J_1$ and $J_2$ are unrelated and we only need to take only the intersection TBD}:
-\begin{multline*} % Mettre des sets de noms en commun qu'on veut effectivement mapper pour la transitivité
+\defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
+\begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
 	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
 	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
-% TODO: rassurer le lecteur, il a bien lu, ce qu'il se passe sur les trous est contre-intuitif
 The last formula means that for every pair of related states under valuation of the automaton variables and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the holes actions from same hole names (\(J'_1 \cap J'_2\)) match (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update.
-This is a natural extension of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
-It will serve as a watchdog for any relation that will be defined with ``simulation" in its name, except weak-simulation where the transition from the first automaton that produce \(\tau\) actions are excluded.
+Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
+The treatment of holes in the FH-bisimulation is that holes with the same name will receive the same open automata when composed and the resulting open automata will still be equivalent.
+Here we assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
+This implies that there is no relation between their holes (\(J \setminus \mset{k_i}{i \in \mdbrk{1; n}} \bigcup_{i \in \mdbrk{1; n}} J_i\) is neither subset nor superset of \(J_p\)).
+Yet we still assume that in holes with the same name, the same open automaton will be composed.
+Hence only the holes in common have to match their actions.
+However it is not sufficient to imply properties on the relation on automatons like being a preorder.
+It is only a necessary condition for any relation that will be defined with ``simulation" in its name.
 
-\begin{defi}[Deadlock reduction, intuitive definition]
-A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
+Deadlocks are states and valuations that are reachable in a run and from which no further transition is possible.
+They can arise unpredictably when parallelism is involved (which is the case in our composition) and they break the intended behaviour of a system.
+By preventing them we could hope that the refinement preserves some liveness properties.
+\begin{defi}[Deadlock reduction, intuitive definition] % TODO HERE: repasser a un implique
+A relation under predicate \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if:
+\defitem It is a pre-simulation;
+\defitem If from related states, there is a possible transition in the specification, then there is a pair of matching transition:
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
-	\mpar{\everymath{\displaystyle}\begin{array}{c}
-		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
-		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
-	\end{array}} \\
-	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2}
+	\mpar{\exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2}} \implies \\
+	\bigsymb{\exists} \mpar{t_1, t_2} \defobject \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+	\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
-% TODO: repasser a un implique
-This definition \Ludo{extends the requirements of a simulation}{je suis pas d accord avec cette affirmation, ou tout du moins c est pas evident} by requiring from the relation that on related states, either there is a pair of possible matching transition or there was no out-transition possible in the specification.
-This requirement effectively prevents the presence of deadlock state in the first automaton if there is a related non-deadlock state in the second.
+This requirement effectively prevents the presence of deadlock state in the first automaton if there is a related non-deadlock state in the second by contraposition.
+On top of that the transition preventing the deadlock has to be an existing transition in the specification.
+This is because a valid transition unmatched in the specification is not a deadlock, yet we do not want it.
+The direct formulation of the property would also have required the unintuitive quantification on a possibly empty set of transition to state that they are impossible.
+The two previous reasons motivated the formulation in contraposed form.
 
-% LATER: livelock and tau-stuttering
-% \item[Livelock reduction:] If \(a \leq b\) then \(a\) does not introduces new livelocks, noted \(a \preceq b\) in the following; % Find a better place to introduce a better definition of livelock reduction.
-% \defitem \textbf{\(\tau\)-stuttering} iff .
-
-% LATER: modify or remove it
-% On the other hand there is a property that we considered for some time, that may arise when designing a refinement relation and that is interesting but actually unwanted:
-% \begin{description}
-% \item[Daisy equivalence:] \(a\mbrk{D} \leq a \wedge a \leq a\mbrk{D}\), where \(D\) is the single state automaton that can produce any action.
-% \end{description}
-% This property state that composing a hole with an automaton which can do anything is not a strict refinement.
-% While it might seem to be a natural property because this automaton is the closest to the meaning of a hole in term of automaton, there is actually a difference between the two.
-% Daisy equivalence allows to refine by filling a hole but also by going the other way, that is creating a hole name and putting its hole action to any transition (and possibly keeping any of the unmodified transitions).
-% The unwanted behaviour arise for instance when two independant holes are filled, then a hole is created and its actions are put where the two other actions were.
-% This effectively merges independant holes, or equivalently allows to consider that an automaton can be plug simultaneously into several holes which is not part of the composition semantics.
-% \begin{exi}
-% \end{exi}
-
-``Deadlock reduction" conflicts with ``composition correctness" by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transitions expects.
-In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a \Ludo{deadlock reducing simulation refinement}{define or use the name of the definition}. % Unfold a little bit and remove refinement
-A way to solve this \Ludo{issue}{why is this an issue? can be solved by stating which properties are desirable for which reason above} is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier. % Issue référence le conflit mais ce n'est pas clair, clarifie ça, replace issue with conflict
+In all these properties, ``Deadlock reduction" conflicts with ``composition correctness" by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transition expects.
+In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a deadlock reducing relation.
+A way to solve this conflict is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
 \begin{defi}[Reachability]
 For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is a predicate on states such that
 \defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\).
@@ -384,83 +377,28 @@ To do that we impose that the initial state is reachable in the initial valuatio
 This effectively makes reachability account for all paths and potentially over-approximate the reachable configurations.
 However the exact reachability may not be reprensentable in the formulas, hence the need of potentially over-approximating.
 
-Another way of understanding this predicate is that it is a fixpoint of the union of valuations that contains the initial valuation:
+Another way of understanding this predicate is that it is a fixpoint of the union of valuations (function \(f\) defined below) that contains the initial valuation:
 \begin{align*}
-	f\mpar{p} = s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g &&
+	f\mpar{p} = \mbrc{s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g} &&
 	\sigma_0 \vdash \reach{A}\mpar{s_0} &&
 	f\mpar{\reach{A}} = \reach{A}
 \end{align*}
 
 \begin{defi}[Non-locking composition, intuitive definition]
-The composition  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\), is a non-locking composition if there is a reachability predicate such that from reachable configurations, either a transition is possible in \(A_p\subst{A_c}{k}\) or there were no possible transition in \(A_p\) to begin with
+Let  \(A \defobject A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) be the composition of \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), in the hole \(k \in J_p\) of \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\).
+The composition is non-locking if there is a reachability predicate such that from reachable configurations, if there was a possible transition in \(A_p\) then there is a possible transition in \(A_p\subst{A_c}{k}\):
 \begin{multline*}
-	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
-	\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p}
+	\forall \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \\
+	\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
+	\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}
 \end{multline*}
 \end{defi}
-(\(\pi_X\) is the projection of tuples on the set \(X\)). % TODO: Move that to the notations
+An illustration of the introduction of a deadlock by composition and the definition of non-locking composition is given in Appendix \ref{apx:lockcomp}.
 
-To illustrate the introduction of a deadlock in a composition and the definition of non-locking composition, we consider the following example.
-\begin{exi}[Deadlocks introduced by composition]
-\Ludo{TODOludo}{lire l'explication}
-This example reuses the counter introduced in Figure \ref{fig:tlh}.
-The behaviour of the counter is to count external \(\act{tick}\) actions up to the amount set by action \(\act{set}\mpar{x}\) then to notify the environnement that this amount of time elapsed.
-In the traffic light example the clock is not specified, we will introduce deadlocks using a wisely choosen clock specification.
-However the full traffic light will not be used in order to simplify the example, only the counter will be.
-
-\begin{figure}
-\input{randomtick_clock.tex}
-\vrule
-\input{register_anytick.tex}
-\caption{On the left: A clock which imposes a tick; On the right: A modified version of the counter at figure \ref{fig:tlh}}
-\label{fig:anytick}
-\end{figure}
-The clock on the left side of Figure \ref{fig:anytick} transmit the actions of its hole unchanged until the clock imposes a \(\act{tick}\) on its hole.
-This can model a physical clock, because physical time ticks cannot be delayed.
-
-If the hole cannot handle a \(\act{tick}\) at any time then there is a deadlock, which is the case with our counter.
-The composition of this clock with the counter is given on the left of Figure \ref{fig:deadlock}.
-\begin{figure}
-\input{Composition_deadlock.tex}
-\vrule
-\input{Composition_nolock.tex}
-\caption{On the left: Deadlocks introduced by composition; On the right: No deadlock introduced by composition}
-\label{fig:deadlock}
-\end{figure}
-There are two deadlocks:
-The first is in the state \(1S\), which correspond to the clock trying to imppose a tick when the counter is not set.
-The second is in the state \(1C\), which correspond to the clock trying to impose a tick when the counter has reached the amount peviously set, but not has not yet reported it to the environment.
-These deadlocks could have been in the specification in which case they were intended, but it is not the case here.
-
-The counter on the right of Figure \ref{fig:anytick} is a modification to accept ticks at in any state.
-Composing this modified counter gives the automaton on the right of Figure \ref{fig:deadlock} which has no deadlocks.
-
-We should successfully caracterise the second composition as non-locking but fail for the first.
-\begin{itemize}
-\item In the state \(0S\) any valuation is reachable (no initial valuation).
-	In both automata the transition \nmm{\OT{0S}{1S}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
-\item In the state \(0C\), for the left automaton, valuations where \(t \geq c \geq 0 \vee \mpar{t < 0 \wedge c = 0}\) are reachable; for the right automaton, valuations where \(c \geq 0\) are reachable.
-	For all these valuations the transition \nmm{\OT{0C}{1C}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
-\item In the state \(1C\), the same valuations as the ones reachable in \(0C\) are also reachable.
-	In the right automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{\top}{\mbrc{c \gets c + 1}}} has a true guard.
-	In the left automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} covers the cases where \(c < t\).
-	For the other cases (\(c = t \vee t \leq 0 \mbrk{\leq c}\)) there are no transition with a true guard, and in the clock the transition same transition as for the state \(1S\) has a true guard, hence the composition is not non-locking.
-\item In the state \(1S\) any valuation is reachable.
-	In the left automaton, no transition is possible, and in the parent automaton \nmm{\OT{1}{0}{\act{tick}}{\mbrc{H \mapsto \act{tick}}}{\top}{\mbrc{}}} had a true guard, so the composition is not a non-locking composition (we already know it at this point).
-	In the right automaton, \nmm{\OT{1S}{0S}{\act{tick}}{\mbrc{}}{\top}{\mbrc{}}} has a true guard.
-\end{itemize}
-The left automaton indeed fails at being the result of a non-locking composition where the right automaton passes.
-
-One more thing worth noting is that for the left automaton, in the state \(1C\) with a valuation such that \(t < 0\), the counter agent is in a deadlock state.
-We could have defined the non-locking composition so that this is considered as an intended deadlock, making the requirement symetric.
-However the the semantics of composition in a hole is assymetric and the considered specification -as in the deadlock reduction- is the parent automaton.
-A symetric version is presented in Section ???\marginpar{TODO LATER}, where we introduce a more symetric model of open automata.
-\end{exi}
-
-When expanding the aliases \(S, s_0, V\) in \Ludo{the definition}{which def? pas lu la suite car je savais pas ou ca allait}, and remarking that the last existential quantifier can be unfolded into a transition in \(A\) and one in \(A_p\) with the added condition that they match, the definition become mildly similar with the deadlock reduction one. % TODO: Make it clearer, what expansion, what is the result; or remove
+We can expand the aliases \(S, V\) into \(S_p \times S_c, V_p \uplus V_c\) and the last transition \(t\) into a pair \(\mpar{t_p, t}\) where the first transition is the one from \(A_p\) which generated \(t\).
+Doing that makes the definition become mildly similar with the deadlock reduction one.
 It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
 Actually it is possible to simplify both definition and make them even more similar.
-
 \begin{defi}[Deadlock reduction, working definition]
 A simulation \(\leq\) is deadlock reducing if in all the \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) such that \(\wrel{A_1}{A_2}{R}\), there is one that also satisfies
 \begin{multline*}
@@ -505,6 +443,7 @@ With all these properties we can now look at some concrete refinemet relations.
 
 % TODO: re-ecriture
 \section{Refinement relations in restricted cases}\label{sec:prelref}
+% Mettre des sets de noms en commun qu'on veut effectivement mapper pour la transitivité
 The main goal of this section is to help the reader understand the problems, constraints and different elements involved to solve them so that they are not all introduced at once in the real refinement relation.
 The main objective of the refinement relations \Ludo{in this section}{du coup la on se pose la question est ce juste ici ou est ce le but global, c est quio le schema general? ceci dit ca sera peut etre resolu par l introduction ... mais dans tous les cas une petite couche sur ou on est et ou on va ca serait bien. il faut quelque part clairemetn definir ce qu on veut et sous quelle condition plus tot que ici} is to be able to state that a composition of two automata is a refinement of the base automaton (\(a\mbrk{b} \leq a\)) in restricted interesting cases. % TODO: probably remove, this is was written when the previous section was not yet written
 \Ludo{lost}{I do not understand the last sentence}
@@ -778,6 +717,8 @@ The objective of the other part of this definition is to prevent the appearance 
 % FH-behaviourial equivalence if hole functions are not inverse, almost-FH-bisim if function is bijective and FH-bisim if in emptyset -> emptyset
 
 \section{Future work}
+% TODO: Weak variants, tau-stuttering, livelocks
+% Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
 
 \section{Conclusion}
 
@@ -864,7 +805,65 @@ We can see how value passing works in the equality constraints: the only possibl
 Note that \nmm{\OT{S}{C}{\act{set}\mpar{t}}{\mbrc{}}{\top}{\mbrc{c \gets 0}}} wouldn't have worked as a transition for the controller because \(t\) is not a transition variable, its value is fixed before the transition and cannot be set outside of the variable update, hence the use of an auxiliary variable \(x\).
 
 
-\section{Proof of equivalent definitions}\label{apx:lemeqd}
+\section{Example of deadlock introduced by composition and requirements of non-locking composition}\ref{apx:lockcomp}
+\begin{exi}[Deadlocks introduced by composition]
+\Ludo{TODOludo}{lire l'explication}
+This example reuses the counter introduced in Figure \ref{fig:tlh}.
+The behaviour of the counter is to count external \(\act{tick}\) actions up to the amount set by action \(\act{set}\mpar{x}\) then to notify the environnement that this amount of time elapsed.
+In the traffic light example the clock is not specified, we will introduce deadlocks using a wisely choosen clock specification.
+However the full traffic light will not be used in order to simplify the example, only the counter will be.
+
+\begin{figure}
+\input{randomtick_clock.tex}
+\vrule
+\input{register_anytick.tex}
+\caption{On the left: A clock which imposes a tick; On the right: A modified version of the counter at figure \ref{fig:tlh}}
+\label{fig:anytick}
+\end{figure}
+The clock on the left side of Figure \ref{fig:anytick} transmit the actions of its hole unchanged until the clock imposes a \(\act{tick}\) on its hole.
+This can model a physical clock, because physical time ticks cannot be delayed.
+
+If the hole cannot handle a \(\act{tick}\) at any time then there is a deadlock, which is the case with our counter.
+The composition of this clock with the counter is given on the left of Figure \ref{fig:deadlock}.
+\begin{figure}
+\input{Composition_deadlock.tex}
+\vrule
+\input{Composition_nolock.tex}
+\caption{On the left: Deadlocks introduced by composition; On the right: No deadlock introduced by composition}
+\label{fig:deadlock}
+\end{figure}
+There are two deadlocks:
+The first is in the state \(1S\), which correspond to the clock trying to imppose a tick when the counter is not set.
+The second is in the state \(1C\), which correspond to the clock trying to impose a tick when the counter has reached the amount peviously set, but not has not yet reported it to the environment.
+These deadlocks could have been in the specification in which case they were intended, but it is not the case here.
+
+The counter on the right of Figure \ref{fig:anytick} is a modification to accept ticks at in any state.
+Composing this modified counter gives the automaton on the right of Figure \ref{fig:deadlock} which has no deadlocks.
+
+We should successfully caracterise the second composition as non-locking but fail for the first.
+\begin{itemize}
+\item In the state \(0S\) any valuation is reachable (no initial valuation).
+	In both automata the transition \nmm{\OT{0S}{1S}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
+\item In the state \(0C\), for the left automaton, valuations where \(t \geq c \geq 0 \vee \mpar{t < 0 \wedge c = 0}\) are reachable; for the right automaton, valuations where \(c \geq 0\) are reachable.
+	For all these valuations the transition \nmm{\OT{0C}{1C}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
+\item In the state \(1C\), the same valuations as the ones reachable in \(0C\) are also reachable.
+	In the right automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{\top}{\mbrc{c \gets c + 1}}} has a true guard.
+	In the left automaton the transition \nmm{\OT{1C}{0C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} covers the cases where \(c < t\).
+	For the other cases (\(c = t \vee t \leq 0 \mbrk{\leq c}\)) there are no transition with a true guard, and in the clock the transition same transition as for the state \(1S\) has a true guard, hence the composition is not non-locking.
+\item In the state \(1S\) any valuation is reachable.
+	In the left automaton, no transition is possible, and in the parent automaton \nmm{\OT{1}{0}{\act{tick}}{\mbrc{H \mapsto \act{tick}}}{\top}{\mbrc{}}} had a true guard, so the composition is not a non-locking composition (we already know it at this point).
+	In the right automaton, \nmm{\OT{1S}{0S}{\act{tick}}{\mbrc{}}{\top}{\mbrc{}}} has a true guard.
+\end{itemize}
+The left automaton indeed fails at being the result of a non-locking composition where the right automaton passes.
+
+One more thing worth noting is that for the left automaton, in the state \(1C\) with a valuation such that \(t < 0\), the counter agent is in a deadlock state.
+We could have defined the non-locking composition so that this is considered as an intended deadlock, making the requirement symetric.
+However the the semantics of composition in a hole is assymetric and the considered specification -as in the deadlock reduction- is the parent automaton.
+A symetric version of composition on a flat model of open automata is presented in Section ???\marginpar{TODO LATER}.
+\end{exi}
+
+
+\section{Proof of equivalent definitions}\label{apx:lemeqd} % TODO: fix the proofs about the switch \vee -> \implies
 
 \subsection{Proof of lemma 1}
 \begin{proof}
