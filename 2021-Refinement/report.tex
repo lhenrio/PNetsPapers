@@ -20,6 +20,7 @@
 % possible examples for refinement: + <= |, ; <= |
 % transitions between sections
 % TODO: CITER LES CONFERENCES
+% Proof sketch 
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -345,7 +346,7 @@ The last formula means that for every pair of related states under valuation of 
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
 The treatment of holes in the FH-bisimulation is that holes with the same name will receive the same open automata when composed and the resulting open automata will still be equivalent.
 Here we assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
-This implies that there is no relation between their holes (\(J \setminus \mset{k_i}{i \in \mdbrk{1; n}} \bigcup_{i \in \mdbrk{1; n}} J_i\) is neither subset nor superset of \(J_p\)).
+This implies that there is no relation between their holes (\(J \setminus \mset{k_i}{i \in \mdbrk{1; n}} \cup \bigcup_{i \in \mdbrk{1; n}} J_i\) is neither subset nor superset of \(J_p\)).
 Yet we still assume that in holes with the same name, the same open automaton will be composed.
 Hence only the holes in common have to match their actions.
 However it is not sufficient to imply properties on the relation on automatons like being a preorder.
@@ -398,7 +399,7 @@ Another way of understanding this predicate is that it is a fixpoint of the unio
 Let  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\).
 The composition is non-locking if there is a reachability predicate such that from reachable configurations, if there was a possible transition in \(A_p\) then there is a possible transition in \(A_p\subst{A_c}{k}\):
 \begin{multline*}
-	\forall \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \\
+	\forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \\
 	\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
 	\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}
 \end{multline*}
@@ -427,7 +428,7 @@ The intuitive and working definition of deadlock reduction are equivalent.
 
 \begin{defi}[Non-locking composition, working definition]
 The composition \(A \defobject A_p\subst{A_c}{k}\) is a non-locking composition if:
-\[ \forall s \in S, \forall \sigma: V \uplus \bigcup_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
+\[ \forall ss \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \uplus \bigcup_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
 \end{defi}
 \begin{lem}
 The intuitive and working definition of non-locking composition are equivalent.
@@ -435,10 +436,13 @@ The intuitive and working definition of non-locking composition are equivalent.
 Proof of both lemma are given in Appendix \ref{apx:lemeqd}.
 
 This new definition of composition can replace the standard composition in the case where only one hole is filled, and also in the parallel case.
-In the parallel case, the condition is checked after the parallel composition because there is no guarantee that any order of sequential composition is non-locking, even if the parallel composition is non-locking.
+In the parallel case, we may think that if the condition is checked in the parallel case (at the final composition), then the composition is non-locking for every composition order.
+It is not true.
+Actually even if the last composition is non-locking there is no guarantee that there is an order of sequential composition that is non-locking at every step.
 However the oppsite way is true even if uninformative:
 If there is an order of composition where every composition is non-locking then the last composition is non-locking, last composition resulting in the same automaton as the parallel composition.
-\begin{exi} % TODO HERE: TIKZ
+So the condition is better checked after the parallel composition or the last individual composition.
+\begin{exi}
 \begin{figure}
 \centering
 \input{svn_rollingrelease.tex}
@@ -453,10 +457,8 @@ If the preferred version is the remote one, we go in state \(d1\) asking the net
 If the preferred version is the local one, we go in state \(d2\) asking for the integrity checker to generate a fingerprint for the local files, then ask the network manager to push them.
 In fallback we use the local version.
 
-Suppose that actually the network manager is reliable and the integrity check is only used to generate a fingerprint.
-Someone may in that case eliminate the blue transitions as an optimization.
-Once the blue transition eliminated, we can debranch the network manager and the file integrity check, but always at the same time.
-The composition with a deadlock automaton in both holes (debranching) is non-locking, but any individual composition is locking.
+We can debranch the network manager and the file integrity check by composing a deadlock automaton in their holes, but always both at the same time.
+The reason for that is the parallel composition is non-locking, but any individual composition is locking because the state \(d1\) or \(d2\) (depending on the order) becomes a deadlock.
 \end{exi}
 From this point and in the previous definitions, composition will only refer to non-locking composition.
 
@@ -886,12 +888,10 @@ A symetric version of composition on a flat model of open automata is presented 
 \end{exi}
 
 
-\section{Proof of equivalent definitions}\label{apx:lemeqd} % TODO: fix the proofs about the switch \vee -> \implies
+\section{Proof of equivalent definitions}\label{apx:lemeqd}
 
 \subsection{Proof of lemma 1}
-\begin{proof}
-Let \(R\), \(A_1 \defobject \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J_1}{T_1}\), \(A_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J_2}{T_2}\) be such that:
-\[ \wrel{A_1}{A_2}{R} \hyp{0} \]
+Let \(R\) be a pre-simulation between \(A_1 \defobject \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J_1}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J_2}{T_2}\).
 We want to prove:
 \begin{multline}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \uplus \bigcup_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values, \\
@@ -900,20 +900,19 @@ We want to prove:
 \[ \iff \]
 \begin{multline}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \to \values, \mpar{\sigma \vdash R\mpar{s_1, s_2}} \implies \\
-	\mpar{\everymath{\displaystyle}\begin{array}{c}
-		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
-		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
-	\end{array}} \\
-	\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2} \tag{ID}\label{eq:drID}
+	\mpar{\exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2}} \implies \\
+	\bigsymb{\exists} \mpar{t_1, t_2} \defobject \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+	\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\tag{ID}\label{eq:drID}
 \end{multline}
+\begin{proof}
 \item[\(\eqref{eq:drWD}\Rightarrow\eqref{eq:drID}\):]
 	Let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \to \values\) be such that:
 	\[ \sigma \vdash R\mpar{s_1, s_2} \hyp{1} \]
-	By excluded middle, either the right hand side of the disjunction in (\ref{eq:drWD}) holds, in which case the property holds, or it doesn't hold and we have the hypothesis:
+	We admit the left side of the second implication in \eqref{eq:drID}:
 	\[ \exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2} \hyp{2} \]
-	We get immediately the values \(t_2\), \(\nu\) and the hypothesis:
+	And get immediately the values \(t_2\), \(\nu\) and the hypothesis:
 	\[ \sigma \uplus \nu \vdash \fguard{t_2} \hyp{2'} \]
-	\(R\) satisfies (\ref{eq:drWD}) with the current value of \(\mpar{s_1, s_2}\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\bigcup_{t_2 \in \fOT{s_2}} \fguard{t_2}\) so we have:
+	\(R\) satisfies \eqref{eq:drWD} with the current value of \(\mpar{s_1, s_2}\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\bigcup_{t_2 \in \fOT{s_2}} \fguard{t_2}\) so we have:
 	\[ \sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{3} \]
 	The \(\vdash\) hides an implicit \(\exists\) that we use to get values to the variables in \(\bigcup_{t_1 \in \fOT{s_1}}\) in a valuation \(\mu\).
 	The left side of the implication is proved using \hyp{1} and \hyp{2'} for the branch \(t_2\) of the disjunction.
@@ -943,36 +942,37 @@ We want to prove:
 	\begin{minipage}{0.5\textwidth}\[ \sigma \vdash \fguard{t_2} \hyp{5} \]\end{minipage}
 	We are left to prove:
 	\[ \sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{2'} \]
-	To do that we use (\ref{eq:drID}) with the current value of \(\mpar{s_1, s_2}\) and \(\sigma\), and prove the premisse of the implication with \hyp{4} to get:
+	To do that we use \eqref{eq:drID} with the current value of \(\mpar{s_1, s_2}\) and \(\sigma\), and prove the premisse of the implication with \hyp{4} to get:
 	\begin{multline}
-		\mpar{\everymath{\displaystyle}\begin{array}{c}
-			\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
-			\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
-		\end{array}} \\
-		\vee \forall t_2 \in \fOT{s_2}, \forall \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \nvdash \fguard{t_2} \hyp{6}
+		\mpar{\exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2}} \implies \\
+		\bigsymb{\exists} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_1} \uplus \fvars{t_2} \to \values, \\
+		\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \hyp{6}
 	\end{multline}
-	There are two cases in this disjunction, the second is in contradiction with \hyp{5} and the first gives \(t_1\), \(t'_2\) and \(\nu\) such that (only the interesting part of the conjunction has been extracted):
+	The left part of the implication is proved for \(t_2\) and \(\sigma\) (for the values covered by \(\nu\)) with \hyp{5}.
+	The right part gives \(t_1\), \(t'_2\) and \(\nu\) such that (only the interesting part of the conjunction has been extracted):
 	\[ \sigma \uplus \nu \vdash \fguard{t_1} \hyp{7} \]
 	Which proves \goal{2'} with the values of \(\nu\) for the variables of \(\fguard{t_1}\) and dummy values for the other guards.
 \end{proof}
 
 \subsection{Proof of lemma 2}
-\begin{proof}
-\[ \forall s \in S, \forall \sigma: V \uplus \bigcup_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \tag{WD}\label{eq:nlcWD} \]
+We want to prove
+\[ \forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \uplus \bigcup_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \tag{WD}\label{eq:nlcWD} \]
 \[ \iff \]
 \begin{multline*}
-	\forall s \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \\
-	\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p} \tag{ID}\label{eq:nlcID}
+	\forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
+	\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
+	\mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \tag{ID}\label{eq:nlcID}
 \end{multline*}
+\begin{proof}
 \item[\(\eqref{eq:nlcWD}\Rightarrow\eqref{eq:nlcID}\):]
-	Let \(s \in S\) and \(\sigma \in V \to \values\) be such that:
+	Let \(s \defobject \mpar{s_p, s_c} \in S\) and \(\sigma \in V \to \values\) be such that:
 	\[ \sigma \vdash \reach{A}\mpar{s} \hyp{1} \]
-	By excluded middle, either the right hand side of the disjunction in (\ref{eq:nlcWD}) holds, in which case the property holds, or it doesn't hold and we have the hypothesis:
-	\[ \exists t_p \in \fOT{\pi_{S_p}\mpar{s}}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p} \hyp{2} \]
+	We admit the left side of the second implication in \eqref{eq:nlcID}:
+	\[ \exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p} \hyp{2} \]
 	We get immediately the values \(t_p\), \(\nu\) and the hypothesis:
 	\[ \sigma \uplus \nu \vdash \fguard{t_p} \hyp{2'} \]
-	\(R\) satisfies (\ref{eq:nlcWD}) with the current value of \(s\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\bigcup_{t_p \in \fOT{\pi_{s_p}\mpar{s}}} \fguard{t_p}\) so we have:
-	\[ \sigma \uplus \nu \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{3} \]
+	\(R\) satisfies \eqref{eq:nlcWD} with the current value of \(s\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\bigcup_{t_p \in \fOT{s_p}} \fguard{t_p}\) so we have:
+	\[ \sigma \uplus \nu \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{3} \]
 	The \(\vdash\) hides an implicit \(\exists\) that we use to get values to the variables in \(\bigcup_{t \in \fOT{s}}\) in a valuation \(\mu\).
 	The left side of the implication is proved using \hyp{1} and \hyp{2'} for the branch \(t_p\) of the disjunction.
 	We are now allowed to decompose the right side to get \(t\) such that:
@@ -982,20 +982,21 @@ We want to prove:
 	\[ \exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t} \]
 	Which is proved on \(t\) with valuation \(\mu\) by \hyp{3'}.
 \item[\(\eqref{eq:nlcWD}\Leftarrow\eqref{eq:nlcID}\):]
-	Let \(s \in S\), \(\sigma \in V \uplus \bigcup_{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fvars{t_p} \to \values\).
+	Let \(s \defobject \mpar{s_p, s_c} \in S\), \(\sigma \in V \uplus \bigcup_{t_p \in \fOT{s_p}} \fvars{t_p} \to \values\).
 	We want to prove:
-	\[ \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{\pi_{S_p}\mpar{s}}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \goal{1} \]
+	\[ \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \goal{1} \]
 	We can admit the left part of the implication in which we decompose the big disjunction to get \(t_p\) and:\\
 	\begin{minipage}{0.5\textwidth}\[ \sigma \vdash \reach{A}\mpar{s} \hyp{4} \]\end{minipage}
 	\begin{minipage}{0.5\textwidth}\[ \sigma \vdash \fguard{t_p} \hyp{5} \]\end{minipage}
 	We are left to prove:
 	\[ \sigma \vdash \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \goal{1'} \]
-	To do that we use (\ref{eq:nlcID}) with the current value of \(s\) and \(\sigma\), and prove the premisse of the implication with \hyp{4} to get:
+	To do that we use \eqref{eq:nlcID} with the current value of \(s\) and \(\sigma\), and prove the premisse of the implication with \hyp{4} to get:
 	\begin{multline}
-		\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t} \\
-		\vee \forall t_p \in \fOT{\pi_{S_p}\mpar{s}}, \forall \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \nvdash \fguard{t_p} \hyp{6}
+		\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
+		\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t} \hyp{6}
 	\end{multline}
-	There are two cases in this disjunction, the second is in contradiction with \hyp{5} and the first gives \(t\) and \(\nu\) such that:
+	The left part of the implication is proved for \(t_p\) and \(\sigma\) (for the values covered by \(\nu\)) with \hyp{5}.
+	The right part gives \(t\) and \(\nu\) such that:
 	\[ \sigma \uplus \nu \vdash \fguard{t} \hyp{7} \]
 	Which proves \goal{1'} with the values of \(\nu\) for the variables of \(\fguard{t}\) and dummy values for the other guards.
 \end{proof}
