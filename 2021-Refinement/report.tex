@@ -17,10 +17,8 @@
 \input{preamble.tex}
 \input{tikzmacros.tex}
 
-% possible examples for refinement: + <= |, ; <= |
 % transitions between sections
 % TODO: CITER LES CONFERENCES
-% Proof sketch
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -37,6 +35,8 @@ However equivalences relations are not always sufficient to perform verification
 For instance an example of open pNet where equivalence is not sufficient was encountered in ...\marginpar{Paper where the motivating example came up}.
 
 The contributions of this article are the definition of composition for open automata without having to define open pNets, and the introduciton of several refinement relations for open automata\marginpar{TODO: expand}.
+
+% Related work: thesis
 
 We begin with Section \ref{sec:notations} by giving some notations used throughout this paper.
 Then there are several sections dedicated to define all the interesting objects and properties:
@@ -132,7 +132,8 @@ We suppose that the interpretation of terms is compatible w.r.t.\@ substitution,
 \end{noti}
 With these common definitions and notations settled, the objects of interest can now be defined.
 \begin{defi}[Open automaton]
-A open automaton is a tuple \(\OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions.
+A open automaton is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions.
+A pair of a state and a valuation is called a configuration.
 
 \(S, V, J\) are arbitrary finite sets. % OR finite arbitrary sets?
 \end{defi}
@@ -150,10 +151,10 @@ An open transition can have many unbound variables.
 Actually an effective transition of the automaton is any well-formed substitution of the unbound variables of the transition minus the automaton variables.
 
 The intuition of an open automaton is a partially defined LTS with variables, guards on transitions and parametrised actions.
-Initially the automaton is in the initial state with the initial valuation.
-In any state with any valuation, it can perform effective transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
+Initially the automaton is in the initial state with an extension on all the variables of the initial valuation.
+In any configuration, it can perform effective transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
 An effective transition is a transition where every variable that is not an automaton variable is instanciated with a value.
-By performing the effective transition, the automaton emits the indicated action and updates its variables and state according to the target state and variables assignements.
+By performing the effective transition, the automaton emits the indicated action and updates its configuration according to the target state and variables assignements.
 
 \begin{noti}[FH-bisimulation]
 The FH-bisimulation \cite{henrio:01055091} is noted \(\cong\).
@@ -220,11 +221,11 @@ Other variables like automaton variables are already known at this point so ther
 Also the use of this extractor benefits from this exclusion: otherwise there would always be \(\setminus V\) following it to prevent variable shadowing.
 
 \begin{exi}[Enable, variable-oriented]
-The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{\_}}{\_}{\mbrc{v}}{l^\mbrc{v}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are:
+The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{»}}{»}{\mbrc{v}}{v \mapsto l}{\mbrc{l, r}}{T}\) where transitions in \(T\) are:
 \begin{align*}
-	\OT{\_}{\_}{x}{\mbrc{l \mapsto x}}{v = l \wedge x \neq \delta}{\mbrc{}} &&
-	\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = l \wedge x = y}{\mbrc{v \gets r}} &&
-	\OT{\_}{\_}{x}{\mbrc{r \mapsto x}}{v = r}{\mbrc{}}
+	\OT{»}{»}{x}{\mbrc{l \mapsto x}}{v = l \wedge x \neq \delta}{\mbrc{}} &&
+	\OT{»}{»}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = l \wedge x = y}{\mbrc{v \gets r}} &&
+	\OT{»}{»}{x}{\mbrc{r \mapsto x}}{v = r}{\mbrc{}}
 \end{align*}
 It is an alternative implementation of the enable operator which is FH-bisimilar to the previous one, as proved in \marginpar{probably forte, check that}.
 Note that in this example \(r\) and \(l\) are a hole names and also closed terms: this is a naming conflict, though it is not ambiguous because \(J \cap \rterms = \emptyset\) always holds.
@@ -232,7 +233,7 @@ The variables local to a transition are all the unbound variables in the express
 For instance \(v\) is a variable of the automaton (used in the guard).
 It is not local to the transition.
 In a run, when taking effective transitions (without local variables), its value is not substituted with a closed term.
-For instance \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is an effective transition generated from the second transition but not \nmm{\OT{\_}{\_}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto l\)).
+For instance \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is an effective transition generated from the second transition but not \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto l\)).
 
 An imaginary run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = l\).
 Then the automaton in hole \(l\) emits a \(\delta\mpar{t}\), this is synchonised with the action that sets \(v \gets r\) and the automata in hole \(r\) must emit a \(\act{acc}\mpar{t}\).
@@ -245,12 +246,13 @@ From this point open automata and open transitions can be called automata and tr
 
 
 \section{Composition of Open Automata}\label{sec:comp}
+% TODO: distinguish composition from "parallel composition (pure interleaving)"
 Open automata are partially specified automata, part of that partiality comes from the holes.
 The interpretation of a hole is an interface with another open automaton, in which we can plug an open automaton with an operation called composition.
 The composition of open automata was already implicitely defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
 \begin{defi}[Composition of open automata]
-The composition of \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\) in the hole \(k \in J_p\) of \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) is
+The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p \defobject \OAg[p]\) is
 \begin{align*}
 	A_p\subst{A_c}{k} \defnotation & \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \\
 	\text{with } T \defobject & \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p \setminus \mbrc{k}}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{\OTx{p}{}{}{p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
@@ -269,72 +271,69 @@ Let \(A_1\), \(A_2\), \(A_3\) be three open automata with respectively \(J_1\), 
 We have
 \begin{align*}
 	A_1\subst{A_2}{j}\subst{A_3}{j'} & = A_1\subst{A_3}{j'}\subst{A_2}{j} & j, j' & \in J_1 \\
-	A_1\subst{A_2}{j_1}\subst{A_3}{j_2} & = A_1\subst{A_2\subst{A_3}{j_2}}{j_1} & \mpar{j_1, j_2} & \in J_1 \times J_2
+	\mpar{A_1\subst{A_2}{j_1}}\subst{A_3}{j_2} & = A_1\subst{A_2\subst{A_3}{j_2}}{j_1} & \mpar{j_1, j_2} & \in J_1 \times J_2
 \end{align*}
 Where the equality is modulo isomorphism (state renaming, associativity, commutativity).
 \end{prop}
-This propriety is induced by the composition on open pNets. % LATER: proof?
+This property is induced by the composition on open pNets.
 Intuitively it holds because the cartesian product of states, the union of sets, the union of maps and the conjunction on formulas (in the guards) are commutative and associative.
-This allows us to define the parallel composition \(A\psubst{A_j^{j \in J'}}\) if there is any order of (sequential) composition where each \(A_j\) is composed in the hole \(j\).
+This allows us to define the parallel composition \(A\psubst{A_j^{j \in J'}}\) as the result of any order of (sequential) composition where each \(A_j\) is composed in the hole \(j\). % OR pcomp [[j |-> A_j]]
 
 
 \section{Properties of a refinement relation for Open Automata}\label{sec:proofelts}
-There are several properties we may want from a refinement relation.
+There are several properties we may expect from a refinement relation.
 Depending on these properties, different kinds of refinement can be used.
 For example if we are interested in producing the same sequences of actions as another automaton we may want to use trace set inclusion as a refinement.
 Here the main expected properties are related to composition and action refinement. % LATER: explain action refinement here or remove if not tackled
 Because of composition, a relation as strong as simulation must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
 
-Informally, a simulation relation relating two automata means that one automaton states and transitions can be simulated by the other automaton.
+Informally, a simulation relating two automata means that every run of one automaton can be simulated by the other.
 Simulations are defined by relating states of automata.
 Two classical automata are called in simulation if there is a simulation relating their states.
 
-Note that here there are two relations:
-The first is between states of two specific automata (\(R \subseteq S_1 \times S_2\)), the second is between automatas (\(A_1 \leq A_2\)).
+Note that in the previous paragraph there are two relations:
+The first is between states of two specific automata (\(R \subseteq S_1 \times S_2\)), the second is between automata (\(A_1 \leq A_2\)).
 Generally the second is implicit because its definition is always \(\exists R \subseteq S_1 \times S_2, P\mpar{R}\) with \(P\) a property, and only talking about \(R\) and \(P\) is sufficient.
 However later on in this article we will define more complex relations on automata so we clarify the distinction now.
-A relation of second kind will be called ``relation on automata" whereas a relation of the first kind could be called ``relation on states" though valuations also play the same role as states.
+A relation of second kind will be called ``relation on automata" whereas a relation of the first kind is called ``relation on configurations" as defined below.
 In the work on FH-bisimulation\marginpar{re-cite FH-bisim as near as the previous citation?} such a relation \(R\) was defined as triples in \(S_1 \times S_2 \times \formulas\) where for \(\mpar{s_1, s_2} \in S_1 \times S_2\) there is a unique \(f \in \formulas\) such that \(\mpar{s_1, s_2, f} \in R\).
 This is classically the definition of a function from \(S_1 \times S_2\) to \(\formulas\) so we will define it as such.
-\begin{defi}[Relation under predicate]
-A relation under predicate between states of two automata \(\OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(\OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+\begin{defi}[Relation on configurations]
+A relation on configurations of two open automata \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 
 Two states \(s_1 \in S_1, s_2 \in S_2\) with their respective valuations \(\sigma_1: V_1 \to \values, \sigma_2: V_2 \to \values\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 \end{defi}
-For a relation on automata \(\wrel{}{}{}\) which uses a relation under predicate to state that two element are related \(\forall x \, x', \wrel{x}{x'}{} \iff \exists R, P\mpar{R}\), there is no unicity on \(R\).
-To specify which witness is used in \(\wrel{x}{x'}{}\), we note \(\wrel{x}{x'}{R}\) where \(R\) is that witness.
 
 The important properties we consider for the relation on automata are:
 \begin{defi} A relation on open automata \(\leq\) is
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
 \defitem \textbf{a preorder} iff it is reflexive and transitive;
-\defitem \textbf{correct w.r.t.\@ composition} iff \(\forall a\, b, a\mbrk{b} \leq a\);
-\defitem \textbf{complete w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c, a \cong b\mbrk{c}\);
-\defitem \textbf{context refining for composition} iff \(\forall a\, b\, c, a \leq b \implies a\mbrk{c} \leq b\mbrk{c}\);
-\defitem \textbf{congruent for composition} iff \(\forall a\, b\, c, a \leq b \implies c\mbrk{a} \leq c\mbrk{b}\);
-\defitem \textbf{compatible with composition} iff \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \implies c\mbrk{a} \leq d\mbrk{b}\);
+\defitem \textbf{correct w.r.t.\@ composition} iff \(\forall a\, b, a\subst{b}{j} \leq a\);
+\defitem \textbf{complete w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c, a \cong b\subst{c}{j}\);
+\defitem \textbf{context refining for composition} iff \(\forall a\, b\, c, a \leq b \implies a\subst{c}{j} \leq b\subst{c}{j}\);
+\defitem \textbf{congruent for composition} iff \(\forall a\, b\, c, a \leq b \implies c\subst{a}{j} \leq c\subst{b}{j}\);
+\defitem \textbf{compatible with composition} iff \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \implies c\subst{a}{j} \leq d\subst{b}{j}\);
 \defitem \textbf{compatible with FH-bisimulation} iff \(\forall a\, b\, c, d, a \cong b \wedge c \cong d \wedge a \leq c \implies b \leq d\).
 \end{defi}
 Reflexivity, transitivity and preorder are classical properties on relations.
 Correctness w.r.t.\@ composition means that every composition is considered a refinement.
-This property captures the expectated behaviour of a refinement relation on a compositionnal structure like the open automata.
-Completeness w.r.t.\@ composition means that a refinement correspond to the left automaton being equivalent to some composition of the right automaton.
-This property is useful if we want to caracterise the kind of operations that can generate any refined automaton starting from the specification.
+This property captures the expected behaviour of a refinement relation on a compositionnal structure like the open automata.
+Completeness w.r.t.\@ composition means that a refinement corresponds to the left automaton being equivalent to some composition of the right automaton.
+This property is useful if we want to characterise the kind of operations that can generate any refined automaton starting from the specification.
 We won't have it because extending the domain of the initial valuation will be a refinement which can't be expressed with composition.
 Yet a ``completeness w.r.t.\@ some set of operations" is still a strong and interesting property.
 Context refinement is the refinement being compatible with composition of the same automaton.
 Congruence is the refinement being compatible with being composed in the same automaton.
 Compatibility with composition is the conjunction of the two latter (assuming the relation is a preorder).
-This property is a must have on compositionnal structures to be of any use in verification, proofs and for model checking.
+This property is required on compositionnal structures to be of any use in verification, proofs and for model checking.
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
 The important properties we consider for the relation on states are being a simulation and the reduction of deadlocks as defined in the following definitions.
-\begin{defi}[Pre-simulation on open automata]
-\Quentin{}{Is the definition satisfying now?}
-For two automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), a relation under predicate \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a pre-simulation if it satisfies both
-\defitem Initial states are related under initial valuations: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
+\begin{defi}[Pre-simulation]
+For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\), a relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a pre-simulation if it satisfies both
+\defitem Initial configurations are related: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
 \defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
@@ -344,19 +343,19 @@ For two automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\)
 \end{defi}
 The last formula means that for every pair of related states under valuation of the automaton variables and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the holes actions from same hole names (\(J'_1 \cap J'_2\)) match (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update.
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables and holes and guards.
-The treatment of holes in the FH-bisimulation is that holes with the same name will receive the same open automata when composed and the resulting open automata will still be equivalent.
+In FH-bisimulation, holes with the same name will receive the same open automaton when composed, and the resulting open automaton will still be equivalent.
 Here we assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
-This implies that there is no relation between their holes, \(J = \mpar{J_p \uplus \biguplus_{i \in \mdbrk{1; n}} J_i} \setminus \mset{k_i}{i \in \mdbrk{1; n}} \) is neither subset nor superset of \(J_p\).
+This implies that there is no relation between their holes, for instance composing \(A_i, 1 \leq i \leq n\) in \(A_0\) gives the holes \(J \defobject \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{k_i}{1 \leq i \leq n} \) that is neither subset nor superset of \(J_0\).
 Yet we still assume that in holes with the same name, the same open automaton will be composed.
 Hence only the holes in common have to match their actions.
 However it is not sufficient to imply properties on the relation on automatons like being a preorder.
 It is only a necessary condition for any relation that will be defined with ``simulation" in its name.
 
-Deadlocks are states and valuations that are reachable in a run and from which no further transition is possible.
+Deadlocks are configurations reachable in a run and from which no further transition is possible.
 They can arise unpredictably when parallelism is involved (which is the case in our composition) and they break the intended behaviour of a system.
 By preventing them we could hope that the refinement preserves some liveness properties.
 \begin{defi}[Deadlock reduction, intuitive definition]
-A relation under predicate \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if:
+A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if:
 \defitem It is a pre-simulation;
 \defitem If from related states, there is a possible transition in the specification, then there is a pair of matching transition:
 \begin{multline*}
@@ -372,34 +371,34 @@ This is because a valid transition unmatched in the specification is not a deadl
 The direct formulation of the property would also have required the unintuitive quantification on a possibly empty set of transition to state that they are impossible.
 The two previous reasons motivated the formulation in contraposed form.
 
-In all these properties, ``Deadlock reduction" conflicts with ``composition correctness" by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transition expects.
+``Deadlock reduction" conflicts with all the properties where composition is involved (for instance ``composition correctness") by disallowing some unwanted cases where an automaton in a hole cannot produce any action that any out-transition expects.
 In particular filling a hole with the deadlock automaton (only one state without out-transitions) is not considered a refinement for a deadlock reducing relation.
-A way to solve this conflict is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
+A way to solve these conflicts is to characterise a composition that do not introduce deadlocks, which will be used instead of the composition introduced earlier.
 \begin{defi}[Reachability]
-For any open automata \(A \defobject \OA{S}{s_0}{V}{\sigma_0}{J}{T}\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is a predicate on states such that
-\defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\).
-\defitem \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \forall \nu: \fvars{t} \to \values, \nu \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}.
+For any open automata \(A \defobject \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is a predicate on states such that
+\defitem \(\sigma_0 \vdash \reach{A}\mpar{s_0}\)
+\defitem \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \forall \nu: \fvars{t} \to \values, \nu \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}
 \end{defi}
 For the reader not used to simulations and bisimulations, this definition of a predicate can seem strange.
 The reachability predicate is used to characterise the states and valuations that are reachable in a run of an automaton.
-In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise the fact that the state and valuation are the result of a valid path in an automaton.
+In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise configurations as the result of a valid path in an automaton.
 
-To do that we impose that the initial state is reachable in the initial valuation and that reachability is preserved by taking valid transitions.
+To do that we impose that the initial configuration is reachable and that reachability is preserved by taking valid transitions.
 This effectively makes reachability account for all paths and potentially over-approximate the reachable configurations.
 However the exact reachability may not be reprensentable in the formulas, hence the need of potentially over-approximating.
 
 Another way of understanding this predicate is that it is a fixpoint of the union of valuations (function \(f\) defined below) that contains the initial valuation:
 \begin{align*}
-	f\mpar{p} = \mbrc{s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g} &&
+	f\mpar{p} = \mbrc{\mbox{\nmm{s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g}}} && % TODO: fix that in some way
 	\sigma_0 \vdash \reach{A}\mpar{s_0} &&
 	f\mpar{\reach{A}} = \reach{A}
 \end{align*}
 
 \begin{defi}[Non-locking composition, intuitive definition]
-Let  \(A_p\subst{A_c}{k} = \OA{S}{s_0}{V}{\sigma_0}{J}{T}\) with \(A_c \defobject \OA{S_c}{s_{0c}}{V_c}{\sigma_{0c}}{J_c}{T_c}\), \(A_p \defobject \OA{S_p}{s_{0p}}{V_p}{\sigma_{0p}}{J_p}{T_p}\) and \(k \in J_p\).
-The composition is non-locking if there is a reachability predicate such that from reachable configurations, if there was a possible transition in \(A_p\) then there is a possible transition in \(A_p\subst{A_c}{k}\):
+Let \(A_p\subst{A_c}{j} = \OAg\) with \(A_c \defobject \OAg[c]\), \(A_p \defobject \OAg[p]\) and \(j \in J_p\).
+The composition is non-locking if there is a reachability predicate such that from reachable configurations, if there was a possible transition in \(A_p\) then there is a possible transition in \(A_p\subst{A_c}{j}\):
 \begin{multline*}
-	\forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{k}}\mpar{s}} \implies \\
+	\forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A_p\subst{A_c}{j}}\mpar{s}} \implies \\
 	\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
 	\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}
 \end{multline*}
@@ -411,14 +410,14 @@ Doing that makes the definition become mildly similar with the deadlock reductio
 It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
 Actually it is possible to simplify both definition and make them even more similar.
 \begin{defi}[Deadlock reduction, working definition]
-A relation under predicate \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if it is a pre-simulation and:
+A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if it is a pre-simulation and:
 \begin{multline*}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \forall \sigma: V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values, \\
 	\sigma \vdash \mpar{R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}}
 \end{multline*}
 \end{defi}
-The requirement here is that from any configuration related configurations, if there is a possible transition in the second automaton (whatever the value of the free variables) then there is a possible transition in the first automaton (the existential quantifier is implicit in the notation \(\vdash\)).
-The transition are not matched because the relation under predicate is a pre-simulation and it is sufficient to ensure it as will be shown in the proof.
+The requirement here is that from any related configurations, if there is a possible transition in the second automaton (whatever the value of the free variables) then there is a possible transition in the first automaton (the existential quantifier is implicit in the notation \(\vdash\)).
+The transition are not matched because the relation on configurations is a pre-simulation and it is sufficient to ensure it as will be shown in the proof.
 Apart from the matching transitions this is exactly the same explaination as the intuitive definition.
 The expected advantage of this formulation is that a SMT should behave better without the quantifiers.
 Indeed the big disjunctions are not quantifiers because in practise the out-transitions are finitary, and so is the expansion of the disjunction.
@@ -427,8 +426,8 @@ The intuitive and working definition of deadlock reduction are equivalent.
 \end{lem}
 
 \begin{defi}[Non-locking composition, working definition]
-The composition \(A \defobject A_p\subst{A_c}{k}\) is a non-locking composition if:
-\[ \forall ss \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \uplus \biguplus_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
+The composition \(A \defobject A_p\subst{A_c}{j}\) is a non-locking composition if:
+\[ \forall s \defobject \mpar{s_p, s_c} \in S, \forall \sigma: V \uplus \biguplus_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \to \values, \sigma \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
 \end{defi}
 \begin{lem}
 The intuitive and working definition of non-locking composition are equivalent.
@@ -438,7 +437,7 @@ Proof of both lemma are given in Appendix \ref{apx:lemeqd}.
 This new definition of composition can replace the standard composition in the case where only one hole is filled, and also in the parallel case.
 In the parallel case, we may think that if the condition is checked in the parallel case (at the final composition), then the composition is non-locking for every composition order.
 It is not true.
-Actually even if the last composition is non-locking there is no guarantee that there is an order of sequential composition that is non-locking at every step.
+Actually even if the last composition of any order of composition is non-locking there is no guarantee that this order is non-locking at every step.
 However the oppsite way is true even if uninformative:
 If there is an order of composition where every composition is non-locking then the last composition is non-locking, last composition resulting in the same automaton as the parallel composition.
 So the condition is better checked after the parallel composition or the last individual composition.
@@ -462,290 +461,159 @@ The reason for that is the parallel composition is non-locking, but any individu
 \end{exi}
 From this point and in the previous definitions, composition will only refer to non-locking composition.
 
-A relation on open automata and its corresponding relation under predicate are simulations if the latter is a deadlock reducing pre-simulations and the former is a preorder.
+A relation on open automata and its corresponding relation on configurations are simulations if the latter is a deadlock reducing pre-simulations and the former is a preorder.
 With all these properties we can now look at some concrete refinement relations.
 
 
-% Mettre des sets de noms en commun qu'on veut effectivement mapper pour la transitivité
-% J'2 \subseteq J'1 in hole-subset, J'1 \subseteq J'2 in hole-superset (decide of transition variable with holes); composition with new holes is hole-subset where hole variables are free then hole-superset where hole names have no conflicts with removed holes. Transitivity must ensure holes name have no conflict for that reason!
-\section{Refinement relations in restricted cases}\label{sec:prelref}
+\section{Refinement relations in restricted cases}\label{sec:prelref} % TODO: Fold definitions and proofs
 The main goal of this section is to explain the different aspects of refinement in restricted cases so that they are not all introduced at once in the real refinement relation.
-In particular if we have a family of open automata \(A_i \defobject \OA{S_i}{s_{0i}}{J_i}{V_i}{\sigma_{0i}}{T_i}\), \(i \in \mdbrk{0; n}\), let \(A \defobject \OA{S}{s_0}{J}{V}{\sigma_0}{T}\) be such that \(A = A_0\psubst{j_i \mapsto A_i \middle| i \in \mdbrk{1; n}}\).
-Recall that there is no relation between the holes of \(A\) and \(A_0\) because \(J = \mpar{J_0 \uplus \biguplus_{i \in \mdbrk{1; n}} J_i} \setminus \mset{j_i}{i \in \mdbrk{1; n}}\) is neither subset nor superset of \(J_0\).
+In particular if we have a family of open automata \(A_i \defobject \OAg[i]\), \(0 \leq i \leq n\), let \(A \defobject \OAg\) be such that \(A = A_0\psubst{j_i \mapsto A_i \middle| 1 \leq i \leq n}\).
+Recall that there is no relation between the holes of \(A\) and \(A_0\) because \(J = \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{i \in \mdbrk{1; n}}\) is neither subset nor superset of \(J_0\).
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
 Hopefully the intermediate refinement relation introduced can be used as simpler (and less expensive to compute) versions of the real refinement relation in the case the manipulated automata respect some constraints.
 
-In the following definitions, \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) are two open automata.
-
-The following relation is the basis for all the other ones.
-We restrict the relation to automata with the same holes so that we can explain the refinements independant from composition.
-These refinements are ``specifying more initial variables" and ``adding determinism".
-This corresponds to the classical simulation refinement on LTS \Ludo{TODO}{j imagine que rabea peut donner des refs ici}.
-\begin{defi}[Hole-identical simulation]
-\(R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]\) is a hole-identical simulation of \(A_1\) by \(A_2\) if:
-\defitem \(J_1 = J_2\);
-\defitem \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
+We restrict the holes of the related automata so that we can explain the different refinements without their interactions.
+In the following definition, \(\triangle \in \mbrc{\subseteq, =, \supseteq}\).
+\begin{defi}[Hole-\(\triangle\) simulation]
+For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\), the relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) if:
+\defitem \(J_1 \triangle J_2\)
+\defitem \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
 \defitem \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
 \noindent\begin{multline*}
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
 		\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{t_{2x} \defobject \OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
-		\quad \mpar{\forall x \in X, J'_{2x} \subseteq J'_1} \\ % TODO: or = ?
+		\quad \mpar{\forall x \in X, J'_{2x} \cap J_1 = J'_1 \cap J_2} \\[-10pt]
 		\quad \wedge V_1 \uplus V_2 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_{2x}} \beta_{1j} = \beta_{2xj} \\[12pt]
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \\[12pt]
 			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}} \\[12pt]
 	\end{array}} \\
-	\wedge V_1 \uplus V_2 \uplus \biguplus_{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
+	\wedge V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
 \end{defi}
-The hole-identical name is referring to the first part of the definition: holes indices are the same in related automata.
 The third item of the definition has two parts:
 The first part is the main requirement, a (not equivalent) reordering of the pre-simulation requirement so that it better fits SMT.
 Instead of matching an effective transition to another effective transition as in the pre-simulation definition, we match an open transition to a family of covering open-transitions.
-On top of that the holes involved in the family of transition can vary and only be a subset of the transition simulated.
-We can force their equality (between all the \(J'\), not only the \(J'_{2x}\) because of transitivity issues), and get a perfectly valid alternative depending on the properties you expect from the refinement relation.
-The subset version is strange in term of simulation since a hole can perform more actions in a simulated run.
 The second part is directly the deadlock reduction requirement.
 
-\begin{exi}
-\begin{figure}
-\centering
-\input{parallel_comp.tex}
-\vrule
-\input{n_control_switch.tex}
-\caption{On the left: Parallel composition operator; On the right: n control switches automaton}
-\label{fig:hisim}
-\end{figure}
-To illustrate the definition and the different refinement operations, Figure \ref{fig:hisim} introduces two related open automata with same holes \(\mbrc{l, r}\).
-The automaton on the left is a parallel composition: any hole can perform actions at any time, the actions are passed unmodified and no synchronisation is performed.
-The automaton on the right is a sequential composition with \(n\) control switches: a hole performs a sequence of actions then the other does, there are \(n\) seqences of a single automaton doing actions without the other performing some.
-The initial valuation of the right automaton is in blue, actually we want to consider both the automaton with this initial valuation and the one without.
+% TODO: expand on first part, especially the impact of /_\ on the different refinement allowed and what it means, and the fact that = could be substituted with \subseteq.
 
-Intuitively the right automaton is a refinement of the left automaton because the left automaton is what happens when there was no bound \(n\) in the right automaton.
-Also the right automaton with the initial valuation is a refinement of the right automaton with the initial valuation because a ``\(1\) control switches" is an instance of a ``\(n\) control switches".
-
-First let consider \(R\), a hole-identical simulation of \(n\) control switches by parallel composition:
-\[ R \defobject \mbrc{\mpar{l, ||} \mapsto \top, \mpar{r, ||} \mapsto \top} \]
-
-\end{exi}
-
-% TODO: re-écriture
-\begin{lem}[Hole-identical simulation is a pre-simulation]
-\begin{gather*}
-\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
-\mpar{\everymath{\displaystyle}\begin{array}{l}
-	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{} \in \fOT{s_2}}^{x \in X}, \\[12pt]
-	\forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
-	\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-		\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'} \beta_{1j} = \beta_{2xj} \\[12pt]
-		\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
-	\end{array}}
-\end{array}} \\
-\implies \\
-\mpar{\everymath{\displaystyle}\begin{array}{l}
-	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\[6pt]
-	\quad \mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} \OTx{2}{}{2}{2} \in \fOT{s_2}, \\[12pt]
-	\qquad \sigma \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
-\end{array}}
-\end{gather*}
-\end{lem}
-The first property is one part of the hole-identical simulation, the second property is the central part of the \Ludo{refinement simulation requirement}{add reference to def (like "def x")}.
-If we prove the direct way of this equivalence and \(\leq_=\) is a preorder then \(\leq_=\) is a refinement simulation.
-The other way is there because I hope that it will be easier to use this formulation to prove that \(\leq_=\) is a preorder. % Will need to be modified
-\Ludo{One may wonder why it was not used}{rephrase and state in what sense this second one could be considered as better} in the definition if it is equivalent. % Informal!
-The reason is that the formulation used in definition??? is compatible with SMT solver, the place where it will most probably be used in practise.
-\begin{proof} Let \(\mpar{s_1, s_2} \in S_1 \times S_2\),
-\item[\(\implies\):] We admit the up formula as \(H_{def}\), let \(t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}\) and \(\sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values\) be such that \(H_{source} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1\).
-	\(H_{def}\) applied to \(t_1\) gives \(\mpar{t_{2x} \defobject \OTx{2}{x}{2x}{1} \in \fOT{s_2}}^{x \in X}\) and the property \(H_{tmp}\) to which we give \(\sigma\) to get
-	\begin{multline*}
-		H_{smt} \defobject \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \\
-		\operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \\[12pt]
+Examples of application of the different refinement relations are given in appendix \ref{apx:refrel}.
+\begin{thm} A hole-\(\triangle\) simulation is a pre-simulation. \end{thm}
+Let \(R\) be a relation on configurations.
+The condition \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\) is in both definitions so proving the following is sufficient:
+\begin{multline}
+	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
+	\mpar{\everymath{\displaystyle}\begin{array}{l}
+		\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{t_{2x} \defobject \OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
+		\quad \mpar{\forall x \in X, J'_{2x} \cap J_1 = J'_1 \cap J_2} \\[-10pt]
+		\quad \wedge V_1 \uplus V_2 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \\[12pt]
 			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}
-	\end{multline*}
-	\Ludo{Unfolding the definition}{I really cannot understand this step you will need to explain us I believe, and add details here. TODOLudo: read the rest of the proof after explanation} of \(\sigma \vdash f\) where \(f\) is not a closed formula in \(H_{smt}\) gives an exists that we use to get \nmm{\nu: \biguplus_{x \in X} \fvars{t_{2x}} \to \values} and
-	\[ H_{valid} \defobject \sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-		\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \\[12pt]
+	\end{array}} \hyp{0}
+\end{multline}
+\[ \implies \]
+\begin{multline}
+	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
+	\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
+	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \goal{0}
+\end{multline}
+\begin{proof} Let \(\mpar{s_1, s_2} \in S_1 \times S_2\), \nmm{t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}} and \(\sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values\) be such that
+\[ \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \hyp{1} \]
+In order to get the transition required to prove
+\begin{multline}
+	\bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
+	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \goal{0'}
+\end{multline}
+we use the hypothesis \hyp{0} with the transition \(t_1\) and get a family of transitions
+\[ \mpar{t_{2x} \defobject \OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X} \]
+such that the two following properties hold
+\begin{gather}
+	\forall x \in X, J'_{2x} \cap J_1 = J'_1 \cap J_2 \hyp{2} \\
+	V_1 \uplus V_2 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
+		\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \\[12pt]
 		\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
-	\end{array}} \]
-	\(R\mpar{s_1, s_2} \wedge g_1\) in \(H_{valid}\) does not depends on \(\nu\) so we can use \(H_{source}\) to prove it and get \(H_{cover}\).
-	\(H_{cover}\) is a disjunction that we can eliminate, action that gives a value \(x\) and
-	\[ H_{target}\mpar{x} \defobject \sigma \uplus \nu \vdash \alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \wedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}} \]
-	Now that we have a specific \(x\) we can say that in the bottom formula \(t_{2x}\) is a witness in \(T_2\).
-	By doing that, what we are left to prove is \nmm{\sigma \vdash \alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_1} \beta_{1j} = \beta_{2xj} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}}.
-	As a valuation for variables in \(\fvars{t_{2x}}\) we have \(\nu\), so \(H_{target}\mpar{x}\) concludes the proof.
-\item[\(\impliedby\):] We admit the bottom formula as \(H_{ref}\), let \(t_1 \defobject \OTx{1}{}{1}{} \in T_1\) % TODO; quantify on all valuations to get t_{2\sigma}
+	\end{array}} \hyp{3}
+\end{gather}
+\hyp{3} holds for every values of the variables in \(V_1 \uplus V_2 \uplus \fvars{t_1}\) so in particular with the ones given by \(\sigma\).
+We gather the existential variables in a valuation:
+\begin{gather*}
+	\nu: \biguplus_{x \in X} \fvars{t_{2x}} \to \values \\
+	\sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \bigvee_{x \in X} \mpar{\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x}} \beta_{1j} = \beta_{2xj} \wedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}} \hyp{4}
+\end{gather*}
+The left side of the implication is proven by \hyp{1}, and we destruct the disjuntion on the right side to get \(x \in X\) and the hypothesis
+\[ \sigma \uplus \nu \vdash \alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \wedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}} \hyp{4'} \]
+We have \(J'_{2x} \cap J_1 \subseteq J'_{2x}\) and by \hyp{2}, \(J'_{2x} \cap J_1 = J'_1 \cap J_2 \subseteq J'_1\) so \(J'_{2x} \cap J_1 \subseteq J'_{2x} \cap J'_1\).
+Also \(J'_{2x} \cap J'_1 \subseteq J'_{2x} \cap J_1\) because \(J'_1 \subseteq J_1\) by definition of an open transition.
+Hence \(J'_{2x} \cap J_1 = J'_{2x} \cap J'_1\) in \hyp{4'}.
+We can get back to prove \goal{0'} with the transition \(t_{2x}\) and the valuation \(\nu\) by \hyp{4'}.
 \end{proof}
 
-\begin{thm} The hole-identical refinement relation is a preorder. \end{thm}
-\begin{proof}
-\item \emph{Reflexivity:} Let \(A\) be an open automaton with variables in \(V\).
-	The automaton variables on the right hand side of the relation will be noted \(v'\) for the equivalent variable \(v \in V\) in the automaton on the left hand side.
-	The simulation \nmm{R = \mset{\mpar{s, s} \mapsto \bigwedge_{v \in V} v = v'}{s \in S_1}} is a witness of \(A \leq A\).
-	Checking it is a simple exercise left to the reader in order to understand how the definition works.
-\item \emph{Transitivity:} Let \(A_1, A_2, A_3\) be open automata with respectively variables in \(V_1, V_2, V_3\) and states \(S_1, S_2, S_3\).
-	And let \(R_{12}\) be a witness of \(A_1 \leq_= A_2\) and \(R_{23}\) be a witness of \(A_2 \leq_= A_3\).
-	\[ R_{13}\mpar{s_1, s_3} \defobject \exists V_2, \bigvee_{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
+\begin{thm} The hole-\(\triangle\) simulation on automata is a preorder. \end{thm}
+Reflexivity is immediate with \(R \defobject \mpar{s, s'} \mapsto \choice{\bigwedge_{v \in V} v_1 = v_2 & s = s'\\ \bot & s \neq s'}\) where \(v_x\) is the renaming to distinguish conflicting automaton variables.
 
-	Now let's prove that \(R_{13}\) is a witness of \(A_1 \leq_= A_3\):
-	\begin{itemize}
-	\item % TODO
-	\end{itemize}
-\end{proof}
-% TODO Properties: do not forget to add deadlock equivalence in the 3 theorems
-\begin{thm}[Hole-identical refinement correction]
-% TODO: Préordre, action-refinement possible, pas de nouveau deadlock, pas de nouveau livelock, chaque état (accessible) a son correspondant (simulation)
-\end{thm}
-\begin{proof}
-\end{proof}
-
-The goal of the following relation is to capture the case where holes are filled with automata that do not have any hole.
-It is supposed to be a relation for which filling holes with fully specified automata is a considered refinement.
-\begin{defi}[Hole-subset refinement]
-If \(J_1 \subseteq J_2\) then ``\(A_1\) is a hole-subset refinement of \(A_2\)", noted \(A_1 \leq_\subseteq A_2\) is defined as:
-\[ \exists R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2], \sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}} \wedge R \text{ hole-subset simulation of } A_1 \text{ in } A_2 \]
-\end{defi}
-This definitions is essentially the same as the hole-identical one excepted the constraint on holes which has been softened.
-
-\begin{defi}[Hole-subset simulation]
-``\(R\) is a hole-subset simulation of \(A_1\) in \(A_2\)" is defined as:
-\begin{multline*}
-	\forall s_1 \in S_1, s_2 \in S_2, \\
-	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
-		\mpar{\forall x \in X, J'_1 = J'_{2x} \cap J_1} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
-		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_{j \in J'_1} \beta_{1j} = \beta_{2xj} \\
-			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
-		\end{array}} \\
-	\end{array}} \\
-	\wedge \forall \sigma: \mpar{V_1 \uplus V_2} \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_2}
-\end{multline*}
-\end{defi}
-The difference with the hole-identical simulation is that the holes involved in the matched transitions don't have to be exactly the same anymore.
-The new constraint is that the holes in common (that is \(J'_1\)) should be involved at the same time and their action have to match.
-What happens on the other holes is unspecified except for the fact that, by being free variables they still need to be valued such that the transition is possible.
-
-\begin{exi} % TODO: Traffic light example
-\end{exi}
-
-An alternative version of this definition could enforce \(\exists J'_2 \subseteq J_2, \forall x \in X, J'_{2x} = J'_2\).
-Let's call it the alternative hole-subset simulation.
-This version would mean that the holes involved in every matched transitions must be the same.
-While this may seem more natural this leads to the unwanted behaviour that an automaton FH-bisimilar to a refinement of some specification might not be a refinement of that specification:
-\begin{prop}[Alternative hole-subset simulation is not compatible with FH-bisimulation]
-TODO: collapse a transition that was differenciated by having one filled hole involved and it should be simple
-\end{prop}
-This is a sufficient reason to discard this version although it seems more natural.
-\begin{prop}[Hole-subset refinement is compatible with FH-bisimulation]
-% TODO
-\end{prop}
-
-% Hole-subset refinement can be used to specify behaviour/constraints on holes (like an API: first do anything not involving the api, then initialise the api, then do whatever you want that do not unload the api, then unload the api by returning to the first state), then have a relation for every hole with a different automata and this means well behaving with respect to the environement (holes)
-\begin{exi} % TODO
-\end{exi}
-
-\begin{prop}[Hole-subset refinement is an extension of hole-identical refinement]
-Hole-subset refinement and hole-identical match when holes are identical.
-\end{prop}
-\begin{proof}
-When \(J_1 = J_2\), \(J'_1 = J'_{2x} \cap J_1 \iff J'_1 = J'_{2x} \cap J_2 \iff J'_1 = J'_{2x}\), which is the implicit constraint on hole actions in the hole-identical simulation.
-By that rewriting their definition match.
-\end{proof}
-Let's assume that this relation is also correct, the proof of correctness is given later for a more general refinement relation.
-\begin{thm}[Composition is a refinement]
-% TODO: Proof that filling holes with a fully specified automaton is a refinement
-\end{thm}
-\begin{proof}
-\end{proof}
+For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), such that \(R_{12}\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\), we want to define \(R_{13}\) by saying that there exists a state \(s_2 \in S_2\) and values for \(V_2\) such that \(R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}\).
+However we cannot talk about states in formulas.
+The solution is to expand the existential quantifier as we did in deadlock reduction, which is possible because states are finite.
+\nmm{R_{13} \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}} is a witness of the transitivity, proof is given in appendix \ref{apx:trans}.
 \begin{thm}[Context refinement]
 % a <= b & a[c] <= a -> a[c] <= b[c]
 \end{thm}
 \begin{proof}
 \end{proof}
-\begin{thm}[Congruence with composition]
-% a <= b & c[a] <= c -> c[a] <= c[b]
-\end{thm}
+% Rédiger un paragraphe sur le fait que composer dans l'implem sans deadlock implique qu'il n'y a pas de deadlock quand on compose avec la spec, on voudrais avoirs l'autre sens mais ce n'est pas possible
+\begin{prop}[Composition correctness']
+% TODO: Proof that filling holes with a fully specified automaton is a refinement
+\end{prop}
 \begin{proof}
 \end{proof}
-
-% TODO: Give an example of what you want to capture BEFORE and after the relation
-The goal of the following relation is to capture the case where holes are filled with one hole automata.
-It is supposed to be a relation for which filling holes with one hole automata is a considered refinement.
-\begin{defi}[Hole-matching refinement]
-If \(\card{J_1} = \card{J_2}\) then ``\(A_1\) is a hole-matching refinement of \(A_2\)", noted \(A_1 \leq_\# A_2\) is defined as:
-\begin{multline*}
-	\exists R: \mpar{S_1 \times S_2} \to \formulas, \quad \exists f: J_1 \setminus J_2 \to J_2 \setminus J_1, \\
-	\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}} \qwedge f\mpar{J_1 \setminus J_2} = J_2 \setminus J_1 \\
-	\wedge R \text{ hole-f-matching simulation of } A_1 \text{ in } A_2
-\end{multline*}
-\end{defi}
-This definitions is essentially the same as the hole-identical except that the constraint on holes has been softened and it is compensated with a invertible map between non-shared holes.
-
-\begin{defi}[Hole-f-matching simulation]
-\(R\) is a hole-f-matching simulation of \(A_1\) in \(A_2\) is defined as:
-\begin{multline*}
-	\forall s_1 \in S_1, s_2 \in S_2, \\
-	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
-		\mpar{\forall x \in X, J'_1 \cap J_2 = J'_{2x} \cap J_1 \wedge f\mpar{J'_1 \setminus J_2} \subseteq J'_{2x}} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
-		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J_2} \beta_{1j} = \beta_{2xj} \\
-			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
-		\end{array}} \\
-	\end{array}} \\
-	\wedge \forall \sigma: \mpar{V_1 \uplus V_2} \to \values, \sigma \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
-\end{multline*}
-\end{defi}
-% TODO: Matching a hole data with another hole is done with a_1=a_2x and constraint on respective variables, thus hole data is not uncontrained, same for action label because each transition has only 1 action label
-% TODO: Explain what happens on holes constraints and action constraints
-% J'_1x still necessary for the same reason essentially
-% f() subset J'1 \ J2 : equality is possible and give a valid alternative that must match each action with another action, even if the latter has no more the choice, basically the version given here allows to hide some choices from the hole
+\begin{prop}[Composition correctness"]
+% TODO: Proof that filling added holes with a fully specified automaton is a refinement
+\end{prop}
+\begin{proof}
+\end{proof}
+% J'2 \subseteq J'1 in hole-subset, J'1 \subseteq J'2 in hole-superset (decide of transition variable with holes); composition with new holes is hole-subset where hole variables are free then hole-superset where hole names have no conflicts with removed holes. Transitivity must ensure holes name have no conflict for that reason!
 
 
+% Mettre des sets de noms en commun qu'on veut effectivement mapper pour la transitivité
+% Explain what happens on holes constraints and action constraints
+% refinement can be used to specify behaviour/constraints on holes (like an API: first do anything not involving the api, then initialise the api, then do whatever you want that do not unload the api, then unload the api by returning to the first state), then have a relation for every hole with a different automata and this means well behaving with respect to the environement (holes)
 \section{Refinement relation for open automata}\label{sec:refinement}
 % meaning of f, what happens depending on f
 % hole function from implem to spec on disjoint holes
 \begin{defi}[Open automata refinement]
-For any two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), ``\(A_1\) is a refinement of \(A_2\)", noted \(A_1 \leq A_2\), is defined as:
+For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), ``\(A_1\) is a refinement of \(A_2\) looking at \(H\)", noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), is defined as:
 \begin{multline*}
-	\exists R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2], \exists f: J_1 \setminus J_2 \to J_2 \setminus J_1, \\
-	\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}} \wedge R \text{ f simulation of } A_1 \text{ in } A_2
-\end{multline*}
-\end{defi}
-
-\begin{defi}[f simulation]
-\(R\) is a f simulation of \(A_1\) in \(A_2\) is defined as:
-\begin{multline*}
-	\forall s_1 \in S_1, s_2 \in S_2, \\
-	\mpar{\renewcommand\arraystretch{1.4}\everymath{\displaystyle}\begin{array}{l}
-		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_1}}^{x \in X}, \\
-		\mpar{\forall x \in X, J'_1 \cap J_2 = J'_{2x} \cap J_1 \wedge f\mpar{J'_1 \setminus J_2} \subseteq J'_{2x}} \wedge \forall \sigma: \mpar{V_1 \uplus \fvars{t_1} \uplus V_2} \to \values, \\
-		\quad \sigma \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J_2} \beta_{1j} = \beta_{2xj} \\
+	\exists R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2], \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}} \wedge \forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
+	\mpar{\everymath{\displaystyle}\begin{array}{l}
+		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\[12pt]
+		\quad \mpar{\forall x \in X, J'_{2x} \cap J_1 \cap H = J'_1 \cap J_2 \cap H} \\[-10pt]
+		\quad \wedge V_1 \uplus V_2 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2 \cap H} \beta_{1j} = \beta_{2xj} \\
 			\nwedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}} \\
 	\end{array}} \\
-	\wedge \forall \sigma: \mpar{V_1 \uplus V_2} \to \values, R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
+	\wedge V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
 \end{defi}
 % refinement relation definition
 % Explain definition, really needed
-The objective of the first part of this definition is to be able to simulate \(A_1\) in \(A_2\) when holes of the same name receive the same closed automaton while other holes receive ``compatible" closed automata.
 % safety is no longer trivial, prove the safety
-The objective of the other part of this definition is to prevent the appearance of new deadlocks, which should mean with the first property that the compared automaton are deadlock equivalent.
-% Expected properties: no new deadlocks, every path can be simulated (safety), composition that do not introduce deadlock is refinement, congruence wrt composition 2-way, most refined are runs
+% Prove all expected properties except pre-simulation
 
+% What happens on untracked holes (untracked holes equivalent behaviour => free variables; some sort of daisy equivalence)
+% Yet having untracked holes is interesting because we can be a refinement of several OA, each on different holes.
 
-\section{New equivalence relation induced by pre-order}
-% FH-behaviourial equivalence if hole functions are not inverse, almost-FH-bisim if function is bijective and FH-bisim if in emptyset -> emptyset
+\section{Flat model}
+% Goal: some interfaces refine in one way while other refine in the other way and others are equivalent and some are untracked.
 
 \section{Future work}
 % TODO: Weak variants, tau-stuttering, livelocks
 % Other kind of refinement relation that \Quentin{I may explore}{This is a note for possible path, some may be explored, some may not.} are control refinement/hole refinement\footnote{No good formulation atm, the idea is that \(a \leq b \defnotation sth \wedge J_a \setminus J_b \leq_{ctrl} J_b \setminus J_a\), sth is probably a clause to ensure that they behave the same without holes involved.}, (meet semi)lattice refinement\footnote{meet = handshake, \(a \leq b \defnotation a = a || b\) with sync holes, I think this will be equivalent to hole-identical sim, (join=non-det choice?)}, weak-simulation refinement\footnote{Weak variation for each interesting simulation refinement}, composition-correct refinement\footnote{Basically a stricter variant of simulation-refinement where simulation has to take place the other way for some transitions (no different holes?) in order to be correct wrt composition}.
 
 \section{Conclusion}
+
 
 \pagebreak
 \bibliographystyle{plain}
@@ -1000,5 +868,77 @@ We want to prove
 	\[ \sigma \uplus \nu \vdash \fguard{t} \hyp{7} \]
 	Which proves \goal{1'} with the values of \(\nu\) for the variables of \(\fguard{t}\) and dummy values for the other guards.
 \end{proof}
+
+\section{Examples of hole-\(\triangle\) simulations}\label{apx:refrel}
+\subsection{Example of hole-equal simulation}
+\begin{exi}
+\begin{figure}
+\centering
+\input{parallel_comp.tex}
+\vrule
+\input{n_control_switch.tex}
+\caption{On the left: Parallel composition operator; On the right: n control switches automaton}
+\label{fig:hisim}
+\end{figure}
+To illustrate the definition and the different refinement operations, Figure \ref{fig:hisim} introduces two related open automata with same holes \(\mbrc{l, r}\).
+The automaton on the left is a parallel composition: any hole can perform actions at any time, the actions are passed unmodified and no synchronisation is performed.
+The automaton on the right is a sequential composition with \(n\) control switches: a hole performs a sequence of actions then the other does, there are \(n\) seqences of a single automaton doing actions without the other performing some.
+The initial valuation of the right automaton is in blue, actually we want to consider both the automaton with this initial valuation and the one without.
+
+Intuitively the right automaton is a refinement of the left automaton because the left automaton is what happens when there was no bound \(n\) in the right automaton.
+Also the right automaton with the initial valuation is a refinement of the right automaton with the initial valuation because a ``\(1\) control switches" is an instance of a ``\(n\) control switches".
+
+First let consider \(R\), a hole-identical simulation of \(n\) control switches by parallel composition:
+\[ R \defobject \mbrc{\mpar{l, ||} \mapsto \top, \mpar{r, ||} \mapsto \top} \]
+% TODO: continue
+\end{exi}
+
+% Hole-subset: Traffic lights
+% Hole-superset: scheduler
+
+% APB
+
+\section{Proof of transitivity}\label{apx:trans}
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be open automata.
+Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\).
+\[ R_{13} \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
+\(R_{13}\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_3\).
+\begin{proof}
+\defitem By transitivity of \(=\), \(J_1 = J_3\)
+\defitem We prove that initial configurations are related using \(\sigma_{02}\) as the values of the variables in \(V_2\), and \(s_2\) as the branch of the disjunction.
+\begin{gather*}
+	\sigma_{01} \uplus \sigma_{03} \vdash R_{13}\mpar{s_{01}, s_{03}} \\
+	\equiv \\
+	\sigma_{01} \uplus \sigma_{03} \vdash \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_{01}, s_2} \wedge R_{23}\mpar{s_2, s_{03}} \\
+	\Uparrow \\
+	\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03} \vdash R_{12}\mpar{s_{01}, s_{02}} \wedge R_{23}\mpar{s_{02}, s_{03}} \\
+	\Uparrow \\
+	\mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar{\sigma_{02} \uplus \sigma_{03} \vdash R_{23}\mpar{s_{02}, s_{03}}}
+\end{gather*}
+\defitem Let \(\mpar{s_1, s_3} \in S_1 \times S_3\), we want to prove both
+\begin{multline}
+	\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{t_{3x} \defobject \OTx{3}{x}{3x}{3x} \in \fOT{s_3}}^{x \in X}, \mpar{\forall x \in X, J'_{3x} = J'_1} \\
+	\wedge V_1 \uplus V_3 \uplus \fvars{t_1} \vdash R_{13}\mpar{s_1, s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
+		\alpha_1 = \alpha_{3x} \wedge \bigwedge_\subbox{j \in J'_{3x}} \beta_{1j} = \beta_{3xj} \\[12pt]
+		\nwedge g_{3x} \wedge R_{13}\mpar{s'_1, s'_{3x}}\psubst{\psi_1 \uplus \psi_{3x}}
+	\end{array}} \goal{1}
+\end{multline}
+\[ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{2} \]
+\begin{description}
+	\item[\goal{2}:] Let \(\sigma_1: V_1 \to \values\) and \nmm{\sigma_3: V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \to \values} be such that
+	\[ \sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{2'} \]
+	We use dummy values for variables in \nmm{\biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1}} to get the left side of this implication as an hypothesis (independant from these values):
+	\[ \sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{5} \]
+	Hypothesis that we immediately break down into:
+	\begin{align}
+		\nu & : V_2 \to \values &
+		\sigma_1 \uplus \sigma_3 \uplus \nu & \vdash R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \hyp{5'} \\
+		t_3 & \in \fOT{s_3} &
+		\sigma_1 \uplus \sigma_3 & \vdash \fguard{t_3} \hyp{5"}
+	\end{align}
+	% TODO HERE
+\end{description}
+\end{proof}
+
 
 \end{document}
