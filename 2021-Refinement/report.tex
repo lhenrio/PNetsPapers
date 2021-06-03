@@ -19,7 +19,6 @@
 
 % transitions between sections
 % TODO: CITER LES CONFERENCES
-% change deadlock reduction into deadlock prevention?
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -33,7 +32,7 @@ Open pNets are not petri nets but an intermediate representation used in the Ver
 Verification is the process of checking that an implementation satisfies a specification.
 Open pNets with the open automaton semantics and equivalence relation introduced in previous work \cite{2007.10770} were sucessfully used to model and verify BIP and GCM \cite{qin:01823507, ameurboulifa:01526055}.
 However equivalences relations are not always sufficient to perform verification, refinement relations are also used.
-For instance an example of open pNet where equivalence is not sufficient was encountered in ...\marginpar{Paper where the motivating example came up}.
+For instance an example of open pNet where equivalence is not sufficient was encountered in an article about algorithms fo weak bisimulation on open automata \cite{wang:hal-03126313}.
 
 The contributions of this article are the definition of composition for open automata without having to define open pNets, and the introduciton of several refinement relations for open automata\marginpar{TODO: expand}.
 
@@ -54,8 +53,8 @@ Section \ref{sec:refinement} introduces and analyses the refinement relation on 
 \section{Notations}\label{sec:notations}
 Notations will be defined with the operator \(\defnotation\) and names are given with the operator \(\defobject\) as follows:
 \begin{align*}
-	notation\_with\_variables & \defnotation notated\_object\_using\_the\_variables \\
-	name & \defobject fully\_defined\_mathematical\_object
+	\mathit{notation\_with\_variables} & \defnotation \mathit{notated\_object\_using\_the\_variables} \\
+	\mathit{name} & \defobject \mathit{fully\_defined\_mathematical\_object}
 \end{align*}
 
 Throughout this paper, tuples will be noted differently depending on what they represent.
@@ -228,7 +227,7 @@ The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{
 	\OT{»}{»}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = l \wedge x = y}{\mbrc{v \gets r}} &&
 	\OT{»}{»}{x}{\mbrc{r \mapsto x}}{v = r}{\mbrc{}}
 \end{align*}
-It is an alternative implementation of the enable operator which is FH-bisimilar to the previous one, as proved in \marginpar{probably forte, check that}.
+It is an alternative implementation of the enable operator which is FH-bisimilar to the previous one \cite{henrio:01299562}.
 Note that in this example \(r\) and \(l\) are a hole names and also closed terms: this is a naming conflict, though it is not ambiguous because \(J \cap \rterms = \emptyset\) always holds.
 The variables local to a transition are all the unbound variables in the expressions minus the automaton variables.
 For instance \(v\) is a variable of the automaton (used in the guard).
@@ -278,7 +277,9 @@ Where the equality is modulo isomorphism (state renaming, associativity, commuta
 \end{prop}
 This property is induced by the composition on open pNets.
 Intuitively it holds because the cartesian product of states, the union of sets, the union of maps and the conjunction on formulas (in the guards) are commutative and associative.
-This allows us to define the simultaneous composition \(A\psubst{A_j^{j \in J'}}\) as the result of any order of (sequential) composition where each \(A_j\) is composed in the hole \(j\). % psubst to pcomp macro [[]]
+This allows us to define the simultaneous composition \(A\mdbrk{A_j^{j \in J'}}\) as the result of any order of (sequential) composition where each \(A_j\) is composed in the hole \(j\).
+Even if an automaton is composed in two distinct holes it does not share its variables, each composition makes the cartesian product of states and a disjoint union of the variables.
+In practise, variables may have to be renamed.
 
 
 \section{Properties of a refinement relation for Open Automata}\label{sec:proofelts}
@@ -286,7 +287,7 @@ There are several properties we may expect from a refinement relation.
 Depending on these properties, different kinds of refinement can be used.
 For example if we are interested in producing the same sequences of actions as another automaton we may want to use trace set inclusion as a refinement.
 Here the main expected properties are related to composition and action refinement. % LATER: explain action refinement here or remove if not tackled
-Because of composition, a relation as strong as simulation must be used as observed in the articles about FH-bisimulation \cite{henrio:01055091}.
+Because of composition, a relation as strong as simulation must be used.
 
 Informally, a simulation relating two automata means that every run of one automaton can be simulated by the other.
 Simulations are defined by relating states of automata.
@@ -297,7 +298,7 @@ The first is between states of two specific automata (\(R \subseteq S_1 \times S
 Generally the second is implicit because its definition is always \(\exists R \subseteq S_1 \times S_2, P\mpar{R}\) with \(P\) a property, and only talking about \(R\) and \(P\) is sufficient.
 However later on in this article we will define more complex relations on automata so we clarify the distinction now.
 A relation of second kind will be called ``relation on automata" whereas a relation of the first kind is called ``relation on configurations" as defined below.
-In the work on FH-bisimulation\marginpar{re-cite FH-bisim as near as the previous citation?} such a relation \(R\) was defined as triples in \(S_1 \times S_2 \times \formulas\) where for \(\mpar{s_1, s_2} \in S_1 \times S_2\) there is a unique \(f \in \formulas\) such that \(\mpar{s_1, s_2, f} \in R\).
+In the work on FH-bisimulation \cite{henrio:01055091} such a relation \(R\) was defined as triples in \(S_1 \times S_2 \times \formulas\) where for \(\mpar{s_1, s_2} \in S_1 \times S_2\) there is a unique \(f \in \formulas\) such that \(\mpar{s_1, s_2, f} \in R\).
 This is classically the definition of a function from \(S_1 \times S_2\) to \(\formulas\) so we will define it as such.
 \begin{defi}[Relation on configurations]
 A relation on configurations of two open automata \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
@@ -341,6 +342,7 @@ For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\),
 	\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
+This definition translated to open automata the classical definition of simulation \marginpar{cite: Fernandez-Mounier-91-b}.
 The last formula means that for every pair of related configurations of the automaton and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the same holes' action (\(J'_1 \cap J'_2\)) matches (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update. % OR variableS
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables nor holes nor guards.
 In FH-bisimulation, holes with the same name will receive the same open automaton when composed, and the resulting open automaton will still be equivalent.
@@ -466,7 +468,7 @@ With all these properties we can now look at some concrete refinement relations.
 
 \section{Refinement relations in restricted cases}\label{sec:prelref}
 The main goal of this section is to explain the different aspects of refinement in restricted cases so that they are not all introduced at once in the real refinement relation.
-In particular if we have a family of open automata \(A_i \defobject \OAg[i]\), \(0 \leq i \leq n\), let \(A \defobject \OAg\) be such that \(A = A_0\psubst{j_i \mapsto A_i \middle| 1 \leq i \leq n}\).
+In particular if we have a family of open automata \(A_i \defobject \OAg[i]\), \(0 \leq i \leq n\), let \(A \defobject \OAg\) be such that \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\).
 Recall that there is no relation between the holes of \(A\) and \(A_0\) because \(J = \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) is neither subset nor superset of \(J_0\).
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
 Hopefully the intermediate refinement relation introduced can be used as simpler (and less expensive to compute) versions of the real refinement relation in the case the manipulated automata respect some constraints.
@@ -756,7 +758,7 @@ A symetric version of composition on a flat model of open automata is presented 
 \end{exi}
 
 
-\section{Proof of equivalent definitions}\label{apx:lemeqd}
+\section{Proof of equivalent definitions}\label{apx:lemeqd} % TODO: disjunction branch, say where we get the value
 
 \subsection{Proof of lemma 1}
 Let \(R\) be a pre-simulation between \(A_1 \defobject \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J_1}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J_2}{T_2}\).
@@ -780,27 +782,32 @@ We want to prove:
 	\[ \exists t_2 \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \sigma \uplus \nu \vdash \fguard{t_2} \hyp{2} \]
 	And get immediately the values \(t_2\), \(\nu\) and the hypothesis:
 	\[ \sigma \uplus \nu \vdash \fguard{t_2} \hyp{2'} \]
-	\(R\) satisfies \eqref{eq:drWD} with the current value of \(\mpar{s_1, s_2}\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\biguplus_{t_2 \in \fOT{s_2}} \fvars{\fguard{t_2}}\) so we have:
+	\(R\) satisfies \eqref{eq:drWD} with the current value of \(\mpar{s_1, s_2}\) and \(\sigma \uplus \nu\) completed with dummy values for the other variables of \(\biguplus_{t_2 \in \fOT{s_2}} \fvars{t_2}\) so we have:
 	\[ \sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{3} \]
-	The \(\vdash\) hides an implicit \(\exists\) that we use to get values to the variables in \(\biguplus_{t_1 \in \fOT{s_1}} \fvars{\fguard{t_1}}\) in a valuation \(\mu\).
+	The \(\vdash\) hides an implicit \(\exists\) that we use to get values to the variables in \(\biguplus_{t_1 \in \fOT{s_1}} \fvars{t_1}\) in a valuation \(\mu\).
 	The left side of the implication is proved using \hyp{1} and \hyp{2'} for the branch \(t_2\) of the disjunction.
 	We are now allowed to decompose the right side to get \(t_1\) such that:
 	\[ \sigma \uplus \nu \uplus \mu \vdash \fguard{t_1} \hyp{3'} \]
-	At this point we have a \(t_1\) and a \(t_2\) so we may think that the proof is about to be finished because the only property left to prove is:
+	At this point we have a certain \(t_1\) and \(t_2\) so we may be tempted to use them to prove the goal:
 	\begin{multline}
 		\bigsymb{\exists} \OTx{2}{}{2}{2} \in \fOT{s_2}, \OTx{1}{}{1}{1} \in \fOT{s_1}, \\
 		\sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \goal{1}
 	\end{multline}
-	However we cannot yet prove it because we don't know whether \(t_2\) and \(t_1\) do match.
-	In order to get a \(t_2\) matching \(t_1\) we use will use \eqref{eq:drID}.
-	\eqref{eq:drID} with current value of \(\mpar{s_1, s_2}\), \(t_1\) and \(\sigma \uplus \mu\) as a valuation of \(V_1 \uplus V_2 \uplus \fvars{t_1}\) gives:
+	However we cannot yet prove it because we don't know whether \(t_2\) and \(t_1\) match.
+	In order to get a \(t_2\) matching \(t_1\) we will use the fact that \(R\) is a simulation.
+	\begin{multline}
+		\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
+		\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
+		\sigma \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \hyp{sim}
+	\end{multline}
+	\hyp{sim} with current value of \(\mpar{s_1, s_2}\), \(t_1\) and \(\sigma \uplus \mu\) as a valuation of \(V_1 \uplus V_2 \uplus \fvars{t_1}\) gives:
 	\begin{multline}
 		\mpar{\sigma \uplus \mu \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \exists t_2 \defobject \OTx{2}{}{2}{} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
 		\sigma \uplus \mu \uplus \nu \vdash \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_2 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \hyp{0'}
 	\end{multline}
 	The left part of the implication is \hyp{1} and \hyp{3'}, so we get \(t'_2 \in \fOT{s_2}\), \(\nu': \fvars{t_2} \to \values\) and:
 	\[ \sigma \uplus \mu \uplus \nu' \vdash \alpha_1 = \alpha'_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J''_2} \beta_{1j} = \beta'_{2j} \wedge g'_2 \wedge R\mpar{s'_1, s''_2}\psubst{\psi_1 \uplus \psi'_2} \hyp{4} \]
-	The witnesses for \goal{1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{target} and \hyp{3'}.
+	The witnesses for \goal{1} are \(t'_2\) and \(t_1\), and the rest is proved with a combination of \hyp{4} and \hyp{3'}.
 \item[\(\eqref{eq:drWD}\Leftarrow\eqref{eq:drID}\):]
 	Let \(\mpar{s_1, s_2} \in S_1 \times S_2\) and \(\sigma: V_1 \uplus V_2 \uplus \biguplus_{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values\).
 	We want to prove:
@@ -1070,7 +1077,7 @@ We prove \goal{3d} with valuation \(\mpar{\sigma_2 \uplus \nu_2}\psubst{\psi_{s2
 	= R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} % TODO
 \end{multline*}
 \item[\goal{1}:] Let \(\sigma_1: V_1 \to \values\) and \nmm{\sigma_3: V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \to \values}.
-We have the hypotheses on \(R_{12}\) and \(R_{23}\), then the current goal: % TODO HERE: get s_2 by decomposing R_{13}
+We have the hypotheses on \(R_{12}\) and \(R_{23}\) for a specific \(s_2\), then the current goal:
 \begin{gather}
 	V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{5} \\
 	V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash R_{23}\mpar{s_2, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \hyp{6} \\
@@ -1079,11 +1086,12 @@ We have the hypotheses on \(R_{12}\) and \(R_{23}\), then the current goal: % TO
 We use dummy values for variables in \nmm{\biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1}} to get the left side of this implication as an hypothesis (independant from these values):
 \[ \sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{7} \]
 Hypothesis that we immediately break down into:
-\begin{align}
-	\sigma_2 & : V_2 \to \values &
-	\sigma_1 \uplus \sigma_2 \uplus \sigma_3 & \vdash R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \hyp{7'} \\
-	&& \sigma_1 \uplus \sigma_3 & \vdash \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{7"}
-\end{align}
+\begin{gather*}
+	\sigma_2: V_2 \to \values \quad s_2 \in S_2 \\
+	\sigma_1 \uplus \sigma_2 \uplus \sigma_3 \vdash R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \hyp{7'} \\
+	\sigma_1 \uplus \sigma_3 \vdash \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{7"}
+\end{gather*}
+Hypotheses \hyp{5} and \hyp{6} are considered with the obtained state \(s_2\).
 We can use immediately \hyp{6} with valuation \(\sigma_2 \uplus \sigma_3\) to get \nmm{\nu_2: \biguplus_{t_2 \in \fOT{s_2}} \fvars{t_2} \to \values}.
 The left side of the implication is proved with the right side of \hyp{7'} and \hyp{7"}, so we get
 \[ \sigma_3 \uplus \nu_2 \vdash \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \hyp{6'} \]
