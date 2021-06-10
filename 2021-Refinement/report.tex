@@ -19,7 +19,6 @@
 
 % transitions between sections
 % TODO: CITER LES CONFERENCES
-% TODO: vérifier tous les big([^_]+)_\subbox{[^}]+}[)}]
 
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
@@ -332,7 +331,7 @@ Finally compatibility with FH-bisimulation is the refinement not being able to d
 Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
 The important properties we consider for the relation on states are being a simulation and the prevention of deadlocks as defined in the following definitions.
-\begin{defi}[Pre-simulation]\label{def:presim}
+\begin{defi}[Pre-simulation]
 For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\), a relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a pre-simulation if it satisfies both
 \defitem Initial configurations are related: \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\);
 \defitem From related states, all out-transitions from \(A_1\) can be simulated in \(A_2\) and their target states are related:
@@ -347,7 +346,7 @@ The last formula means that for every pair of related configurations of the auto
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables nor holes nor guards.
 In FH-bisimulation, holes with the same name will receive the same open automaton when composed, and the resulting open automaton will still be equivalent.
 Here we assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
-This implies that there is no relation between their holes, for instance composing \(A_i\) in \(j_i\) (\(1 \leq i \leq n\)) of \(A_0\) gives the set of holes \nmm{J \defobject \mpar{\biguplus_\subbox{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}} that is neither subset nor superset of \(J_0\).
+This implies that there is no relation between their holes, for instance composing \(A_i\) in \(j_i\) (\(1 \leq i \leq n\)) of \(A_0\) gives the set of holes \(J \defobject \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) that is neither subset nor superset of \(J_0\).
 Yet we still assume that in holes with the same name, the same open automaton will be composed.
 Hence only the holes in common have to match their actions.
 However it is not sufficient to imply properties on the relation on automatons like being a preorder.
@@ -466,7 +465,7 @@ With all these properties we can now look at some concrete refinement relations.
 \section{Refinement relations in restricted cases}\label{sec:prelref}
 The main goal of this section is to explain the different aspects of refinement in restricted cases so that they are not all introduced at once in the real refinement relation.
 In particular if we have a family of open automata \(A_i \defobject \OAg[i]\), \(0 \leq i \leq n\), let \(A \defobject \OAg\) be such that \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\).
-Recall that there is no relation between the holes of \(A\) and \(A_0\) because \nmm{J = \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}} is neither subset nor superset of \(J_0\).
+Recall that there is no relation between the holes of \(A\) and \(A_0\) because \(J = \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) is neither subset nor superset of \(J_0\).
 So looking at restricted cases where holes are related in a specific manner can help understanding the general case.
 Hopefully the intermediate refinement relation introduced can be used as simpler (and less expensive to compute) versions of the real refinement relation in the case the manipulated automata respect some constraints.
 
@@ -474,9 +473,9 @@ We restrict the holes of the related automata so that we can explain the differe
 In the following definition, \(\triangle \in \mbrc{\subseteq, =, \supseteq}\).
 \begin{defi}[Hole-\(\triangle\) simulation]
 For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\), the relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) if:
-\defitem \(J_1 \triangle J_2\)
-\defitem \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
-\defitem \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
+\item[1)] \(J_1 \triangle J_2\)
+\item[2)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
+\item[3)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
 \noindent\begin{multline*}
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
 		\bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{t_{2x} \defobject \OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\
@@ -509,30 +508,38 @@ Examples of application of the different refinement relations are given in Appen
 \begin{thm} A hole-\(\triangle\) simulation is a pre-simulation. \end{thm}
 Proof is given in Appendix \ref{apx:presim}.
 \begin{thm} The hole-\(\triangle\) simulation on automata is a preorder. \end{thm}
-% TODO: give intuition, then define R on one line then renamin on the line after
-Reflexivity is immediate with \(R \defobject \mpar{s, s'} \mapsto \choice{\bigwedge_{v \in V} v_1 = v_2 & \text{if } s = s'\\ \bot & \text{otherwise}}\) where \(v_x\) is the renaming to distinguish conflicting automaton variables.
+The idea for reflexivity is that the related automata are always in the same configuration.
+\[ R \defobject \mpar{s, s'} \mapsto \choice{\bigwedge_{v \in V} v_1 = v_2 & \text{if } s = s'\\ \bot & \text{otherwise}} \]
+Where \(v_x\) is the renaming to distinguish conflicting automaton variables.
+\(R\) is a witness of the reflexivity, the proof is mainly the same as several of the following ones so it will be omitted.
 
-For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), such that \(R_{12}\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\), we want to define \(R_{13}\) by saying that there exists a state \(s_2 \in S_2\) and values for \(V_2\) such that \(R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}\).
+For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), such that \(R_{12}\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\), we want to define \(R\) by saying that there exists a state \(s_2 \in S_2\) and values for \(V_2\) such that \(R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}\).
 However we cannot talk about states in formulas.
 The solution is to expand the existential quantifier on states as we did in deadlock prevention, which is possible because states are finite.
-\nmm{R_{13} \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}} is a witness of the transitivity, proof is given in Appendix \ref{apx:trans}.
+\[ R \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
+\(R\) is a witness of the transitivity, proof is given in Appendix \ref{apx:trans}.
 \begin{thm}[Context refinement] Hole-equal simulation is context refining. \end{thm}
 For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) with \(J_1 = J_2\), let \(k \in J_1\).
 Let \(R_{12}\) be a hole-equal simulation of \(A_1\) by \(A_2\) and \(\reach{A\subst{A_3}{k}}\) be a witness that \(A\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) while \(A_3\) does the same things in both compositions in the hole \(k\).
 \[ R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \]
 Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_x\subst{A_3}{k}\).
+\(R\) is a witness of the context refinement.
 \begin{prop}[Limited composition correctness]\label{prop:cc'} Hole-subset simulation is correct w.r.t.\@ composition with automata without holes. \end{prop}
-For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\) with \(J_2 = \emptyset\), let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\), with \(A = \OAg\).
+For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\) with \(J_2 = \emptyset\), let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\).
 Let \(\reach{A}\) be a witness that \(A\) is non-locking.
 The idea for the relation on configurations is that the copy of \(A_1\) in \(A\) do the same things as \(A_1\), as if we were trying to prove reflexivity.
 \[ R \defobject \mpar{\mpar{s_{1'}, s_2}, s_1} \mapsto \choice{\reach{A}\mpar{s_{1'}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 & \text{if } s_{1'} = s_1 \\ \bot & \text{otherwise}} \]
 Where \(y_{1'}\) is the renaming of \(y_1\) from \(A_1\) in \(A\).
+\(R\) is a witness of the limited composition correctness.
 \begin{prop}[Special composition correctness]
-Let \(A_1 \defobject \OAg[1]\) be hole-superset simulated by \(A_2 \defobject \OAg[2]\).
-Let \(j \in J_1 \setminus J_2\) and \(A_3\) an open automaton.
-There is a hole-superset simulation of \(A_1\subst{A_3}{j}\) by \(A_2\).
+For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(k \in J_1 \setminus J_2\) and \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\).
+There is a hole-superset simulation of \(A_1\subst{A_3}{k}\) by \(A_2\).
 \end{prop}
+Let \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
+The idea for the relation on configurations is to combine the non-locking composition and the already existing realtion on configurations.
+\[ R \defobject \mpar{\mpar{s_1, s_3}, s_2} \mapsto R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_3} \]
+\(R\) is a witness of the secial composition correctness.
 Proofs of the above theorem and propositions are given in Appendix \ref{apx:ophts}.
 
 % J'2 \subseteq J'1 in hole-subset, J'1 \subseteq J'2 in hole-superset (decide of transition variable with holes); composition with new holes is hole-subset where hole variables are free then hole-superset where hole names have no conflicts with removed holes. Transitivity must ensure holes name have no conflict for that reason!
@@ -658,7 +665,6 @@ Note that \nmm{\OT{S}{C}{\act{set}\mpar{t}}{\mbrc{}}{\top}{\mbrc{c \gets 0}}} wo
 
 \subsection{Composition introducing deadlocks and requirements of non-locking composition}\label{apx:lockcomp}
 \begin{exi}[Deadlocks introduced by composition]
-\Ludo{TODOludo}{lire l'explication}
 This example reuses the counter introduced in Figure \ref{fig:tlh}.
 The behaviour of the counter is to count external \(\act{tick}\) actions up to the amount set by action \(\act{set}\mpar{x}\) then to notify the environnement that this amount of time elapsed.
 In the traffic light example the clock is not specified, we will introduce deadlocks using a wisely choosen clock specification.
@@ -746,7 +752,7 @@ We want to prove:
 		\sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \goal{1}
 	\end{multline}
 	However we cannot yet prove it because we don't know whether \(t_2\) and \(t_1\) match.
-	In order to get a \(t_2\) matching \(t_1\) we will use the fact that \(R\) is a \hyperref[def:presim]{pre-simulation}:
+	In order to get a \(t_2\) matching \(t_1\) we will use the fact that \(R\) is a pre-simulation:
 	\begin{multline}
 		\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
 		\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
@@ -910,23 +916,28 @@ We gather the variables of the implicit \(\exists\) in a valuation \nmm{\nu: \bi
 \[ \sigma \uplus \nu \vdash R\mpar{s_1, s_2} \wedge g_1 \implies \bigvee_{x \in X} \mpar{\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \wedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}} \hyp{3'} \]
 The left side of the implication is proved by \hyp{1}, and for the right side we get \(x \in X\) such that
 \[ \sigma \uplus \nu \vdash \alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap J_1} \beta_{1j} = \beta_{2xj} \wedge g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}} \hyp{4} \]
-% TODO: put that on several lines using a math env
-We have \(J'_{2x} \cap J_1 \subseteq J'_{2x}\) and by \hyp{2}, \(J'_{2x} \cap J_1 = J'_1 \cap J_2 \subseteq J'_1\) so \(J'_{2x} \cap J_1 \subseteq J'_{2x} \cap J'_1\).
-Also \(J'_{2x} \cap J'_1 \subseteq J'_{2x} \cap J_1\) because \(J'_1 \subseteq J_1\) by definition of an open transition.
-Hence \(J'_{2x} \cap J_1 = J'_{2x} \cap J'_1\) in \hyp{4}.
-We can get back to prove \goal{0'} with the transition \(t_{2x}\) and the valuation \(\nu\) by \hyp{4}.
+We have \(J'_{2x} \cap J_1 = J'_{2x} \cap J'_1\) in \hyp{4}:
+\begin{align*}
+	J'_{2x} \cap J_1 & \subseteq J'_{2x} \tag{1} \\
+	J'_{2x} \cap J_1 & = J'_1 \cap J_2 & \text{by \hyp{2}} \\
+	& \subseteq J'_1 \tag{2} \\
+	J'_{2x} \cap J_1 & \subseteq J'_{2x} \cap J'_1 & \text{by (1) and (2)} \tag{3} \\
+	J'_{2x} \cap J'_1 & \subseteq J'_{2x} \cap J_1 & \text{by } J'_1 \subseteq J_1 \tag{4} \\
+	J'_{2x} \cap J_1 & = J'_{2x} \cap J'_1 & \text{by (3) and (4)}
+\end{align*}
+So we can prove \goal{0'} for the transition \(t_{2x}\) and the valuation \(\nu\) by \hyp{4}.
 \end{proof}
 
 \subsection{Context refinement for hole-equal simulation}
-Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be three pen automata.
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be three open automata.
 Let \(k \in J_1\), \(A_{13} \defobject A_1\subst{A_3}{k}\) and \(A_{23} \defobject A_2\subst{A_3}{k}\) with \(A_{13} = \OAg[13]\) and \(A_{23} = \OAg[23]\).
 Let \(R_{12}\) be a hole-equal simulation of \(A_1\) by \(A_2\) and \(\reach{A_{13}}\) be a witness that \(A_{13}\) is non-locking.
 \[ R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \]
 Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_{x3}\).
 We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}\).
 \begin{proof}
-\defitem \(J_{13} = J_3 \cup J_1 \setminus \mbrc{k} = J_3 \cup J_2 \setminus \mbrc{k} = J_{23}\) by \(J_1 = J_2\).
-\defitem For \(\sigma_{013} \uplus \sigma_{023} \vdash R\mpar{s_{013}, s_{023}}\) we use the fact that \(R_{12}\) relates inital configurations and initial configuration is reachable:
+\item[1)] \(J_{13} = J_3 \cup J_1 \setminus \mbrc{k} = J_3 \cup J_2 \setminus \mbrc{k} = J_{23}\) by \(J_1 = J_2\).
+\item[2)] For \(\sigma_{013} \uplus \sigma_{023} \vdash R\mpar{s_{013}, s_{023}}\) we use the fact that \(R_{12}\) relates inital configurations and initial configuration is reachable:
 	\begin{align*}
 		& \sigma_{013} \uplus \sigma_{023} \vdash R\mpar{s_{013}, s_{023}} \\
 		\iff & R\mpar{\mpar{s_{01}, s_{031}}, \mpar{s_{02}, s_{031}}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{031} \uplus \sigma_{032}} \\
@@ -934,7 +945,7 @@ We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}
 		\iff & \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar{\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}} \wedge \bigwedge_\subbox{v_3 \in V_3} \sigma_{031}\mpar{v_{31}} = \sigma_{032}\mpar{v_{32}} \\
 		\iff & \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar{\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}} \wedge \top
 	\end{align*}
-\defitem Let \(s_{13} \defobject \mpar{s_1, s_{31}} \in S_{13}\) and \(s_{23} \defobject \mpar{s_2, s_{32}} \in S_{23}\).
+\item[3)] Let \(s_{13} \defobject \mpar{s_1, s_{31}} \in S_{13}\) and \(s_{23} \defobject \mpar{s_2, s_{32}} \in S_{23}\).
 	We want to prove both
 	\begin{align*}
 		& \bigsymb{\forall} t_{13} \defobject \OTx{13}{}{13}{13} \in \fOT{s_{13}}, \bigsymb{\exists} \mpar{t_{23x} \defobject \OTx{23}{x}{23x}{23x} \in \fOT{s_{23}}}^{x \in X}, \\
@@ -979,7 +990,7 @@ We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}
 	\[ t_{23x}^{x \in X} \defobject x \mapsto \choice{
 		\OT{\mpar{s_2, s_{32}}}{\mpar{s'_{2x}, s'_{32}}}{\alpha_{2x}}{\beta_{2xj}^{j \in J'_{2x} \setminus \mbrc{k}} \uplus \beta_{3j}^{j \in J'_{32}}}{g_{2x} \wedge g_{32} \wedge \alpha_{32} = \beta_{2xk}}{\psi_{2x} \uplus \psi_{32}} & \text{if } k \in J'_{2x} \\
 		\OT{\mpar{s_2, s_{32}}}{\mpar{s'_{2x}, s_{32}}}{\alpha_{2x}}{\beta_{2xj}^{j \in J'_2}}{g_2}{\psi_2} & \text{otherwise}
-	} \label{eq:t23x} \]
+	} \]
 	We will prove \goal{0} for the family \(t_{23x}^{x \in X}\), the new goals are
 	\begin{gather}
 		\forall x \in X, J'_{23x} \cap J_{13} = J'_{13} \cap J_{23} \goal{0'} \\
@@ -1005,8 +1016,7 @@ We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}
 	We use dummy values for the variables in \nmm{\biguplus_{x \in X} \fvars{t_{23x}}} to get the left side of the implication as an hypothesis (independant from these values):
 	\[ \sigma \vdash R\mpar{s_{13}, s_{23}} \wedge g_{13} \hyp{3} \]
 	If \(s_{31} \neq s_{32}\) then this hypothesis is \(\sigma \vdash \bot\), the empty family works and the proof is finished.
-	We can assume \(s_{31} = s_{32}\) and the family given \hyperref[eq:t23x]{previously} works.
-	We break \hyp{3} into
+	We can assume \(s_{31} = s_{32}\) and break \hyp{3} into
 	\begin{gather}
 		\sigma \vdash R_{12}\mpar{s_1, s_2} \hyp{3a} \\
 		\sigma \vdash \reach{A_{13}}\mpar{s_{13}} \hyp{3b} \\
@@ -1044,16 +1054,16 @@ We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}
 		\iff & \mpar{\sigma \uplus \nu \vdash R_{12}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}} \wedge \mpar{\sigma \vdash \reach{A_{13}}\mpar{s'_{13}}\psi_{13}} \wedge \mpar{\sigma \vdash \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32}}
 	\end{align*}
 \item[\goal{1}:] Let \nmm{\sigma: V_{13} \uplus V_{23} \uplus \biguplus_\subbox{t_{23} \in \fOT{s_{23}}} \fvars{t_{23}} \to \values}.
-	We use dummy values for the variables in \nmm{\biguplus_\subbox{t_{13} \in \fOT{s_{13}}} \fvars{t_{13}}} to get the left side of the implication (independant from dummy values), immediately broken into
+	We use dummy values for the variables in \nmm{\biguplus_\subbox{t_{13} \in \fOT{s_{13}}} \fvars{t_{13}}} to get the left side of the implication (independant from these values), immediately broken into
 	\begin{gather}
 		\sigma \vdash R_{12}\mpar{s_1, s_2} \hyp{5a} \\
 		\sigma \vdash \reach{A_{13}}\mpar{s_{13}} \hyp{5b} \\
 		\sigma \vdash \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}} \hyp{5c}
 	\end{gather}
-	\(R_{12}\) is a simulation and \(\reach{A_{13}}\) witnesses the non-locking simulation so we have the hypothesis:
+	\(R_{12}\) is a simulation and \(\reach{A_{13}}\) witnesses the non-locking composition so we have the hypotheses:
 	\begin{gather}
 		V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{6} \\
-		V_{13} \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash \reach{A_{13}}\mpar{s} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}} \hyp{7}
+		V_{13} \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash \reach{A_{13}}\mpar{s_{13}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}} \hyp{7}
 	\end{gather}
 	We use \hyp{6} with valuation \(\sigma\) projected on the variables from generating transitions in \(A_2\) to get \nmm{\nu: \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \to \values}.
 	The left side of the implication is proved using \hyp{5a} and \hyp{5c} because the guards from transitions of \(A_2\) are still in transitions of \(A_{23}\), the right side gives:
@@ -1070,16 +1080,16 @@ Let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\), with \(A = \OAg\).
 Let \(\reach{A}\) be a witness that \(A\) is non-locking.
 \[ R \defobject \mpar{\mpar{s_{1'}, s_2}, s_1} \mapsto \choice{\reach{A}\mpar{s_{1'}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 & \text{if } s_{1'} = s_1 \\ \bot & \text{otherwise}} \]
 Where \(y_{1'}\) is the renaming of \(y_1\) from \(A_1\) in \(A\).
-We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\):
+We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\).
 \begin{proof}
-\defitem \(J = J_2 \cup J_1 \setminus \mbrc{k} = \emptyset \cup J_1 \setminus \mbrc{k} \subseteq J_1\)
-\defitem We use the fact that \(R\) doesn't constrain the behaviour of \(J_2\):
+\item[1)] \(J = J_2 \cup J_1 \setminus \mbrc{k} = \emptyset \cup J_1 \setminus \mbrc{k} \subseteq J_1\)
+\item[2)] We use the fact that \(R\) doesn't constrain the behaviour of \(J_2\):
 	\begin{align*}
 		\sigma_0 \uplus \sigma_{01} \vdash R\mpar{s_0, s_{01}} \iff & \mpar{\bigwedge_{v_1 \in V_1} v_{1'} = v_1}\psubst{\sigma_{01'} \uplus \sigma_{02} \uplus \sigma_{01}} \\
 		\iff & \bigwedge_\subbox{v_1 \in V_1} \sigma_{01'}\mpar{v_{1'}} = \sigma_{01}\mpar{v_1} \\
 		\iff & \top
 	\end{align*}
-\defitem Let \(s \defobject \mpar{s_{1'}, s_2} \in S\) and \(s_1 \in S_1\).
+\item[3)] Let \(s \defobject \mpar{s_{1'}, s_2} \in S\) and \(s_1 \in S_1\).
 	We want to prove both
 	\begin{align*}
 		& \bigsymb{\forall} t \defobject \OTg \in \fOT{s}, \bigsymb{\exists} \mpar{t_{1x} \defobject \OTx{1}{x}{1x}{1x} \in \fOT{s_1}}^{x \in X}, \\
@@ -1129,37 +1139,55 @@ We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\):
 	\end{align*}
 \item[\goal{1}:] % TODO: adapt and continue
 	Let \nmm{\sigma: V \uplus V_1 \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \to \values}.
-	We rename some variables in the input domain of \(\sigma\) to get \(\nu: \fvars{t_1} \to \values\).
+	We use dummy values for the variables in \nmm{\biguplus_\subbox{t \in \fOT{s}} \fvars{t}} to get the left side of the implication (independant from these values), immediately broken into
+	\begin{gather}
+		\sigma \vdash \reach{A}\mpar{s} \hyp{2a} \\
+		\sigma \vdash \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 \hyp{2b} \\
+		\sigma \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{2c}
+	\end{gather}
+	\(\reach{A}\) is a witness of the non-locking composition so we have the hypothesis:
+	\[ V \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{3} \]
+	We use \hyp{3} with valuation \(\sigma\) to get \nmm{\nu: \biguplus_\subbox{t \in \fOT{s}} \fvars{t} \to \values}.
+	The left side of the implication is proved with \hyp{2a} and \hyp{2c}, the right side gives the hypothesis:
+	\[ \sigma \uplus \nu \vdash \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \hyp{3'} \]
+	We prove \goal{1} with valuation \(\nu\) by admitting the left side ofthe implication and using \hyp{3}.
 \end{proof}
 
 \subsection{Special composition correctness for hole-superset simulation}
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and  \(A_3 \defobject \OAg[3]\) be open automata.
+Let \(k \in J_1 \setminus J_2\) and \(A \defobject A_1\subst{A_3}{k}\), with \(A = \OAg\).
+Let \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\) and \(\reach{A}\) be a witness that \(A\) is non-locking.
+\[ R \defobject \mpar{\mpar{s_1, s_3}, s_2} \mapsto R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_3} \]
+We want to prove that \(R\) is a hole-superset simulation of \(A\) by \(A_2\).
 \begin{proof}
-% TODO
+\item[1)] % TODO
+\item[2)] % TODO
+\item[3)] % TODO
 \end{proof}
 
 \section{Proof of transitivity}\label{apx:trans}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be open automata.
 Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\).
-\[ R_{13} \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
-\(R_{13}\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_3\).
+\[ R \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
+We want to prove that \(R\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A_3\).
 \begin{proof}
-\defitem By transitivity of \(\triangle\), \(J_1 \triangle J_3\)
-\defitem We prove that initial configurations are related using \(\sigma_{02}\) as the values of the variables in \(V_2\), and \(s_{02}\) to choose the branch of the disjunction.
+\item[1)] By transitivity of \(\triangle\), \(J_1 \triangle J_3\)
+\item[2)] We prove that initial configurations are related using \(\sigma_{02}\) as the values of the variables in \(V_2\), and \(s_{02}\) to choose the branch of the disjunction.
 \begin{align*}
-	\sigma_{01} \uplus \sigma_{03} \vdash R_{13}\mpar{s_{01}, s_{03}} \iff & \sigma_{01} \uplus \sigma_{03} \vdash \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_{01}, s_2} \wedge R_{23}\mpar{s_2, s_{03}} \\
+	\sigma_{01} \uplus \sigma_{03} \vdash R\mpar{s_{01}, s_{03}} \iff & \sigma_{01} \uplus \sigma_{03} \vdash \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_{01}, s_2} \wedge R_{23}\mpar{s_2, s_{03}} \\
 	\impliedby & \sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03} \vdash R_{12}\mpar{s_{01}, s_{02}} \wedge R_{23}\mpar{s_{02}, s_{03}} \\
 	\impliedby & \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar{\sigma_{02} \uplus \sigma_{03} \vdash R_{23}\mpar{s_{02}, s_{03}}}
 \end{align*}
-\defitem Let \(\mpar{s_1, s_3} \in S_1 \times S_3\), we want to prove both
+\item[3)] Let \(\mpar{s_1, s_3} \in S_1 \times S_3\), we want to prove both
 	\begin{align*}
 		& \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{t_{3x} \defobject \OTx{3}{x}{3x}{3x} \in \fOT{s_3}}^{x \in X}, \\
 		& \mpar{\forall x \in X, J'_{3x} \cap J_1 = J'_1 \cap J_3} \\[-10pt]
-		& \wedge V_1 \uplus V_3 \uplus \fvars{t_1} \vdash R_{13}\mpar{s_1, s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
+		& \wedge V_1 \uplus V_3 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
 			\alpha_1 = \alpha_{3x} \wedge \bigwedge_\subbox{j \in J'_{3x} \cap J_1} \beta_{1j} = \beta_{3xj} \\[12pt]
-			\nwedge g_{3x} \wedge R_{13}\mpar{s'_1, s'_{3x}}\psubst{\psi_1 \uplus \psi_{3x}}
+			\nwedge g_{3x} \wedge R\mpar{s'_1, s'_{3x}}\psubst{\psi_1 \uplus \psi_{3x}}
 		\end{array}} \goal{0}
 	\end{align*}
-	\[ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1} \]
+	\[ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash R\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1} \]
 \item[\goal{0}:] Let \nmm{t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}}.
 	For every \(s_2 \in S_2\) we have the hypotheses on \(R_{12}\) and \(R_{23}\):
 	\begin{gather}
@@ -1204,9 +1232,9 @@ Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_
 	The new goals are:
 	\begin{gather}
 		\forall z \in Z, J'_{3z} \cap J_1 = J'_1 \cap J_3 \goal{0'} \\
-		V_1 \uplus V_3 \uplus \fvars{t_1} \vdash R_{13}\mpar{s_1, s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{z \in Z} \mpar{\everymath{\displaystyle}\begin{array}{l}
+		V_1 \uplus V_3 \uplus \fvars{t_1} \vdash R\mpar{s_1, s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{z \in Z} \mpar{\everymath{\displaystyle}\begin{array}{l}
 			\alpha_1 = \alpha_{3z} \wedge \bigwedge_\subbox{j \in J'_{3z} \cap J_1} \beta_{1j} = \beta_{3zj} \\[12pt]
-			\nwedge g_{3z} \wedge R_{13}\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}}
+			\nwedge g_{3z} \wedge R\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}}
 		\end{array}} \goal{2}
 	\end{gather}
 \item[\goal{0'}:] By case on \(\triangle\):
@@ -1250,7 +1278,7 @@ Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_
 	\end{itemize}
 \item[\goal{2}:] Let \(\sigma_1: V_1 \uplus \fvars{t_1} \to \values\) and \(\sigma_3: V_3 \to \values\).
 	We use dummy values for variables in \nmm{\biguplus_\subbox{z \in Z} \fvars{t_{3z}}} to get the left side of this implication as an hypothesis (independant from these values):
-	\[ \sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge g_1 \hyp{4} \]
+	\[ \sigma_1 \uplus \sigma_3 \vdash R\mpar{s_1, s_3} \wedge g_1 \hyp{4} \]
 	Hypothesis immediately broken down into
 	\begin{gather*}
 		\sigma_2: V_2 \to \values \quad s_2 \in S_2 \\
@@ -1278,14 +1306,14 @@ Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_
 		\sigma_1 \uplus \sigma_3 \uplus \nu_3 & \vdash \alpha_1 = \alpha_{3z} \goal{2a} \\
 		\sigma_1 \uplus \sigma_3 \uplus \nu_3 & \vdash \bigwedge_\subbox{j \in J'_{3z} \cap J_1} \beta_{1j} = \beta_{3zj} \goal{2b} \\
 		\sigma_3 \uplus \nu_3 & \vdash g_{3z} \goal{2c} \\
-		\sigma_1 \uplus \sigma_3 \uplus \nu_3 &\vdash R_{13}\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}} \goal{2d}
+		\sigma_1 \uplus \sigma_3 \uplus \nu_3 &\vdash R\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}} \goal{2d}
 	\end{align}
 	\goal{2a} is proved by transitivity using \hyp{5a} and \hyp{5a}.
 	\goal{2b} is proved using \hyp{5b} and \hyp{6b}, but depending on \(\triangle\) the equality are obtained for the interesting values \(j\) using either \hyp{2} and \hyp{2'} or \hyp{3} and \hyp{3'}.
 	\goal{2c} is exactly \hyp{6c}.
 	We prove \goal{2d} with valuation \(\psi_{s2x}\psubst{\sigma_2 \uplus \nu_2}\) for the branch \(s_2\) using \hyp{5d} and \hyp{6d}:
 	\begin{align*}
-		& \sigma_1 \uplus \sigma_3 \uplus \nu_3 \vdash R_{13}\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}} \\
+		& \sigma_1 \uplus \sigma_3 \uplus \nu_3 \vdash R\mpar{s'_1, s'_{3z}}\psubst{\psi_1 \uplus \psi_{3z}} \\
 		\iff & \mpar{R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}}\psubst{\psi_1 \uplus \psi_{3z}}\psubst{\psi_{s2x}\psubst{\sigma_2 \uplus \nu_2}}\psubst{\sigma_1 \uplus \sigma_3 \uplus \nu_3} \\
 		\iff & R_{12}\mpar{s_1, s_2}\psubst{\psi_1}\psubst{\psi_{s2x}\psubst{\sigma_2 \uplus \nu_2}}\psubst{\sigma_1} \wedge R_{23}\mpar{s_2, s_3}\psubst{\psi_{3z}}\psubst{\psi_{s2x}\psubst{\sigma_2 \uplus \nu_2}}\psubst{\sigma_3 \uplus \nu_3} \\
 		\iff & R_{12}\mpar{s_1, s_2}\psubst{\psi_1 \uplus \psi_{s2x}}\psubst{\sigma_2 \uplus \nu_2 \uplus \sigma_1} \wedge R_{23}\mpar{s_2, s_3}\psubst{\psi_{3z} \uplus \psi_{s2x}}\psubst{\sigma_2 \uplus \nu_2 \uplus \sigma_3 \uplus \nu_3} \\
@@ -1296,10 +1324,10 @@ Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_
 	\begin{gather}
 		\forall s_2 \in S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \hyp{7} \\
 		\forall s_2 \in S_2, V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash R_{23}\mpar{s_2, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \hyp{8} \\
-		\sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1'}
+		\sigma_1 \uplus \sigma_3 \vdash R\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \goal{1'}
 	\end{gather}
 	We use dummy values for variables in \nmm{\biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1}} to get the left side of this implication as an hypothesis (independant from these values):
-	\[ \sigma_1 \uplus \sigma_3 \vdash R_{13}\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{9} \]
+	\[ \sigma_1 \uplus \sigma_3 \vdash R\mpar{s_1, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \hyp{9} \]
 	Hypothesis that we immediately break down into:
 	\begin{gather*}
 		\sigma_2: V_2 \to \values \quad s_2 \in S_2 \\
