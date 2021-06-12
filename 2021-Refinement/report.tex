@@ -36,7 +36,7 @@ For instance an example of open pNet where equivalence is not sufficient was enc
 
 The contributions of this article are the definition of composition for open automata without having to define open pNets, and the introduciton of several refinement relations for open automata. % TODO: expand
 
-% Related work: thesis
+% TODO: Related work: thesis
 
 We begin with Section \ref{sec:notations} by giving some notations used throughout this paper.
 Then there are several sections dedicated to define all the interesting objects and properties:
@@ -45,8 +45,7 @@ In Section \ref{sec:comp} we define their composition without requiring the use 
 In Section \ref{sec:proofelts} we adapt the standard properties related to refinement relation from LTS to open automata.
 After that Section \ref{sec:prelref} is dedicated to progressively build a refinement relation.
 Section \ref{sec:refinement} introduces and analyses the refinement relation on open automata.
-% future work
-% conclusion
+Finally Section \ref{sec:ccl} recapitulates the contribution and present the work left.
 
 
 \section{Notations}\label{sec:notations}
@@ -382,7 +381,7 @@ A way to solve these conflicts is to characterise a composition that do not intr
 \begin{defi}[Reachability]
 For any open automata \(A \defobject \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is a predicate on states satisfying both
 \defitem Inital state is reachable: \(\sigma_0 \vdash \reach{A}\mpar{s_0}\)
-\defitem Reachability is preserved across transitions: \nmm{\bigsymb{\forall} t \defobject \OTg \in T, \fvars{t} \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}
+\defitem Reachability is preserved across transitions: \nmm{\forall t \defobject \OTg \in T, \fvars{t} \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}
 \end{defi}
 The reachability predicate is used to characterise the reachable configurations in a run of an automaton.
 In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise configurations as the result of a valid path in an automaton.
@@ -546,7 +545,7 @@ It was abandonned because the base automaton has nothing intelligent to tell abo
 That is the reason the hole-superset simulation doesn't constrain the action performed by the added holes.
 
 Only one of the hole-\(\triangle\) simulations cannot tell that a non-locking composition with any automaton is a refinement because we need at the same time to add and remove holes, hence the need of the special composition correctness for hole-superset.
-ALso an issue arises when trying to tell that a composition is a refinement of the base automaton: the refinement relation cannot compare the holes sets.
+Also an issue arises when trying to tell that a composition is a refinement of the base automaton: the refinement relation cannot compare the holes sets.
 This conflicts with the transitivity propriety when a hole present in both extrema of the chain is absent in an intermediate automaton.
 In that case all the constraint on holes actions are lifted even if we would like to require an equality of these actions on the transitive cloture.
 
@@ -574,7 +573,7 @@ It is basically the same definition as the refinement relation deduced from hole
 \(R\) is a kind of hole-\(\triangle\) simulation but without the \(\triangle\) constraint on hole sets.
 On top of that every actions of the holes outside \(H\) is unconstrained in the related automata.
 
-The transitivity property becomes \(\wrel{X}{A}{B} \wedge \wrel{Y}{B}{C} \implies \wrel{X \cap Y}{A}{C}\).
+The transitivity property becomes \(\wrel{A}{B}{X} \wedge \wrel{B}{C}{X} \implies \wrel{A}{C}{X \cap Y}\).
 It behaves the same as if the holes outside the intersection were renamed to avoid conflicts in the first place.
 This makes the comination of the transitivity proofs of hole-\(\triangle\) simulation sufficient to prove transitivity.
 
@@ -584,24 +583,45 @@ On each individual path \(A \leq B_i \leq C\), some holes of \(A\) are unconstra
 
 The other interesting properties left to check are correctness w.r.t.\@ composition, context refinement, composition congruence and compatibility with FH-bisimulation.
 Proving them for the open automata refinement will also prove them for each hole-\(\triangle\) simulation as they are just restricted cases.
-% TODO: Explain two refinement steps comositions so that Correctness wrt composition is trivial
+
+\begin{thm} Open automata refinement is correct w.r.t.\@ composition \end{thm}
+We will decompose composition into two refinement steps, transitivity will complete the proof.
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OA[2]\) and \(k \in J_1\) such that \(A_1\subst{A_2}{k}\) is non-locking.
+We pose
+\begin{gather*}
+	A'_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{\emptyset}{T'_2} \\
+	T'_2 \defobject \mset{\OT{s}{s'}{\alpha}{\mbrc{}}{g}{\psi}}{\OTg \in T_2}
+\end{gather*}
+By limited composition correctness we have \(\wrel{J_1 \setminus \mbrc{k}}{A_1\subst{A'_2}{k}}{A_1}\).
+Adding holes and binding actions to the new holes is a refinement for hole-superset simulation so we have \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A'_2}{k}}{J_1 \setminus \mbrc{k}}\).
+By transitivity we have composition correctness.
 \begin{thm}[Context refinement] Open automata refinement is context refining. \end{thm}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
-Let \(k \in J_1 \cap J_2\), \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\) and \(\reach{A\subst{A_3}{k}}\) be a witness that \(A\subst{A_3}{k}\) is non-locking.
+Let \(k \in J_1 \cap J_2\), \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) while \(A_3\) does the same things in both compositions in the hole \(k\).
 \begin{gather*}
-	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
+	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
 	H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}
 \end{gather*}
 Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_x\subst{A_3}{k}\).
-\(\mpar{R, H}\) is a witness of \(\wrel{H}{A_{13}}{A_{23}}\), proof is given in Appendix \ref{apx:cr}.
-% TODO: Proof for Congruence \ref{apx:cong}
-% TODO: Proof for FH-bisimulation compatibility \ref{apx:FHbcomp}
+\(\mpar{R, H}\) is a witness of \(\wrel{H}{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}\), proof is given in Appendix \ref{apx:cr}.
+\begin{thm}[Composition congruence] Open automata refinement is congruent for composition \end{thm}
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
+Let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
+The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) while \(A_1\) does the same things in both compositions.
+\begin{gather*}
+	R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{13} = v_{23} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
+	H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}
+\end{gather*}
+Where \(y_{1x}\) is the renaming of \(y_1\) from \(A_1\) in \(A_1\subst{A_x}{k}\).
+\(\mpar{R, H}\) is a witness of \(\wrel{H}{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}\), proof is given in Appendix \ref{apx:cong}.
+\begin{thm}[FH-bisimulation compatibility] Open automata refinement is compatible with FH-bisimulation \end{thm}
+The requirements of FH-bisimulation are strictly stronger than the open automata refinement so the transitivity proof is sufficient.
 
 % TODO: What happens on untracked holes (untracked holes equivalent behaviour => free variables; some sort of daisy equivalence)
 
 
-\section{Conclusion}
+\section{Conclusion}\label{sec:ccl}
 % TODO: recap contribs?
 
 The refinement presented here still do not work on the motivating example because of silent actions.
@@ -1480,6 +1500,5 @@ We want to prove that \(R\) is a hole-equal simulation of \(A_{12}\) by \(A_{23}
 
 \subsection{Congruence for composition}\label{apx:cong}
 
-\subsection{compatibility with FH-bisimulation}\label{apx:FHbcomp}
 
 \end{document}
