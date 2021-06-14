@@ -67,12 +67,12 @@ This helps distinguishing the manipulated objects.
 Every such notation will be introduced in the definition of the object.
 
 Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\).
-The latter can only be used if there is a generating expression; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
+The latter can only be used if there is a generating expression\Ludo{c est vrai pour les exemples mais pas pour les defs generiques (OA, bisim, ...): reformuler}; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
 However \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no generating expression and is represented here with the finite version of first notation.
 
 The disjoint union on set is noted \(\uplus\).
 There are several ways of ensuring a union is disjoint, we will indifferently either suppose sets are disjoint or rename conflicting object (useful for variables).
-The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
+The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) has the following signature \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
 
 In a formula, a quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set:
 \(\forall \mbrc{a_1, \dots, a_n}, \exists \mbrc{b_1, \dots, b_m}, P\) means \(\forall a_1, \dots, \forall a_n, \exists b_1, \dots, \exists b_m, P\).
@@ -83,17 +83,17 @@ To define the open automata we need some preliminary definitions.
 \begin{defi}[Expression algebra, Action algebra, Formulas, Terms]
 An expression algebra \(E\) is a disjoint union \(E \defobject \terms \uplus \actions \uplus \formulas\) of the terms, the actions and the formulas.
 
-The terms \(\terms\) is a term algebra.
+Notations are parameterised by a term algebra \(\terms\).
 As any term algebra it has constant symbols with arity, variables, and a typing mechanism to distinguish well-formed and ill-formed terms.
 The action algebra \(\actions\) is another term algebra.
-It can be a subset of the terms.
+It can be \Ludo{''can be'' is not much informative} a subset of the terms.
 The formulas \(\formulas\) are at least the first order formulas over \(\terms\) and \(\actions\).
 \end{defi}
 The term algebras are arbitrary.
 The formulas contain at least first order logic terms with an equality relation.
-This equality relation is not necessarily a syntactic equality (\(2 + 2 \neq 4\) with a syntactic equality).
+This equality relation is not necessarily a syntactic equality (\(2 + 2 \neq 4\) with a syntactic equality but it is more expressive to consider that the two terms are equal).
 
-An example of term algebra can be Peano integers (constant zero with arity 0, constant successor function with arity 1 and the variables), the formulas associated can use syntactic equality relation, the sum relation \(\mathit{sum}\mpar{a, b, c}: \text{``}a = b + c\text{"}\) and the product relation \(\mathit{prod}\mpar{a, b, c}: \text{``}a = b \times c\text{"}\).
+An example of term algebra can be Peano integers (constant zero with arity 0, constant successor function with arity 1 and the variables), the formulas associated can use syntactic equality relation, the sum relation \(\mathit{sum}\mpar{a, b, c}: \text{``}a = b + c\text{"}\), and the product relation \(\mathit{prod}\mpar{a, b, c}: \text{``}a = b \times c\text{"}\).
 
 \begin{defi}[Unbound variables, Expressions restricted to variables, Closed expressions]
 \defitem \(\fvars{e}\) is the set of variables in \(e \in E\) that are not bound by any binder.
@@ -121,14 +121,15 @@ The substitutions might give a ill-formed expression; for instance let the terms
 This can be guarded with the check \(e\subst{t}{x} \in E\) and \(e\psubst{\psi} \in E\) and it will implicitly be the case, for instance when there is quantification on \(t\) and \(\psi\), to simplify notations.
 
 The interpretation of terms is supposed to be decidable.
-The satisfiability of formulas might not be decidable nor complete nor consistent, however we will pretend like they are because these are really hard problems for logicians that we don't want to deal with.
+The satisfiability of formulas might not be decidable nor complete nor consistent,
+but we will consider in the following that they are; this can be achieved by restricting the term algebra to a decidable subset.
 For instance a formula with quantifiers on variables might not be provable even if it is true for all values of these variables.
-In practise the formulas will be given to a SMT solver and we cannot always make sure they have all the previous properties.
+In practice the formulas will be given to a SMT solver and we cannot always make sure they have all the previous properties but, as soon as the satisfiability is consistent our theory is consistent too.
 \(\vdash\) can hence be interpreted as an indicator of what is given to the SMT; it separates the external logic and the logic on \(\formulas\).
 
 Values will be used for keeping a variable state, and then injected in terms for substitution.
 This is correct when \(\values \subseteq \rterms\) and we suppose it is the case.
-Otherwise it doesn't invalidates theorems because it can stand as a shorthand for substitution with any term which is interpreted the kept value.
+Otherwise it doesn't invalidates theorems because it can stand as a shorthand for substitution with any term which is interpreted the kept value \Ludo{comprends pas la fin de phrase, anglais?}.
 We suppose that the interpretation of terms is compatible w.r.t.\@ substitution, that is if two terms \(t\), \(t'\) are interpreted with the same value, then replacing \(t\) by \(t'\) in a well-formed expression makes an equivalent well-formed expression.
 \begin{noti}[Notations for separating external logic and logic on \(\formulas\)]
 \defitem The satisfiability of a formula \(f \in \formulas\) under some valuation \(\sigma: V \to \values\) is noted:
@@ -146,33 +147,37 @@ A pair of a state and a valuation is called a configuration.
 \(S, V, J\) are arbitrary finite sets. % OR finite arbitrary sets?
 \end{defi}
 The variable names may clash when considering two automata, in this case we suppose that we can still distinguish the variables in the formulas.
-In practise the open automata are used in a toolchain at a point where what came before guarantees there are no name clash, which is why we make this assumption.
+In practice the open automata are used in a toolchain  that guarantees there are no name clash.
 
-The initial valuation may be a partial valuation of the variables.
+The initial valuation is a partial valuation of the variables.
 If an undefined variable is set before being read, it behaves like an initially set variable.
 If an undefined variable is not set before being read then its value may be any fixed value.
-When refining the automaton it can be set by the implementation, or it can be left unspecified as a parameter of the automaton (for instance a \(n\) bits register has \(n\) as parameter).
+When refining \Ludo{bizarre de parler de rafinement ici: phrase a deplacer ou introduire par: Later we will consider refinement of autoamata and ....} the automaton it can be set by the implementation, or it can be left unspecified as a parameter of the automaton (for instance a \(n\) bits register has \(n\) as parameter).
 \begin{defi}[Open transition]
-An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variables assignements.
+An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
 \end{defi}
 An open transition can have many unbound variables.
 Actually an effective transition of the automaton is any well-formed substitution of the unbound variables of the transition minus the automaton variables.
 
-The intuition of an open automaton is a partially defined LTS with variables, guards on transitions and parametrised actions.
+The intuition of an open automaton is a partially defined LTS with variables, guards on transitions, and parametrised actions. The LTS is partial in the sense that one cn plug an LTS in the hole and the surrounding LTS will react to the actions emitted by the sub-LTS put in the hole.
 Initially the automaton is in the initial state with an extension on all the variables of the initial valuation.
 In any configuration, it can perform effective transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
-An effective transition is a transition where every variable that is not an automaton variable is instanciated with a value.
-By performing the effective transition, the automaton emits the indicated action and updates its configuration according to the target state and variables assignements.
+An effective transition is a transition where every variable that is not an automaton variable is instantiated with a value.
+By performing the effective transition, the automaton emits the indicated action and updates its configuration according to the target state and variable assignments.
 
 \begin{noti}[FH-bisimulation]
 The FH-bisimulation \cite{henrio:01055091} is noted \(\cong\).
+
+\Ludo{here the reader needs either an intuition of the FH bisim or a definition in any case, he needs to know that he will get one or the other and when. For example we give below an intuitive definition of the FH bisim based on examples.}
+
+\Ludo{ If you need the notation but the def is not important you can explicitly say that the readers should refer to ?? for the details of the def, but here I do not believe it is wise OR you could say FH bisim is useless and you do not introduce the notation but you should not use it afterwards (again not adapted I believe)}
 
 The FH-bisimulation is currently the only equivalence relation on open automata.
 \end{noti}
 To illustrate these definitions we consider two implementations (figure \ref{fig:enable}) of the LOTOS \cite{ISOLOTOS} operator enable in the open automata model.
 The enable operator runs the left hand side agent until it chooses to finish, at which point it produces an action \(\delta\mpar{t}\) (with \(t\) some data) that is synchronised with the first action of the right hand side agent which must be \(\act{accept}\mpar{t}\) (here \(t\) is an input), then only the latter agent runs.
 The \(\act{accept}\) action is shortened as \(\act{acc}\) in the examples.
-During the synchronised action, the value returned by first agent is passed to the second agent.
+During the synchronised action, the value returned by the first agent is passed to the second agent.
 \begin{exi}[Enable, state-oriented]
 Graphical convention for drawing automata are as follows.
 As standard automata, circles represent states and simple arrows represent transitions.
