@@ -201,7 +201,7 @@ The automaton on the left side of the figure is \(\OA{\mbrc{L, R}}{L}{\emptyset}
 	\OT{R}{R}{x}{\mbrc{r \mapsto x}}{\top}{\mbrc{}}
 \end{align*}
 Note that the transition in the middle could have been expressed as \(\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{x}}\).
-It would have avoided many effective transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\), which has the guard \(1 = 2\).
+It would have avoided many effective transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\), which has the guard \(1 = 2\). \Ludo{I believe that with the usual definition of the semantics of open automata it is the same ... please check: you do all potential transitions with the conditions that x is the same in both. In any case as the matching is not linear, the simplification is not obvious}
 
 This automaton is an implementation of the enable operator because it begins in the state \(L\), where it allows any non \(\delta\) transition from its hole \(l\), then the automaton synchronises its holes on the same data, effectively allowing a data exchange when it goes into state \(R\), and finally allows any transition from its hole \(r\).
 The implementation of value passing in the open automata model doesn't distinguish input and output variables as in LOTOS.
@@ -229,9 +229,14 @@ The local variables of a transition are all variables appearing in that transiti
 	\fvars{\OTg} \defnotation \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V
 \end{gather*}
 \end{defi}
-The goal of the extractor \(\fvars{t}\) when \(t\) is a transition is to get variables that are unique to that transition.
-Other variables like automaton variables are already known at this point so there is no use in getting them.
-Also the use of this extractor benefits from this exclusion: otherwise there would always be \(\setminus V\) following it to prevent variable shadowing.
+
+The goal of the extractor \(\fvars{t}\) when \(t\) is a transition is to get variables that are unique \Ludo{what do you mean by unique here?} to that transition.
+Other variables like automaton variables are already known at this point so there is no use in getting them \Ludo{this is not clear because I do not know what variables you ``NEED'' to ``GET'' (need and get are strange and vague to me)}.
+Also the use of this extractor benefits from this exclusion: otherwise there would always be \(\setminus V\) following it to prevent variable shadowing. 
+
+\Ludo{is it really variable shadowing?} 
+
+\Ludo{you do not necessarily need to explain everything if this is what you need, but you miss an intuition of what this set is}
 
 \begin{exi}[Enable, variable-oriented]
 The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{»}}{»}{\mbrc{v}}{\mbrc{v \mapsto l}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are:
@@ -240,32 +245,32 @@ The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{
 	\OT{»}{»}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = l \wedge x = y}{\mbrc{v \gets r}} &&
 	\OT{»}{»}{x}{\mbrc{r \mapsto x}}{v = r}{\mbrc{}}
 \end{align*}
-It is an alternative implementation of the enable operator which is FH-bisimilar to the previous one \cite{henrio:01299562}.
-Note that in this example \(r\) and \(l\) are a hole names and also closed terms: this is a naming conflict, though it is not ambiguous because \(J \cap \rterms = \emptyset\) always holds.
-The variables local to a transition are all the unbound variables in the expressions minus the automaton variables.
+It is an alternative implementation of the enable operator which is FH-bisimilar to the previous one \cite{henrio:01299562}. \Ludo{makes no sense: FH bisimlar is still undefined, neither formally nor informally}
+Note that in this example \(r\) and \(l\) are a hole names and also closed terms: this is a naming conflict, though it is not ambiguous because \(J \cap \rterms = \emptyset\) always holds \Ludo{the intersection is at the same time empty and non-empty, why not use a different value (or underline them) or just say that they are in fact different names though it is easier to read using r and l for both}. \Ludo{le probleme ici c est qu on a l impression que tu essayes a la fois d etre tres strict et formel et pas vraiment en meme temps, il faut choisir}
+The variables that are said to be local to a transition are all the unbound variables in the expressions minus the automaton variables.
 For instance \(v\) is a variable of the automaton (used in the guard).
 It is not local to the transition.
-In a run, when taking effective transitions (without local variables), its value is not substituted with a closed term.
+\Ludo{je comprends ps cette phrase:} In a run, when taking effective transitions (without local variables), its value is not substituted with a closed term.
 For instance \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{v = l \wedge \tau \neq \delta}{\mbrc{}}} is an effective transition generated from the second transition but not \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{l = l \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto l\)).
 
-An imaginary run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = l\).
+An  run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = l\).
 Then the automaton in hole \(l\) emits a \(\delta\mpar{t}\), this is synchonised with the action that sets \(v \gets r\) and the automata in hole \(r\) must emit a \(\act{acc}\mpar{t}\).
 Finally the automaton in the hole \(r\) emits any sequence of actions.
 
-Another imaginary run can be: The automaton in the hole \(l\) emits a sequence of non \(\delta\mpar{t}\) actions so the automaton in the hole \(r\) cannot emit a \(\act{acc}\mpar{t}\) and never runs.
+Another  run can be: The automaton in the hole \(l\) emits a sequence of non \(\delta\mpar{t}\) actions so the automaton in the hole \(r\) cannot emit a \(\act{acc}\mpar{t}\) and never runs.
 \end{exi}
 
-From this point open automata and open transitions can be called automata and transitions for simplicity. % NEED NORMALISATION, LEFT IN CASE OF OMISSION
+From this point open automata and open transitions are sometimes called automata and transitions for simplicity. % NEED NORMALISATION, LEFT IN CASE OF OMISSION
 
 
 \section{Composition of Open Automata}\label{sec:comp}
-Open automata are partially specified automata, part of that partiality comes from the holes.
-The interpretation of a hole is an interface with another open automaton, in which we can plug an open automaton with an operation called composition.
-In this article, composition will only refer to filling holes, other compositions like ``parallel composition" (pure interleaving) are not tackled.
-The composition of open automata was already implicitely defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
+Open automata are partially specified automata, that partiality comes mostly from the holes.
+The interpretation of a hole is an interface with another open automaton, in which we can plug an open automaton. The plugging operation is called composition.
+In this article, composition will only refer to filling holes, other compositions like ``parallel composition" (pure interleaving) are not tackled (but one can define an open automaton that performs the parallel composition of two others).
+The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
 \begin{defi}[Composition of open automata]
-The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p \defobject \OAg[p]\) is
+The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p \defobject \OAg[p]\) is an open automaton defined as follows.
 \begin{align*}
 	A_p\subst{A_c}{k} \defnotation & \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \\
 	\text{with } T \defobject & \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p \setminus \mbrc{k}}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{\OTx{p}{}{}{p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
@@ -273,11 +278,10 @@ The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p
 \end{align*}
 \end{defi}
 The action emitted when \(A_c\) makes a transition is sychronised with the action of the hole \(k\) in transitions of \(A_p\) which have it as a hole action (first transition set, \(\alpha_c = \beta_k\)).
-The composition may look like a handshake, with both automata running in parallel (product of states and joint variables) however it is asymmetric because of the second transition set (\(k \notin J'_p\)):
-No transition of \(A_c\) is performed when a transition that do not refer to the hole \(k\) is performed in \(A_p\).
+The composition may look like a handshake, with both automata running in parallel (product of states and joint variables) however it is asymmetric because it is the first automaton that decides when the second can evolve, while the first automaton can evolve independently as soon as the hole is not involved in the open transition considered.
 
 Composition is a complex process that generates big automata with complex and potentially simplifiable transitions.
-However simplification is a hard problem that is not yet automatised on open automata, so from this point the guards and transitions will always be simplified by hand without further explaination.
+However simplification is a hard problem that is not yet automatised on open automata, so from this point the guards and transitions will always be simplified by hand without further explanation.
 An example of composition can be found in Appendix \ref{apx:composition}.
 \begin{prop}[Simultaneous composition]
 Let \(A_1\), \(A_2\), \(A_3\) be three open automata with respectively \(J_1\), \(J_2\) and \(J_3\) as hole names.
@@ -292,7 +296,7 @@ This property is induced by the composition on open pNets.
 Intuitively it holds because the cartesian product of states, the union of sets, the union of maps and the conjunction on formulas (in the guards) are commutative and associative.
 This allows us to define the simultaneous composition \(A\mdbrk{A_j^{j \in J'}}\) as the result of any order of (sequential) composition where each \(A_j\) is composed in the hole \(j\).
 Even if an automaton is composed in two distinct holes it does not share its variables, each composition makes the cartesian product of states and a disjoint union of the variables.
-In practise, variables may have to be renamed.
+In practice, variables may have to be renamed.
 
 
 \section{Properties of a refinement relation for Open Automata}\label{sec:proofelts}
