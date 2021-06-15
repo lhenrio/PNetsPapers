@@ -34,7 +34,12 @@ Open pNets with the open automaton semantics and equivalence relation introduced
 However equivalences relations are not always sufficient to perform verification, refinement relations are also used.
 For instance an example of open pNet where equivalence is not sufficient was encountered in an article about algorithms fo weak bisimulation on open automata \cite{wang:03126313}.
 
-The contributions of this article are the definition of composition for open automata without having to define open pNets, and the introduciton of several refinement relations for open automata. % TODO: expand
+The contributions of this article are:
+\begin{enumerate}
+\item The definition of composition for open automata without having to define open pNets.
+\item The characterisation of a composition that doesn't introduce deadlocks.
+\item The introduciton of several refinement relations for open automata that behave nicely with composition.
+\end{enumerate}
 
 % TODO: Related work: thesis
 
@@ -506,8 +511,42 @@ The hole-superset simulation is applicable when the simulated automaton has more
 It is designed to capture the addition of holes involved in transitions, which will indirectly add requirements to transitions when the new holes will be composed.
 It is also an attempt at giving a meaning to the new holes when composing with any open automata.
 However it does not capture the removal of holes because other issues arise when trying to both add and remove holes.
+\begin{exi}{Example of hole-equal simulation}
+\begin{figure}
+\centering
+\input{parallel_comp.tex}
+\vrule
+\input{n_control_switch.tex}
+\caption{On the left: Parallel composition operator; On the right: n control switches automaton}
+\label{fig:hisim}
+\end{figure}
+Figure \ref{fig:hisim} introduces two related open automata with same holes \(\mbrc{l, r}\).
+The automaton on the left is a parallel composition: any hole can perform actions at any time, the actions are passed unmodified and no synchronisation is performed.
+The automaton on the right is a sequential composition with \(n\) control switches: a hole performs a sequence of actions then the other does, there are \(n\) seqences of a single automaton doing actions without the other performing some.
 
-Examples of application of the different refinement relations are given in Appendix \ref{apx:refrel}.% TODO: Maybe put them here, not in appendix
+Intuitively the right automaton is a refinement of the left automaton because the left automaton is what happens when there was no bound \(n\) in the right automaton.
+\[ R \defobject \mbrc{\mpar{l, ||} \mapsto \top, \mpar{r, ||} \mapsto \top} \]
+\(R\) is a hole-identical simulation of \(n\) control switches by parallel composition.
+There are enough examples of proofs of refinement in this article for the reader to be able to prove it as an exercise.
+\end{exi}
+\begin{exi}{Example of hole-subset simulation}
+Example of Appendix \ref{apx:composition} can be reused here.
+The automaton on Figure \ref{fig:tlf} is a refinement of the one on Figure \ref{fig:tls} by limited composition correctness (Proposition \ref{prop:cc'}).
+
+It is a simplified version of the motivation for making a refinement relation, which is the traffic light system in an article about weak-bisimulation \cite{wang:03126313}.
+It had to be modified because here the simulation is a strong-simulation (no silent actions).
+\end{exi}
+\begin{exi}{Example of hole-superset simulation}
+\begin{figure}
+\centering
+\input{Vending_machine.tex}
+\hrule
+\input{Open_vending_machine.tex}
+\caption{On the top: Vending machine; On the bottom: Open vending machine}
+\label{fig:ovm}
+\end{figure}
+% TODO: Explain example and adding holes
+\end{exi}
 \begin{thm} A hole-\(\triangle\) simulation is a pre-simulation. \end{thm}
 Proof is given in Appendix \ref{apx:presim}.
 \begin{thm} The hole-\(\triangle\) simulation on automata is a preorder. \end{thm}
@@ -581,8 +620,24 @@ Not renaming conflicting holes still have an interest.
 If we are trying to build an automaton \(A\) with several constraints \(\wrel{A}{B_i}{J_{Bi}}, i \in I\) -method B like- and each \(B_i\) is a refinement of some automaton \(C\) then we can have each \(B_i\) constrain a different subset of \(A\)'s holes.
 On each individual path \(A \leq_{J_{Bi}} B_i \leq_{J_{Bi}} C\), some holes of \(A\) are unconstrained but when considering all path they are all constrained.
 However this doesn't implies \(A \leq_{\bigcup_{i \in I} J_{Bi}} C\), it has to be checked separately.
-% TODO: maybe add an example here
+\begin{exi}
+\begin{figure}
+\centering
+\input{identity.tex}
+\vrule
+\input{any.tex}
+\vrule
+\input{handshake_comp}
+\caption{On the left: Generic identity on holes; On the middle: Any action automaton; On the right: Handshake composition.}
+\label{fig:sevpathref}
+\end{figure}
+We have two refinement path when \(h\) is replaced by \(l\) and by \(r\) in Figure \ref{fig:sevpathref}: the parallel composition (left of Figure \ref{fig:hisim}) is a refinement of the identity on holes (right of Figure \ref{fig:sevpathref}), which is a refinement of the handshake composition (right of Figure \ref{fig:sevpathref}).
+However we do not have the parallel composition being a refinement of the handshake composition looking at \(\mbrc{l, r}\).
 
+The example also shows a property worth mentionning.
+The holes not looked at (or untracked) are equivalent to having the automaton on the middle of Figure \ref{fig:sevpathref} composed.
+Actually all the previous refinement are both ways: we can compose the Any action automaton in hole \(r\) of the parallel composition to get the other way of the refinement with the identity on holes by compositon correctness, and we transform the transition from the identity on holes into the one of the handshake composition by hole-superset refinement.
+\end{exi}
 The other interesting properties left to check are correctness w.r.t.\@ composition, context refinement, composition congruence and compatibility with FH-bisimulation.
 Proving them for the open automata refinement will also prove them for each hole-\(\triangle\) simulation as they are just restricted cases.
 \begin{thm} Open automata refinement is correct w.r.t.\@ composition \end{thm}
@@ -618,8 +673,6 @@ Where \(y_{1x}\) is the renaming of \(y_1\) from \(A_1\) in \(A_1\subst{A_x}{k}\
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cong}.
 \begin{thm}[FH-bisimulation compatibility] Open automata refinement is compatible with FH-bisimulation \end{thm}
 The requirements of FH-bisimulation are strictly stronger than the open automata refinement so using transitivity is sufficient.
-
-% TODO HERE: What happens on untracked holes (untracked holes equivalent behaviour => free variables; some sort of daisy equivalence)
 
 
 \section{Conclusion}\label{sec:ccl}
@@ -888,39 +941,6 @@ We want to prove
 	\[ \sigma \uplus \nu \vdash \fguard{t} \hyp{7} \]
 	Which proves \goal{1'} with the values of \(\nu\) for the variables of \(\fguard{t}\) and dummy values for the other guards.
 \end{proof}
-
-
-\section{Examples of hole-\(\triangle\) simulations}\label{apx:refrel}
-
-\subsection{Example of hole-equal simulation}
-\begin{exi}
-\begin{figure}
-\centering
-\input{parallel_comp.tex}
-\vrule
-\input{n_control_switch.tex}
-\caption{On the left: Parallel composition operator; On the right: n control switches automaton}
-\label{fig:hisim}
-\end{figure}
-Figure \ref{fig:hisim} introduces two related open automata with same holes \(\mbrc{l, r}\).
-The automaton on the left is a parallel composition: any hole can perform actions at any time, the actions are passed unmodified and no synchronisation is performed.
-The automaton on the right is a sequential composition with \(n\) control switches: a hole performs a sequence of actions then the other does, there are \(n\) seqences of a single automaton doing actions without the other performing some.
-
-Intuitively the right automaton is a refinement of the left automaton because the left automaton is what happens when there was no bound \(n\) in the right automaton.
-\[ R \defobject \mbrc{\mpar{l, ||} \mapsto \top, \mpar{r, ||} \mapsto \top} \]
-\(R\) is a hole-identical simulation of \(n\) control switches by parallel composition.
-There are enough examples of proofs of refinement in this article for the reader to be able to prove it as an exercise.
-\end{exi}
-
-\subsection{Example of hole-subset simulation}
-Example of Appendix \ref{apx:composition} can be reused here.
-The automaton on Figure \ref{fig:tlf} is a refinement of the one on Figure \ref{fig:tls} by limited composition correctness (Proposition \ref{prop:cc'}).
-
-It is a simplified version of the motivation for making a refinement relation, which is the traffic light system in an article about weak-bisimulation \cite{wang:03126313}.
-It had to be modified because here the simulation is a strong-simulation (no silent actions).
-
-\subsection{Example of hole-superset simulation}
-% TODO: vending machine of the presentation + money module
 
 
 \section{Proofs of properties for hole-\(\triangle\) simulation}
