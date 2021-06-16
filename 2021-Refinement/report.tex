@@ -101,7 +101,6 @@ The formulas contain at least first order logic terms with an equality relation.
 This equality relation is not necessarily a syntactic equality (\(2 + 2 \neq 4\) with a syntactic equality but it is more expressive to consider that the two terms are equal).
 
 An example of term algebra can be Peano integers (constant zero with arity 0, constant successor function with arity 1 and the variables), the formulas associated can use syntactic equality relation, the sum relation \(\mathit{sum}\mpar{a, b, c}: \text{``}a = b + c\text{"}\), and the product relation \(\mathit{prod}\mpar{a, b, c}: \text{``}a = b \times c\text{"}\).
-
 \begin{defi}[Unbound variables, Expressions restricted to variables, Closed expressions]
 \defitem \(\fvars{e}\) is the set of variables in \(e \in E\) that are not bound by any binder.
 	Binders can be for instance quantifiers in formulas, or let-binders in terms if they are part of the term algebra.
@@ -114,7 +113,6 @@ A closed expression can contain variables under a binder, only unbound variable 
 We can use the previous example of first order formula on Peano integers to illustrate these definitions.
 \(x\), \(S\mpar{y}\) are well-formed terms, \(0\) is a closed term, \(\fvars{x} = \mbrc{x}\), \(\fvars{S\mpar{y}} = \mbrc{y}\), \(\fvars{0} = \emptyset\).
 \(x = 0\), \(\forall y, \exists x, \mathit{sum}\mpar{y, z, x}\) are valid formulas, \(\forall x, \neg S\mpar{x} = 0\) is a valid closed formula, \(\fvars{x = 0} = \mbrc{x}\), \(\fvars{\forall y, \exists x, \mathit{sum}\mpar{y, z, x}} = \mbrc{z}\), \(\fvars{\forall x, \neg S\mpar{x} = 0} = \emptyset\).
-
 \begin{defi}[Values, Satisfiability, (Parallel) substitution]
 We assume that the following are given:
 \defitem The values \(\values\), which are interpretations of closed terms.
@@ -171,7 +169,6 @@ Initially the automaton is in the initial state with an extension on all the var
 In any configuration, it can perform instanciated transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
 An instanciated transition is a transition where every variable that is not an automaton variable is instantiated with a value.
 By performing the instanciated transition, the automaton emits the indicated action and updates its configuration according to the target state and variable assignments.
-
 \begin{noti}[FH-bisimulation]
 The FH-bisimulation \cite{henrio:01055091} is noted \(\cong\).
 
@@ -189,7 +186,6 @@ The initial state is indicated by a double circle.
 States names are indicated inside the circles and transitions labels are drawn near their corresponding arrow.
 The open transitions do not indicate the source and target states since that is the role of the transitions arrows; only the emmited action is on the bottom side of open transitions.
 Initial valuations are indicated near a double lined arrow pointing to the initial state.
-
 \begin{figure}
 \centering
 \input{enable_state.tex}
@@ -572,8 +568,7 @@ Actually after such a composition it is still in hole-superset simulation with t
 \begin{thm} A hole-\(\triangle\) simulation is a pre-simulation. \end{thm}
 Proof is given in Appendix \ref{apx:presim}.
 \begin{thm} The hole-\(\triangle\) simulation on automata is a preorder. \end{thm}
-
-\paragraph{Proof sketch}
+\begin{proofsketch}
 The idea for reflexivity is that the related automata are always in the same configuration.
 \[ R \defobject \mpar{s, s'} \mapsto \choice{\bigwedge_{v \in V} v_1 = v_2 & \text{if } s = s'\\ \bot & \text{otherwise}} \]
 Where \(v_x\) is the renaming to distinguish conflicting automaton variables.
@@ -586,25 +581,26 @@ However we cannot talk about states in formulas.
 The solution is to expand the existential quantifier on states as we did in deadlock prevention, which is possible because states are finite.
 \[ R \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
 \(R\) is a witness of the transitivity, proof is given in Appendix \ref{apx:trans}.
+\end{proofsketch}
 \begin{prop}[Limited composition correctness]\label{prop:cc'} Hole-subset simulation is correct w.r.t.\@ composition with automata without holes. \end{prop}
-\paragraph{Proof sketch}
+\begin{proofsketch}
 For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\) with \(J_2 = \emptyset\), let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\).
 Let \(\reach{A}\) be a witness that \(A\) is non-locking.
 The idea for the relation on configurations is that the copy of \(A_1\) in \(A\) do the same things as \(A_1\), as if we were trying to prove reflexivity.
 \[ R \defobject \mpar{\mpar{s_{1'}, s_2}, s_1} \mapsto \choice{\reach{A}\mpar{s_{1'}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 & \text{if } s_{1'} = s_1 \\ \bot & \text{otherwise}} \]
 Where \(y_{1'}\) is the renaming of \(y_1\) from \(A_1\) in \(A\).
 \(R\) is a witness of the limited composition correctness, proof is given in Appendix \ref{apx:lchs}.
+\end{proofsketch}
 \begin{prop}[Special composition correctness]
 For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3\), let \(k \in J_1 \setminus J_2\) and \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\).
 There is a hole-superset simulation of \(A_1\subst{A_3}{k}\) by \(A_2\).
 \end{prop}
-\paragraph{Proof sketch}
+\begin{proofsketch}
 Let \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is to combine the non-locking composition and the already existing realtion on configurations.
 \[ R \defobject \mpar{\mpar{s_1, s_3}, s_2} \mapsto R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_3} \]
 \(R\) is a witness of the secial composition correctness, proof is given in Appendix \ref{apx:schs}.
-
-\smallskip
+\end{proofsketch}
 For composition correctness, the hole-subset simulation can only tell if there is a refinement when the composed automata have no holes.
 To lift this limitation we need to allow adding holes which doesn't have a direct interpretation.
 At first a solution using a function mapping the action performed by the new holes in the composition to the ones performed by removed hole in the base automaton was explored.
@@ -669,6 +665,7 @@ Actually all the previous refinement are both ways: we can compose the Any actio
 The other interesting properties left to check are correctness w.r.t.\@ composition, context refinement, composition congruence and compatibility with FH-bisimulation.
 Proving them for the open automata refinement will also prove them for each hole-\(\triangle\) simulation as they are just restricted cases.
 \begin{thm} Open automata refinement is correct w.r.t.\@ composition \end{thm}
+\begin{proof}
 We will decompose composition into two refinement steps, transitivity will complete the proof.
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(k \in J_1\) such that \(A_1\subst{A_2}{k}\) is non-locking.
 We pose
@@ -679,7 +676,9 @@ We pose
 By limited composition correctness we have \(\wrel{A_1\subst{A'_2}{k}}{A_1}{J_1 \setminus \mbrc{k}}\).
 Adding holes and binding actions to the new holes is a refinement for hole-superset simulation so we have \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A'_2}{k}}{J_1 \setminus \mbrc{k}}\).
 By transitivity we have composition correctness.
+\end{proof}
 \begin{thm}[Context refinement] Open automata refinement is context refining. \end{thm}
+\begin{proofsketch}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
 Let \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\), \(k \in H_{12}\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) while \(A_3\) does the same things in both compositions in the hole \(k\).
@@ -689,7 +688,9 @@ The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) wh
 \end{gather*}
 Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_x\subst{A_3}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cr}.
+\end{proofsketch}
 \begin{thm}[Composition congruence] Open automata refinement is congruent for composition \end{thm}
+\begin{proofsketch}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
 Let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) while \(A_1\) does the same things in both compositions.
@@ -699,9 +700,9 @@ The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) wh
 \end{gather*}
 Where \(y_{1x}\) is the renaming of \(y_1\) from \(A_1\) in \(A_1\subst{A_x}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cong}.
+\end{proofsketch}
 \begin{thm}[FH-bisimulation compatibility] Open automata refinement is compatible with FH-bisimulation \end{thm}
-The requirements of FH-bisimulation are strictly stronger than the open automata refinement so using transitivity is sufficient.
-
+\begin{proofsketch} The requirements of FH-bisimulation are strictly stronger than the open automata refinement so using transitivity is sufficient. \end{proofsketch}
 With that last property, every interesting property is proved for the presented refinement relation.
 
 
@@ -765,7 +766,6 @@ This implementation is simply a constant time for each color; we could imagine u
 On the right is the counter agent which will be composed in the hole \(cnt\).
 Its role is to get a target, then count ticks until that target is reached, then emit an action with the elapsed time and restart.
 This implementation does exactly that and forbids any extra tick.
-
 \begin{figure}
 \centering
 \input{Traffic_Lights_Full.tex}
@@ -812,7 +812,6 @@ This example reuses the counter introduced in Figure \ref{fig:tlh}.
 The behaviour of the counter is to count external \(\act{tick}\) actions up to the amount set by action \(\act{set}\mpar{x}\) then to notify the environnement that this amount of time elapsed.
 In the traffic light example the clock is not specified, we will introduce deadlocks using a wisely choosen clock specification.
 However the full traffic light will not be used in order to simplify the example, only the counter will be.
-
 \begin{figure}
 \input{randomtick_clock.tex}
 \vrule
