@@ -28,13 +28,19 @@
 
 \section{Introduction}
 The open automata model was originally designed to give the semantic of open pNets \cite{2007.10770}.
-Open pNets are not petri nets but an intermediate representation used in the VerCors project to perform verification \cite{henrio:01252323}.
-This model is based around a hierarchical composition of generalised automata.
-Verification is the process of checking properties on a description in a specific model (for instance an automaton).
-This properties can be for instance being in some type or being deadlock free (a deadlock is an unintended state where no further action is possible).
+Open pNets are not petri nets but an intermediate representation used in the VerCors project to perform verification of concurrent systems \cite{henrio:01252323}.
+Verification is the process of checking properties on a description in a specific model (for instance classical automata).
+A particular kind of verification are refinement relations.
+
+Refinement relations verifies that and implementation satisfies some properties with respect to a specification.
+The open pNets model is based around a hierarchical composition of generalised automata called pLTS.
+A properties a refinement can check on them is the non introduction of deadlocks.
+A deadlock being an unintended state where no further action is possible.
+
+The composition of open automata is inherited from open pNets as the open automaton generated from the composition on open pNets.
+This means that composition is only defined on open pNets and not directly on open automata. \Quentin{}{Clunky transition}
 Open pNets with the open automaton semantics and equivalence relation introduced in previous work \cite{2007.10770} were sucessfully used to model and verify some properties of applications \cite{qin:01823507, ameurboulifa:01526055} based on BIP (Behaviour-Interaction-Priority) \cite{basu:hal-00722395} and GCM (Grid Component Model) \cite{baude:inria-00323919}.
-However equivalence relations are not always sufficient to perform verification, refinement relations are also used.
-A refinement is the verification that an implementation satisfies a specification, whereas an equivalence would check that their behaviours are the same.
+However only an equivalence relation was used.
 For instance a usecase on open pNet where equivalence is not sufficient can be found in an article about algorithms fo weak bisimulation on open automata \cite{wang:03126313}.
 
 The contributions of this report are:
@@ -44,12 +50,12 @@ The contributions of this report are:
 \item The characterisation of a composition that doesn't introduce deadlocks.
 \item The introduciton of several refinement relations for open automata that behave nicely with composition.
 \end{enumerate}
-% TODO: Related work: thesis
 
+This report is organised as follows:
 We begin with Section \ref{sec:notations} by giving some notations used throughout this paper.
 Then there are several sections dedicated to define all the interesting objects and properties:
 In Section \ref{sec:def} we give a clean and up to date definition of open automata.
-In Section \ref{sec:comp} we define their composition without requiring the use of open pNets \Ludo{}{does this mean that previous definitions were using open pnets? this might be clarified in contributions but when you redo a definition you must highlight why a new definition was necessary}\Quentin{}{Yes, composition of open automata was composition of the open pNets generating them, the necessity is as stated, being independant from open pNets}.
+In Section \ref{sec:comp} we define their composition without requiring the use of open pNets.
 In Section \ref{sec:proofelts} we adapt to open automata several standard properties from refinement relations on LTS.
 After that Section \ref{sec:prelref} is dedicated to progressively build a refinement relation and explain the elements of this construction.
 Section \ref{sec:refinement} introduces and analyses the refinement relation on open automata.
@@ -68,12 +74,13 @@ This helps distinguishing the manipulated objects.
 Every such notation will be introduced in the definition of the object.
 
 Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\).
-The latter can only be used if there is a \Ludo{generating expression}{c'est vrai pour les exemples mais pas pour les defs generiques (OA, bisim, ...): reformuler}\Quentin{}{Je pense que c'est aussi vrai pour les defs génériques, on définit une famille à l'aide d'une expression génératrice, par exemple \(\mpar{\beta_j}_{j \in J}\) est en réalité \(j \mapsto \beta_j\); une fonction est une expression génératrice}; for instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
-However \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no generating expression and is represented here with the finite version of first notation.
+For instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
+They will be used depending on what is more convenient.
+For instance \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no simple generating expression and is better represented with the finite version of first notation.
 
 The disjoint union on set is noted \(\uplus\).
 There are several ways of ensuring a union is disjoint, we will indifferently either suppose sets are disjoint or rename conflicting object (useful for variables).
-The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) has the following signature \(\varphi \uplus \psi: I \uplus J \to X \cup Y\).
+The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is noted \(\varphi \uplus \psi\) and has the following signature \(I \uplus J \to X \cup Y\).
 
 In a formula, a quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set:
 \(\forall \mbrc{a_1, \dots, a_n}, \exists \mbrc{b_1, \dots, b_m}, P\) means \(\forall a_1, \dots, \forall a_n, \exists b_1, \dots, \exists b_m, P\).
@@ -87,7 +94,6 @@ An expression algebra \(E\) is a disjoint union \(E \defobject \terms \uplus \ac
 Notations are parameterised by a term algebra \(\terms\).
 As any term algebra it has constant symbols with arity, variables, and a typing mechanism to distinguish well-formed and ill-formed terms.
 The action algebra \(\actions\) is another term algebra.
-It \Ludo{can be}{not much informative}\Quentin{}{Intended use, it is not mandatory} a subset of the terms.
 The formulas \(\formulas\) are at least the first order formulas over \(\terms\) and \(\actions\).
 \end{defi}
 The term algebras are arbitrary.
@@ -125,12 +131,12 @@ The interpretation of terms is supposed to be decidable.
 The satisfiability of formulas might not be decidable nor complete nor consistent,
 but we will consider in the following that they are; this can be achieved by restricting the term algebra to a decidable subset.
 For instance a formula with quantifiers on variables might not be provable even if it is true for all values of these variables.
-In practice the formulas will be given to a SMT solver and we cannot always make sure they have all the previous properties but, as soon as the satisfiability is consistent our theory is consistent too.
+In practice the formulas will be given to a SMT solver and we cannot always make sure they have all the previous properties but, at least any property found satsfiable by the SMT is ensured to be true.
 \(\vdash\) can hence be interpreted as an indicator of what is given to the SMT; it separates the external logic and the logic on \(\formulas\).
 
 Values will be used for keeping a variable state, and then injected in terms for substitution.
 This is correct when \(\values \subseteq \rterms\) and we suppose it is the case.
-Otherwise it doesn't invalidates theorems because it can stand as a shorthand for substitution with any term which has the kept value as an interpretation.
+Otherwise this doesn't invalidates theorems because substitution by a value can stand as a shorthand for substitution with any term which has the value as an interpretation.
 We suppose that the interpretation of terms is compatible w.r.t.\@ substitution, that is if two terms \(t\), \(t'\) are interpreted with the same value, then replacing \(t\) by \(t'\) in a well-formed expression makes an equivalent well-formed expression.
 \begin{noti}[Notations for separating external logic and logic on \(\formulas\)]
 \defitem The satisfiability of a formula \(f \in \formulas\) under some valuation \(\sigma: V \to \values\) is noted:
@@ -154,17 +160,17 @@ The initial valuation is a partial valuation of the variables.
 If an undefined variable is set before being read, it behaves like an initially set variable.
 If an undefined variable is not set before being read then its value may be any fixed value.
 When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
-\begin{defi}[Open transition]
+\begin{defi}[Open transition, Instanciated transition]
 An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
-\end{defi}
 An open transition can have many unbound variables.
-Actually an effective transition of the automaton is any well-formed substitution of the unbound variables of the transition minus the automaton variables.
 
+An instanciated transition of the automaton is transition produced by any well-formed substitution of the unbound variables of the transition minus the automaton variables.
+\end{defi}
 The intuition of an open automaton is a partially defined LTS with variables, guards on transitions, and parametrised actions. The LTS is partial in the sense that one cn plug an LTS in the hole and the surrounding LTS will react to the actions emitted by the sub-LTS put in the hole.
 Initially the automaton is in the initial state with an extension on all the variables of the initial valuation.
-In any configuration, it can perform effective transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
-An effective transition is a transition where every variable that is not an automaton variable is instantiated with a value.
-By performing the effective transition, the automaton emits the indicated action and updates its configuration according to the target state and variable assignments.
+In any configuration, it can perform instanciated transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
+An instanciated transition is a transition where every variable that is not an automaton variable is instantiated with a value.
+By performing the instanciated transition, the automaton emits the indicated action and updates its configuration according to the target state and variable assignments.
 
 \begin{noti}[FH-bisimulation]
 The FH-bisimulation \cite{henrio:01055091} is noted \(\cong\).
@@ -199,7 +205,7 @@ The automaton on the left side of the figure is \(\OA{\mbrc{L, R}}{L}{\emptyset}
 	\OT{R}{R}{x}{\mbrc{r \mapsto x}}{\top}{\mbrc{}}
 \end{align*}
 Note that the transition in the middle could have been expressed as \(\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{x}}\).
-It would have avoided many effective transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\), which has the guard \(1 = 2\). \Ludo{}{I believe that with the usual definition of the semantics of open automata it is the same ... please check: you do all potential transitions with the conditions that x is the same in both. In any case as the matching is not linear, the simplification is not obvious}\Quentin{}{Same behaviour as here with the standard definition: RR-9177, sec 5.2}
+It would have avoided many instanciated transitions with trivially false guards like the one where \(x \mapsto 1, y \mapsto 2\), which has the guard \(1 = 2\).
 
 This automaton is an implementation of the enable operator because it begins in the state \(L\), where it allows any non \(\delta\) transition from its hole \(l\), then the automaton synchronises its holes on the same data, effectively allowing a data exchange when it goes into state \(R\), and finally allows any transition from its hole \(r\).
 The implementation of value passing in the open automata model doesn't distinguish input and output variables as in LOTOS.
@@ -214,12 +220,13 @@ These transitions have been omitted for the sake of simplifying the first exampl
 Finally we can define some utilitary functions:
 \begin{defi}[Guard, Out-transition, Transition variables]
 Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(r\) one of its states.
-\(\fOT{r}\) are called the out-transitions of \(r\).
-\(\fIT{r}\) are called the in-transitions of \(r\).
-The local variables of a transition are all variables appearing in that transition except the global variables of the automaton.
+\(\fOT[T]{r} \in T\) are called the out-transitions of the state \(r\).
+\(\fIT[T]{r} \in T\) are called the in-transitions of the state \(r\).
+When the transition set is clear from the context, it will be omitted.
+The local variables of a transition \(\fvars{t}\) are all variables appearing in transition \(t\) except the global variables of the automaton.
 \begin{align*}
-	\fOT{r} & \defnotation \mset{\OTg \in T}{s = r} &
-	\fIT{r} & \defnotation \mset{\OTg \in T}{s' = r} \\
+	\fOT[T]{r} & \defnotation \mset{\OTg \in T}{s = r} &
+	\fIT[T]{r} & \defnotation \mset{\OTg \in T}{s' = r} \\
 \end{align*}
 \vspace{-1cm}
 \begin{gather*}
@@ -229,13 +236,7 @@ The local variables of a transition are all variables appearing in that transiti
 \end{defi}
 The goal of the extractor \(\fvars{t}\) when \(t\) is a transition is to get variables that are only present in that transition.
 Also transition variables sets are disjoint from one transition to another.
-Other variables like automaton variables are already known at this point so there is no use in getting their name again.
-Also the use of this extractor benefits from this exclusion: otherwise there would always be \(\setminus V\) following it to prevent variable shadowing.
-
-\Ludo{}{is it really variable shadowing?}\Quentin{}{I don't know if the term is the same in math}
-
-\Ludo{}{you do not necessarily need to explain everything if this is what you need, but you miss an intuition of what this set is}\Quentin{}{I don't know what else I could say to give the intuition, all elements are here, in my opinion, the only thing left to build the intuition is an example}
-
+if we need to quantify on other variables then the quantification will be done separately.
 \begin{exi}[Enable, variable-oriented]
 The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{»}}{»}{\mbrc{v}}{\mbrc{v \mapsto l}}{\mbrc{l, r}}{T}\) where transitions in \(T\) are:
 \begin{align*}
@@ -243,12 +244,12 @@ The automaton drawn on the right side of Figure \ref{fig:enable} is \(\OA{\mbrc{
 	\OT{»}{»}{\tau}{\mbrc{l \mapsto \delta\mpar{x}, r \mapsto \act{acc}\mpar{y}}}{v = L \wedge x = y}{\mbrc{v \gets R}} &&
 	\OT{»}{»}{x}{\mbrc{r \mapsto x}}{v = R}{\mbrc{}}
 \end{align*}
-It is an alternative implementation of the enable operator which is \Ludo{FH-bisimilar}{makes no sense: FH bisimlar is still undefined, neither formally nor informally} to the previous one \cite{henrio:01299562}.\Quentin{}{I can remove this sentence, it adds nothing}
+It is an alternative implementation of the enable operator.\footnote{It was proved FH-bisimilar to the previous one \cite{henrio:01299562}}
 The variables that are said to be local to a transition are all the unbound variables in the expressions minus the automaton variables.
 For instance \(v\) is a variable of the automaton (used in the guard).
 It is not local to the transition.
-When taking effective transitions, its value is not substituted with a closed term.
-For instance \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{v = L \wedge \tau \neq \delta}{\mbrc{}}} is an effective transition generated from the second transition but not \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{L = L \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto L\)).
+When taking instanciated transitions, its value is not substituted with a closed term.
+For instance \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{v = L \wedge \tau \neq \delta}{\mbrc{}}} is an instanciated transition generated from the second transition but not \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{L = L \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto L\)).
 
 An run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = L\).
 Then the automaton in hole \(l\) emits a \(\delta\mpar{t}\), this is synchonised with the action that sets \(v \gets R\) and the automata in hole \(r\) must emit a \(\act{acc}\mpar{t}\).
@@ -310,7 +311,7 @@ Two classical automata are called in simulation if there is a simulation relatin
 
 Note that in the previous paragraph there are two relations:
 The first is between states of two specific automata (\(R \subseteq S_1 \times S_2\)), the second is between automata (\(A_1 \leq A_2\)).
-Generally the second relation is implicit because its definition is always \(\exists R \subseteq S_1 \times S_2, P\mpar{R}\) with \(P\) a property on the relation on states, so only talking about \(R\) by defining \(P\) is sufficient.\Ludo{}{je comprends pas cette phrase}\Quentin{}{Est-ce mieux?}
+Generally the second relation is implicit because its definition is always \(\exists R \subseteq S_1 \times S_2, P\mpar{R}\) with \(P\) a property on the relation on states, so only talking about \(R\) by defining \(P\) is sufficient.
 However later on in this report we will define more complex relations on automata so we clarify the distinction now.
 
 A relation of second kind will be called ``relation on automata" whereas a relation of the first kind is called ``relation on configurations" as defined below.
@@ -321,11 +322,14 @@ A relation on configurations of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S
 
 Two states \(s_1 \in S_1, s_2 \in S_2\) with their respective valuations \(\sigma_1: V_1 \to \values, \sigma_2: V_2 \to \values\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 \end{defi}
-In this section we give properties on refinement relations, both on the relations on configurations and on the relation on automata.
 When relating two automata \(A_1 \mathrel{\mathcal{R}} A_2\) or their configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\), \(A_1\) will be called the implementation and \(A_2\) the specification.
 
-For the relation on automata, the important properties we consider are:
-\begin{defi} A relation on open automata \(\leq\) is
+In this section we first give expected properties for a refinement relation on open automata, then expected properties for a relation on configurations.
+Finally a conflict between the properties is underlined and solved.
+
+\subsection{Properties of the relation on automata}
+The important properties we consider for a refinement relation on open automata are:
+\begin{defi} A relation \(\leq\) on open automata is
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
 \defitem \textbf{a preorder} iff it is reflexive and transitive;
@@ -350,8 +354,9 @@ This property is required on compositional structures to be of any use in verifi
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
-\Ludo{}{I do not understand the english + too many important properties you should give a hierarchy or at least find a better transition}\Quentin{}{Important properties not on the same object, this is now underlined by moving the object at the start of the sentences}
-For the relation on states, the important properties we consider are being a pre-simulation and prevent the introduction of deadlocks as defined in the following.
+\subsection{Properties of the relation on states}
+The important properties we consider for the relation on configurations are being a pre-simulation and preventing the introduction of deadlocks.
+They are defined in the following.
 \begin{defi}[Pre-simulation]
 Let \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\).
 A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a pre-simulation if it satisfies both
@@ -367,18 +372,18 @@ This definition translated to open automata the classical definition of simulati
 The last formula means that for every pair of related configurations of the automaton and every possible transitions (\(\vdash g_1\)) from the first automaton, there is a possible transition (\(\vdash g_2\)) such that the produced action matches (\(\alpha_1 = \alpha_2\)), the same holes' action (\(J'_1 \cap J'_2\)) matches (\(\beta_{1j} = \beta_{2j}\)) and the target states are related after variable update. % OR variableS
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables nor holes nor guards.
 In FH-bisimulation, holes with the same name will receive the same open automaton when composed, and the resulting open automaton will still be equivalent.
-Here we assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
+Here we will assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
 This implies that there is no relation between the related automata's holes, for instance composing \(A_i\) in \(j_i\) (\(1 \leq i \leq n\)) of \(A_0\) gives the set of holes \(J \defobject \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) that is neither subset nor superset of \(J_0\).
 Yet we still assume that in holes with the same name, the same open automaton will be composed.
 Hence only the holes in common have to match their actions.
 However it is not sufficient to imply properties on the relation on automatons like being a preorder.
-It is only a necessary condition that we put on any relation that we call a ``simulation'' in the following.
+It is only a necessary condition that we put on any relation that we call a ``simulation".
 
-In addition to the above properties, we expect from a refinement relation to prevent the introduction of deadlocks.
+In addition to the above property, we expect from a refinement relation to prevent the introduction of deadlocks.
 Deadlocks are reachable configurations from which no further transition is possible.
 They can arise unpredictably when parallelism is involved (which is the case in our composition) and they generally break the intended behaviour of a system.
-By preventing them we \Ludo{could}{This seems to say that it is useless to prevent them} \Quentin{also}{Is it better with this additionnal word?} hope that the refinement preserves some liveness properties.
-\begin{defi}[Deadlock prevention, intuitive definition]
+Preventing them is also a required prerequisite for the refinement to preserve any liveness property.
+\begin{defi}[Deadlock prevention, intuitive definition]\label{def:dpid}
 A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if:
 \defitem It is a pre-simulation;
 \defitem If from related states, there is a possible transition in the specification, then there is a pair of possible matching transitions from both automata:
@@ -389,14 +394,32 @@ A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\
 	\sigma \uplus \nu \vdash g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}
 \end{multline*}
 \end{defi}
-Actually, this requirement prevents the presence of deadlocks in the first automaton if there is a related non-deadlock configuration in the second by \Ludo{contraposition}{The contraposition is too tricky for me: are you sure?}\Quentin{}{I am, I want to say that this property is in contraposition form because the formula is not exactly what I pretend it is right there.}.
-Two reasons motivated the formulation in contraposed form:
+Actually, this requirement prevents the presence of deadlocks in the first automaton if there is a related non-deadlock configuration in the second.
+The exact formulation is the contraposition of the one in the previous sentence.
+Two reasons motivated the formulation given in Definition \ref{def:dpid}:
 \begin{itemize}
 \item We require a pair of matching transitions from both automata because we do not want a transition in the implementation making a configuration not a deadlock but this transition cannot be taken from the related configuration of the specification.
-\item The non contraposed formulation of the property would have required the unintuitive quantification on a possibly empty set of transition to state that they are not satisfied.
+\item The alternative formulation of the property would have required the unintuitive quantification on a possibly empty set of transition to state that they are not satisfied.
 \end{itemize}
-Unfortunately, in the general case, this property is conflicting with the other ones because every property involving composition would be applicable on composition introducing deadlocks.
-A way to solve this conflict is to only consider a composition that do not introduce deadlocks.
+Actually the first point is not necessary, the definition can be simplified into a less intuitive version:
+\begin{defi}[Deadlock prevention, working definition]\label{def:dpwd}
+A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if it is a pre-simulation and it satisfies the following:
+\[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
+\end{defi}
+The requirement here is that from any related configurations, if there is a possible transition in the second automaton (whatever the value of the free variables) then there is a possible transition in the first automaton (the existential quantifier is implicit in the notation \(\vdash\)).
+The transition are not matched because the relation on configurations is a pre-simulation and it is sufficient to ensure it as will be shown in the proof.
+Apart from the matching transitions this is exactly the same explaination as the intuitive definition.
+The expected advantage of this formulation is that a SMT should behave better without the quantifiers.
+Indeed the big disjunctions are not quantifiers because in practice the out-transitions are finitary, and so is the expansion of the disjunction.
+\begin{lem}\label{lem:dred}
+The intuitive (Definition \ref{def:dpid}) and working (Definition \ref{def:dpwd}) definitions of deadlock prevention are equivalent.
+\end{lem}
+Proof of the lemma is given in Appendix \ref{apx:lemdred}.
+
+Unfortunately, in the general case, this property is conflicting with the properties about the relation on automata because every property involving composition would be applicable on composition introducing deadlocks.
+
+\subsection{Issue with deadlock prevention and composition}
+A way to solve the conflict between deadlock reduction and the properties involving composition is to only consider a composition that do not introduce deadlocks.
 With this new condition on validity of composition we are able to define in the next sections a refinement relation where most of the properties of interest are satisfied.
 
 Before characterising a composition which does not introduce deadlocks we need to be able to tell which states are reachable because some deadlocks are not reachable and should not be taken into account as being introduced.
@@ -411,61 +434,34 @@ In fact the role of the predicate is to characterise potentially reachable confi
 To do that we impose that the initial configuration is reachable and that reachability is preserved by taking valid transitions.
 This effectively makes reachability take into account all paths, and potentially over-approximate the reachable configurations.
 The exact reachability may not be representable in the formulas, hence the need of potentially over-approximating.
-
-% Another way of understanding this predicate is that it is a fixpoint of the union of valuations (function \(f\) defined below) that contains the initial valuation:
-% \begin{align*}
-	% f\mpar{p} = \mbrc{\mbox{\nmm{s' \mapsto p\mpar{s'} \vee \bigsymb{\bigvee_\subbox{\OTg \,\in\, \fIT{s'}}} p\mpar{s}\psubst{\psi} \wedge g}}} && % TODO: fix that in some way
-	% \sigma_0 \vdash \reach{A}\mpar{s_0} &&
-	% f\mpar{\reach{A}} = \reach{A}
-% \end{align*}
 \begin{defi}[Non-locking composition, intuitive definition]
 Let \(A_i \defobject \OAg[i], 0 \leq i \leq n\).
 The composition \(A \defobject A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if \(A\) has a reachability predicate satisfying:
-From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\).
-
-\Ludo{a discuter}{les notations de cette formule sont vraiment pas terribles}
-
-Formally for \(\OAg \defobject A\), it gives
+From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\). Formally for \(\OAg \defobject A\), it gives
 \begin{multline*}
-	\forall s \defobject \mpar{s_0, s'} \in S_0 \times \prod_\subbox{1 \leq i \leq n} S_i, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
-	\mpar{\exists t_0 \in \fOT{s_0}, \exists \nu_0: \fvars{t_0} \to \values, \sigma \uplus \nu_0 \vdash \fguard{t_0}} \implies \\
+	\forall s \defobject \mpar{s'_i}_{0 \leq i \leq n} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
+	\mpar{\exists t_0 \in \fOT{s'_0}, \exists \nu_0: \fvars{t_0} \to \values, \sigma \uplus \nu_0 \vdash \fguard{t_0}} \implies \\
 	\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}
 \end{multline*}
 \end{defi}
-We can expand the alias \(V\) into \nmm{\biguplus_\subbox{1 \leq i \leq n} V_i \uplus V_0} and \Ludo{transform}{I do not understand this ``transformation''} the last transition \(t\) into a pair \(\mpar{t, t_0}\) where the second transition is the one from \(A_0\) which generated \(t\).
-Doing that makes the definition become mildly similar with the deadlock prevention one. % OR slightly
-It is not a coincidence because their goal is to caracterise the same kind of compatibility between automata.
-Actually it is possible to simplify both definition and make them even more similar.
-\begin{defi}[Deadlock prevention, working definition]
-A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if it is a pre-simulation and it satisfies the following:
-\[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
-\end{defi}
-The requirement here is that from any related configurations, if there is a possible transition in the second automaton (whatever the value of the free variables) then there is a possible transition in the first automaton (the existential quantifier is implicit in the notation \(\vdash\)).
-The transition are not matched because the relation on configurations is a pre-simulation and it is sufficient to ensure it as will be shown in the proof.
-Apart from the matching transitions this is exactly the same explaination as the intuitive definition.
-The expected advantage of this formulation is that a SMT should behave better without the quantifiers.
-Indeed the big disjunctions are not quantifiers because in practise the out-transitions are finitary, and so is the expansion of the disjunction. % Check if that construction is correct
-\begin{lem}
-The \Ludo{intuitive and working definition}{add the numbers} of deadlock prevention are equivalent.
-\end{lem}
+As in the previous section, the definition can be simplified into a less intuitive version:
 \begin{defi}[Non-locking composition, working definition]
 \(A \defobject A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is a non-locking composition if:
 \[ \forall s \defobject \mpar{s_0, s'} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
 \end{defi}
-\begin{lem}
+\begin{lem}\label{lem:nlced}
 The intuitive and working definition of non-locking composition are equivalent.
 \end{lem}
 An illustration of both the introduction of a deadlock by composition and the definition of non-locking composition is given in Appendix \ref{apx:lockcomp}.
-Proof of both lemma are given in Appendix \ref{apx:lemeqd}.
+Proof of the lemma is given in Appendix \ref{apx:lemnlced}.
 
 This new definition of composition can replace the standard composition.
-For the simultaneous composition, we may think that if the last composition of a specific composition order is non-locking, then every composition is non-locking for all composition orders.
-\Ludo{confused}{ce paragraphe est tres tres dur a lire}
+We may think that if the simultaneous composition is non-locking, then for every composition order, each composition step is non-locking.
 Unfortunately it is not true.
-Actually even if the last composition of any order of composition is non-locking there is no guarantee that this order is non-locking at each intermediate step.
-However the opposite way is true even if uninformative:
-If there is an order of composition where every composition is non-locking then the last composition is non-locking, last composition resulting in the same automaton as the simultaneous composition.
-So the condition is better checked after the simultaneous composition or the last individual composition.
+This happens because in an intermediate composition step, a state can become a deadlock, but in a further composition step it would become unreachable.
+% However the opposite way is true: % Would need a proof, non-trivial
+% If there is an order of composition where every composition is non-locking then the last composition is non-locking, last composition resulting in the same automaton as the simultaneous composition.
+% So the condition is better checked after the simultaneous composition or the last individual composition.
 \begin{exi}
 \begin{figure}
 \centering
@@ -482,15 +478,13 @@ If the preferred version is the local one, we go in state \(d2\) asking for the 
 In fallback we use the local version.
 
 We can plug an inactive process for the network manager and the file integrity checker by composing a deadlock automaton in their holes, but always both at the same time.
-The reason for that is the simultaneous composition is non-locking, but any individual composition is locking because the state \(d1\) or \(d2\) (depending on the order) becomes a deadlock.
+The reason for that is the simultaneous composition is non-locking, but any individual composition is locking because either the state \(d1\) or \(d2\) (depending on the order) is reachable and becomes a deadlock.
 \end{exi}
-From this point \Ludo{and in the previous definitions}{confusing: This means that when we check the properties for  a refinement relation, for example correctness wrt composition,we only consider non-locking compositions. OU UNE AUTRE SOLUTION, MAIS COMME C EST ECRIT C EST PERURBANT}, composition will only refer to non-locking composition.
-
-A relation on open automata and its corresponding relation on configurations are simulations if the latter is a deadlock reducing pre-simulations and the former is a preorder.
-With all these properties we can now look at some concrete refinement relations.
+From this point and when checking the refinement properties, composition will only refer to non-locking composition.
 
 
 \section{Refinement relations in restricted cases}\label{sec:prelref}
+With all these properties explained, we can look at some concrete refinement relations.
 The main goal of this section is to explain the different aspects of refinement in restricted cases so that they are not all introduced at once in the real refinement relation.
 In particular if we have a family of open automata \(A_i \defobject \OAg[i]\), \(0 \leq i \leq n\), let \(A \defobject A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\).
 Recall that there is no relation between the holes of \(A\) and \(A_0\) because \(\mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) is neither subset nor superset of \(J_0\).
@@ -517,8 +511,8 @@ For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\),
 \end{multline*}
 \end{defi}
 The third item of the definition has two parts:
-The first part is the main requirement, a (\Ludo{not proven equivalent}{risky, perhaps choose one and state that you suppose that the other is equivalent, or discuss a bit more this point + why not the same? symbolic reasoning is hidden here}) reordering of the pre-simulation requirement so that it better fits SMT.
-Instead of matching an effective transition to another effective transition as in the pre-simulation definition, we match an open transition to a family of covering open-transitions.
+The first part is the main requirement, a stronger version of the pre-simulation requirement so that it better fits SMT.
+Instead of matching an instanciated transition to another instanciated transition as in the pre-simulation definition, we match an open transition to a family of covering open-transitions.
 The second part is directly the deadlock prevention requirement.
 
 The hole-equal simulation is applicable when the related automata have the same holes.
@@ -714,6 +708,9 @@ To do that we restricted the composition so that it doesn't introduce deadlocks.
 Then we introduced several refinement relations in restricted cases to avoid dealing immediately with the hard issue of the incomparability of hole sets.
 Finally we introduced a refinement relation having all the interesting properties and dealing with the aforementioned issue at the cost of a slight modification on transitivity.
 
+% TODO: Related work: thesis + olga
+
+% Future work
 However the refinement presented here still do not work on the motivating example because of silent actions.
 To be able to refine in the presence of silent action, a weak variant of the simulation is needed.
 This variant will also probably be able to encompass action refinement as a valid refinement because the mechanism are similar.
@@ -859,9 +856,9 @@ However the the semantics of composition in a hole is asymmetric and the conside
 \end{exi}
 
 
-\section{Proof of equivalent definitions}\label{apx:lemeqd}
+\section{Proof of equivalent definitions}
 
-\subsection{Proof of lemma 1}
+\subsection{Proof of lemma \ref{lem:dred}}\label{apx:lemdred}
 Let \(R\) be a pre-simulation between \(A_1 \defobject \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J_1}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J_2}{T_2}\).
 We want to prove:
 \[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \tag{WD}\label{eq:drWD} \]
@@ -892,7 +889,7 @@ We want to prove:
 		\sigma \vdash g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \wedge g_1 \wedge R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2} \goal{1}
 	\end{multline}
 	However we cannot yet prove it because we don't know whether \(t_2\) and \(t_1\) match.
-	In order to get a \(t_2\) matching \(t_1\) we will use the fact that \(R\) is a pre-simulation:
+	In order to get a \(t'_2\) matching \(t_1\) we will use the fact that \(R\) is a pre-simulation:
 	\begin{multline}
 		\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} t_1 \defobject \OTx{1}{}{1}{1} \in \fOT{s_1}, \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values, \\
 		\mpar{\sigma \vdash R\mpar{s_1, s_2} \wedge g_1} \implies \bigsymb{\exists} t_2 \defobject \OTx{2}{}{2}{2} \in \fOT{s_2}, \exists \nu: \fvars{t_2} \to \values, \\
@@ -929,7 +926,7 @@ We want to prove:
 	Which proves \goal{2'} with the values of \(\nu\) for the variables of \(\fguard{t_1}\) and dummy values for the other guards.
 \end{proof}
 
-\subsection{Proof of lemma 2}
+\subsection{Proof of lemma \ref{lem:nlced}}\label{apx:lemnlced}
 We want to prove
 \[ \forall s \defobject \mpar{s_p, s_c} \in S, V \uplus \biguplus_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \tag{WD}\label{eq:nlcWD} \]
 \[ \bigsymb{\iff} \]
