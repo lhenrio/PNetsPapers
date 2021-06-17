@@ -62,6 +62,13 @@ Finally Section \ref{sec:ccl} recapitulates the contribution and presents the wo
 \section{State of the art}\label{sec:sota}
 Previous work % TODO
 
+% \cite{10.1007/3-540-46428-X_19} Bellegarde2000: simulation with action refinement and silent actions working with parallel composition for LTL properties on TS; here we do not do action refinement nor silent actions but it should be done in future work, also behaviour wrt LTL properties should be checked, also our composition is more expressive than parallel compositon as parallel composition
+% \cite{10.1007/978-3-540-70881-0_26} RR5898: LTS, LTL, Deadlock reduction, non-divergence, weak-refinement, synchronised composition: Closer to what we do here, still open automata are more expressive than LTS and composition is more general than sychronised composition
+% \cite{Zhang2014} 703098: 
+% \cite{DIHEGO2020110598} :
+% \cite{DBLP:journals/corr/abs-2007-10770} weak FH:
+%  \cite{10.1145/3372884.3373161} Algorithm and str-FH: 
+
 
 \section{Notations}\label{sec:notations}
 Notations will be defined with the operator \(\defnotation\) and names are given with the operator \(\defobject\) as follows:
@@ -326,8 +333,8 @@ When relating two automata \(A_1 \mathrel{\mathcal{R}} A_2\) or their configurat
 In this section we first give expected properties for a refinement relation on open automata, then expected properties for a relation on configurations.
 Finally a conflict between the properties is underlined and solved.
 
-\subsection{Properties of the relation on automata}
-The important properties we consider for a refinement relation on open automata are:
+\subsection{Properties of the relation on open automata}
+The important properties we consider for a relation on open automata are:
 \begin{defi} A relation \(\leq\) on open automata is
 \defitem \textbf{reflexive} iff \(\forall a, a \leq a\);
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
@@ -353,7 +360,7 @@ This property is required on compositional structures to be of any use in verifi
 Finally compatibility with FH-bisimulation is the refinement not being able to distinguish two FH-bisimilar automata.
 Since FH-bisimulation is the pre-existing equivalence relation, we should not introduce an incompatible proof strategy.
 
-\subsection{Properties of the relation on states}
+\subsection{Properties of the relation on configurations}
 The important properties we consider for the relation on configurations are being a pre-simulation and preventing the introduction of deadlocks.
 They are defined in the following.
 \begin{defi}[Pre-simulation]
@@ -382,7 +389,7 @@ In addition to the above property, we expect from a refinement relation to preve
 Deadlocks are reachable configurations from which no further transition is possible.
 They can arise unpredictably when parallelism is involved (which is the case in our composition) and they generally break the intended behaviour of a system.
 Preventing them is also a required prerequisite for the refinement to preserve any liveness property.
-\begin{defi}[Deadlock prevention, intuitive definition]\label{def:dpid}
+\begin{defi}[Deadlock reduction, intuitive definition]\label{def:dpid}
 A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if:
 \defitem It is a pre-simulation;
 \defitem If from related states, there is a possible transition in the specification, then there is a pair of possible matching transitions from both automata:
@@ -401,7 +408,7 @@ Two reasons motivated the formulation given in Definition \ref{def:dpid}:
 \item The alternative formulation of the property would have required the unintuitive quantification on a possibly empty set of transition to state that they are not satisfied.
 \end{itemize}
 Actually the first point is not necessary, the definition can be simplified into a less intuitive version:
-\begin{defi}[Deadlock prevention, working definition]\label{def:dpwd}
+\begin{defi}[Deadlock reduction, working definition]\label{def:dpwd}
 A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if it is a pre-simulation and it satisfies the following:
 \[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
 \end{defi}
@@ -411,13 +418,13 @@ Apart from the matching transitions this is exactly the same explaination as the
 The expected advantage of this formulation is that a SMT should behave better without the quantifiers.
 Indeed the big disjunctions are not quantifiers because in practice the out-transitions are finitary, and so is the expansion of the disjunction.
 \begin{lem}\label{lem:dred}
-The intuitive and working definitions of deadlock prevention are equivalent.
+The intuitive and working definitions of deadlock reduction are equivalent.
 \end{lem}
 Proof of the lemma is given in Appendix \ref{apx:lemdred}.
 
 Unfortunately, in the general case, this property is conflicting with the properties about the relation on automata because every property involving composition would be applicable on composition introducing deadlocks.
 
-\subsection{Issue with deadlock prevention and composition}
+\subsection{Issue with deadlock reduction and composition}
 A way to solve the conflict between deadlock reduction and the properties involving composition is to only consider a composition that do not introduce deadlocks.
 With this new condition on validity of composition we are able to define in the next sections a refinement relation where most of the properties of interest are satisfied.
 
@@ -513,7 +520,7 @@ For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\),
 The third item of the definition has two parts:
 The first part is the main requirement, a stronger version of the pre-simulation requirement so that it better fits SMT.
 Instead of matching an instanciated transition to another instanciated transition as in the pre-simulation definition, we match an open transition to a family of covering open-transitions.
-The second part is directly the deadlock prevention requirement.
+The second part is directly the deadlock reduction requirement.
 
 The hole-equal simulation is applicable when the related automata have the same holes.
 It is designed to capture all the refinements other than composition: Duplicating and merging states and transitions, changing variables, removing transitions, adding requirements to guards, specifying more initial variables, and many more.
@@ -583,7 +590,7 @@ Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject 
 Let \(R_{12}\) be a hole-\(\triangle\) simulation of \(A_1\) by \(A_2\) and \(R_{23}\) of \(A_2\) by \(A_3\).
 The idea for \(R\) is that there exists a state \(s_2 \in S_2\) and values for \(V_2\) such that \(R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3}\).
 However we cannot talk about states in formulas.
-The solution is to expand the existential quantifier on states as we did in deadlock prevention, which is possible because states are finite.
+The solution is to expand the existential quantifier on states as we did in deadlock reduction, which is possible because states are finite.
 \[ R \defobject \mpar{s_1, s_3} \mapsto \exists V_2, \bigvee_\subbox{s_2 \in S_2} R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \]
 \(R\) is a witness of the transitivity, proof is given in \Ludo{Appendix \ref{apx:trans}}{are we supposed to read appendix D before C.2?}.
 \end{proofsketch}
@@ -652,9 +659,9 @@ It behaves the same as if the holes outside the intersection were renamed to avo
 This makes the combination of the transitivity proofs of hole-\(\triangle\) simulation sufficient to prove \Ludo{transitivity}{lu comme ca c est surprenant: ca semble dire que les restrictions sur les trous de la sec precedente ne sont pas vraiment utiles pour prouver la transitivite}.
 
 Not renaming conflicting holes still have an interest.
-If we are trying to build an automaton \(A\) with several constraints \(\wrel{A}{B_i}{J_{Bi}}, i \in I\) -method B like- and each \(B_i\) is a refinement of some automaton \(C\) then we can have each \(B_i\) constrain a different subset of \(A\)'s holes.
-On each individual path \(A \leq_{J_{Bi}} B_i \leq_{J_{Bi}} C\), some holes of \(A\) are unconstrained but when considering all path they are all constrained.
-However this doesn't implies \(A \leq_{\bigcup_{i \in I} J_{Bi}} C\), it has to be checked separately.
+If we are trying to build an automaton \(A\) with several constraints \(\wrel{A}{A_i}{J_{Ai}}, i \in I\) (as done in B method \cite{cansell:inria-00099794}) and each \(A_i\) is a refinement of some automaton \(C\) then we can have each \(A_i\) constrain a different subset of \(A\)'s holes.
+On each individual path \(A \leq_{J_{Ai}} A_i \leq_{J_{Ai}} C\), some holes of \(A\) are unconstrained but when considering all path they are all constrained.
+However this doesn't implies \(A \leq_{\bigcup_{i \in I} J_{Ai}} C\), it has to be checked separately.
 \begin{exi}
 \begin{figure}
 \centering
@@ -663,15 +670,15 @@ However this doesn't implies \(A \leq_{\bigcup_{i \in I} J_{Bi}} C\), it has to 
 \input{any.tex}
 \vrule
 \input{handshake_comp}
-\caption{On the left: Generic identity on holes; On the middle: Any action automaton; On the right: Handshake composition.}
+\caption{On the left: Generic identity on holes; On the center: Any action automaton; On the right: Handshake composition.}
 \label{fig:sevpathref}
 \end{figure}
-We have two refinement path when \(h\) is replaced by \(l\) and by \(r\) in Figure \ref{fig:sevpathref}: the parallel composition (left of Figure \ref{fig:hisim}) is a refinement of the identity on holes (right of Figure \ref{fig:sevpathref}), which is a refinement of the handshake composition (right of Figure \ref{fig:sevpathref}).
+We have two refinement paths when \(h\) is replaced by \(l\) and by \(r\) in identity on holes (left of Figure \ref{fig:sevpathref}): the parallel composition (left of Figure \ref{fig:hisim}) is a refinement of the identity on holes, which is a refinement of the handshake composition (right of Figure \ref{fig:sevpathref}).
 However we do not have the parallel composition being a refinement of the handshake composition looking at \(\mbrc{l, r}\).
 
 The example also shows a property worth mentionning.
-The holes not looked at (or untracked) are equivalent to having the automaton on the middle of Figure \ref{fig:sevpathref} composed.
-Actually all the previous refinement are both ways: we can compose the Any action automaton in hole \(r\) of the parallel composition to get the other way of the refinement with the identity on holes by compositon correctness, and we transform the transition from the identity on holes into the one of the handshake composition by hole-superset refinement.
+The holes not looked at (or untracked) are equivalent to having the any action automaton (center of Figure \ref{fig:sevpathref}) composed.
+Actually all the previous refinement are both ways: we can compose the any action automaton in hole \(r\) of the parallel composition to get the other way of the refinement with the identity on holes by compositon correctness, and we transform the transition from the identity on holes into the one of the handshake composition by hole-superset refinement.
 \end{exi}
 The other interesting properties left to check are correctness w.r.t.\@ composition, context refinement, composition congruence and compatibility with FH-bisimulation.
 Proving them for the open automata refinement will also prove them for each hole-\(\triangle\) simulation as they are just restricted cases.
@@ -679,11 +686,11 @@ Proving them for the open automata refinement will also prove them for each hole
 \begin{proof}
 We will decompose composition into two refinement steps, transitivity will complete the proof.
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(k \in J_1\) such that \(A_1\subst{A_2}{k}\) is non-locking.
-We pose
-\begin{gather*}
-	A'_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{\emptyset}{T'_2} \\
-	T'_2 \defobject \mset{\OT{s}{s'}{\alpha}{\mbrc{}}{g}{\psi}}{\OTg \in T_2}
-\end{gather*}
+We pose \(A'_2\) as \(A_2\) stripped of its holes.
+\begin{align*}
+	A'_2 \defobject & \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{\emptyset}{T'_2} \\
+	T'_2 \defobject & \mset{\OT{s}{s'}{\alpha}{\mbrc{}}{g}{\psi}}{\OTg \in T_2}
+\end{align*}
 By limited composition correctness we have \(\wrel{A_1\subst{A'_2}{k}}{A_1}{J_1 \setminus \mbrc{k}}\).
 Adding holes and binding actions to the new holes is a refinement for hole-superset simulation so we have \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A'_2}{k}}{J_1 \setminus \mbrc{k}}\).
 By transitivity we have composition correctness.
@@ -692,21 +699,21 @@ By transitivity we have composition correctness.
 \begin{proofsketch}
 For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\), \(k \in H_{12}\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) while \(A_3\) does the same things in both compositions in the hole \(k\).
-\begin{gather*}
-	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
-	H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}
-\end{gather*}
+\begin{align*}
+	R \defobject & \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
+	H \defobject & J_3 \uplus H_{12} \setminus \mbrc{k}
+\end{align*}
 Where \(y_3 \mapsto y_{3x}\) is the renaming for object of \(A_3\) in \(A_x\subst{A_3}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cr}.
 \end{proofsketch}
 \begin{thm}[Composition congruence] Open automata refinement is congruent for composition \end{thm}
 \begin{proofsketch}
-For three open autoamta \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
+For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) while \(A_1\) does the same things in both compositions.
-\begin{gather*}
-	R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
-	H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}
-\end{gather*}
+\begin{align*}
+	R \defobject & \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
+	H \defobject & H_{23} \uplus J_1 \setminus \mbrc{k}
+\end{align*}
 Where \(y_1 \mapsto y_{1x}\) is the renaming for object of \(A_1\) in \(A_1\subst{A_x}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cong}.
 \end{proofsketch}
@@ -825,7 +832,7 @@ However the full traffic light will not be used in order to simplify the example
 \caption{On the left: A clock which imposes a tick; On the right: A modified version of the counter at figure \ref{fig:tlh}}
 \label{fig:anytick}
 \end{figure}
-The clock on the left side of Figure \ref{fig:anytick} transmit the actions of its hole unchanged until the clock imposes a \(\act{tick}\) on its hole.
+The clock on the left side of Figure \ref{fig:anytick} transmits the actions of its hole unchanged until the clock imposes a \(\act{tick}\) on its hole.
 This can model a physical clock, because physical time ticks cannot be delayed.
 
 If the hole cannot handle a \(\act{tick}\) at any time then there is a deadlock, which is the case with our counter.
@@ -838,8 +845,8 @@ The composition of this clock with the counter is given on the left of Figure \r
 \label{fig:deadlock}
 \end{figure}
 There are two deadlocks:
-The first is in the state \(1S\), which correspond to the clock trying to imppose a tick when the counter is not set.
-The second is in the state \(1C\), which correspond to the clock trying to impose a tick when the counter has reached the amount peviously set, but not has not yet reported it to the environment.
+The first is in the state \(1S\), which corresponds to the clock trying to imppose a tick when the counter is not set.
+The second is in the state \(1C\), which corresponds to the clock trying to impose a tick when the counter has reached the amount previously set, but not has not yet reported it to the environment.
 These deadlocks could have been in the specification in which case they were intended, but it is not the case here.
 
 The counter on the right of Figure \ref{fig:anytick} is a modification to accept ticks at in any state.
@@ -863,13 +870,13 @@ The left automaton indeed fails at being the result of a non-locking composition
 
 One more thing worth noting is that for the left automaton, in the state \(1C\) with a valuation such that \(t < 0\), the counter agent is in a deadlock state.
 We could have defined the non-locking composition so that this is considered as an intended deadlock, making the requirement symmetric.
-However the the semantics of composition in a hole is asymmetric and the considered specification -as in the deadlock prevention- is the parent automaton.
+However the the semantics of composition in a hole is asymmetric and the considered specification -as in the deadlock reduction- is the parent automaton.
 \end{exi}
 
 
 \section{Proof of equivalent definitions}
 
-\subsection{Proof of lemma \ref{lem:dred}}\label{apx:lemdred}
+\subsection{Proof of Lemma \ref{lem:dred}}\label{apx:lemdred}
 Let \(R\) be a pre-simulation between \(A_1 \defobject \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J_1}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J_2}{T_2}\).
 We want to prove:
 \[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \tag{WD}\label{eq:drWD} \]
@@ -937,7 +944,7 @@ We want to prove:
 	Which proves \goal{2'} with the values of \(\nu\) for the variables of \(\fguard{t_1}\) and dummy values for the other guards.
 \end{proof}
 
-\subsection{Proof of lemma \ref{lem:nlced}}\label{apx:lemnlced}
+\subsection{Proof of Lemma \ref{lem:nlced}}\label{apx:lemnlced}
 We want to prove
 \[ \forall s \defobject \mpar{s_p, s_c} \in S, V \uplus \biguplus_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \tag{WD}\label{eq:nlcWD} \]
 \[ \bigsymb{\iff} \]
@@ -960,7 +967,7 @@ We want to prove
 	The left side of the implication is proved using \hyp{1} and \hyp{2'} for the branch \(t_p\) of the disjunction.
 	The right side is a big disjunction that gives us \(t \in \fOT{s}\) such that:
 	\[ \sigma \uplus \nu \uplus \mu \vdash \fguard{t} \hyp{3'} \]
-	At this point we have a \(t\) which is composed of a transition in \(A_p\) and one in \(A_c\) so unlike lemma 1 we do not need to check that two transitions matches.
+	At this point we have a \(t\) which is composed of a transition in \(A_p\) and one in \(A_c\) so unlike Lemma \ref{lem:dred} we do not need to check that two transitions matches.
 	The current goal is:
 	\[ \exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t} \]
 	Which is proved on \(t\) with valuation \(\mu\) by \hyp{3'}.
@@ -991,7 +998,7 @@ We want to prove
 
 \subsection{Hole-\(\triangle\) simulation is a pre-simulation}\label{apx:presim}
 Let \(R\) be a relation on configurations.
-The condition \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\) is in both definitions and the deadlock prevention requirement will not be used so proving the following is sufficient:
+The condition \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\) is in both definitions and the deadlock reduction requirement will not be used so proving the following is sufficient:
 \begin{multline}
 	\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
 	\mpar{\everymath{\displaystyle}\begin{array}{l}
@@ -1097,7 +1104,7 @@ We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\).
 	\end{gather}
 	\goal{2a} holds because composition doesn't change the produced action and the valuation coincide on the renamed variables.
 	\goal{2b} also holds because \(J'_1 \cap J = J'_1 \setminus \mbrc{k} = J'\), composition doesn't change the actions of the holes involved and the valuation coincide on the renamed variables.
-	\goal{2c} is proved using \hyp{1c} (\(g \equiv g_1\) or \(g \equiv g_1 \wedge \dots\)).
+	\goal{2c} is proved using \hyp{1c} (\(g \iff g_1\) or \(g \iff g_1 \wedge \dots\)).
 	For \goal{2d} we use \hyp{1a} with the preservation of reachability across transitions, \hyp{1b} and the fact that the valuations coincide on the renamed values:
 	\begin{align*}
 		& \sigma \uplus \nu \vdash R\mpar{s', s'_1}\psubst{\psi \uplus \psi_1} \\
@@ -1420,10 +1427,10 @@ We want to prove that \(R\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be open automata and \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\).
 Let \(k \in H_{12}\), \(A_{13} \defobject A_1\subst{A_3}{k}\), \(A_{23} \defobject A_2\subst{A_3}{k}\) and \(\reach{A_{13}}\) be a witness that the composition producing \(A_{13}\) is non-locking.
 We pose \(\OAg[13] \defobject A_{13}\) and \(\OAg[23] \defobject A_{23}\).
-\begin{gather*}
-	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
-	H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}
-\end{gather*}
+\begin{align*}
+	R \defobject & \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
+	H \defobject & J_3 \uplus H_{12} \setminus \mbrc{k}
+\end{align*}
 Where \(y_3 \mapsto y_{3x}\) is the renaming for object of \(A_3\) in \(A_{x3}\).
 We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{13}}{A_{23}}{H}\).
 \begin{proof}
@@ -1529,7 +1536,7 @@ We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{13}}{A_{23}}{H}
 	\end{gather}
 	Because composition doesn't change the produced actions nor its variables, \goal{3a} is proved by \hyp{3a}.
 	\goal{3b} holds because the valuations for the actions of the holes in \(J_3\) coincide by definition of \(\nu'\) and by \hyp{3b} for the others.
-	For \goal{3c} we have two cases, if \(k \notin J'_1\) then \(g_{23x} \equiv g_{2x}\) and \hyp{3c} is sufficient, if \(k \in J'_1\) then \(g_{23x} \equiv g_{2x} \wedge g_3 \wedge \alpha_3 = \beta_{2xk}\) so we also need \hyp{2d} (\(g_{13} \equiv g_1 \wedge g_3 \wedge \alpha_3 = \beta_{1k}\)) and \hyp{3b} for the value \(k\) (\(\beta_{1k} = \beta_{2xk}\)).
+	For \goal{3c} we have two cases, if \(k \notin J'_1\) then \(g_{23x} \iff g_{2x}\) and \hyp{3c} is sufficient, if \(k \in J'_1\) then \(g_{23x} \iff g_{2x} \wedge g_3 \wedge \alpha_3 = \beta_{2xk}\) so we also need \hyp{2d} (\(g_{13} \iff g_1 \wedge g_3 \wedge \alpha_3 = \beta_{1k}\)) and \hyp{3b} for the value \(k\) (\(\beta_{1k} = \beta_{2xk}\)).
 	\goal{3d} is proved using \hyp{3d}, \hyp{2b} with the preservation of reachability across transitions (+ \hyp{2d}), \hyp{2c} and the fact that \(A_3\) performs the same transition with same values in both composed automata:
 	\begin{align*}
 		& \sigma \uplus \nu' \vdash R\mpar{s'_{13}, s'_{23x}}\psubst{\psi_{13} \uplus \psi_{23x}} \\
@@ -1563,10 +1570,10 @@ We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{13}}{A_{23}}{H}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be three open automata.
 Let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
 We pose \(\OAg[21] \defobject A_{21}\) and \(\OAg[31] \defobject A_{31}\).
-\begin{gather*}
-	R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_{21}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
-	H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}
-\end{gather*}
+\begin{align*}
+	R \defobject & \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_{21}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
+	H \defobject & H_{23} \uplus J_1 \setminus \mbrc{k}
+\end{align*}
 Where \(y_1 \mapsto y_{1x}\) is the renaming for object of \(A_1\) in \(A_{x1}\).
 We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{21}}{A_{31}}{H}\).
 \begin{proof}
@@ -1667,7 +1674,7 @@ We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{21}}{A_{31}}{H}
 	\end{gather}
 	Because composition doesn't change the produced actions nor its variables, \goal{3a} is proved by reflexivity.
 	\goal{3b} holds because the valuations for the actions of the holes in \(J_1\) coincide by definition of \(\nu'\) and by \hyp{3b} for the others (\(k \notin H\)).
-	For \goal{3c} we have two cases, if \(k \notin J'_{12}\) then \(g_{31x} \equiv g_{13}\) and \hyp{2d} is sufficient (\(g_{21} \equiv g_{13}\)), if \(k \in J'_{13}\) then \(g_{31x} \equiv g_{13} \wedge g_{3x} \wedge \alpha_{3x} = \beta_{13k}\) so we also need \hyp{3c} and \hyp{3a} in addition to \hyp{2d} (\(g_{21} \equiv g_{13} \wedge \alpha_2 = \beta_{12k}\)).
+	For \goal{3c} we have two cases, if \(k \notin J'_{12}\) then \(g_{31x} \iff g_{13}\) and \hyp{2d} is sufficient (\(g_{21} \iff g_{13}\)), if \(k \in J'_{13}\) then \(g_{31x} \iff g_{13} \wedge g_{3x} \wedge \alpha_{3x} = \beta_{13k}\) so we also need \hyp{3c} and \hyp{3a} in addition to \hyp{2d} (\(g_{21} \iff g_{13} \wedge \alpha_2 = \beta_{12k}\)).
 	\goal{3d} is proved using \hyp{3d}, \hyp{2b} with the preservation of reachability across transitions (+ \hyp{2d}), \hyp{2c} and the fact that \(A_1\) performs the same transition with same values in both composed automata:
 	\begin{align*}
 		& \sigma \uplus \nu' \vdash R\mpar{s'_{21}, s'_{31x}}\psubst{\psi_{21} \uplus \psi_{31x}} \\
