@@ -17,9 +17,6 @@
 \input{preamble.tex}
 \input{tikzmacros.tex}
 
-% transitions between sections
-% TODO: CITER LES CONFERENCES
-
 \title{Refinement for open automata}
 \author{Quentin \textsc{Corradi}}
 
@@ -33,7 +30,7 @@ Verification is the process of checking properties on a description in a specifi
 A particular kind of verification are refinement relations.
 
 Refinement relations verifies that and implementation satisfies some properties with respect to a specification.
-The open pNets model is based around a hierarchical composition of generalised automata called pLTS.
+The open pNets model is based around a hierarchical composition of generalised automata.
 A properties a refinement can check on them is the non introduction of deadlocks.
 A deadlock being an unintended state where no further action is possible.
 
@@ -50,16 +47,20 @@ The contributions of this report are:
 \item The characterisation of a composition that doesn't introduce deadlocks.
 \item The introduciton of several refinement relations for open automata that behave nicely with composition.
 \end{enumerate}
-
 This report is organised as follows:
-We begin with Section \ref{sec:notations} by giving some notations used throughout this paper.
+We begin with Section \ref{sec:sota} by describing the state-of-the-art.
 Then there are several sections dedicated to define all the interesting objects and properties:
+In section \ref{sec:notations} we give some notations used throughout this paper.
 In Section \ref{sec:def} we give a clean and up to date definition of open automata.
 In Section \ref{sec:comp} we define their composition without requiring the use of open pNets.
 In Section \ref{sec:proofelts} we adapt to open automata several standard properties from refinement relations on LTS.
-After that Section \ref{sec:prelref} is dedicated to progressively build a refinement relation and explain the elements of this construction.
+After that Section \ref{sec:prelref} is dedicated to building refinement relations in the easy cases.
 Section \ref{sec:refinement} introduces and analyses the refinement relation on open automata.
 Finally Section \ref{sec:ccl} recapitulates the contribution and presents the work left.
+
+
+\section{State of the art}\label{sec:sota}
+Previous work % TODO
 
 
 \section{Notations}\label{sec:notations}
@@ -164,7 +165,8 @@ An open transition can have many unbound variables.
 
 An instanciated transition of the automaton is transition produced by any well-formed substitution of the unbound variables of the transition minus the automaton variables.
 \end{defi}
-The intuition of an open automaton is a partially defined LTS with variables, guards on transitions, and parametrised actions. The LTS is partial in the sense that one cn plug an LTS in the hole and the surrounding LTS will react to the actions emitted by the sub-LTS put in the hole.
+The intuition of an open automaton is a partially defined LTS with variables, guards on transitions, and parametrised actions.
+The LTS is partial in the sense that one can plug an LTS in the hole and the surrounding LTS will react to the actions emitted by the sub-LTS put in the hole.
 Initially the automaton is in the initial state with an extension on all the variables of the initial valuation.
 In any configuration, it can perform instanciated transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
 An instanciated transition is a transition where every variable that is not an automaton variable is instantiated with a value.
@@ -247,7 +249,7 @@ It is not local to the transition.
 When taking instanciated transitions, its value is not substituted with a closed term.
 For instance \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{v = L \wedge \tau \neq \delta}{\mbrc{}}} is an instanciated transition generated from the second transition but not \nmm{\OT{»}{»}{\tau}{\mbrc{l \mapsto \tau}}{L = L \wedge \tau \neq \delta}{\mbrc{}}} (result of the forbidden substitution \(v \mapsto L\)).
 
-An run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = L\).
+A run of this open automaton can be: The automaton in the hole \(l\) emits many actions, this synchronises with the only transition possible at that moment because \(v = L\).
 Then the automaton in hole \(l\) emits a \(\delta\mpar{t}\), this is synchonised with the action that sets \(v \gets R\) and the automata in hole \(r\) must emit a \(\act{acc}\mpar{t}\).
 Finally the automaton in the hole \(r\) emits any sequence of actions.
 
@@ -258,12 +260,13 @@ From this point open automata and open transitions are sometimes called automata
 
 \section{Composition of Open Automata}\label{sec:comp}
 Open automata are partially specified automata, that partiality comes mostly from the holes.
-The interpretation of a hole is an interface with another open automaton, in which we can plug an open automaton. The plugging operation is called composition.
+The interpretation of a hole is an interface with another open automaton, in which we can plug an open automaton.
+The plugging operation is called composition.
 In this report, composition will only refer to filling holes, other compositions like ``parallel composition" (pure interleaving) are not tackled (but one can define an open automaton that performs the parallel composition of two others).
 The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
 \begin{defi}[Composition of open automata]
-The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p \defobject \OAg[p]\) is an open automaton defined as follows.
+The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p \defobject \OAg[p]\) gives the open automaton defined as follows.
 \begin{align*}
 	A_p\subst{A_c}{k} \defnotation & \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \\
 	\text{with } T \defobject & \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p \setminus \mbrc{k}}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{\OTx{p}{}{}{p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
@@ -369,7 +372,7 @@ The last formula means that for every pair of related configurations of the auto
 Apart from holes, this is a natural extension of the notion of simulation on LTS, which is the same definition without variables nor holes nor guards.
 In FH-bisimulation, holes with the same name will receive the same open automaton when composed, and the resulting open automaton will still be equivalent.
 Here we will assume that one of the related open automata can be obtained by composing an open automaton in a hole, open automaton which can have holes itself.
-This implies that there is no relation between the related automata's holes, for instance composing \(A_i\) in \(j_i\) (\(1 \leq i \leq n\)) of \(A_0\) gives the set of holes \(J \defobject \mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) that is neither subset nor superset of \(J_0\).
+This implies that there is no relation between the related automata's holes, for instance composing \(A_i\) in \(j_i\) (\(1 \leq i \leq n\)) of \(A_0\) gives the set of holes \(\mpar{\biguplus_{0 \leq i \leq n} J_i} \setminus \mset{j_i}{1 \leq i \leq n}\) that is neither subset nor superset of \(J_0\).
 Yet we still assume that in holes with the same name, the same open automaton will be composed.
 Hence only the holes in common have to match their actions.
 However it is not sufficient to imply properties on the relation on automatons like being a preorder.
@@ -408,7 +411,7 @@ Apart from the matching transitions this is exactly the same explaination as the
 The expected advantage of this formulation is that a SMT should behave better without the quantifiers.
 Indeed the big disjunctions are not quantifiers because in practice the out-transitions are finitary, and so is the expansion of the disjunction.
 \begin{lem}\label{lem:dred}
-The intuitive (Definition \ref{def:dpid}) and working (Definition \ref{def:dpwd}) definitions of deadlock prevention are equivalent.
+The intuitive and working definitions of deadlock prevention are equivalent.
 \end{lem}
 Proof of the lemma is given in Appendix \ref{apx:lemdred}.
 
@@ -433,7 +436,8 @@ The exact reachability may not be representable in the formulas, hence the need 
 \begin{defi}[Non-locking composition, intuitive definition]
 Let \(A_i \defobject \OAg[i], 0 \leq i \leq n\).
 The composition \(A \defobject A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if \(A\) has a reachability predicate satisfying:
-From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\). Formally for \(\OAg \defobject A\), it gives
+From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\).
+Formally for \(\OAg \defobject A\), it gives
 \begin{multline*}
 	\forall s \defobject \mpar{s'_i}_{0 \leq i \leq n} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
 	\mpar{\exists t_0 \in \fOT{s'_0}, \exists \nu_0: \fvars{t_0} \to \values, \sigma \uplus \nu_0 \vdash \fguard{t_0}} \implies \\
@@ -586,10 +590,10 @@ The solution is to expand the existential quantifier on states as we did in dead
 \begin{prop}[Limited composition correctness]\label{prop:cc'} Hole-subset simulation is correct w.r.t.\@ composition with automata without holes. \end{prop}
 \begin{proofsketch}
 For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\) with \(J_2 = \emptyset\), let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\).
-Let \(\reach{A}\) be a witness that \(A\) is non-locking.
+Let \(\reach{A}\) be a witness that the composition producing \(A\) is non-locking.
 The idea for the relation on configurations is that the copy of \(A_1\) in \(A\) do the same things as \(A_1\), as if we were trying to prove reflexivity.
 \[ R \defobject \mpar{\mpar{s_{1'}, s_2}, s_1} \mapsto \choice{\reach{A}\mpar{s_{1'}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 & \text{if } s_{1'} = s_1 \\ \bot & \text{otherwise}} \]
-Where \(y_{1'}\) is the renaming of \(y_1\) from \(A_1\) in \(A\).
+Where \(y_1 \mapsto y_{1'}\) is the renaming for object of \(A_1\) in \(A\).
 \(R\) is a witness of the limited composition correctness, proof is given in Appendix \ref{apx:lchs}.
 \end{proofsketch}
 \begin{prop}[Special composition correctness]
@@ -600,18 +604,23 @@ Where \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\), \(A_3\) are open a
 Let \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is to combine the non-locking composition and the already existing realtion on configurations.
 \[ R \defobject \mpar{\mpar{s_1, s_3}, s_2} \mapsto R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_3} \]
-\(R\) is a witness of the secial composition correctness, proof is given in Appendix \ref{apx:schs}.\Ludo{}{$y1$ et $y1'$ sortent de nulle part}
+\(R\) is a witness of the special composition correctness, proof is given in Appendix \ref{apx:schs}.
 \end{proofsketch}
-For composition correctness, the hole-subset simulation can only tell if there is a refinement when the composed automata have no holes.
+The hole-subset simulation can only tell if there is a refinement when the composed automata have no holes.
 To lift this limitation we need to allow adding holes which doesn't have a direct interpretation.
+
 At first a solution using a function mapping the action performed by the new holes in the composition to the ones performed by removed hole in the base automaton was explored.
 It was abandonned because the base automaton has nothing intelligent to tell about the action required by the composed automata.
 That is the reason the hole-superset simulation doesn't constrain the action performed by the added holes.
+The solution adopted is to give a meaning to adding hole and only adding in a simulation.
+With the hole-superset simulation we have an interpretation to added holes:
+They are holes imposing a restriction on the transition variables.
+However with that solution we cannot remove holes so we cannot express composition corectness, hence the need of the special composition correctness for hole-superset simulation.
 
-\Ludo{Only one of the}{this paragraph is not clear} hole-\(\triangle\) simulations cannot tell that a non-locking composition with any automaton is a refinement because we need at the same time to add and remove holes, hence the need of the special composition correctness for hole-superset.
-Also an issue arises when trying to tell that a composition is a refinement of the base automaton: the refinement relation cannot compare the holes sets.
-This conflicts with the transitivity propriety when a hole present in both extrema of the chain is absent in an intermediate automaton.
-In that case all the constraint on holes actions are lifted even if we would like to require an equality of these actions on the transitive cloture.
+For composition correctness, using only one of the hole-\(\triangle\) simulations cannot tell that a non-locking composition with any open automaton is a refinement of the base automaton because we need at the same time to add and remove holes.
+If we build the refinement relation as the transitive closure of all the hole-\(\triangle\) simulations then an issue arise.
+The transitivity propriety causes that when a hole present in both extrema of the chain but absent in an intermediate automaton, there is a refinement between the extrema of the chain.
+In that case all the constraint on holes actions are lifted even if we would like to require an equality of these actions on the transitive closure.
 
 
 \section{Refinement relation for open automata}\label{sec:refinement}
@@ -631,14 +640,14 @@ For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T
 	\end{array}} \\
 	\wedge V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
-\Ludo{major questions}{il me semble qu il y a pklein de trucs qu on comprend pas ici: que se passe t il si H est empty? on peut creer un rafinement qui fait n importe quoi avec les trous? on ne perd aucune propriete? peut etrer qu il manque juste un paragraphe qui explique l approche ses points forts et ses limitations mais l j ai pas l intuition}
+\Ludo{major questions}{il me semble qu il y a plein de trucs qu on comprend pas ici: que se passe t il si H est empty? on peut creer un rafinement qui fait n importe quoi avec les trous? on ne perd aucune propriete? peut etrer qu il manque juste un paragraphe qui explique l approche ses points forts et ses limitations mais l j ai pas l intuition}
 Giving \(R\) and \(H\) is sufficient to characterise the refinement, so we call \(\mpar{R, H}\) a hole-tracking simulation of \(A_1\) by \(A_2\).
 \end{defi}
 It is basically the same definition as the refinement relation deduced from hole-\(\triangle\) simulations.
 \(R\) is a kind of hole-\(\triangle\) simulation but without the \(\triangle\) constraint on hole sets.
 On top of that every actions of the holes outside \(H\) is unconstrained in the related automata.
 
-The transitivity property becomes \(\wrel{A}{B}{X} \wedge \wrel{B}{C}{X} \implies \wrel{A}{C}{X \cap Y}\). \Ludo{Y}{d' ou vient le Y? peut ete qu un X est un Y?}
+The transitivity property becomes \(\wrel{A}{B}{X} \wedge \wrel{B}{C}{Y} \implies \wrel{A}{C}{X \cap Y}\).
 It behaves the same as if the holes outside the intersection were renamed to avoid conflicts in the first place.
 This makes the combination of the transitivity proofs of hole-\(\triangle\) simulation sufficient to prove \Ludo{transitivity}{lu comme ca c est surprenant: ca semble dire que les restrictions sur les trous de la sec precedente ne sont pas vraiment utiles pour prouver la transitivite}.
 
@@ -687,7 +696,7 @@ The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) wh
 	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
 	H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}
 \end{gather*}
-Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_x\subst{A_3}{k}\).
+Where \(y_3 \mapsto y_{3x}\) is the renaming for object of \(A_3\) in \(A_x\subst{A_3}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cr}.
 \end{proofsketch}
 \begin{thm}[Composition congruence] Open automata refinement is congruent for composition \end{thm}
@@ -698,7 +707,7 @@ The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) wh
 	R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
 	H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}
 \end{gather*}
-Where \(y_{1x}\) is the renaming of \(y_1\) from \(A_1\) in \(A_1\subst{A_x}{k}\).
+Where \(y_1 \mapsto y_{1x}\) is the renaming for object of \(A_1\) in \(A_1\subst{A_x}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cong}.
 \end{proofsketch}
 \begin{thm}[FH-bisimulation compatibility] Open automata refinement is compatible with FH-bisimulation \end{thm}
@@ -715,9 +724,6 @@ To do that we restricted the composition so that it doesn't introduce deadlocks.
 Then we introduced several refinement relations in restricted cases to avoid dealing immediately with the hard issue of the incomparability of hole sets.
 Finally we introduced a refinement relation having all the interesting properties and dealing with the aforementioned issue at the cost of a slight modification on transitivity.
 
-% TODO: Related work: thesis + olga
-
-% Future work
 However the refinement presented here still do not work on the motivating example because of silent actions.
 To be able to refine in the presence of silent action, a weak variant of the simulation is needed.
 This variant will also probably be able to encompass action refinement as a valid refinement because the mechanism are similar.
@@ -1040,9 +1046,9 @@ So we can prove \goal{0'} for the transition \(t_{2x}\) and the valuation \(\nu\
 \subsection{Limited composition correctness for hole-subset simulation}\label{apx:lchs}
 Let \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\) be open automata, where \(J_2 = \emptyset\).
 Let \(k \in J_1\) and \(A \defobject A_1\subst{A_2}{k}\), with \(\OAg \defobject A\).
-Let \(\reach{A}\) be a witness that \(A\) is non-locking.
+Let \(\reach{A}\) be a witness that the composition producing \(A\) is non-locking.
 \[ R \defobject \mpar{\mpar{s_{1'}, s_2}, s_1} \mapsto \choice{\reach{A}\mpar{s_{1'}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{1'} = v_1 & \text{if } s_{1'} = s_1 \\ \bot & \text{otherwise}} \]
-Where \(y_{1'}\) is the renaming of \(y_1\) from \(A_1\) in \(A\).
+Where \(y_1 \mapsto y_{1'}\) is the renaming for object of \(A_1\) in \(A\).
 We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\).
 \begin{proof}
 \item[1)] \(J = J_2 \uplus J_1 \setminus \mbrc{k} = \emptyset \uplus J_1 \setminus \mbrc{k} \subseteq J_1\)
@@ -1118,7 +1124,7 @@ We want to prove that \(R\) is a hole-subset simulation of \(A\) by \(A_1\).
 \subsection{Special composition correctness for hole-superset simulation}\label{apx:schs}
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be open automata.
 Let \(k \in J_1 \setminus J_2\) and \(A \defobject A_1\subst{A_3}{k}\), with \(\OAg \defobject A\).
-Let \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\) and \(\reach{A}\) be a witness that \(A\) is non-locking.
+Let \(R_{12}\) be a hole-superset simulation of \(A_1\) by \(A_2\) and \(\reach{A}\) be a witness that the composition producing \(A\) is non-locking.
 \[ R \defobject \mpar{\mpar{s_1, s_3}, s_2} \mapsto R_{12}\mpar{s_1, s_2} \wedge \reach{A}\mpar{s_1, s_3} \]
 We want to prove that \(R\) is a hole-superset simulation of \(A\) by \(A_2\).
 \begin{proof}
@@ -1338,7 +1344,7 @@ We want to prove that \(R\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A
 			& \subseteq J'_1 \cap J_3 &&
 		\end{align*}
 	\item Let \(\triangle\) be \(=\).
-		We combine the proofs for two above cases and get both inclusions so \goal{0'} holds.
+		We use either one of the proof for the two above cases so \goal{0'} holds.
 	\end{itemize}
 \item[\goal{2}:] Let \(\sigma_1: V_1 \uplus \fvars{t_1} \to \values\) and \(\sigma_3: V_3 \to \values\).
 	We use dummy values for variables in \nmm{\biguplus_\subbox{z \in Z} \fvars{t_{3z}}} to get the left side of this implication as an hypothesis (independant from these values):
@@ -1411,14 +1417,14 @@ We want to prove that \(R\) is a hole-\(\triangle\) simulation of \(A_1\) by \(A
 \section{Proof or properties for open automata refinement}
 
 \subsection{Context refinement}\label{apx:cr}
-Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) and \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\).
-Let \(k \in H_{12}\), \(A_{13} \defobject A_1\subst{A_3}{k}\), \(A_{23} \defobject A_2\subst{A_3}{k}\) and \(\reach{A_{13}}\) be a witness that \(A_{13}\) is non-locking.
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\) be open automata and \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\).
+Let \(k \in H_{12}\), \(A_{13} \defobject A_1\subst{A_3}{k}\), \(A_{23} \defobject A_2\subst{A_3}{k}\) and \(\reach{A_{13}}\) be a witness that the composition producing \(A_{13}\) is non-locking.
 We pose \(\OAg[13] \defobject A_{13}\) and \(\OAg[23] \defobject A_{23}\).
 \begin{gather*}
 	R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
 	H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}
 \end{gather*}
-Where \(y_{3x}\) is the renaming of \(y_3\) from \(A_3\) in \(A_{x3}\).
+Where \(y_3 \mapsto y_{3x}\) is the renaming for object of \(A_3\) in \(A_{x3}\).
 We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{13}}{A_{23}}{H}\).
 \begin{proof}
 \item[1)] \(H = J_3 \uplus H_{12} \setminus \mbrc{k} \subseteq J_3 \uplus \mpar{J_1 \cap J_2} \setminus \mbrc{k} = \mpar{J_3 \uplus J_1 \setminus \mbrc{k}} \cap \mpar{J_3 \uplus J_2 \setminus \mbrc{k}} = J_{13} \cap J_{23}\)
@@ -1561,7 +1567,7 @@ We pose \(\OAg[21] \defobject A_{21}\) and \(\OAg[31] \defobject A_{31}\).
 	R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_{21}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
 	H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}
 \end{gather*}
-Where \(y_{1x}\) is the renaming of \(y_1\) from \(A_1\) in \(A_{x1}\).
+Where \(y_1 \mapsto y_{1x}\) is the renaming for object of \(A_1\) in \(A_{x1}\).
 We want to prove that \(\mpar{R, H}\) is a witness of \(\wrel{A_{21}}{A_{31}}{H}\).
 \begin{proof}
 \item[1)] \(H = H_{23} \uplus J_1 \setminus \mbrc{k} \subseteq \mpar{J_2 \cap J_3} \uplus J_1 \setminus \mbrc{k} = \mpar{J_2 \uplus J_1 \setminus \mbrc{k}} \cap \mpar{J_3 \uplus J_1 \setminus \mbrc{k}} = J_{21} \cap J_{31}\)
