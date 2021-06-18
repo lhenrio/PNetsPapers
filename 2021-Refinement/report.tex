@@ -8,7 +8,7 @@
 \usepackage{unicode-math}
 \usepackage{tikz}
 \usetikzlibrary{external}
-\usepackage[colorlinks]{hyperref}
+\usepackage[final,hidelinks]{hyperref}
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 \usepackage{polyglossia}
 \setmainlanguage{english}
@@ -66,7 +66,7 @@ In a more recent work by Ameur-Boulifa, Henrio and Madelaine \cite{2007.10770}, 
 These works differ from ours because the relation introduced in this report is a refinement relation in the form of a simulation and not a bisimulation.
 Also we do not have results as strong as computability neither a weak version able to tackle silent actions.
 
-There are also similar work, introducing refinement relations, on other models than open automata.
+Some related work on other models than open automata introduce refinement relations.
 In a chapter by Bellegarde, Julliand and Kouchnarenko \cite{10.1007/3-540-46428-X_19}, a simulation relation on transition systems is introduced.
 This simulation encompass action refinement, is able to deal with silent actions and is compatible with parallel composition.
 Here the refinement relation does not consider action refinement as valid but it should be done in future work.
@@ -679,7 +679,7 @@ Giving \(R\) and \(H\) is sufficient to characterise the refinement, so we call 
 Hole in \(H\) are called tracked holes.
 \end{defi}
 \(R\) is a kind of hole-\(\triangle\) simulation but without the \(\triangle\) constraint on hole sets.
-On top of that every actions of the holes outside \(H\) is unconstrained in the related automata.
+On top of that every action of the holes outside \(H\) is unconstrained in the related automata.
 
 This definition is close to the refinement relation deduced from hole-\(\triangle\) simulations.
 Actually the latter are particular cases of this one.
@@ -688,8 +688,15 @@ If \(J_1 = J_2\), we have \(\wrel{A_1}{A_2}{J_1}\) if and only if there is a hol
 If \(J_1 \subseteq J_2\), we have \(\wrel{A_1}{A_2}{J_1}\) if and only if there is a hole-subset simulation of \(A_1\) by \(A_2\).
 Finally if \(J_1 \supseteq J_2\), we have \(\wrel{A_1}{A_2}{J_2}\) if and only if there is a hole-superset simulation of \(A_1\) by \(A_2\).
 
-For the open automata refinement, the transitivity property becomes \(\wrel{A}{B}{X} \wedge \wrel{B}{C}{Y} \implies \wrel{A}{C}{X \cap Y}\).
-It behaves the same as if the holes outside the intersection were renamed to avoid conflicts in the first place.
+The idea behind the set of tracked holes is that a tracked hole is guaranteed to behave well with composition.
+To have guarantees on a hole when performing successive refinement we must keep the hole tracked in every refinement step.
+Otherwise everything happens as if the hole of the most refined automaton is not the same as the one with the same name in the least refined automaton.
+It shouldn't be surprising if at some refinement step all the constraints on a hole are lost, that in the whole process they also are.
+It is the best we can do and if someone want to keep the constraint, then they should choose wisely the intermediate automata used for the refinement.
+
+In terms of transitivity, for the open automata refinement, the strongest property we can prove becomes \(\wrel{A}{B}{X} \wedge \wrel{B}{C}{Y} \implies \wrel{A}{C}{X \cap Y}\).
+For a weaker property we can use the fact that \(\wrel{A_1}{A_2}{H} \implies \wrel{A_1}{A_2}{H'}\) when \(H' \subseteq H\).
+Transitivity behaves the same as if the holes outside the intersection were renamed to avoid conflicts in the first place.
 This in combination with the fact that hole-\(\triangle\) simulation are a particular case of hole-tracking simulation makes the combination of the transitivity proofs of hole-\(\triangle\) simulation sufficient to prove transitivity.
 
 Not renaming conflicting holes still have an interest.
@@ -711,13 +718,16 @@ We have two refinement paths when \(h\) is replaced by \(l\) and by \(r\) in ide
 However we do not have the parallel composition being a refinement of the handshake composition looking at \(\mbrc{l, r}\).
 
 The example also shows a property worth mentioning.
-The holes not looked at (or untracked) are equivalent to having the any action automaton (center of Figure \ref{fig:sevpathref}) composed.
+The holes not tracked are equivalent to having the any action automaton (center of Figure \ref{fig:sevpathref}) composed.
 Actually all the previous refinement are both ways: we can compose the any action automaton in hole \(r\) of the parallel composition to get the other way of the refinement with the identity on holes by composition correctness, and we transform the transition from the identity on holes into the one of the handshake composition by hole-superset refinement.
 \end{exi}
 The other interesting properties left to check are correctness w.r.t.\@ composition, context refinement, composition congruence and compatibility with FH-bisimulation.
-Some have to be slightly modified for the open automata refinement because of the tracked holes set.
+They have to be slightly modified because of the tracked holes set.
 Proving them for the open automata refinement will also prove them for each hole-\(\triangle\) simulation as they are just particular cases.
-\begin{thm} Open automata refinement is correct w.r.t.\@ composition. \end{thm}
+\begin{thm}
+Open automata refinement is correct w.r.t.\@ composition.
+The tracked holes are the holes of the base automaton minus the composed hole.
+\end{thm}
 \begin{proof}
 We will decompose composition into two refinement steps, transitivity will complete the proof.
 Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(k \in J_1\) such that \(A_1\subst{A_2}{k}\) is non-locking.
@@ -730,25 +740,29 @@ By limited composition correctness we have \(\wrel{A_1\subst{A'_2}{k}}{A_1}{J_1 
 Adding holes and binding actions to the new holes is a refinement for hole-superset simulation so we have \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A'_2}{k}}{J_1 \setminus \mbrc{k}}\).
 By transitivity we have composition correctness.
 \end{proof}
-\begin{thm}[Context refinement] Open automata refinement is context refining when the composition happens in a tracked hole. \end{thm}
+\begin{thm}[Context refinement]
+Open automata refinement is context refining when the composition happens in a tracked hole:
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
+Let \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\), \(k \in H_{12}\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
+Let \(H \defobject J_3 \uplus H_{12} \setminus \mbrc{k}\).
+We have \(\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{H}\).
+\end{thm}
 \begin{proofsketch}
-For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(\mpar{R_{12}, H_{12}}\) be a hole-tracking simulation of \(A_1\) by \(A_2\), \(k \in H_{12}\) and \(\reach{A_1\subst{A_3}{k}}\) be a witness that \(A_1\subst{A_3}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_2\) simulates \(A_1\) while \(A_3\) does the same things in both compositions in the hole \(k\).
-\begin{align*}
-	R \defobject & \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \\
-	H \defobject & J_3 \uplus H_{12} \setminus \mbrc{k}
-\end{align*}
+\[ R \defobject \mpar{\mpar{s_1, s_{31}}, \mpar{s_2, s_{32}}} \mapsto \choice{R_{12}\mpar{s_1, s_2} \wedge \reach{A_1\subst{A_3}{k}}\mpar{s_1, s_{31}} \wedge \bigwedge_\subbox{v_3 \in V_3} v_{31} = v_{32} & \text{if } s_{31} = s_{32} \\ \bot & \text{otherwise}} \]
 Where \(y_3 \mapsto y_{3x}\) is the renaming for \(y\) a variable or a valuation of \(A_3\) in \(A_x\subst{A_3}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cr}.
 \end{proofsketch}
-\begin{thm}[Composition congruence] Open automata refinement is congruent for composition. \end{thm}
+\begin{thm}[Composition congruence]
+Open automata refinement is congruent for composition:
+Let \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\).
+Let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
+Let \(H \defobject H_{23} \uplus J_1 \setminus \mbrc{k}\).
+We have \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\).
+\end{thm}
 \begin{proofsketch}
-For three open automata \(A_1 \defobject \OAg[1]\), \(A_2 \defobject \OAg[2]\) and \(A_3 \defobject \OAg[3]\), let \(k \in J_1\), \(\mpar{R_{23}, H_{23}}\) be a hole-tracking simulation of \(A_2\) by \(A_3\) and \(\reach{A_1\subst{A_2}{k}}\) be a witness that \(A_1\subst{A_2}{k}\) is non-locking.
 The idea for the relation on configurations is that \(A_3\) simulates \(A_2\) while \(A_1\) does the same things in both compositions.
-\begin{align*}
-	R \defobject & \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \\
-	H \defobject & H_{23} \uplus J_1 \setminus \mbrc{k}
-\end{align*}
+\[ R \defobject \mpar{\mpar{s_{12}, s_2}, \mpar{s_{13}, s_3}} \mapsto \choice{R_{23}\mpar{s_2, s_3} \wedge \reach{A_1\subst{A_2}{k}}\mpar{s_{12}, s_2} \wedge \bigwedge_\subbox{v_1 \in V_1} v_{12} = v_{13} & \text{if } s_{12} = s_{13} \\ \bot & \text{otherwise}} \]
 Where \(y_1 \mapsto y_{1x}\) is the renaming for \(y\) a variable or a valuation of \(A_1\) in \(A_1\subst{A_x}{k}\).
 \(\mpar{R, H}\) is a witness of \(\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{H}\), proof is given in Appendix \ref{apx:cong}.
 \end{proofsketch}
