@@ -107,7 +107,7 @@ Throughout this paper, tuples will be noted differently depending on what they r
 This helps distinguishing the manipulated objects.
 Every such notation will be introduced in the definition of the object.
 
-Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\).
+Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\). % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
 For instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
 They will be used depending on what is more convenient.
 For instance \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no simple generating expression and is better represented with the finite version of first notation.
@@ -245,7 +245,7 @@ If it is not possible the system is locked.
 
 We use the standard convention that uses \(\tau\) as a non-observable transition, never synchronised with other actions and passed unmodified.
 This allows the synchronisation of the two holes to be hidden to the exterior by sending a \(\tau\).
-However here \(\tau\) is not always allowed from the holes, for instance in the state \(L\) the hole \(r\) cannot emit it.
+However here \(\tau\) is not always allowed from the holes, for instance in the state \(L\) the hole \(r\) cannot emit it because there is no transition allowing this action from this hole.
 These transitions have been omitted for the sake of simplifying the first example of open automata.
 \end{exi}
 Finally we can define some useful functions:
@@ -307,7 +307,8 @@ The composition of \(A_c \defobject \OAg[c]\) in the hole \(k \in J_p\) of \(A_p
 \end{align*}
 \end{defi}
 The action emitted when \(A_c\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_p\) which have it as a hole action (first transition set, \(\alpha_c = \beta_k\)).
-The composition may look like a handshake, with both automata running in parallel (product of states and joint variables) however it is asymmetric because it is the first automaton that decides when the second can evolve, while the first automaton can evolve independently as soon as the hole is not involved in the open transition considered.
+The composition may look like a handshake, with both automata running in parallel (product of states and joint variables) however it is asymmetric:
+The first automaton decides when the second can evolve by involving it in a transition, while the first automaton can evolve independently as soon as the hole is not involved in an open transition.
 \begin{exi}\label{exi:full_comp}
 \begin{figure}
 \centering
@@ -422,7 +423,7 @@ This is classically the definition of a function from \(S_1 \times S_2\) to \(\f
 \begin{defi}[Relation on configurations]
 A relation on configurations of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 
-Two states \(s_1 \in S_1, s_2 \in S_2\) with their respective valuations \(\sigma_1: V_1 \to \values, \sigma_2: V_2 \to \values\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
+Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 \end{defi}
 When relating two automata \(A_1 \mathrel{\mathcal{R}} A_2\) or their configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\), \(A_1\) will be called the implementation and \(A_2\) the specification.
 
@@ -436,7 +437,7 @@ The important properties we consider for a relation on open automata are:
 \defitem \textbf{transitive} iff \(\forall a\, b\, c, a \leq b \wedge b \leq c \implies a \leq c\);
 \defitem \textbf{a preorder} iff it is reflexive and transitive;
 \defitem \textbf{correct w.r.t.\@ composition} iff \(\forall a\, b, a\subst{b}{j} \leq a\);
-\defitem \textbf{complete w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c, a \cong b\subst{c}{j}\);
+\defitem \textbf{complete w.r.t.\@ composition} iff \(\forall a\, b, a \leq b \implies \exists c_j^{j \in J}, a \cong b\mdbrk{c_j^{j \in J}}\);
 \defitem \textbf{context refining for composition} iff \(\forall a\, b\, c, a \leq b \implies a\subst{c}{j} \leq b\subst{c}{j}\);
 \defitem \textbf{congruent for composition} iff \(\forall a\, b\, c, a \leq b \implies c\subst{a}{j} \leq c\subst{b}{j}\);
 \defitem \textbf{compatible with composition} iff \(\forall a\, b\, c\, d, a \leq b \wedge c \leq d \implies c\subst{a}{j} \leq d\subst{b}{j}\);
@@ -773,7 +774,7 @@ For two open automata \(A_1 \defobject \OAg[1]\) and \(A_2 \defobject \OAg[2]\),
 \end{defi}
 The third item of the definition has two parts:
 The first part is the main requirement, a stronger version of the pre-simulation requirement so that it better fits SMT.
-Instead of matching an instanciated transition to another instanciated transition as in the pre-simulation definition, we match an open transition to a family of covering open-transitions.
+Instead of matching an instanciated transition to another instanciated transition as in the pre-simulation definition, we match the open transition \(t_1\) to the family of covering open transitions \(t_{2x}^{x \in X}\) to account for all instanciations of \(t_1\).
 The second part is directly the deadlock reduction requirement.
 
 The hole-equal simulation is applicable when the related automata have the same holes.
