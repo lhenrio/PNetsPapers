@@ -2,7 +2,7 @@
 
 \usepackage{tikz}
 
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,mathabx}
 %\usepackage{amsthm}
 %\usepackage{unicode-math}
 \usepackage{tikz}
@@ -142,11 +142,11 @@ In a formula, a quantifier followed by a finite set will be used as a shorthand 
 An expression algebra \(E\) is the disjoint union  of  terms,  actions, and  formulas
 \( E=\terms \uplus \actions \uplus \formulas\) .
 \(\terms\) and \(\actions\) are term algebras.
-The formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\).
+The formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\). 
 %\end{definition}
 
  \(\fvars{e}\) is the set of variables in \(e \in E\) that are not bound by any binder. An expression is closed if \(\fvars{e}=\emptyset\).
-The set \(\values\) denote values which is a subset of closed terms.
+The set \(\values\) denote values which is a subset of closed terms. \(\rformulas[V]\) is the set of formulas $f$ that only use variables in $V$, i.e. the formulas such that  \(\fvars{f}\subseteq V\).
 
 The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), is denoted \(e\subst{t}{x}\), and its generalisation to the parallel substitution of variables in \(V\) by \(\psi: V \to \terms\) is denoted \(e\psubst{\psi}\).
 
@@ -277,8 +277,60 @@ In Figure \ref{fig:tlf} we present the composition of the three automata. Each s
 
 \section{A First Refinement Relation}\label{sec:refinement}
 
+Similarly to FH-bisimulation we are interested here in finding relations between states of to open automata that contain variables and holes. However here we want to biuld a refinement relation that is a simulation but also guarantees that no deadlock is introduced.
+Our objective is to characterize when a relation between two states of two open automata have the desired property. Such a relation has the following signature: \( S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+We first define when a relations is deadlock reducing, before characterising a first simple refinement relation only valid to compare automata with identical holes.
 
-deadlock and reachability
+\begin{definition}[Deadlock reduction]\label{def:dpwd}
+A relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if  it satisfies the following:
+\[ \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \]
+\end{definition}
+
+Unfortunately, in the general case, this property is conflicting with the properties about the relation on automata because every property involving composition would be applicable on composition introducing deadlocks.
+
+\subsection{Issue with deadlock reduction and composition}
+A way to solve the conflict between deadlock reduction and the properties involving composition is to only consider a composition that do not introduce deadlocks.
+With this new condition on validity of composition we are able to define in the next sections a refinement relation where most of the properties of interest are satisfied.
+
+Before characterising a composition which does not introduce deadlocks we need to be able to tell which states are reachable because some deadlocks are not reachable and should not be considered as being introduced.
+\begin{definition}[Reachability]
+For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is a predicate on states satisfying both
+
+ Inital state is reachable: \(\sigma_0 \vdash \reach{A}\mpar{s_0}\)
+
+ Reachability is preserved across transitions: \nmm{\forall t = \OTg \in T, \fvars{t} \vdash \reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}}
+\end{definition}
+The reachability predicate is used to characterise the reachable configurations in a run of an automaton.
+In fact the role of the predicate is to characterise potentially reachable configurations without having to characterise configurations as the result of a valid path in an automaton.
+
+To do that we impose that the initial configuration is reachable and that reachability is preserved by taking valid transitions.
+This effectively makes reachability take into account all paths, and potentially over-approximate the reachable configurations.
+The exact reachability may not be representable in the formulas, hence the need of potentially over-approximating.
+\begin{definition}[Non-locking composition, intuitive definition]
+Let \(A_i = \OAg[i], 0 \leq i \leq n\).
+The composition \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if \(A\) has a reachability predicate satisfying:
+From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\).
+Formally for \(\OAg = A\), it gives
+\begin{multline*}
+	\forall s = \mpar{s'_i}_{0 \leq i \leq n} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
+	\mpar{\exists t_0 \in \fOT{s'_0}, \exists \nu_0: \fvars{t_0} \to \values, \sigma \uplus \nu_0 \vdash \fguard{t_0}} \implies \\
+	\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}
+\end{multline*}
+\end{definition}
+As in the previous section, the definition can be simplified into a less intuitive version:
+\begin{definition}[Non-locking composition, working definition]
+\(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is a non-locking composition if:
+\[ \forall s = \mpar{s_0, s'} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \]
+\end{definition}
+\begin{lem} The intuitive and working definition of non-locking composition are equivalent. \end{lem}
+We want to prove
+\[ \forall s = \mpar{s_p, s_c} \in S, V \uplus \biguplus_\subbox{t_p \in \fOT{s_p}} \fvars{t_p} \vdash \reach{A}\mpar{s} \wedge \bigvee_\subbox{t_p \in \fOT{s_p}} \fguard{t_p} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \tag{WD}\label{eq:nlcWD} \]
+\[ \bigsymb{\iff} \]
+\begin{multline*}
+	\forall s = \mpar{s_p, s_c} \in S, \forall \sigma: V \to \values, \mpar{\sigma \vdash \reach{A}\mpar{s}} \implies \\
+	\mpar{\exists t_p \in \fOT{s_p}, \exists \nu: \fvars{t_p} \to \values, \sigma \uplus \nu \vdash \fguard{t_p}} \implies \\
+	\mpar{\exists t \in \fOT{s}, \exists \nu: \fvars{t} \to \values, \sigma \uplus \nu \vdash \fguard{t}} \tag{ID}\label{eq:nlcID}
+\end{multline*}
 
 Hole - = relation
 
