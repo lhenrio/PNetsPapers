@@ -237,12 +237,11 @@ The plugging operation is called composition.
 The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
 \begin{definition}[Composition of open automata]
-The composition of \(A_c = \OAg[c]\) in the hole \(k \in J_p\) of \(A_p = \OAg[p]\) is the OA defined as follows.
-\[
-	A_p\subst{A_c}{k} ::=  \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \]
+The composition of \(A_c = \OAg[c]\) in the hole \(k \in J_p\) of \(A_p = \OAg[p]\) is the OA defined as follows:
+\[A_p\subst{A_c}{k} ::=  \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \] \text{with }
 
 \begin{align*}
-	\text{with } T = & \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{ \OT{s_p}{s'_p}{\alpha_p}{\beta_j^{j \in J'_p \uplus \mbrc{k} }}{g_p}{\psi_p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
+T=& \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{ \OT{s_p}{s'_p}{\alpha_p}{\beta_j^{j \in J'_p \uplus \mbrc{k} }}{g_p}{\psi_p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
 	& \cup \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s_c}}{\alpha_p}{\beta_j^{j \in J'_p}}{g_p}{\psi_p}}{\OTx{p}{}{}{p} \in T_p, k \notin J'_p, s_c \in S_c}
 \end{align*}
 \end{definition}
@@ -372,6 +371,8 @@ Consider two OAs \(\OAg[1]\) and \(\OAg[2]\) with  \(J_1 = J_2\), the relation o
 \end{multline*}
 \item[(3)] $R$ is deadlock reducing.
 \end{definition}
+
+
 Note in this definition, instead of matching an instantiated transition of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$. %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
 
 Intuitively, this means that for every pair of related
@@ -380,9 +381,32 @@ With such a relation we are able to check the refinement between two open automa
 However, this refinement is inappropriate in the setting of composition which is the main advantage of the open automaton-based approach. 
 \TODO{introduce somewhere refinement through composition} 
 Refinement through composition  leads to a model in which composition can be used both to add new holes to a system and to fill holes, obtaining a system with less holes.
-Next section will identify a refinement relation with the possibility to have different holes in the compared automata.
+Next section will identify a refinement relation with the possibility to have different holes in the compared automata.\\
 
 
+\TODO{Je ne suis pas sure que la def precedente soit correcte: il faut ajouter la notion de  configuration comme suit:}
+ 
+\begin{definition}[Hole-equal simulation]
+Consider two OAs \(\OAg[1]\) and \(\OAg[2]\) with  \(J_1 = J_2\), the relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a hole-\(\symb{equal}\) simulation from $S_1$ to $S_2$ if the following conditions hold: 
+\item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
+\item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
+\noindent\begin{multline*}
+\everymath{\displaystyle}\begin{array}{l}
+		\bigsymb{\forall} t_1 = \OTx{1}{}{1}{1} \in \fOT{s_1},  \forall \sigma: V_1 \uplus V_2 \uplus \fvars{t_1} \to \values,\\
+\bigsymb{\exists} \mpar{t_{2x} = \OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}\!\!\!\!, 
+	\exists \sigma':\biguplus_\subbox{t_{2x} \in \fOT{s_2}} \fvars{t_{2x}}   \to \values\\
+		   \mpar{\forall x \in X, J'_{2x}= J'_1} \\[-2pt]
+%		\nwedge  
+		\left( \sigma  \vdash  R\mpar{s_1, s_2} \wedge g_1 \implies \sigma \uplus \sigma' \vdash \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x}} \beta_{1j} = \beta_{2xj} \nwedge \\[12pt]
+			 g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
+		\end{array}}\right)
+	\end{array} 
+%\\
+%	\wedge \mpar{V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}}
+\end{multline*}
+\item[(3)] $R$ is deadlock reducing.
+\end{definition}
 
 
 
@@ -428,6 +452,8 @@ It is easy to see that the hole-equal simulation is a particular case of open au
 \TODO{1.5 pages}
 
 - reflexivity and transitivity
+
+It  is  easy  to  show  that  the  refinement  is  reflexive  and  transitive,  so  it  is  a  preorder on the set of open automata.
 
 - composition is a refinement (under which condition?)
 
