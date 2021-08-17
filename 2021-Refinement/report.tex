@@ -180,7 +180,7 @@ We suppose that the interpretation of terms is compatible w.r.t.\@ substitution,
 \end{noti}
 With these common definitions and notations settled, the objects of interest can now be defined.
 \begin{defi}[Open automaton]
-An open automaton is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions.
+An open automaton is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the set of variable names unique to this automaton, \(\sigma_0: V \to \values\) the initial valuation of variables, \(J\) the set of hole names and \(T\) the set of open transitions.
 A pair of a state and a valuation is called a configuration.
 
 \(S, V, J\) are arbitrary finite sets. % OR finite arbitrary sets?
@@ -188,10 +188,10 @@ A pair of a state and a valuation is called a configuration.
 The variable names may clash when considering two automata, in this case we suppose that we can still distinguish the variables in the formulas.
 In practice the open automata are used in a toolchain that guarantees there are no name clash.
 
-The initial valuation is a partial valuation of the variables.
-If an undefined variable is set before being read, it behaves like an initially set variable.
-If an undefined variable is not set before being read then its value may be any fixed value.
-When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
+The initial valuation is a valuation of the automaton variables.
+We could have defined it as a partial valuation in order to allow some variable to be parameters of the automaton and to allow not defining some variables never read before being set.
+However the first is unnecessary because it is already possible by having a variable set once in the first transition by an unbound and unconstrained variable in a transition as we will see after the next definition.
+And for the second point we could also define such a variable to any value.
 \begin{defi}[Open transition, Instanciated transition]
 An open transition is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
 An open transition can have many unbound variables.
@@ -200,10 +200,11 @@ An instanciated transition of the automaton is transition produced by any well-f
 \end{defi}
 The intuition of an open automaton is a partially defined LTS with variables, guards on transitions, and parametrised actions.
 The LTS is partial in the sense that one can plug an LTS in the hole and the surrounding LTS will react to the actions emitted by the sub-LTS put in the hole.
-Initially the automaton is in the initial state with an extension on all the variables of the initial valuation.
+Initially the automaton is in the initial state with the initial valuation.
 In any configuration, it can perform instanciated transitions which source state is the current state and which guard is satisfiable in the current valuation if the holes emit the indicated actions.
 An instanciated transition is a transition where every variable that is not an automaton variable is instantiated with a value.
 By performing the instanciated transition, the automaton emits the indicated action and updates its configuration according to the target state and variable assignments.
+To illustrate how a variable can be used as a parameter we could imagine how to represent a \(n\)-bit buffer: \(n \in V\) is initially set to any value in the initial valuation, then the first transition, taken only once, could have guard \(\top\) (always true) and variable assignement \(\mbrc{n \gets k}\) with \(k \notin V\) an unbound variable.
 \begin{noti}[FH-bisimulation]
 The FH-bisimulation \cite{henrio:01055091} is noted \(\cong\).
 
@@ -220,7 +221,7 @@ As standard automata, circles represent states and simple arrows represent trans
 The initial state is indicated by a double circle.
 States names are indicated inside the circles and transitions labels are drawn near their corresponding arrow.
 The open transitions do not indicate the source and target states since that is the role of the transitions arrows; only the emitted action is on the bottom side of open transitions.
-Initial valuations are indicated near a double lined arrow pointing to the initial state.
+Relevant initial variable values are indicated near a double lined arrow pointing to the initial state.
 \begin{figure}
 \centering
 \input{enable_state.tex}
@@ -448,7 +449,7 @@ Correctness w.r.t.\@ composition means that every composition is considered a re
 This property captures the expected behaviour of a refinement relation on a compositional structure like the open automata.
 Completeness w.r.t.\@ composition means that a refinement corresponds to the left automaton being equivalent to some composition of the right automaton.
 This property is useful if we want to characterise the kind of operations that can generate any refined automaton starting from the specification.
-We won't have it because extending the definition domain of the initial valuation will be a refinement which can't be expressed with composition.
+We won't have it because some operation impossible with composition, like merging states, can applied to open automata and give FH-bisimilar ones and FH-bisimulation compatibility is a much more important property.
 Yet a ``completeness w.r.t.\@ some set of operations" is still a strong and interesting property.
 Context refinement is the refinement being compatible with composition of the same automaton.
 Congruence is the refinement being compatible with being composed in the same automaton.
@@ -699,7 +700,8 @@ Composing this modified counter gives the automaton on the right of Figure \ref{
 
 We should successfully characterise the second composition as non-locking but fail for the first.
 \begin{itemize}
-\item In the state \(0S\) any valuation is reachable (no initial valuation).
+\item In the state \(0S\), the initial valuation and valuations with \(0 \leq c = t\) are reachable for both automata.
+	On top of that, every valuations where \(c \geq t\) are reachable in the right automaton.
 	In both automata the transition \nmm{\OT{0S}{1S}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
 \item In the state \(0C\), for the left automaton, valuations where \(t \geq c \geq 0 \vee \mpar{t < 0 \wedge c = 0}\) are reachable; for the right automaton, valuations where \(c \geq 0\) are reachable.
 	For all these valuations the transition \nmm{\OT{0C}{1C}{\tau}{\mbrc{}}{\top}{\mbrc{}}} has a true guard, hence the first branch of the disjunction holds.
@@ -778,7 +780,7 @@ Instead of matching an instanciated transition to another instanciated transitio
 The second part is directly the deadlock reduction requirement.
 
 The hole-equal simulation is applicable when the related automata have the same holes.
-It is designed to capture all the refinements other than composition: Duplicating and merging states and transitions, changing variables, removing transitions, adding requirements to guards, specifying more initial variables, and many more.
+It is designed to capture all the refinements other than composition: Duplicating and merging states and transitions, changing variables, removing transitions, adding requirements to guards, and many more.
 
 The hole-subset simulation is applicable when the simulated automaton has less holes.
 It is designed to have composition correctness when the composed automata have no holes.
