@@ -3,6 +3,7 @@
 
 \documentclass{lmcs}
 %\overfullrule=1mm
+\usepackage[multiple]{footmisc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 %\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
@@ -99,7 +100,7 @@
 Establishing equivalences between programs or system is crucial both for verifying correctness of programs, by establishing that two implementations are equivalent, and for justifying optimisations and program transformations, by establishing that a modified program is equivalent to the source one. There exist several equivalence relations for programs, and bisimulations are among the most versatile of these equivalences. Among bisimulation relations one distinguishes strong bisimulation, that requires that each action of a program is simulated by a single action of the equivalent program, a weak bisimulation that  is a coarser relations, allowing some of the actions to be
   invisible or internal moves, and thus not simulated by the equivalent program.
 
-pNets is a generalisation of automata that includes parameters, and hierarchical composition. Open pNets are pNets with holes, i.e. placeholders inside the hierarchical structure  that can be filled by sub-systems. Reasoning on open pNets allows us to reason on open systems.
+pNets is a generalisation of automata that includes variables and hierarchical composition. Open pNets are pNets with holes, i.e. placeholders inside the hierarchical structure  that can be filled by sub-systems. Reasoning on open pNets allows us to reason on open systems.
   Open pNets have a notion of \emph{synchronised actions}
   generalizing the usual internal actions (e.g. $\tau$ of CCS, or $i$
   in Lotos).
@@ -304,7 +305,7 @@ We let $e_i$ range over expressions ($e_i\in\AlgE$), $a$
 range over action labels, $\symb{op}$ be operators, and $x_i$ and $y_i$ range over
 variable names. 
 
-We distinguish two kinds of parameterised actions: one that distinguishes input variables and one that does not. 
+We define two kinds of parameterised actions. The first kind distinguishes input variables and the second kind does not. 
 We first define the set of actions that distinguish input variables, they will be used in the definition of \pLTS\ below:
 \[
 \begin{array}[l]{rcl@{\quad}p{7.5cm}}
@@ -315,13 +316,13 @@ We first define the set of actions that distinguish input variables, they will b
 \]
 The \emph{input variables} in an action term are those marked with a
 $\symb{?}$.
-We additionally suppose that each input variable does not
+We additionally impose that each input variable does not
 appear somewhere else in the same action term:
 $p_i=?x\Rightarrow\forall j\neq i.\, x\notin \vars(p_j)$.
 We define $iv(t)$  as the set of input variables of a term $t$ (without the '?' marker).
 Action algebras can encode naturally usual point-to-point message passing calculi (using 
 $a(?x_1,...,?x_n)$ for inputs, $a(v_1,..,v_n)$ for outputs), but it also allows
-for more general synchronisation mechanisms, like gate negociation in Lotos, or broadcast
+for more general synchronisation mechanisms, like gate negotiation in Lotos, or broadcast
 communications. 
 
 The set of actions that do not distinguish input variables is denoted $\AlgAS$, it will be used in synchronisation vectors of pNets:
@@ -360,7 +361,7 @@ only a few entries we use the notation $(3\mapsto t)$ instead.
 %it 
 %now corresponds to $a$. 
 
-When this is not ambiguous, we shall use abusive vocabulary and
+When this is not ambiguous, we shall use abusive notations and
 notations for sets, and typically write ``indexed set over I'' when  
 formally we should speak of multisets, and ``$x\in
 A_i^{i\in I}$'' to mean $\exists i\in I.\, x=A_i$.
@@ -368,7 +369,7 @@ A_i^{i\in I}$'' to mean $\exists i\in I.\, x=A_i$.
 To simplify equations, an indexed set can be denoted $\set{t}$
 instead of $t_i^{i\in I}$ when $I$ is irrelevant.
 
-$\uplus$ is the disjoint union on sets. We extend it to  disjoint union  of indexed 
+The disjoint union on sets is $\uplus$. We extend it to  disjoint union  of indexed 
 sets defined by the merge of the 
 two sets provided they are indexed on disjoint families.
 The elements
@@ -414,12 +415,14 @@ $\setminus$ is the standard subtraction operation on indexed sets: $\dom(A\setmi
 \subsubsection*{Substitutions}
 \label{def:substitutions}
 
-We denote $y\gets e$ a substitution. The application of the substitution is denoted
+
+
+We denote $y\gets e$ a substitution~. The application of the substitution is denoted
 $\subst{y\gets e}$, the operation replaces in a term all occurrences 
 of the variable $y$ by the expression $e$. 
 $\Post$ ranges over (indexed) sets of substitutions; $\subst{\Post}$ is the substitution that applies all the substitutions defined by $\Post$ in a parallel manner. $\otimes$ is the composition operator on substitutions, such that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post'})\subst{\Post}$.
 
-For this property to be valid even if the substitution does not operate on all variables,
+For this property to be valid when the substitution does not operate on all variables,
 we define the composition operation as follows: 
 %\TODO{version d eric reprise et corrigee}
 %$(x_k\gets e_k)^{k\in K}\shortotimes \Post =  (x_k\gets e_k\subst{\Post})^{k\in K}$
@@ -561,20 +564,20 @@ input variables and we remove the
 \emph{input marker} (?) of variables.
 \[
 \begin{array}{l}
-\Sortop(\mylangle S,s_0,V, \to\myrangle) = \{\alpha\subst{?x \gets x| 
-x\in\symb{iv}(\alpha)}|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
+\Sortop(\mylangle S,s_0,V, \to\myrangle) = \{\Sortop(\alpha)|s \xrightarrow{\langle \alpha,~e_b,~(x_j\!:= {e}_j)^{j\in
     J}\rangle} s'\in \to \} \\
 \Sortop(\mylangle \set{\pNet}\!, %\pNet_i^{i\in I}, 
 \set{\Sort},
 \set{\symb{SV}\,}\myrangle)
-=\{\alpha' |\, \SV{\set{\alpha}}{\alpha'}{e_b}\in\set{\symb{SV}}\,\}
+=\{\Sortop(\alpha') |\, \SV{\set{\alpha}}{\alpha'}{e_b}\in\set{\symb{SV}}\,\}\\
+\Sortop(\alpha(p_1,..,p_n))=(\alpha,n)
 \end{array}
 \]
 
 \item The set of variables of a pNet $P$, denoted $vars(P)$ is disjoint union the set of variables of  all pLTSs that compose $P$.
 
 \item
-The set of holes $\Holes(\pNet)$ of a pNet is the indexes of the holes of the pNet 
+The set of holes $\Holes(\pNet)$ of a pNet is the indices of the holes of the pNet 
 itself plus the indexes of all the holes of its sub-pNets.
 It is defined inductively (we suppose those indexes 
 disjoints):
@@ -586,6 +589,7 @@ I}\Holes(\pNet_i)}\\
 \forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
 \forall i_1,i_2\in I.\,i_1\neq i_2\Rightarrow  \Holes(\pNet_{i_1})\cap\Holes(\pNet_{i_2})=\emptyset
 \end{array}\]
+
 \item
 The set of leaves of a pNet is the set of all pLTSs occurring in the structure, as an 
 indexed family of the form $\Leaves(\pNet)= \mylangle \pNet_i \myrangle^{i \in L}$.
@@ -599,19 +603,21 @@ I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i \text{ is a }\pLTS\}}
 
 A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
 is said to be \emph{open}.
+Sort come naturally with a compatibility relation that is similar tp a type-compatibility check. We simply say that two sorts are compatible ifthey consist of the same actions with the same arity. In practice, it is sufficient to check the equality of the two sets of pairs $(\alpha,n)$ of the two sorts.
 \end{definition}
   
 The informal semantics of pNets is as follows. pLTSs behave more or less like  classical automata with conditional branching and variables. The actions on the \pLTS s can send or receive values, potentially modifying the value of variables. 
-pNets are synchronisation entities: a pNet composes several sub-pNets and  synchronisation vectors define how the sub-pNets interact, where a sub-pNet is either a pNet or a pLTS. Synchronisation between sub-pNets is defined by synchronisation vectors that express how an action of a sub-pNet can be synchronised with actions of other sub-pNet, and how the resulting synchronised action is visible to the outside of the pNet. Synchronisation vectors can also express the exportation of an action of a sub-pNet to the next level, or to hide an interaction and make it non-observable. Finally, a pNet can leave sub-pNets undefined and instead declare holes with a well-defined signature. Holes can then be filled with a sub-pNet. This is defined as follows.
+pNets are synchronisation entities: a pNet composes several sub-pNets and  synchronisation vectors define how the sub-pNets interact, where a sub-pNet is either a pNet or a pLTS. Synchronisation between sub-pNets is defined by synchronisation vectors that express how an action of a sub-pNet can be synchronised with actions of other sub-pNet, and how the resulting synchronised action is visible to the outside of the pNet. 
+Consider for example a pNet that assembles several pLTSs, the synchronisation vectors express transitions of the composing pNet: each vector expresses not only the actions emitted by the pNet but also what transitions of the composed pLTSs must occur to trigger this global transition.
+Synchronisation vectors can also express the exportation of an action of a sub-pNet to the next level, or to hide an interaction and make it non-observable. Finally, a pNet can leave sub-pNets undefined and instead declare holes with a well-defined signature. Holes can then be filled with a sub-pNet. This is defined as follows.
 
 
 
 \begin{definition}[pNet composition]
 	An open pNet: $\pNet = \mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, 
 	\set{\symb{SV}}\,\myrangle$
- can be (partially) filled by providing  a pNet $\pNetQ$ of the
-	right sort to fill one of  its holes.	
-	Suppose $j_0\in J$:
+ can be (partially) filled by providing  a pNet $\pNetQ$ to fill one of  its holes.	
+	Suppose $j_0\in J$ and $\Sortop(\pNetQ)$ and $\Sort_{j_0}$ are compatible:
 	%% \[\mylangle \pNet_i^{i\in I},S_j^{j\in J}, \symb{SV}_k^{k\in
 	%%   K}\myrangle\left[(\pNet'_i)^{i\in L}\right]= \mylangle \pNet_i^{i\in
 	%%   I}\left[(\pNet'_i)^{i\in L}\right]\uplus(\pNet'_i)^{i\in J\cap L},S_j^{j\in 
@@ -684,27 +690,25 @@ set of state modifications. This section defines open automata and a bisimulatio
 	{s \OTarrow {\alpha}s'}
 	\end{mathpar}
 	Where $J'\subseteq J$ is the set of holes involved in the transition; $s, s'\in\mathcal{S}$ are states of the automaton; and $\beta_j$
-        is a transition of the hole $j$, with $\beta_j\in\Sort_j$. $\alpha$ is an action 
+        is a transition of the hole $j$, with $\Sortop(\beta_j)\in\Sort_j$. $\alpha$ is an action 
         label denoting the resulting action of this open transition.
 %        We call \emph{source variables} of an OT the union of all variables
 %        in the different terms
 %        $\beta_j$ and $\alpha$, and the state variables of $s$.
-        \Pred\ is a predicate over the  variables in $V$ and all variables
-        in the different terms
-       $\beta_j$ and $\alpha$. \Post\ is a set of 
-	assignments that are effective after the open transition, they are
+        \Pred\ is a predicate over the  variables in $V\cup\vars(\alpha)\cup
+			{\displaystyle \bigcup_{j\in J'}\vars(beta_j)}$. \Post\ is a set of 
+	assignments (i.e., indexed substitutions) that are effective after the open transition, they are
         represented as a substitution of the form $({x_k\gets e_k})^{k\in K}$ 
 	where $\forall k.\, x_k\in V$, and $e_k$ are expressions
-        over the variables $V$ and all variables
-        in the different terms
-       $\beta_j$ and $\alpha$. The assignments are always applied simultaneously because the variables in $V$ can be in both sides. Open transitions are identified
+        over the variables variables in $V\cup\vars(\alpha)\cup
+			{\displaystyle \bigcup_{j\in J'}\vars(beta_j)}$. The assignments are always applied simultaneously because the variables in $V$ can be in both sides. Open transitions are identified
         modulo logical equivalence on their predicate. 
 \end{definition}
 
 It is important to understand the difference between the red dotted rule and a normal 
 inference rule. They correspond to two different logical levels.
-On one side, classical (black) inference rules  use  an expressive logic and are paper rules.
- On the other side, open transition rules (with dotted lines) are logical implications, but using a simple logic (this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality).
+On one side, classical (black) inference rules  use  an expressive logic (like any other computer science article).
+ On the other side, open transition rules (with dotted lines) are logical implications, but using a  logic with a specific syntax and that can be mechanized (this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality).
 %  Open transitions could typically be handled in a 
 % mechanised way.
 
@@ -727,11 +731,11 @@ An open automaton is  an automaton where each transition is an open transition.
 		and  $\mathcal{S}$.
 		
 	\end{itemize}
-		
-We take in this article a semantics and logical understanding of these
-automata. Open automata are closed by a simple form of refinement that
+
+While the definition and usage of the open transition can be formalised and taken in a pure syntactic acceptation, we take in this article a semantics and logical understanding of open automata. 
+Formally, open automata are closed by a simple form of refinement that
 allows us to refine the predicate, or substitute any free variable by
-an expression. More formally:
+an expression as expressed below.
 
 For all predicate $\Pred$, for all substitution $\Post$ such that $V\cap \dom(\Post)=\emptyset$. We have: 
 		 \begin{mathpar}
@@ -751,10 +755,10 @@ For all predicate $\Pred$, for all substitution $\Post$ such that $V\cap \dom(\P
 %\LUDO{I added this paragraph}
 Because of the semantic interpretation of open automata, the set of open transition of an open automaton is infinite (for example because every free variable can be renamed). However an open automaton is characterized by a  subset of these open transition which is sufficient to generate, by substitution the other ones. In the following, we will abusively write that we define an ``open automaton'' when we provide only the set of open transitions that is sufficient to generate a proper open automaton by saturating each open transition by all possible substitutions and refinements.
 
-Another consequence of the semantics and logical interpretation of the
+Another aspect of the logical interpretation of the
 formulas is that we make no distinction between the equality and the
 equivalence on boolean formulas, i.e. equivalence of two predicates
-$\Pred$ and $\Pred\,'$ can be denoted $\Pred=\Pred\,'$. 
+$\Pred$ and $\Pred\,'$ can be denoted $\Pred=\Pred\,'$. $=$ is not interpreted in a syntactical way.
 
 	
 Though the definition is simple, the fact that transitions are complex structures relating events must not be underestimated in order to understand the rest of the article. The first element of theory for open automata, i.e. the definition of a strong bisimulation, is given below.
@@ -772,7 +776,7 @@ with different architectures.
 
 
 
-We define now a bisimulation relation adapted to open automata and their parametric nature. The relation relates states of the open automaton and states equivalence between the open transitions between the states. Its key characteristics are 1) the introduction of predicates in the bisimulation relation: as states may contain variables, relation between states may depend on the value of the variables; 2) the bisimulation property relates elements of the open transitions and take into account predicates over variables, actions of the holes, and state modifications.
+We define now a bisimulation relation adapted to open automata and their parametric nature. This relation relates states of the open automaton and states equivalence between the open transitions between the states. Its key characteristics are 1) the introduction of predicates in the bisimulation relation: as states may contain variables, relation between states may depend on the value of the variables; 2) the bisimulation property relates elements of the open transitions and takes into account predicates over variables, actions of the holes, and state modifications.
  We name it FH-bisimulation,
  as a short cut for the ``Formal Hypotheses'' over the holes behaviour manipulated in the
  transitions, but also as a reference to the work of De Simone~\cite{deSimone85},
@@ -780,14 +784,13 @@ We define now a bisimulation relation adapted to open automata and their paramet
 
 
 A relation over the states of two open automata  $\mylangle J,\mathcal{S}_1, s_0,V_1,
-   \mathcal{T}_1 \myrangle$ and $\mylangle !J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the form $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$, it relates states of $\mathcal{S}_1$ and 
+   \mathcal{T}_1 \myrangle$ and $\mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the form $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$, it relates states of $\mathcal{S}_1$ and 
 $\mathcal{S}_2$ constrained by a predicate.
 More precisely, for any pair $(s,t)\in \mathcal{S}_1\times \mathcal{S}_2$, there is a 
    single
       $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
       if $\Pred_{s,t}$       is 
-      True, i.e. the states are related when the variables in $V_1$ and $V_2$ verify the 
-      predicate $\Pred_{s,t}$. By nature, this is well-defined if the variables of the two open automata are disjoint, i.e.  $V_1\cap V_2=\emptyset$.
+      True, i.e. the states are related when the value of the variables in $s$ and $t$  verify the predicate $\Pred_{s,t}$. Note that this implies that the free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$. Each variable used in $\Pred_{s,t}$ should refer to a state variable of $s$ or $t$ and there must be no ambiguity on the referenced variable. Consequently, the considered relation is well-defined if the variables of the two open automata are disjoint, i.e.  $V_1\cap V_2=\emptyset$.
  FH-bisimulation is defined formally: 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
 \noindent
@@ -1130,7 +1133,7 @@ $\alpha$, $\fresh(\alpha)$ means all variables in $\alpha$ are fresh.
 	holes involved in the transition\footnote{Formally, if $SV_k \!=\! \SV{({\alpha'})_m^{m 
 	\in M}}{\alpha'}{e_b}$ is a synchronisation vector  of \pNet\  then $J=M\cap 
 	\Holes(\pNet)$, $I_2=M\cap \Leaves(\pNet)$,  $I_1=M\setminus J \setminus 
-	I_2$}.                                                                    
+	I_2$}\footnote{It is of course possible to replace $I_1$ and $I_2$ by their formal definition but the rule would be more difficult to read.}.                                                                    
 \begin{mathpar}
     \mprset {vskip=.45ex}
 \inferrule
@@ -1403,7 +1406,7 @@ composability and FH-bisimilarity.
 	inside those two original pNets, a subset of the holes by FH-bisimilar pNets, we 
 	obtain two FH-bisimilar pNets.
 \end{theorem}
-This theorem is quite powerful. It somehow implies that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016}, or to study interaction protocols~\cite{BHHM:FACS11}.
+This theorem is quite powerful. It somehow implies that the theory of open pNets is convenient to study properties of process composition. Open pNets can indeed be used to study process operators and process algebras, as shown in~\cite{henrio:Forte2016} where compositional properties are extremely useful. In the case of interaction protocols~\cite{BHHM:FACS11}, composition of bisimulation can justify abstractions used in some parts of the application.
 
 \section{Weak bisimulation}\label{sec:weak}
 
@@ -1459,7 +1462,7 @@ and
 \]
 \end{enumerate}
 \end{definition}
-The first statement of the definition states that the open automaton must allow a hole to do a silent action at any time, and must not observe it, i.e. cannot change its internal state because a hole did a $\tau$ transition. The second statement ensures that there cannot be in the open automaton other transitions that would be able to observe a $\tau$ action from a hole. The condition $J=\{j\}$ is a bit restrictive, it could safely be replaced by $\forall j\in J.\, \beta_j=\tau$, allowing the other holes to perform $\tau$ transitions too (because these $\tau$ actions cannot be observed).
+The first statement of the definition states that the open automaton must allow a hole to do a silent action at any time, and must not observe it, i.e. cannot change its internal state because a hole did a $\tau$ transition. The second statement ensures that there cannot be in the open automaton other transitions that would be able to observe a $\tau$ action from a hole: statement (2) states that all the open transitions where a hole does  a $\tau$ must be of the shape given in statement (1). The condition $J=\{j\}$ is a bit restrictive, it could safely be replaced by $\forall j\in J.\, \beta_j=\tau$, allowing the other holes to perform $\tau$ transitions too (because these $\tau$ actions cannot be observed).
 
 
 By definition, one weak open transition contains  several open transitions, where  each open transition can require an observable action from a given hole, the same hole might have to emit several observable actions for a single weak open transition to occur. 
@@ -1478,7 +1481,7 @@ As an example the $\vis{\set\beta}$ built from the transition $OT_1$ in Example~
 \subsection{Weak open transition definition}
 
 Because of the non-observability property (Definition~\ref{def:Non-ObsTau}), it is possible to add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away $\tau$ transitions from holes in the definition of a weak open transition.
-
+We define weak open transitions similarly to open transitions except that holes can perform \emph{sequences of observable actions} instead of single actions (observable or not).
 
 
 %
@@ -1768,7 +1771,7 @@ $\mathcal{S}_1$ and $\mathcal{S}_2$, as in Definition~\ref{def-FH-bisim}.
 Then 
    $\mathcal{R}$ is a weak FH-bisimulation iff for any  states
 $s\in\mathcal{S}_1$ and
-$t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we 
+$t\in\mathcal{S}_2$ such that $(s,t|\Pred_{s,t})\in\mathcal{R}$, we 
    have the following:
 
 
@@ -1791,7 +1794,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred)\in\mathcal{R}$, we
 \end{mathpar}
  such that  $\forall x.\, \{j\in J'|\beta_j\neq\tau\}=J_{x}, (s',t_x|\Pred_{s',t_x})\in \mathcal{R}$; 
  and  \\
- $\Pred \land \Pred_{OT}\\
+ $\Pred_{s,t} \land \Pred_{OT}\\
 \hspace{1cm} \implies\!\!\! \displaystyle{\bigvee_{x\in X}\!
    \left( \forall j\in J_x. \vis{\beta_j}\!=\!\gamma_{jx}\! \land\! \Pred_{OT_x}
      \!\land\! \alpha\!=\!\alpha_x\! \land\!  
