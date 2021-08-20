@@ -1,4 +1,4 @@
-all: WeakBisim.pdf WeakBisim-diff.pdf
+all: WeakBisim.pdf
 GIT_LATEXDIFF=${shell if command -v git-latexdiff; then echo git-latexdiff; else echo 'git latexdiff'; fi}
 # report.pdf
 
