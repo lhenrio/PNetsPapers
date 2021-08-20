@@ -4,7 +4,6 @@ GIT_LATEXDIFF=${shell if command -v git-latexdiff; then echo git-latexdiff; else
 
 .PHONY: WeakBisim.pdf
 WeakBisim.pdf:
-	cd XFIG; make; cd ..
 	latexmk --pdf WeakBisim.tex
 
 .PHONY: WeakBisim-diff.pdf
