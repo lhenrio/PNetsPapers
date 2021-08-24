@@ -242,6 +242,9 @@ To summarise, the contribution of this paper are the following:
 \item An illustrative example based on a simple transport protocol, showing the construction of the weak open transitions, and the proof of weak bisimulation.
 \end{itemize}
 
+Bisimulation over a symbolic and open model like open pNets or open automata is  different from the classical notion of bisimulation because it cannot rely on the equality over a finite set of action labels. Classical bisimulations require to exhibit, for each transition of one system, a transition of the other system that simulates it. Instead, bisimulation for open automata  rely on the simulation of each open transition of one automaton by a set of open transitions of the other one, that should cover all the 
+cases where the original transition can be triggered.
+
 
 
 \subsubsection*{Structure}
@@ -631,7 +634,11 @@ Synchronisation vectors can also express the exportation of an action of a sub-p
 	\]
 \end{definition}
 
-pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allow the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used can be used inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. These works show that pNets are convenient to express the behaviour of the system in a compositional way, which is crucial for the definition of the semantics, especially when dealing with a hierarchical component system like GCM. Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. The semantics of closed pNets~\cite{AmeurBoulifa2017}, defined as an instantiation of labelled transition systems, is not necessary to understand this article but can be useful to  understand the semantics of pNets in a simpler and more operational setting. The theory of pNets as operators able to fully take into account open systems is given in the following sections.
+pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allow the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used can be used inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. 
+
+pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. These works show that pNets are convenient to express the behaviour of the system in a compositional way, which is crucial for the definition of the semantics, especially when dealing with a hierarchical component system like GCM. Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. The semantics of closed pNets~\cite{AmeurBoulifa2017}, defined as an instantiation of labelled transition systems, is not necessary to understand this article but can be useful to  understand the semantics of pNets in a simpler and more operational setting. The theory of pNets as operators able to fully take into account open systems is given in the following sections. Comparing formally the existing direct operational semantics and the semantics derived from open automata in the current article would be an interesting partial proof of soundness for our semantics. The proof could only be partial as the formal semantics that exist only consider closed and fuully instantiated pNets. Proving a bisimulation between the semantics presented in this article and the operational one shown in~\cite{AmeurBoulifa2017} is outside the scope of this article.
+
+
 
 \subsection{Running Example}
 To illustrate this work, we use a simple communication protocol, that provides safe transport of data between two processes, over unsafe media. 
@@ -775,8 +782,6 @@ flexible matching
 between open transitions, this will allow us to compare pNets
 with different architectures.
 
-
-
 We define now a bisimulation relation adapted to open automata and their parametric nature. This relation relates states of the open automaton and states equivalence between the open transitions between the states. Its key characteristics are 1) the introduction of predicates in the bisimulation relation: as states may contain variables, relation between states may depend on the value of the variables; 2) the bisimulation property relates elements of the open transitions and takes into account predicates over variables, actions of the holes, and state modifications.
  We name it FH-bisimulation,
  as a short cut for the ``Formal Hypotheses'' over the holes behaviour manipulated in the
@@ -784,14 +789,19 @@ We define now a bisimulation relation adapted to open automata and their paramet
  that pioneered this idea.
 
 
-A relation over the states of two open automata  $\mylangle J,\mathcal{S}_1, s_0,V_1,
-   \mathcal{T}_1 \myrangle$ and $\mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the form $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$, it relates states of $\mathcal{S}_1$ and 
-$\mathcal{S}_2$ constrained by a predicate.
-More precisely, for any pair $(s,t)\in \mathcal{S}_1\times \mathcal{S}_2$, there is a 
+One of the original aspects of FH-bisimulation is due to the symbolic nature of open automata. Indeed, a single state of the automaton represents a potentially infinite number of concrete states, depending on the value of state variables, and a single open transition of the automaton may also be instantiated with an unbounded number of value for the transition parameters. Consequently it would be too restrictive to impose that each transition of one automaton is matched by exactly one transition of the bisimilar automaton. Thus the definition of bisimulation requires that, for each open transition of one automaton, there exists a matching  set of open transitions covering the original one, indeed depending on the value of action parameters or state variables different open transitions might simulate the original one provided the reached states are bisimilar.
+
+The second original aspect is the nature of the bisimulation relation.
+ A classical relation between states can be seen as a function mapping pairs of state to a boolean value (true if the states are related, false if they are not). A FH-bisimulation relation maps pairs of states to boolean expressions that use variables of the two states.  Each variable used in $\Pred_{s,t}$ should refer to a state variable of $s$ or $t$ and there must be no ambiguity on the referenced variable, we thus require that the two compared automata have disjoint state variables.
+Formally, a relation over the states of two open automata  $\mylangle J,\mathcal{S}_1, s_0,V_1,
+   \mathcal{T}_1 \myrangle$ and $\mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the signature $\mathcal{S}_1\times\mathcal{S}_2\to\AlgB$. 
+We adopt a notation similar to standard relations and denote it
+ $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$. 
+The relation $\mathcal{R}$ must verify the following constraints: 1) For any pair $(s,t)\in \mathcal{S}_1\times \mathcal{S}_2$, there is a 
    single
       $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
       if $\Pred_{s,t}$       is 
-      True, i.e. the states are related when the value of the variables in $s$ and $t$  verify the predicate $\Pred_{s,t}$. Note that this implies that the free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$. Each variable used in $\Pred_{s,t}$ should refer to a state variable of $s$ or $t$ and there must be no ambiguity on the referenced variable. Consequently, the considered relation is well-defined if the variables of the two open automata are disjoint, i.e.  $V_1\cap V_2=\emptyset$.
+      True, i.e. the states are related when the value of the variables in $s$ and $t$  verify the predicate $\Pred_{s,t}$. 2) The free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$, i.e. $\vars(\Pred_{s,t})\subseteq V_1\cup V_2$, and the variables of the two open automata are disjoint, i.e.  $V_1\cap V_2=\emptyset$.
  FH-bisimulation is defined formally: 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
 \noindent
