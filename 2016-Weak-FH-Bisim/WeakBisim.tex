@@ -107,7 +107,7 @@ pNets is a generalisation of automata that model open systems. They feature vari
 
 This article defines bisimulation relations  for the comparison of systems specified as pNets.
  We first define a strong bisimulation for open pNets.
- \TODO{virer cette phrase, doublon du 1er paragraph?} In practice, as happens in process algebras, strong bisimulation is too strong, and
+ \TODO{virer cette phrase, doublon du 1er paragraph? LUDO: OK} In practice, as happens in process algebras, strong bisimulation is too strong, and
   we define some coarser relations, taking into account
   invisible or internal moves.
   We then define an equivalence relation similar to
@@ -693,11 +693,12 @@ Figure \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation
    \label{SimpleProt:Spec}
 \end{figure}
 
-In the following, we refer to the automaton of a specification by $\symb{Spec}$ and of an implementation by $\symb{Impl}$.
+\TODO{remove this sentence: 
+In the following, we refer to the automaton of a specification by $\symb{Spec}$ and of an implementation by $\symb{Impl}$.}
   
 \begin{figure}[t]
   \centerline{\includegraphics[width=.95\textwidth]{XFIG/SimpleProt2-pNet-tau}}
-  \caption{The $\symb{SimpleSystem}$ composed with the implementation of $\symb{SimpleProtocol}$}  \label{SimpleProt:Impl}
+  \caption{The $\symb{SimpleSystem}$ pNet composed with the implementation of $\symb{SimpleProtocol}$}  \label{SimpleProt:Impl}
 \end{figure}
 
 
@@ -726,17 +727,23 @@ set of state modifications. This section defines open automata and a bisimulatio
 	\end{mathpar}
 	Where $J'\subseteq J$ is the set of holes involved in the transition; $s, s'\in\mathcal{S}$ are states of the automaton; and $\beta_j$
         is a transition of the hole $j$, with \hl{$\Sortop(\beta_j)\in\Sort_j$. $\alpha$}  is an action 
-        label denoting the resulting action of this open transition. 
+        label denoting the resulting action of this open transition.
 %        We call \emph{source variables} of an OT the union of all variables
 %        in the different terms
 %        $\beta_j$ and $\alpha$, and the state variables of $s$.
-        \Pred\ is a predicate over the  variables in $V\cup\vars(\alpha)\cup
-			{\displaystyle \bigcup_{j\in J'}\vars(\beta_j)}$. \Post\ is a set of 
+        \Pred\ is a predicate, \Post\ is a set of 
 	assignments that are effective after the open transition, they are
-        represented as a substitution function: $({x_k\gets e_k})^{k\in K}$ 
-	where $\forall k.\, x_k\in V$, and $e_k$ are expressions
-        over the variables variables in $V\cup\vars(\alpha)\cup
-			{\displaystyle \bigcup_{j\in J'}\vars(\beta_j)}$. The assignments are always applied simultaneously because the variables in $V$ can be in both sides ($x_k$s are distinct). Open transitions are identified
+        represented as a substitution function: $({x_k\gets e_k})^{k\in K}$.
+Predicates and expressions of an open transition can refer to the variables in $V$, and
+        in the different terms
+        $\beta_j$ and $\alpha$. More precisely:
+\[ \vars(\Pred) \subseteq V\cup\vars(\alpha)\cup
+			{\displaystyle \bigcup_{j\in J'}\!\!\vars(\beta_j)}\quad\land\quad
+\forall k.\, x_k\in V \land \vars(e_k)\subseteq V\cup\vars(\alpha)\cup
+			{\displaystyle \bigcup_{j\in J'}\!\!\vars(\beta_j)}\]
+The assignments are always applied simultaneously because the variables in $V$ can be in both sides ($x_k$s are distinct).
+
+ Open transitions are identified
         modulo logical equivalence on their predicate. 
 \end{definition}
 
@@ -816,26 +823,27 @@ We define now a bisimulation relation tailored to open automata and their parame
  that pioneered this idea.
 
 
-One of the original aspects of FH-bisimulation is due to the symbolic nature of open automata. Indeed, a single state of the automaton represents a potentially infinite number of concrete states, depending on the value of the automaton variables, and a single open transition of the automaton may also be instantiated with an unbounded number of values for the transition parameters. Consequently it would be too restrictive to impose that each transition of one automaton is matched by exactly one transition of the bisimilar automaton. Thus the definition of bisimulation requires that, for each open transition of one automaton, there exists a matching  set of open transitions covering the original one, indeed depending on the value of action parameters or automaton variables different open transitions might simulate the original one provided the reached states are bisimilar.
+One of the original aspects of FH-bisimulation is due to the symbolic nature of open automata. Indeed, a single state of the automaton represents a potentially infinite number of concrete states, depending on the value of the automaton variables, and a single open transition of the automaton may also be instantiated with an unbounded number of values for the transition parameters. Consequently it would be too restrictive to impose that each transition of one automaton is matched by exactly one transition of the bisimilar automaton. Thus the definition of bisimulation requires that, for each open transition of one automaton, there exists a matching  set of open transitions covering the original one, indeed depending on the value of action parameters or automaton variables, different open transitions might simulate the same one.
 
-The second original aspect is the nature of the bisimulation relation.
+The parametric nature of the automata entails a second original aspect of FH-bisimulation : the nature of the bisimulation relation itself.
  A classical relation between states can be seen as a function mapping pairs of state to a boolean value (true if the states are related, false if they are not). A FH-bisimulation relation maps pairs of states to boolean expressions that use variables of the two systems.  %Each variable used in $\Pred_{s,t}$ should refer to a state variable of $s$ or $t$ and there must be no ambiguity on the referenced variable, we thus require that the two compared automata have disjoint state variables.
 Formally, a relation over the states of two open automata  $\mylangle J,\mathcal{S}_1, s_0,V_1,
    \mathcal{T}_1 \myrangle$ and $\mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the signature $\mathcal{S}_1\times\mathcal{S}_2\to\AlgB$. 
+We suppose without loss of generality that the variables of the two open automata are disjoint.
 We adopt a notation similar to standard relations and denote it
  $\mathcal{R}=\{(s,t|\Pred_{s,t})\}$, where: 1) For any pair $(s,t)\in \mathcal{S}_1\times \mathcal{S}_2$, there is a 
    single
       $(s,t|\Pred_{s,t})\in\mathcal{R}$  stating that $s$ and $t$ are related 
       if $\Pred_{s,t}$       is 
       True, i.e. the states are related when the value of the automata variables% in $s$ and $t$
-  verify the predicate $\Pred_{s,t}$. 2) The free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$, i.e. $\vars(\Pred_{s,t})\subseteq V_1\cup V_2$, and the variables of the two open automata are disjoint, i.e.  $V_1\cap V_2=\emptyset$.
+  verify the predicate $\Pred_{s,t}$. 2) The free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$, i.e. $\vars(\Pred_{s,t})\subseteq V_1\cup V_2$.
  FH-bisimulation is defined formally: 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
 \noindent
 \begin{minipage}{0.67\linewidth} 	Suppose 
    $A_1 = \mylangle J,\mathcal{S}_1, s_0,V_1,
    \mathcal{T}_1 \myrangle$ and $A_2 = \mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$
-   are open automata with identical holes of the same sort, with disjoint sets of variables.  
+   are open automata with identical holes of the same sort, with disjoint sets of variables ($V_1\cap V_2=\emptyset$).  
 
  Then 
 $\mathcal{R}$ is an FH-bisimulation if and only if for any  states
@@ -943,7 +951,7 @@ the definition).
 
 
 \subsubsection*{Finite versus infinite open automata, and decidability:} 
-As mentioned in Definition \pageref{def:open-automaton}, we adopt here a semantic view on open automata. More precisely, in \cite{hou:hal-02406098}, we formerly define
+As mentioned in Definition \pageref{def:open-automaton}, we adopt here a semantic view on open automata. More precisely, in \cite{hou:hal-02406098}, we  define
 \emph{semantic open automata} (infinite as in Definition \ref{def:open-automaton}),
 and \emph{structural open automata} (finite) that can be generated as
 the semantics of pNets (see Definition \ref{def:operationalSemantics}), and used in the implementation. Then we define
@@ -1077,8 +1085,8 @@ with the $\symb{Sender}$ within the \emph{SimpleProtocol}) is:
     \]
 
     \smallskip
-    The global states here are triples, build as the product of states of the 3 pLTSs (remember the holes have no state). The assignment
-    $Post$ uses the variable $\texttt{m}$ from the action of hole $\texttt{P}$ to set the
+    The global states here are triples, the product of states of the 3 pLTSs (holes have no state). The assignment
+    performed by the open transition uses the variable $\texttt{m}$ from the action of hole $\texttt{P}$ to set the
     value of the sender variable named $\texttt{s\_msg}$.
     
 
@@ -1234,11 +1242,8 @@ Note that  the construction is symbolic, and each open transition deduced expres
 behaviours, for any possible value of the variables.
 %
 
-In \cite{henrio:Forte2016}, we have also shown a detailed example of the construction of a complex open transition, building a deduction tree using rules \TrUn ~and \TrDeux.
-
-
-
-We have shown in \cite{henrio:Forte2016} that an open pNet
+In \cite{henrio:Forte2016}, we have  shown a detailed example of the construction of a complex open transition, building a deduction tree using rules \TrUn ~and \TrDeux.
+We have also shown in \cite{henrio:Forte2016} that an open pNet
 with finite synchronisation sets, finitely many leaves and
 holes, and each pLTS at leaves having a finite number of states and
 (symbolic) transitions, has a finite automaton. The algorithm for building such an automaton can be found in~\cite{QBMZ-AVOCS18}.
@@ -1282,11 +1287,11 @@ holes, and each pLTS at leaves having a finite number of states and
    \label{SimpleProtCounter:SpecOA}
 \end{figure}
 
-
-\subsection*{Example}  Figure~\ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the specification pNet given in Figure \ref{SimpleProt:Spec}. 
+\TODO{Nommer proprement chaque pnet pour pouvoir s'y referencer}
+\subsection*{Example}  Figure~\ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the specification pNet \TODO{SimpleSystem?} given in Figure \ref{SimpleProt:Spec}. 
 For later references, we give to the transitions of this (strong)
 specification automaton as $SS_i$ while transitions of the
-implementation automaton will be labelled $SI_i$. In the figure we
+implementation automaton \TODO{name} will be labelled $SI_i$. In the figure \TODO{number or figures?} we
 have annotated each global state with the set of corresponding pLTS variables.
 
 
@@ -1296,7 +1301,7 @@ have annotated each global state with the set of corresponding pLTS variables.
 \end{figure}
 
 
-    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the implementation $SimpleSystem$ (Figure \ref{SimpleProt:Impl}). In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{SI}_i$ and tau open transition by  $\texttt{SI}_{\tau}$. The resulting behaviour is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive pLTS variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions ($\texttt{SI}_4$, $\texttt{SI}_5$ and $\texttt{SI}_6$)  showing the handling of errors and corresponding increments of the error counter.
+    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the \TODO{implementation} $SimpleSystem$ (Figure \ref{SimpleProt:Impl}). In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{SI}_i$ and tau open transition by  $\texttt{SI}_{\tau}$. The resulting behaviour is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive pLTS variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions ($\texttt{SI}_4$, $\texttt{SI}_5$ and $\texttt{SI}_6$)  showing the handling of errors and corresponding increments of the error counter.
     
     
   
@@ -1653,7 +1658,7 @@ Rule $\WTUn$ states that it is always possible to do a non-observable transition
 \end{figure}
 
 \begin{example} [A weak open-transition]
-Figure \ref{WOT2} shows the construction of one of the weak transitions of the Specification OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+Figure \ref{WOT2} shows the construction of one of the weak transitions of the \TODO{Specification} OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
          {\{\}, True,
 			(\texttt{b\_ec}\gets \texttt{b\_ec}+1) }
          {\texttt{b1}\OTWeakarrow \tau \texttt{b1}}$; $\openrule
@@ -1679,7 +1684,7 @@ Figure \ref{WOT2} shows the construction of one of the weak transitions of the S
 
 
   \begin{example}[Weak open automata]
-    Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplWOA2} respectively show the weak automata of the simple protocol specification and implementation. We encode weak open transitions  by $WS$ on the specification model and by $WI$ on the implementation model.
+    Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplWOA2} respectively show the weak automata of the \TODO{simple protocol specification} and \TODO{implementation}. We encode weak open transitions  by $WS$ on the specification model and by $WI$ on the implementation model.
     
 
 
@@ -1690,7 +1695,7 @@ Figure \ref{WOT2} shows the construction of one of the weak transitions of the S
    \label{SimpleProtCounter:WeakSpecOA}
 \end{figure}
 
- For readability, we do not include the full details of the Implementation weak open transitions in Figure \ref{SimpleProtCounter:ImplWOA2}, but we show some examples below and the full list is included in Appendix \ref{Appendix:FullExample}.
+ For readability, we do not include the full details of the \TODO{Implementation} weak open transitions in Figure \ref{SimpleProtCounter:ImplWOA2}, but we show some examples below and the full list is included in Appendix \ref{Appendix:FullExample}.
 First, let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state ${000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3a, 3b, 3c and 8, 8a, 8b, 8c respectively: they only differ by their respective source or target states; the "variant" WOTs appear in blue in   Figure \ref{SimpleProtCounter:ImplWOA2}.
 \end{example}
 
@@ -1708,7 +1713,7 @@ First, let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on s
    \label{SimpleProtCounter:ImplWOA2}
 \end{figure}
 
-Now let us give some details about the construction of the weak automaton of the implementation pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (as a substitution function) of the strong open transitions $SI_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
+Now let us give some details about the construction of the weak automaton of the \TODO{implementation} pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (as a substitution function) of the strong open transitions $SI_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
 \smallskip
 
 $post_3 = (\texttt{s\_msg}\gets \texttt{m}, \texttt{s\_ec}\gets 0)$
@@ -1971,7 +1976,7 @@ composability and weak FH-bisimilarity.
 
 \subsubsection*{Running example}
 \label{subsubsection:runnig example}
-In Section~\ref{sec:weak} we have shown the full satured weak automaton for both the specification and the implementation of the simple protocol. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
+In Section~\ref{sec:weak} we have shown the full saturated weak automaton for both the \TODO{specification} and the \TODO{implementation} of the simple protocol. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
 
 \medskip
 \noindent
@@ -1989,7 +1994,7 @@ Preliminary remarks:
 
   \begin{tabular}{|c|c|l|}
 \hline
-    Spec state & Impl state & Predicate\\
+    \TODO{Spec} state & \TODO{Impl} state & Predicate\\
     \hline
     b0 & $000$ & True\\
     b0 & $202$ & True\\
@@ -2106,9 +2111,10 @@ The semantics of open pNets relies on the definition of open automata that are a
 
 This article defines a strong and a weak bisimulation relation that are adapted to parameterised systems and hierarchical composition. Our bisimulation principle handles pNet parameters in the sense that two states might be or not in relation depending on the value of parameters. Our strong  bisimulation is compositional by nature in the sense that bisimulation is maintained when composing processes. We also identified a simple and realistic condition on the semantics of non-observable actions that allows weak bisimulation to be also compositional. Overall we believe that this article paved the way for a solid theoretical foundation for compositional verification of parallel and distributed systems.
 
-\TODO{relire}
-pNets have through composition  the ability both to add new holes to a system and to fill holes, obtaining a system with less holes. They support the refinement checking at the automata level through a simulation approach, with symbolic evaluation of
-the guards and transitions. The definition of simulation on open automata should be  stronger than a strict simulation since it matches a transition with a family of transitions. Such a relation should be able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions, reinforcing guards, modifying variables. But it also should  support the  comparison of automata that do not have the same number of holes. 
+pNets support the refinement checking at the automata level through a simulation approach, with symbolic evaluation of
+the guards and transitions. 
+ The definition of simulation on open automata should be  stronger than a strict simulation since it matches a transition with a family of transitions. Such a relation should be able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions, reinforcing guards, modifying variables. Additionally, composition of 
+pNets gives the possibility to either add new holes to a system or  fill holes. A useful simulation relation  should thus support the  comparison of automata that do not have the same number of holes. Designing such a simulation relation is a non-trivial extension of this work that we are investigating.
 
 We are currently extending this work,  looking at further properties of FH-bisimulation, but also
 the relations with existing equivalences on both closed and open systems. In particular, our model being significantly different from those considered in \cite{IngolfsdottirL:2001}, it
@@ -5526,8 +5532,8 @@ We conclude by observing that $\Post_Q$ has no effect on variables of $P$ and $P
 %%   \caption{Composed pNet with the Simple Protocol Implementation}  \label{App:SimpleProt:Impl}
 %% \end{figure}
 
-The first piece of code is the textual definition of the SimpleSystemSpec
-pNet (named SimpleProtSpec2 in the code here), that was drawn in Figure \ref{SimpleProt:Impl}, page \pageref{SimpleProt:Impl}. This code should be intuitive enough to read, with the following
+The first piece of code is the textual definition of the \TODO{SimpleSystemSpec}
+pNet (named \TODO{SimpleProtSpec2} in the code here), that was drawn in Figure \ref{SimpleProt:Impl}, page \pageref{SimpleProt:Impl}. This code should be intuitive enough to read, with the following
 language conventions, that brings some user-friendly features, mapped by the editor into pure pNet constructs.
 
 \begin{itemize}
@@ -5591,7 +5597,7 @@ vector SV3 <_,_,q_b>->q_a [q_b != q_recv(x,y)]
 The corresponding generated Open Automaton was given in Figure \ref{SimpleProtCounter:SpecOA},
 page \pageref{SimpleProtCounter:SpecOA}.\\
 
-Next is the code for the SimpleSystem implementation pNet (named SimpleProtImpl2):
+Next is the code for the \TODO{SimpleSystem implementation} pNet (named \TODO{SimpleProtImpl2}):
 \medskip
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily, language=java, frame=single]
 SimpleProtImpl2:
@@ -5725,7 +5731,7 @@ vector SV3 <_,_,q_b>->q_b [q_b != q_recv(x,y)]
 
 \begin{figure}[h]
    \centerline{\includegraphics[width=10cm]{XFIG/SimpleProtImpl-WOA2}}
-   \caption{Weak Open Automaton of the implementation}
+   \caption{Weak Open Automaton of the \TODO{implementation}}
    \label{Appendix:ImplOA2}
  \end{figure}
 
@@ -5733,7 +5739,7 @@ In Figure \ref{Appendix:ImplOA2} we recall the weak open automaton of our implem
 
 This drawing is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviours.
 %More tricky, they do not have the same state variables, as 202 has the variables of state $s2$, but none of these variables are used in transitions from 202.
-In this configuration we can guarantee that they are Weak bisimilar, and we have merged their (incoming and outgoing) transitions in the Figure. We denote this 
+In this configuration we can guarantee that they are Weak bisimilar, and we have merged their (incoming and outgoing) transitions in the figure. We denote this 
 equivalence class of states as $\{000,202\}$.
 
 % \TODO{May be express this property more formerly, but this could be also part of another paper, more oriented towards algorithms and optimisation of the Weak}
@@ -5943,7 +5949,7 @@ The following table give a summary of  WOTs, when sharing their names as much as
     \end{tabular}
 
     \bigskip
-    That makes a total of 73 WOTs  in the SimpleImpl WOA.
+    That makes a total of 73 WOTs  in the \TODO{SimpleImpl} WOA.
 
 
 
@@ -5954,7 +5960,7 @@ We recall here the relation $\mathcal{R}$ that is the candidate for our weak bis
 \bigskip
   \begin{tabular}{|c|c|l|}
 \hline
-    Spec state & Impl state & Predicate\\
+    \TODO{Spec} state & \TODO{Impl} state & Predicate\\
     \hline
     b0 & $000$ & True\\
     b0 & $202$ & True\\
@@ -5993,9 +5999,9 @@ $SI_3 << WS_3$
 \bigskip
 
          
-         Note: if we were using the alternative Weak bisim from Appendix \ref{app-WFH-equiv}, Lemma \ref{lem-rel-OT-WOT}, that is checking strong bisimulation between the corresponding 
-weak automaton, we would have a more transitions coverage to examine, as we have 4 weak transitions for $b0$ in the specification weak automaton, and 7 WOTs (including 4 
-parameterised WOTs) from 000 in the implementation automaton.
+         Note: if we were using the alternative Weak bisimulation relation from Appendix \ref{app-WFH-equiv}, Lemma \ref{lem-rel-OT-WOT}, that is checking strong bisimulation between the corresponding 
+weak automaton, we would have a more transitions coverage to examine, as we have 4 weak transitions for $b0$ in the \TODO{specification} weak automaton, and 7 WOTs (including 4 
+parameterised WOTs) from 000 in the \TODO{implementation} automaton.
          
        
 
@@ -6006,7 +6012,7 @@ Preliminary remarks:
       sub-net are of the form ``$< -, \tau, -> -> \tau$''.
     \item We must take care of variable name conflicts: in our example, the variables of the 2 systems already have different names, but the action parameters occurring in the 
 transitions (m, msg, ec) are the same, that is not correct. In the tools, this is managed by the static semantic layer; in the following example, we have renamed all conflicting 
-variables using suffix 1 for the Specification, and 2 for the Implementation.
+variables using suffix 1 for the \TODO{Specification}, and 2 for the \TODO{Implementation}.
     \end{itemize}
 
   In our running example in page \pageref{subsubsection:runnig example}, we have shown the proof for one of the
