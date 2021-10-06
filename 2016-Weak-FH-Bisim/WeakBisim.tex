@@ -107,9 +107,9 @@ pNets is a generalisation of automata that model open systems. They feature vari
 
 This article defines bisimulation relations  for the comparison of systems specified as pNets.
  We first define a strong bisimulation for open pNets.
- \TODO{virer cette phrase, doublon du 1er paragraph? LUDO: OK} In practice, as happens in process algebras, strong bisimulation is too strong, and
-  we define some coarser relations, taking into account
-  invisible or internal moves.
+% \TODO{virer cette phrase, doublon du 1er paragraph? LUDO: OK} In practice, as happens in process algebras, strong bisimulation is too strong, and
+%  we define some coarser relations, taking into account
+%  invisible or internal moves.
   We then define an equivalence relation similar to
   the classical \emph{weak bisimulation}, and study its properties.
 Among these properties we are interested in compositionality: if two systems are proven equivalent they will be undistinguishable by their context, and they will also be undistinguishable when their holes are filled with equivalent systems.
@@ -677,28 +677,26 @@ argument, through the two protocol entities. Process $P$ sends an $\texttt{p-sen
 At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole $Q$) includes the value of the ``error counter'' $ec$.
 
 
-Figure \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet that specifies the system:
-the full system should be equivalent (e.g.  weakly bisimilar)
-to the two processes connected simply through a perfect medium.  
+Figure \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet $\symb{SimpleProtocolSpec}$ that specifies the system. The pNet is made of the composition of two pNets: a $\symb{SimpleSystem}$ node, and a $\symb{PerfectBuffer}$ sub-pNet. 
+The full system implementation should be equivalent (e.g.  weakly bisimilar)
+to thhis $\symb{SimpleProtocolSpec}$.  
 The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystem} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one sub-pNet, denoted {\it PerfectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterised actions of a subset of the nodes. For instance, in the vector $< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$ only $P$ and {\it PerfectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PerfectBuffer} accepts the message through an $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
 
 
-Figure \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation. When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m-error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. 
+Figure \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation, called $\symb{SimpleProtocolImpl}$ . When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m-error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. 
 %Strictly speaking, as variables are local to each  state, we have two distinct $ec$ variables in the \textit{Sender} pLTS, one in state \texttt{s1}, another one in state \texttt{s2}, the value of the variable is updated along the transitions entering each of the two states.
 
 \begin{figure}[t]
    \includegraphics[width=.37\textwidth]{XFIG/SimpleProt-Schema.pdf}
    \includegraphics[width=.62\textwidth]{XFIG/SimpleProt2-Spec.pdf}
-   \caption{pNet structure of the example and its specification expressed as a pNet}
+   \caption{pNet structure of the example and its specification expressed as a pNet called $\symb{SimpleProtocolSpec}$ }
    \label{SimpleProt:Spec}
 \end{figure}
 
-\TODO{remove this sentence: 
-In the following, we refer to the automaton of a specification by $\symb{Spec}$ and of an implementation by $\symb{Impl}$.}
   
 \begin{figure}[t]
   \centerline{\includegraphics[width=.95\textwidth]{XFIG/SimpleProt2-pNet-tau}}
-  \caption{The $\symb{SimpleSystem}$ pNet composed with the implementation of $\symb{SimpleProtocol}$}  \label{SimpleProt:Impl}
+  \caption{The $\symb{SimpleProtocolImpl}$ pNet resulting from the composition of  the $\symb{SimpleSystem}$  and the $\symb{SimpleProtocol}$ pNets.}  \label{SimpleProt:Impl}
 \end{figure}
 
 
@@ -726,7 +724,7 @@ set of state modifications. This section defines open automata and a bisimulatio
 	{s \OTarrow {\alpha}s'}
 	\end{mathpar}
 	Where $J'\subseteq J$ is the set of holes involved in the transition; $s, s'\in\mathcal{S}$ are states of the automaton; and $\beta_j$
-        is a transition of the hole $j$, with \hl{$\Sortop(\beta_j)\in\Sort_j$. $\alpha$}  is an action 
+        is a transition of the hole $j$, with $\Sortop(\beta_j)\in\Sort_j$. $\alpha$  is an action 
         label denoting the resulting action of this open transition.
 %        We call \emph{source variables} of an OT the union of all variables
 %        in the different terms
@@ -1287,12 +1285,13 @@ holes, and each pLTS at leaves having a finite number of states and
    \label{SimpleProtCounter:SpecOA}
 \end{figure}
 
-\TODO{Nommer proprement chaque pnet pour pouvoir s'y referencer}
-\subsection*{Example}  Figure~\ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the specification pNet \TODO{SimpleSystem?} given in Figure \ref{SimpleProt:Spec}. 
-For later references, we give to the transitions of this (strong)
-specification automaton as $SS_i$ while transitions of the
-implementation automaton \TODO{name} will be labelled $SI_i$. In the figure \TODO{number or figures?} we
-have annotated each global state with the set of corresponding pLTS variables.
+
+\subsection*{Example}  Figure~\ref{SimpleProtCounter:SpecOA} shows the open automaton computed from the \symb{SimpleProtocolSpec} pNet  given in Figure \ref{SimpleProt:Spec}. 
+For later references, we name $SS_i$ the transitions of this (strong)
+specification automaton while transitions of the
+ \symb{SimpleProtocolImpl} pNet are labelled $SI_i$.
+ In the figures we
+annotate each open automaton with the set of its variables.
 
 
  \begin{figure}[ht]
@@ -1301,7 +1300,7 @@ have annotated each global state with the set of corresponding pLTS variables.
 \end{figure}
 
 
-    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of the \TODO{implementation} $SimpleSystem$ (Figure \ref{SimpleProt:Impl}). In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{SI}_i$ and tau open transition by  $\texttt{SI}_{\tau}$. The resulting behaviour is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive pLTS variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions ($\texttt{SI}_4$, $\texttt{SI}_5$ and $\texttt{SI}_6$)  showing the handling of errors and corresponding increments of the error counter.
+    Figure \ref{SimpleProtCounter:ImplOA} shows the open automaton of  \symb{SimpleProtocolImpl} from Figure \ref{SimpleProt:Impl}. In this drawing, we have short labels for states, representing $\ostate{s_0,m_0,r_0}$ by \texttt{000}. Note that open transitions are denoted $\texttt{SI}_i$ and tau open transition by  $\texttt{SI}_{\tau}$. The resulting behaviour is quite simple:  we have a main loop including receiving a message from $P$ and transmitting the same message to $Q$, with some intermediate $\tau$ actions from the internal communications between the protocol processes. In most of the transitions, you can observe that data is propagated between the successive pLTS variables (holding the message, and the error counter value). On the right of the figure, you have a loop of $\tau$ actions ($\texttt{SI}_4$, $\texttt{SI}_5$ and $\texttt{SI}_6$)  showing the handling of errors and corresponding increments of the error counter.
     
     
   
@@ -1356,7 +1355,7 @@ predicates:
 
 Lemma \ref{lem-compose} is combining an open transition of $P$ with
 an open transition of $Q$, and building a corresponding transition of
-$P[Q]_{j_0}$ \hl{assembling their predicates}.
+$P[Q]_{j_0}$  by assembling their elements.
 
 \begin{lemma}[Open transition composition]\label{lem-compose} 
 	Suppose $j_0\in J$ and:\\[-2ex]
@@ -1658,7 +1657,7 @@ Rule $\WTUn$ states that it is always possible to do a non-observable transition
 \end{figure}
 
 \begin{example} [A weak open-transition]
-Figure \ref{WOT2} shows the construction of one of the weak transitions of the \TODO{Specification} OA. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+Figure \ref{WOT2} shows the construction of one of the weak transitions of the open automaton of \symb{SimpleProtocolSpec}. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
          {\{\}, True,
 			(\texttt{b\_ec}\gets \texttt{b\_ec}+1) }
          {\texttt{b1}\OTWeakarrow \tau \texttt{b1}}$; $\openrule
@@ -1684,7 +1683,7 @@ Figure \ref{WOT2} shows the construction of one of the weak transitions of the \
 
 
   \begin{example}[Weak open automata]
-    Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplWOA2} respectively show the weak automata of the \TODO{simple protocol specification} and \TODO{implementation}. We encode weak open transitions  by $WS$ on the specification model and by $WI$ on the implementation model.
+    Figures \ref{SimpleProtCounter:WeakSpecOA} and \ref{SimpleProtCounter:ImplWOA2} respectively show the weak automata of \symb{SimpleProtocolSpec} and \symb{SimpleProtocolImpl}. We encode weak open transitions  by $WS$ on the specification model and by $WI$ on the implementation model.
     
 
 
@@ -1695,8 +1694,8 @@ Figure \ref{WOT2} shows the construction of one of the weak transitions of the \
    \label{SimpleProtCounter:WeakSpecOA}
 \end{figure}
 
- For readability, we do not include the full details of the \TODO{Implementation} weak open transitions in Figure \ref{SimpleProtCounter:ImplWOA2}, but we show some examples below and the full list is included in Appendix \ref{Appendix:FullExample}.
-First, let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state ${000}$ are also present in all other states, we did not repeat them. Then many WOTs are similar, and numbered accordingly as 3, 3a, 3b, 3c and 8, 8a, 8b, 8c respectively: they only differ by their respective source or target states; the "variant" WOTs appear in blue in   Figure \ref{SimpleProtCounter:ImplWOA2}.
+ For readability, we only give names to the  weak open transitions of \symb{SimpleProtocolImpl} in Figure \ref{SimpleProtCounter:ImplWOA2}; we detail some of these transitions below and the full list is included in Appendix \ref{Appendix:FullExample}.
+Let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on state ${000}$ are also present in all other states, we did not repeat them. Additionally, many WOTs are similar, and numbered accordingly as 3, 3a, 3b, 3c and 8, 8a, 8b, 8c respectively: they only differ by their respective source or target states; the "variant" WOTs appear in blue in   Figure~\ref{SimpleProtCounter:ImplWOA2}.
 \end{example}
 
 
@@ -1713,7 +1712,7 @@ First, let us point out that the weak OT loops ($WI_1$,$WI_2$ and $W_\tau$) on s
    \label{SimpleProtCounter:ImplWOA2}
 \end{figure}
 
-Now let us give some details about the construction of the weak automaton of the \TODO{implementation} pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (as a substitution function) of the strong open transitions $SI_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
+Now let us give some details about the construction of the weak automaton of the \symb{SimpleProtocolImpl} pNet, obtained by application of the weak rules as explained above. We concentrate on weak open transitions $WI_3$ and $WI_4$. Let us denote as $post_n$ the effect (as a substitution function) of the strong open transitions $SI_n$ from Figure \ref{SimpleProtCounter:ImplOA}:
 \smallskip
 
 $post_3 = (\texttt{s\_msg}\gets \texttt{m}, \texttt{s\_ec}\gets 0)$
@@ -1976,7 +1975,7 @@ composability and weak FH-bisimilarity.
 
 \subsubsection*{Running example}
 \label{subsubsection:runnig example}
-In Section~\ref{sec:weak} we have shown the full saturated weak automaton for both the \TODO{specification} and the \TODO{implementation} of the simple protocol. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
+In Section~\ref{sec:weak} we have shown the full saturated weak automaton for both \symb{SimpleProtocolSpec} and \symb{SimpleProtocolImpl}. We will show here how we can check if some given relation between these two automata is a weak FH-Bisimulation. 
 
 \medskip
 \noindent
@@ -1985,16 +1984,16 @@ Preliminary remarks:
     \item Both pNets trivialy verify the ``non-observability''
       condition: the only vectors having $\tau$ as an action of a
       sub-net are of the form ``$< -, \tau, -> \rightarrow \tau$''.
-    \item We must take care of variable name conflicts: in our example, the variables of the 2 systems already have different names, but the action parameters occurring in the transitions (\texttt{m}, \texttt{msg}, \texttt{ec}) are the same, that is not correct. In the tools, this is managed by the static semantic layer; in the following example, we have renamed all conflicting variables with 1 for the Spec, and 2 for the Impl.
+    \item We must take care of variable name conflicts: in our example, the variables of the 2 systems already have different names, but the action parameters occurring in the transitions (\texttt{m}, \texttt{msg}, \texttt{ec}) are the same, that is not correct. In the tools, this is managed by the static semantic layer; in the  example, we rename the only conflicting variables $m$ into $m1$ for \symb{SimpleProtocolSpec}, and $m2$ for \symb{SimpleProtocolImpl}.
     \end{itemize}
 
   \medskip
   Now consider the relation $\mathcal{R}$ defined by the following triples:
 
-
+\noindent
   \begin{tabular}{|c|c|l|}
 \hline
-    \TODO{Spec} state & \TODO{Impl} state & Predicate\\
+     \symb{SimpleProtocolSpec} states&   \symb{SimpleProtocolImpl} states& Predicate\\
     \hline
     b0 & $000$ & True\\
     b0 & $202$ & True\\
