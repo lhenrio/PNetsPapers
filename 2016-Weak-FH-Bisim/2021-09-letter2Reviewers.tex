@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage{a4wide}
+\usepackage{macrospNets}
+
 \title{Reply to reviewers\\
 LMCS \#\,6784 Manuscript: \\``Compositional equivalences based on Open pNets'' }
 
@@ -39,13 +41,37 @@ address in a straightforward manner. Major points of the reviews have not been o
 any case.
 
 \section*{Annex 1: response to first reviewers' comments}
+
 - The definition of pNets is cumbersome. I understand that this work extends prior work where the model has been motivated already, but I have my reservations on the utility of the formalisms.    I found the running example (although useful) to be hard to understand.  It would perhaps be useful to provide anecdotal evidence showing that comparable formalisms cannot handle certain features of the example (which would justify the complexity of the model used).
+\begin{quote}
+The definition of pNets is indeed not simple but as it is placed at a very generic and semantic level we do not believe there are good alternative in the literature. Process algebras for example do not feature hierarchical an parametric aspects of pNets and defining equivalence checking tools on these frameworks is difficult. Of course the examples can be expressed in any concurrent Turing-complete model but none of the existing works feature the same results as ours on the modelling of existing parallel operators, and compositional reasoning on equivalence.
+
+We added most of these arguments in the introduction, and the related work section discusses details on equivalence checking. We also discuss in more details the relation with process algebras in the paper.
+\end{quote}
 
 - I was left unconvinced that using open automata as an intermediary structure to define the bisimualtion relations is the best approach to develop this material.  The authors should give more convincing argument that such definitions could not be adequately defined directly on pNets (an already complex framework).  It left me wondering:
-1) How do you validate the translation of pNets to Open Automata?  Shouldn't there be some result that states that the translation is semantic preserving?    
+1) How do you validate the translation of pNets to Open Automata?  Shouldn't there be some result that states that the translation is semantic preserving?   
+\begin{quote}
+Indeed such a theorem could be stated and proven: the two semantics are behaviourally equivalent, this would be proven by exhibiting a complex bisimulation between the two models, restricted only on the closed non-parametric part. In practice a proof of equivalence would make the article much longer with a lot of technical developments; we believe it would make the article more difficult to read. However we added a discussion on equivalence between semantics at the end of Section 2.2.
+\end{quote}
+ 
 2) Why not work directly in terms of Open Automata (and forget all about pNets)?  A prima facie, they appear to be of a comparable complexity to pNets (if not simpler).  There are few people who would be interested in using a framework that relies on the second rule in Def 9 as a modelling language...  
+\begin{quote}
+The reason for the coexistence of the two formalisms is that one is hierarchical and adapted to modelling, the other is flat and more based on logic, and adapted to semantic/equivalence reasoning.
+We added one subsection in the introduction that presents the two formalisms and the reason why both exist.
+\end{quote}
 
 - The definition of bisimulation is slightly non-standard (eg Def 7).  For instance, why does the transfer property require a "set" of matching transitions?  Normally, the existence of one suffices.  Moreover, given that a set is required, shouldn't there be an additional requirement that the matching set is necessarily non-empty? 
+
+\begin{quote}
+The following explanation has been added to the introduction:
+
+" Bisimulation over a symbolic and open model like open pNets or open automata is  different from the classical notion of bisimulation because it cannot rely on the equality over a finite set of action labels. Classical bisimulations require to exhibit, for each transition of one system, a transition of the other system that simulates it. Instead, bisimulation for open automata  rely on the simulation of each open transition of one automaton by a set of open transitions of the other one, that should cover all the 
+cases where the original transition can be triggered.
+"
+
+Concerning non-emptiness, the fact that the matching set of transitions completely cover the cases of the original ones by nature prevent the empty set from being a good match. 
+\end{quote}
 
 - In general, weak bisimulation is *not* a congruence for all types of interacting contexts.  For instance, in the case of CCS, the classsical counter example is that whereas 
 tau.a.0  \\bisim  a.0
@@ -53,8 +79,77 @@ we do *not* have
 tau.a.0 + b.0 \\bisim  a.0 + b.0 
 Given the generality of the pNets framework I found the claim stated in Theorem 7 to be suspicious (and hard to ascertain).  The authors should perhaps provide more intuition why this is the case for their framework.
 
+\begin{quote}
+Indeed, the plus operator of CCS does not verify the requirements ``non-observability of tau transitions'' for the weak bisimulation to be a congruence. We can define the weak bisimulation for CCS but it does not verify the congruence property.
+
+This is now illustrated by Example 4 and 5 in the article.
+\end{quote}
+
+l -6: why not use an asymmetric symbol instead of $\otimes$? 
+QUESTION: veut on vraiment changer de symbole?
+ANSWER:
+\begin{quote}
+$\otimes$ is a form of composition: we chose something similar to $\circ$, re named it into $\odot$
+\end{quote}
+
+l 26: "Variables in V1 and V2 verify the predicate $P_{s,t}$" I am not sure what you mean by this.
+\begin{quote}
+This has been rephrased:
+
+the states are related when the value of the variables in $s$ and $t$  verify the predicate $\Pred_{s,t}$. Note that this implies that the free variables of  $\Pred_{s,t}$ belong to $V_1$ and $V_2$.
+
+\end{quote}
+
+l 27..28: why should V1 and V2 be disjoint?
+\begin{quote}
+Variables used in $\Pred_{s,t}$ should refer to variables of the automata, but there must be no ambiguity on which automaton it refers to. If the variable x should have the same value in both automata, we add x=x' to Pred. Otherwise hidden information would be confusing and the soundness of the theory would be difficult to ensure.
+
+We explained this point better in the text
+\end{quote}
+
+pg 14:  why is the term "Specification pNet" capitalised?
+\begin{quote}
+Indeed, we renamed in a consistent manner all our examples
+\end{quote}
+
+pg 17: l -4: I found this condition hard to map to the intuition given on pg 18 line 1..2 
+\begin{quote}
+We explicitly added the following explanation:
+
+statement (2) states that all the open transitions where a hole does  a $\tau$ must be of the shape given in statement (1)
+\end{quote}
+
 
 \section*{Annex 2: response to second reviewers' comments}
+SYNOPSIS
+
+The paper proposes a generalisation of transition system specification (well known in the literature on structural operational semantics) called an open automaton, that generalises the traditional transition systems in two dimensions: hierarchical composition and conditional transition that may update the variables once the transition is executed (akin to extended finite state machines). The paper mainly uses open automata for semantic purposes: first, to define the semantics of parametrised networks (a graph-theoretic specification language); second, to define the (weak) bisimulation relations on the states of open automata (in turn between the states of a parametrised network). Lastly, congruence results are established both for strong and weak bisimulation relations w.r.t. the hierarchical composition operator.
+
+EVALUATION
+
+The paper is fairly well written and clearly falls in the scope of the journal LMCS; however, it comes short in reaching the quality transpired by an LMCS journal.
+The introduction needs an improvement especially in terms of motivation; this seems to be the case with the formal definitions which in some cases need to be properly defined (see the detailed comments). For e.g., why were pNets introduced? 
+
+Since pNets have been introduced for over 15 years, why are we studying (weak) bisimulation and establishing the usual basic facts about it now? Were there any case studies in your experience that suggest the need for such results? What are the reasons to pick bisimulation not simulation relations for the purpose of conformance between a specification and its implementation? It would be great to support these with some evidence.
+
+\begin{quote}
+pNets had been used to do model-checking based on the translation (of closed pNets with parameters instantiated) to other formalisms, we now study them directly. We decided to first design an equivalence relation before orders that reveal to be more complex (simulation is discussed in our new conclusion). In our example it happens that we have weak equivalence which is stronger than weak simulation in any case.
+\end{quote}
+
+Secondly, the choices made behind the mathematical notations and definitions are at a low level of abstraction; unfortunately, which makes the proofs in the appendix as unreadable. This is disappointing since most of the theorem/lemma statements are those that one would expect to be true. 
+
+
+In addition, purely from the semantic point of view, the theoretical development is rather straightforward and most of the definitions/results already known in the literature on process algebras are engineered to the setting of open automata. 
+\begin{quote}
+We believe that this argument is rather subjective. From an objective point of view, the parameterised aspects of our model is from our point of view quite new, as well as the conditions for congruence of weak bisimulation. We added arguments highlighting the novelty in the introduction.
+\end{quote}
+
+
+As a result, unfortunately, I do not endorse the publication of this manuscript. Nevertheless, I do believe that the paper may be more fitting in a journal which endorses both software engineering and formal methods.
+
+
+
+
 DETAILED COMMENTS
 
 P1 Abstract L10 *… that includes parameters, and …* parameters for what? Please elaborate more on this in the introduction.
@@ -106,27 +201,64 @@ P9 Def 5 L7 By *assignments* do you mean indexed substitutions?
 
 P9 Def 6 L-4 Please explain *simple logic* and *paper rules* in more detail?
 
-P9 Def 6 L-2 open with capital O
+
+
+\begin{quote}
+We rephrased quite a lot this part in particular we write now:
+
+It is important to understand the difference between the red dotted rule and a normal 
+inference rule. They correspond to two different logical levels.
+On one side, classical (black) inference rules  use  an expressive logic (like any other computer science article).
+ On the other side, open transition rules (with dotted lines) are logical implications, but using a  logic with a specific syntax and that can be mechanized (this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality).
+\end{quote}
 
 P9 Def 6 L8 *We take in this article …* Doesn’t add anything and it isn’t clear what the writer is trying to convey here? I guess that the intent is to stay that the set of transition is closed under the implication given below in Page 9.
 
 Also, it would be good to add some accompanying texts that explain this implication. My understanding is that this implication says that the set of open transitions is closed under the
 refinement of predicates, which is a strong assumption from the modelling point of view. This is because modeller is forced to add new behaviour which (s)he is not interested to capture.
+\begin{quote}
+We slightly rewrote this part and we now explicitly say that in practice, in the tools, we have a finite representation of the transitions and thus we only interact with the user based on this finite representation (see the paragraph between Theorem 1 and Theorem 2). In any case, the written closure, in general, has no finite representation. 
+
+From the point of view of the article, proofs are simpler to write if we suppose that  the set of open transitions is closed under the
+refinement of predicates.
+\end{quote}
+
+
 Lastly, I was anticipating a more formal way to derive transitions of an open automaton just like how transitions are derived by a witnessing proof in the context of transition system specifications. For latter, a reference is as follows:
 J.F. Groote. Transition system specifications with negative premises. TCS 118, 1993 $https://www.sciencedirect.com/science/article/pii/0304397593901116$
 Also, I believe that the induced transitions in T are all meaningful (in the sense of Glabbeek, see below) because there are no negative transitions in the premise of an open transition.
 R.J. van Glabbeek. The meaning of negative premises in transition system specifications II. JLAP, 2004 $https://www.sciencedirect.com/science/article/pii/S1567832604000281$
 Such a discussion with a possible related work is missing and should be provided at least in a separate remark.
 
-P10 Def 7 L-6 Typo *!J* should be just *J*
+\begin{quote}
+We explain now the relation with GSOS and negative premisses in the related works
+\end{quote}
+
 
 P10 Def 7 It was frustrating to not find out what is the type of an FH-bisimulation R, which I think is necessary if you want to compute such an R. Firstly, it should be mentioned that $Pred_{s,t}$ is some predicate over $V_1 \cup V_2$. Second, please give the formal type of conditional relation R before defining the transfer property of an FH-bisimulation. Here, by a conditional relation R on the sets X and Y I mean a function of type $X \times Y ---> L$, where L is some lattice modelling the values that the relation can take. For instance, traditional relation on X and Y can be seen as a function $X \times Y ---> 2$, where 2={0,1} is the obvious Boolean algebra of two point set; so $x R y \iff R(x,y)=1$. Similarly, in your case, the lattice L should be the Boolean algebra P(Pred), where P(X) is the powerset of X, for any set X.
 This raises the issue whether FH-bisimulation is an instance of conditional bisimulation (when the lattice L is P(Pred) ) as defined in the following paper:
 H.Beohar, B. König, S. Küpper,  A. Silva. Conditional transition systems with upgrades. $https://www.sciencedirect.com/science/article/abs/pii/S0167642319301169$
 
+\begin{quote}
+We added the formal definition of $R$  before the definition of FH-bisimulation. Basically, in our case $L$ are the boolean expressions, denoted $B$, and corresponding to the set of all possible predicates. We believe the powerset is bigger that what we do, and we do not allow a pair of states to be matched to several Predicates. In one word the relation is now typed (with side constraints), see the details in the text.
+
+We also briefly compare to the cited article in the related work section.
+
+\end{quote}
+
 P11 L1 What is X in the open transition $OT_x^{x\in X}$?
+\begin{quote}
+In the context of this article, we consider that an indexed set $OT_x^{x\in X}$ defines both an indexation set $X$ and a set of elements $OT_x$ for $x\in $. We additionally clarified this in the notation section. Additionally to the previous text that stated:
+"$t_i^{i\in I}$ defines first $I$ the set over which the family is indexed, and then $a_i$ the elements of the family"
+we added:
+"Note that, sentences of the form ``there exists $t_i^{i\in I}$'' means there exists $I$ and a function that maps each element of $I$ to a term $t_i$."
+\end{quote}
 
 P11 L2 Typo: jx as the subscript of \\beta. You could use $\beta_{j_x}$?
+\begin{quote}
+We should have standardly written $\beta_{j,\, x}$ but the multiplicity of commas would make the article difficult to read. We add the following footnote:
+``In this article, we denote $\beta_{j x}$  a double indexed set, instead of the classical $\beta_{j,\, x}$. Indeed the standard notation would be too heavy in our case.''
+\end{quote}
 
 P11 L-8 What do you mean by a finite predicate?
 
@@ -134,20 +266,37 @@ P12 L6 Could you expand on what is bisimulation theory for open pNets?
 
 P13 Def 9 Please exemplify *I\_1 for the others*?
 
-P13 Def 9 In the first line of the premise of Tr2, shouldn’t the occurrences of $\alpha’ in SV_k just be \alpha$?
+P13 Def 9 In the first line of the premise of Tr2, shouldn’t the occurrences of $\alpha’$ in $SV_k$ just be $\alpha$?
+\begin{quote}
+
+No, we have the constraint $\alpha=\alpha'$, but as actions are parameterised it corresponds to some instantiation and unification. For example in the simple protocol we would have $\alpha=in(m)$ and $\alpha'= in(MSG)$ with $MSG$ a real message object, obtained by the r-send transition of the receiver automaton.
+\end{quote}
+
 
 P13 Def 9 Tr2 by *$fresh(\alpha’_m,\alpha’,\beta_j,\alpha)$* should be understand that the variables occurring in $\alpha’_m,\alpha’, \beta_j$ (for all j), and $\alpha$ are fresh?
+\begin{quote}
+It is written just above the definition
+\end{quote}
 
-P16 L-4 You claim Theorem 5 is quite useful in practice; however, I wonder here about FH-simulation. First, whether a similar result holds for simulation? Second, FH-simulaton would be more relevant if we 
+P16 L-4 You claim Theorem 5 is quite useful in practice; however, I wonder here about FH-simulation. First, whether a similar result holds for simulation? Second, FH-simulation would be more relevant if we 
 disallow that the set of transitions in an open automaton are closed under the refinement of predicates (Def. 6).
+\begin{quote}
+See above: simulation is more complex and is discussed in the conclusion.
+\end{quote}
+
 
 P17 Def 11 Isn’t (1) a special case of (2)?
+\begin{quote}
+No because $T=\emptyset$ verifies (2) but not (1).
+We added an explanatory sentence below.
+\end{quote}
 
 P18 Def 12 Other than the symbol used for weak transition, is there any semantic difference in Def 12 between a weak open transition and an open transition defined earlier?
-
-P22 L-1 Shouldn’t Pred be $Pred_{s,t}$? Again, please give the type of this conditional relation
-
-P28 L2 *principle* --> *relations*
+\begin{quote}
+"$\gamma$ ranges over sequences of action terms while "$\beta$ ranges over action terms"
+This is now recalled before the definition.
+This has a huge semantic impact as a single weak transition is the composition of several transitions of the holes.
+\end{quote}
 
 \end{document}
 
