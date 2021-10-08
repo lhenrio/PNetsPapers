@@ -44,6 +44,7 @@
 \newcommand{\raisem@th}[3]{\raisebox{#1}{$#2#3$}}
 \makeatother
 \newcommand{\shortotimes}{\!\otimes\!}
+\newcommand{\shortodot}{\!\odot\!}
 \usepackage{macrospNets}
 
 \newcommand{\nounderline}[1]{#1}
@@ -223,8 +224,8 @@ combined hierarchically.
 
 
 We develop here a semantics for a model of interacting processes with parameters and holes. 
-Our approach is originaly inspired from Structured Operational Semantics with conditional premisses as in \cite{GROOTE1993263,VANGLABBEEK2004229}.
-But we aim at a more constructive and implementable appraoch to compute the semantics (intuitively transitions including first order predicates) and to 
+Our approach is originally inspired from Structured Operational Semantics with conditional premisses as in \cite{GROOTE1993263,VANGLABBEEK2004229}.
+But we aim at a more constructive and implementable approach to compute the semantics (intuitively transitions including first order predicates) and to 
 check equivalences for these open systems.
 The main interest of our symbolic approach is to define a method to
 prove properties directly on open structures; these properties will then be preserved
@@ -442,7 +443,7 @@ The standard subtraction operation on indexed sets is $\setminus$, with $\dom(A\
 \label{def:substitutions}
 
 This article also uses substitutions. Applying a substitution inside a term $t$ is denoted $t\subst{y_i\gets e_i}^{i\in I}$ and consists in replacing in parallel all the occurrences of variables $y_i$ in the term $t$ by the terms $e_i$. Note that a substitution is defined by a partial function that is applied on the variables inside a term. We let $\Post$ range over partial functions that are used as substitution and use the notation $\{y_i\gets e_i\}^{i\in I}$ to define such a partial function\footnote{When using this notation, we suppose, without loss of generality that each $y_i$ is different.}. These partial functions are sometimes called \emph{substitution functions} in the following. Thus,
- $\subst{\Post}$ is  the operation that applies,  in a parallel manner,  the substitution defined by the partial function $\Post$. $\otimes$ is a composition operator on these partial functions, such that for any term $t$ we have: $t\subst{\Post\shortotimes\Post'} = (t\subst{\Post'})\subst{\Post}$.
+ $\subst{\Post}$ is  the operation that applies,  in a parallel manner,  the substitution defined by the partial function $\Post$. $\odot$ is a composition operator on these partial functions, such that for any term $t$ we have: $t\subst{\Post\shortodot\Post'} = (t\subst{\Post'})\subst{\Post}$.
 This property must also be valid when the substitution does not operate on all variables.
 We thus define a composition operation as follows: 
 %\TODO{version d eric reprise et corrigee}
@@ -454,7 +455,7 @@ We thus define a composition operation as follows:
 %
 %\ERIC{Une definition plus correcte serait peut-etre:}\\
 
-\[(x_{k}\gets e_{k})^{k\in K}\shortotimes (x'_{k'}\gets e'_{k'})^{k'\in K'} =  
+\[(x_{k}\gets e_{k})^{k\in K}\shortodot (x'_{k'}\gets e'_{k'})^{k'\in K'} =  
 (x_{k}\gets e_{k}\subst{(x'_{k'}\gets e'_{k'})^{k'\in K'}})^{k\in K} \cup (x'_{k'}\gets e'_{k'})^{k'\in K''}\]
 where $K''=\{k'\in K'|x'_{k'}\not\in\{x_k\}^{k\in K}\}$
 %
@@ -543,10 +544,10 @@ We now define the structure of pNets, the following definition relies on the def
 of holes, leaves and sorts formalised below in Definition~\ref{def-sortholeleave}. Informally, holes are process parameters, leaves provide the set of pLTSs at the leaves of the hierarchical structure of a pNet, and sorts give the signature of a pNet, i.e. the actions it exposes.
 
 \begin{definition}[pNets]\label{def-pnets}
-A pNet $\pNet$ is a hierarchical structure where leaves are pLTSs and holes:\\
+A pNet $\pNet$ is a hierarchical structure where leaves are pLTSs and holes\\
 $\pNet\triangleq \pLTS~|~\mylangle \pNet_i^{i\in I}, \Sort_j^{j\in J}, \symb{SV}_k^{k\in 
 K}\myrangle$
-where
+where:
 \begin{itemize}
 \item[$\bullet$] $I$ is a set of indices and $\pNet_i^{i\in I}$ is the family of sub-pNets indexed over $I$. $vars(P_i)$ and $vars(P_j)$ must be disjoint for $i\neq j$.
 %  $\pNet_i^{i\in I}$ is a family of sub-pNets where $I\in\I_\P$ is the set over which sub-pNets are indexed.
@@ -680,7 +681,7 @@ At the other end, process $Q$ receives the message from the $\symb{Receiver}$. T
 Figure \ref{SimpleProt:Spec} (right) shows a graphical view of the pNet $\symb{SimpleProtocolSpec}$ that specifies the system. The pNet is made of the composition of two pNets: a $\symb{SimpleSystem}$ node, and a $\symb{PerfectBuffer}$ sub-pNet. 
 The full system implementation should be equivalent (e.g.  weakly bisimilar)
 to thhis $\symb{SimpleProtocolSpec}$.  
-The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystem} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one sub-pNet, denoted {\it PerfectBuffer}. Nodes of the tree are synchronized using four synchronization vectors, that  express the possible synchronizations between the parameterised actions of a subset of the nodes. For instance, in the vector $< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$ only $P$ and {\it PerfectBuffer} nodes are involved in the synchronization. The synchronization between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PerfectBuffer} accepts the message through an $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
+The pNet has a tree-like structure.  The root node of the tree {\it SimpleSystem} is the top level of the pNet structure. It acts as the parallel operator. It consists of three nodes: two holes $P$ and $Q$ and one sub-pNet, denoted {\it PerfectBuffer}. Nodes of the tree are synchronised using four synchronisation vectors, that  express the possible synchronisations between the parameterised actions of a subset of the nodes. For instance, in the vector $< \texttt{p-send(m)},\texttt{in(m)},\_> \rightarrow \texttt{\nounderline{in(m)}}$ only $P$ and {\it PerfectBuffer} nodes are involved in the synchronisation. The synchronisation between these processes occurs when  process $P$  performs $\texttt{p-send(m)}$  action sending a message, and  the {\it PerfectBuffer} accepts the message through an $\texttt{in(m)}$ action  at the same time; the result that will be returned at upper level is the action  $\texttt{\nounderline{in(m)}}$.
 
 
 Figure \ref{SimpleProt:Impl} shows the pNet model of the protocol implementation, called $\symb{SimpleProtocolImpl}$ . When the $\symb{Medium}$ detects an error (modelled by a local $\tau$ action), it sends back a $\texttt{m-error}$ message to the $\symb{Sender}$. The $\symb{Sender}$ increments its local error counter $ec$, and resends the message (including $ec$) to the $\symb{Medium}$, that will, eventually, transmit $m,ec$ to the $\symb{Receiver}$. 
@@ -786,7 +787,7 @@ For all predicate $\Pred$, for all partial functions $\Post$ such that $V\cap \d
 \implies
     \openrule
          {
-           \set{\beta}\subst{\Post}, \Pred\,'\subst{\Post}\land\Pred,\Post\shortotimes\Post\,'}
+           \set{\beta}\subst{\Post}, \Pred\,'\subst{\Post}\land\Pred,\Post\shortodot\Post\,'}
          {\raisemath{-2pt}{t \OTarrow {\alpha\subst{\Post}} {t'}}{}}
  \in\mathcal{T}
 \end{mathpar}
@@ -823,7 +824,7 @@ We define now a bisimulation relation tailored to open automata and their parame
 
 One of the original aspects of FH-bisimulation is due to the symbolic nature of open automata. Indeed, a single state of the automaton represents a potentially infinite number of concrete states, depending on the value of the automaton variables, and a single open transition of the automaton may also be instantiated with an unbounded number of values for the transition parameters. Consequently it would be too restrictive to impose that each transition of one automaton is matched by exactly one transition of the bisimilar automaton. Thus the definition of bisimulation requires that, for each open transition of one automaton, there exists a matching  set of open transitions covering the original one, indeed depending on the value of action parameters or automaton variables, different open transitions might simulate the same one.
 
-The parametric nature of the automata entails a second original aspect of FH-bisimulation : the nature of the bisimulation relation itself.
+The parametric nature of the automata entails a second original aspect of FH-bisimulation: the nature of the bisimulation relation itself.
  A classical relation between states can be seen as a function mapping pairs of state to a boolean value (true if the states are related, false if they are not). A FH-bisimulation relation maps pairs of states to boolean expressions that use variables of the two systems.  %Each variable used in $\Pred_{s,t}$ should refer to a state variable of $s$ or $t$ and there must be no ambiguity on the referenced variable, we thus require that the two compared automata have disjoint state variables.
 Formally, a relation over the states of two open automata  $\mylangle J,\mathcal{S}_1, s_0,V_1,
    \mathcal{T}_1 \myrangle$ and $\mylangle J,\mathcal{S}_2,t_0,V_2, \mathcal{T}_2 \myrangle$ has the signature $\mathcal{S}_1\times\mathcal{S}_2\to\AlgB$. 
@@ -1380,7 +1381,7 @@ Q\models{\openrule
 		\ostate{s_i'^{\, i\in L_Q}}}
 }%\]
 \end{mathpar}
-Then, we have\\[-2ex]
+Then, we have:\\[-2ex]
 	\[ P[Q]_{j_0}  
 	\models
 	{\openrule
@@ -1620,9 +1621,9 @@ and
            \set{\gamma_3},\Pred_3,\Post_3  }
          {s_2 \OTWeakarrow {\tau} s'} \in\WT
 \\
-\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortotimes\Post_1}
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortodot\Post_1}
 \\
-\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortotimes \Post_1}\\
+\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortodot \Post_1}\\
 \alpha'=\alpha\subst{\Post_1}
 }
 {
@@ -1630,13 +1631,13 @@ and
          {\set{\gamma}
            ,
 		\Pred,
-				\Post_3\shortotimes\Post_2\shortotimes\Post_1} 
+				\Post_3\shortodot\Post_2\shortodot\Post_1} 
          {s \OTWeakarrow {\alpha'} s'} \in\WT
 } \WTTrois
 \end{mathpar}
  
 \end{definition}
-Rule $\WTUn$ states that it is always possible to do a non-observable transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after any weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their values thus depend on the initial state but also on the effect (as a substitution function $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the substitution defined by the composition $\Post_2\shortotimes\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition.
+Rule $\WTUn$ states that it is always possible to do a non-observable transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after any weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their values thus depend on the initial state but also on the effect (as a substitution function $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the substitution defined by the composition $\Post_2\shortodot\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition.
 
 %% \begin{figure}[ht]
 %%    \centerline{\includegraphics[width=12cm]{ATG/WOT1}}
@@ -1666,7 +1667,7 @@ Figure \ref{WOT2} shows the construction of one of the weak transitions of the o
          {\texttt{b1} \OTWeakarrow \tau \texttt{b1}}$;  $\openrule
          {\{\}, True,
 			() }
-         {\texttt{b1} \OTWeakarrow \tau \texttt{b1}}$. Then Rule \WTTrois~ produces  $\openrule
+         {\texttt{b1} \OTWeakarrow \tau \texttt{b1}}$. The result will be:   $\openrule
          {\{\}, True,
 			(\texttt{b\_ec}\gets \texttt{b\_ec}+2) }
          {\texttt{b1} \OTWeakarrow \tau \texttt{b1}}$. We can iterate this construction an arbitrary number of times, getting for any natural number $n$ a weak open transition:
@@ -1725,12 +1726,12 @@ $post_6 = (\texttt{s\_ec}\gets \texttt{s\_ec+1})$
 
 \medskip
 
-Then the effect of one single $100 \xrightarrow{OT_4} 210 \xrightarrow{OT_5} 220 \xrightarrow{OT_6} 100$ loop is\footnote{when showing  the result of $Posts$ composition, we will omit the identity substitution functions introduced by the $\shortotimes$ definition in page \pageref{def:substitutions}}:
-\[post_{456} = post_6 \shortotimes\ post_5 \shortotimes\ post_4
+Then the effect of one single $100 \xrightarrow{OT_4} 210 \xrightarrow{OT_5} 220 \xrightarrow{OT_6} 100$ loop is\footnote{when showing  the result of $Posts$ composition, we will omit the identity substitution functions introduced by the $\shortodot$ definition in page \pageref{def:substitutions}}:
+\[post_{456} = post_6 \shortodot\ post_5 \shortodot\ post_4
 = (\texttt{s\_ec}\gets \texttt{s\_ec}+1)\]
 
 So if we denote ${post_{456*}}$ any iteration of this loop, we get ${post_{456*}} = (\texttt{s\_ec}\gets \texttt{s\_ec}+n)$ for any $n\ge 0$, and the \Post~ of the weak OT  $WI_{3}$ is:\\
- $Post_3 = post_{456*}\shortotimes\ post_3 = (\texttt{s\_msg}\gets m, \texttt{s\_ec}\gets n), \forall n\ge 0$ and \Post~ of  $WI_{3a}$  is:\\ $post_4\shortotimes {post_{456*}}\shortotimes\ post_3 = (\texttt{m\_msg}\gets m, \texttt{m\_ec}\gets n), \forall n\ge 0$.
+ $Post_3 = post_{456*}\shortodot\ post_3 = (\texttt{s\_msg}\gets m, \texttt{s\_ec}\gets n), \forall n\ge 0$ and \Post~ of  $WI_{3a}$  is:\\ $post_4\shortodot {post_{456*}}\shortodot\ post_3 = (\texttt{m\_msg}\gets m, \texttt{m\_ec}\gets n), \forall n\ge 0$.
 \medskip
 
 We can now show some of the weak OTs of Figure \ref{SimpleProtCounter:ImplWOA2} (the full table is included in Appendix \ref{Appendix:FullExample}).
@@ -1769,10 +1770,10 @@ $  \forall n\ge 0.\, WI_{456}(n) = \openrule
 The  \Post~of the weak OT $ WI_{6a}$ is:
 $$
 \begin{array}{l@{}l}
-Post_{6a}&= post_{4}\shortotimes\ post_{456*}\shortotimes\ post_{6}\\ 
+Post_{6a}&= post_{4}\shortodot\ post_{456*}\shortodot\ post_{6}\\ 
 &=  (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec})\,
-\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+n) 
-\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+1) \\
+\shortodot (\texttt{s\_ec}\gets \texttt{s\_ec}+n) 
+\shortodot (\texttt{s\_ec}\gets \texttt{s\_ec}+1) \\
 &= (\texttt{m\_msg}\!\gets \texttt{s\_msg}, \texttt{m\_ec}\!\gets \texttt{s\_ec}+1\!+\!n, \texttt{s\_ec}\!\gets \texttt{s\_ec}+1\!+\!n)
 \end{array}
 $$
@@ -1832,7 +1833,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred_{s,t})\in\mathcal{R}$, we
          {s \OTarrow {\alpha} s'}
 
 \end{mathpar}
- there exist weak open transitions $\symb{WOT}_x^{\;x\in X} \subseteq \WT_2$:
+ there exists an indexed set of weak open transitions $\symb{WOT}_x^{\;x\in X} \subseteq \WT_2$:
  \begin{mathpar}
     \openrule
          {
@@ -1852,7 +1853,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred_{s,t})\in\mathcal{R}$, we
  \end{itemize}
 
 Two pNets are weak FH-bisimilar if there exists a relation between their associated 
-automata that is a Weak FH-bisimulation and their initial states are in the relation, i.e. 
+automata that is a weak FH-bisimulation and their initial states are in the relation, i.e. 
 the predicate associated to the relation between the initial states is \True.
  \end{definition}
 
@@ -1861,7 +1862,7 @@ Compared to strong bisimulation, except the obvious use of weak open transitions
 
 
 
-Our first important result is that Weak FH-bisimilarity is an equivalence in the same way as strong FH-bisimilarity:
+Our first important result is that weak FH-bisimilarity is an equivalence in the same way as strong FH-bisimilarity:
 
 
 \begin{theorem}[Weak FH-Bisimulation is an equivalence]\label{thm-weak-equiv} Suppose $\mathcal{R}$ 
@@ -1882,7 +1883,7 @@ In practice, we are dealing with finite representations of the (infinite) open a
      \Pred_{s',t_x}\subst{\Post_{OT}\uplus\Post_{OT_x}}\right)\right]\Big\}
 \end{multline*}
 
-In which $fv_{OT}$ denotes the set of free variables of all expressions in $OT$.
+where $fv_{OT}$ denotes the set of free variables of all expressions in $OT$.
 \subsection{Weak bisimulation for open pNets}
 
 Before defining a weak open automaton for the semantics of open pNets,
@@ -1917,7 +1918,7 @@ I'=\{i\}
 \end{equation*}
 \end{definition}
 
-With this definition, it is easy to check that the open automaton that gives the semantics of such an open pNet cannot observe silent actions in the sense of Definition~\ref{def:Non-ObsTau}:
+With this definition, it is easy to check that the open automaton that gives the semantics of such an open pNet cannot observe silent actions in the sense of Definition~\ref{def:Non-ObsTau}.
 
 \begin{property}[Non-observability of silent actions]
 The  semantics of a pNet, as provided in Definition~\ref{def:operationalSemantics}, that cannot observe silent actions is an open automaton that  cannot observe silent actions.
@@ -2110,7 +2111,7 @@ All the above works, didn't give a complete approach for verification, and the m
  pNets (Parameterised Networks of Automata) is a formalism adapted to the representation of the behaviour of a parallel or distributed systems. One  strength of pNets is their parameterised nature, making them adapted to the representation of systems of arbitrary size, and making the modelling of parameterised system possible. Parameters are also crucial to reason on interaction protocols that can address one entity inside an indexed set of processes. pNets have been successfully used to represent behavioural specification of parallel and distributed components and verify their correctness~\cite{AmeurBoulifa2017,HKM-FASE16}. VCE is the specification and verification platform that uses pNets as an intermediate representation.
 
 Open pNets are pNets with holes; they are adapted to represent processes parameterised by the behaviour of other processes, like composition operators or interaction 
-protocols that synchronize the actions of processes that can be plugged afterwards. Open
+protocols that synchronise the actions of processes that can be plugged afterwards. Open
 pNets are hierarchical composition of automata with holes and parameters. We
 defined here a semantics for open pNets and a complete bisimulation theory for them. 
 The semantics of open pNets relies on the definition of open automata that are automata with holes and parameters, but no hierarchy. Open automata are somehow labelled transition systems with parameters and holes, a notion that is useful to define semantics, but makes less sense when modelling a system, compared to pNets. To be precise, it is on open automata that we define our bisimulation relations.
@@ -2495,7 +2496,7 @@ satisfiability of the predicate relating the first state to the last one.
 
 
 For any open transition $OT_{px}$, since
-       	$(t_p,u|\Pred_{p,u})\in\mathcal{R}'$ there exist open transitions
+       	$(t_p,u|\Pred_{p,u})\in\mathcal{R}'$ there exists an indexed set of open transitions
        	$OT_{pxy}^{y\in Y} \subseteq \mathcal{T}_3$: 
        	
        	\begin{mathpar}  	
@@ -2847,12 +2848,8 @@ J\cup
 \land e_b
 \end{multline*}
 
- Modulo renaming of fresh variables, this is identical to the predicate that 
-occurs in 
-the source open transition except $\alpha_{j_0}=\alpha'_{j_0}$ has been replaced by  
-$\beta_{j_0}=\alpha'_{j_0}$. As $\alpha_{j_0}=\alpha_Q$ and $\beta_{j_0}$ is free, we 
-have $\beta_{j_0}=\alpha'_{j_0}\land \beta_{j_0}=\alpha_Q \iff 
-\alpha_{j_0}=\alpha'_{j_0}$.
+Modulo renaming of fresh variables, this is identical to the predicate that 
+occurs in the source open transition except $\alpha_{j_0}=\alpha'_{j_0}$ has been replaced by  $\beta_{j_0}=\alpha'_{j_0}$. As $\alpha_{j_0}=\alpha_Q$ and $\beta_{j_0}$ is free, we have $\beta_{j_0}=\alpha'_{j_0}\land \beta_{j_0}=\alpha_Q \iff \alpha_{j_0}=\alpha'_{j_0}$.
 Thus, $\Pred \iff (\Pred\,'
 		\land \Pred\,'')\land \alpha_Q=\beta_{j_0}$. 
 Finally, Post 
@@ -2861,10 +2858,12 @@ Finally, Post
 %  post-condition range over the variables of $P$ and $Q$ at the same
 %  time} 
 into conditions of the context $P$ and the pNet $Q$ (they are
-builts similarly as they only deal with  
+built similarly as they only deal with  
 leaves): $\Post=\Post\,'\uplus \Post\,''$. This concludes the 
 proof as we checked all the premises of the open transition for both $P$ and $Q$. We obtain the following reduction by the rule \TrDeux:
-	\noindent
+\medskip
+	
+\noindent
 	\begin{small}
 \begin{mathpar}
     \mprset {vskip=.8ex}
@@ -3072,7 +3071,7 @@ this is equivalent to $\forall i\in I.\, \alpha_i=\alpha'_i\land \forall j \in J
 	gathers the post-conditions related to all 
 	the leaves: $\displaystyle{\biguplus_{m\in I_1\cup\{j_0\}\uplus I_2} 
     		\!\!\!\!\!\Post_m = 	\Post\uplus \Post\,'}$.\\ Finally, the composed open transition can be
-        built by \TrDeux\ as follows
+        built by \TrDeux\ as follows:
 	\noindent
 	\begin{small}
 \begin{mathpar}
@@ -3133,7 +3132,7 @@ P\models{\openrule
 		\ostate{s_i'^{\, i\in L}}}
 }%\]
 \end{mathpar}
-Then, for any state $\ostate{s_i^{i\in L_Q}}$ of $Q$, we have\\[-1ex]
+Then, for any state $\ostate{s_i^{i\in L_Q}}$ of $Q$, we have:\\[-1ex]
 	\[ P[Q]_{j_0}  
 	\models
 	{\openrule
@@ -3203,7 +3202,7 @@ $\mathcal{R}'=\{(s,t|\Pred_{s,t})|s=s'\uplus s'' \land
  			L_P\uplus 
  			L}}}\]
  Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By 
- Lemma~\ref{lem-decompose} we have :\\[-2ex]
+ Lemma~\ref{lem-decompose} we have:\\[-2ex]
  	\begin{mathpar}
  P\models{\openrule
  	{
@@ -3378,7 +3377,7 @@ Consider an
 	L\uplus 
 	L_Q}}}\]
 Let $J'=J\setminus \Holes(Q) \cup \{j_0\}$.	 By 
-	Lemma~\ref{lem-decompose} we have :\\[-2ex]
+	Lemma~\ref{lem-decompose} we have:\\[-2ex]
 			\begin{mathpar}
 				P\models{\openrule
 				{
@@ -3493,7 +3492,7 @@ similar.
        \section{Weak FH-bisimulation lemmas and proofs}
 
 We  define a quantified composition operator for effects, i.e. $\Post$ elements of the open transitions.
-We use ${\displaystyle \bigotimes_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigotimes_{i=-1}^{0} \Post_i}$ is the identity. 
+We use ${\displaystyle \bigodot_{i=n}^{0} \Post_i}$ to denote  $\Post_n\otimes .. \otimes \Post_0$. By convention ${\displaystyle \bigodot_{i=-1}^{0} \Post_i}$ is the identity. 
 
 
 
@@ -3542,15 +3541,15 @@ there exist   $\set{\beta_{1i}}$, $\set{\beta_{2i}}$, and $\set{\beta_{3i}}$, $\
 \end{mathpar}
 where\\
 $
-\alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=n}^{0}\Post_{1j}}}\\
+\alpha'=\alpha\displaystyle{\subst{\bigodot_{j=n}^{0}\Post_{1j}}}\\
 s=s_{10} \wedge s_{1(n+1)}=s_2 \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
 \displaystyle{
-\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup}\\
-{}~\qquad \displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }}
+\set{\gamma}=\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=n}^{0}\Post_{1j}}} \dotcup}\\
+{}~\qquad \displaystyle{\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}} }}
 \\
-\Pred=\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
-{}~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
-\Post=\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}
+\Pred=\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j=n}^{0}\Post_{1j}}\land\\ 
+{}~\qquad\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}}\Big)\\
+\Post=\bigodot_{j=m}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}
 $
 
 
@@ -3639,12 +3638,12 @@ $
 where\\
 \begin{align*}
 s''=s_{10} &\wedge s_{1(n+2)}=s_2 \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
-\alpha'=&\alpha\displaystyle{\subst{\bigotimes_{j=n+1}^{1}\!\!\Post_{1j}}}\\
-\set{\gamma}=&\mybigdotcup_{i=1}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup\\
-& \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }\\
-\Pred=&\bigwedge_{i=1}^{n+1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{1}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j={n+1}}^{1}\Post_{1j}}\land\\ 
-&\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{1}\Post_{1j}}\Big)\\
-\Post=&\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{1}\Post_{1j}
+\alpha'=&\alpha\displaystyle{\subst{\bigodot_{j=n+1}^{1}\!\!\Post_{1j}}}\\
+\set{\gamma}=&\mybigdotcup_{i=1}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=n+1}^{1}\Post_{1j}}} \dotcup\\
+& \mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}} }\\
+\Pred=&\bigwedge_{i=1}^{n+1}\Pred_{1i}\subst{\bigodot_{j=i-1}^{1}\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j={n+1}}^{1}\Post_{1j}}\land\\ 
+&\quad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j={n+1}}^{1}\Post_{1j}}\Big)\\
+\Post=&\bigodot_{j=m}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j={n+1}}^{1}\Post_{1j}
 \end{align*}
 
 We need to prove that   by adding the following open transition the implication remains true:
@@ -3701,7 +3700,7 @@ Finally by applying rule \WTTrois~on  the above weak open transitions:
 \\\\
 \set{\gamma''}= \vis{\set{\beta_{10}}} \dotcup \set{\gamma}\subst{\Post_{10}}\\
 \Pred\,''\!=\!\Pred_{10}\land\Pred\subst{\Post_{10}}\\\\%\land (\Pred_3\subst{\Post_2})\subst{\Post_{10}}
-\Post\,''=\Id(s'')\shortotimes\Post\shortotimes\Post_{10} \\ \alpha''=\alpha'\subst{\Post_{10}}
+\Post\,''=\Id(s'')\shortodot\Post\shortodot\Post_{10} \\ \alpha''=\alpha'\subst{\Post_{10}}
 }
 {
 \openrule
@@ -3714,14 +3713,14 @@ Finally by applying rule \WTTrois~on  the above weak open transitions:
 where we obtain the conclusion of the lemma, as required with the following assertions (derived from previous assertions):
 \begin{align*}
 s_{10}=s_{10} &\wedge s_{1(n+2)}=s_{2} \wedge s'_2 = s_{30} \wedge s_{3(m+1)}=s'\\
-\alpha''=&\alpha\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}\subst{\Post_{10}} = \alpha\subst{\bigotimes_{j=n+1}^{0}\Post_{1j}}\\
-\set{\gamma''}=&\mybigdotcup_{i=0}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n+1}^{1}\Post_{1j}}} \dotcup\\
-&\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }
+\alpha''=&\alpha\subst{\bigodot_{j=n+1}^{1}\Post_{1j}}\subst{\Post_{10}} = \alpha\subst{\bigodot_{j=n+1}^{0}\Post_{1j}}\\
+\set{\gamma''}=&\mybigdotcup_{i=0}^{n+1} \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{1} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=n+1}^{1}\Post_{1j}}} \dotcup\\
+&\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}} }
 \\
-\Pred=&\bigwedge_{i=0}^{n+1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j={n+1}}^{0}\Post_{1j}}\land\\ 
-&\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{0}\Post_{1j}}\Big)
+\Pred=&\bigwedge_{i=0}^{n+1}\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j={n+1}}^{0}\Post_{1j}}\land\\ 
+&\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j={n+1}}^{0}\Post_{1j}}\Big)
 \\
-\Post=&\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j={n+1}}^{0}\Post_{1j}
+\Post=&\bigodot_{j=m}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j={n+1}}^{0}\Post_{1j}
 \end{align*}
 
 
@@ -3732,7 +3731,7 @@ The right part of the disjunction, i.e.
 is handled trivially by rule \WTUn. 
 \end{itemize}
 
-\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition (as described in the original definition). The recurrence hypothesis being that the  the original definition implies the characterization (1),with the conditions stated at the bottom of the theorem. We consider the different rules:
+\noindent ($\Leftarrow$) We proceed by structural induction on the rules  building  the weak transition (as described in the original definition). The recurrence hypothesis being that the  the original definition implies the characterization (1), with the conditions stated at the bottom of the theorem. We consider the different rules:
 
 \begin{itemize}
 \item Case rule \WTUn. We have:
@@ -3785,9 +3784,9 @@ These two cases above prove the implication with $n=-1$ and $m=-1$.
            \set{\gamma_3},\Pred_3,\Post_3    }
          {s'' \OTWeakarrow {\tau} s'''} \in\WT
 \\
-\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortotimes\Post_1}
+\Pred=\Pred_1\land\Pred_2\subst{\Post_1}\land \Pred_3\subst{\Post_2\shortodot\Post_1}
 \\
-\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortotimes \Post_1}\\
+\set{\gamma}=\set{\gamma_1}\dotcup \set{\gamma_2}\subst{\Post_1}\dotcup\set{\gamma_3}\subst{\Post_2\shortodot \Post_1}\\
 \alpha'=\alpha\subst{\Post_1}
 }
 {
@@ -3795,7 +3794,7 @@ These two cases above prove the implication with $n=-1$ and $m=-1$.
          {
            \set{\gamma},
 		\Pred,
-				\Post_3\shortotimes{\Post_2}\shortotimes{\Post_1} }
+				\Post_3\shortodot{\Post_2}\shortodot{\Post_1} }
          {s \OTWeakarrow {\alpha'} s'''} \in\WT
 }
 \end{mathpar}
@@ -3822,8 +3821,8 @@ These two cases above prove the implication with $n=-1$ and $m=-1$.
 where \\
 $ 
 s=s_{10} \wedge s_{1{(n_1+1)}}\!=s',\quad
-\displaystyle{\set{\gamma_1}= \mybigdotcup_{i=0}^{n_1} \vis{\set{\beta_{1 i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1 j} } }} \\
-\Pred_1\!=\!\bigwedge_{i=0}^{n_1}(\Pred_{1i} \subst{\bigotimes_{j=i-1}^{0}\Post_{i j}} ), \quad \Post_1= \bigotimes_{i=n_1}^{0} \subst{\Post_{1i}} 
+\displaystyle{\set{\gamma_1}= \mybigdotcup_{i=0}^{n_1} \vis{\set{\beta_{1 i}}\subst{\bigodot_{j=i-1}^{0} \Post_{1 j} } }} \\
+\Pred_1\!=\!\bigwedge_{i=0}^{n_1}(\Pred_{1i} \subst{\bigodot_{j=i-1}^{0}\Post_{i j}} ), \quad \Post_1= \bigodot_{i=n_1}^{0} \subst{\Post_{1i}} 
 $
 
 \item Similarly, a series of $m_1$ open transitions such that $m_1=n+m+3$   can be simplified as follows: 
@@ -3849,15 +3848,15 @@ s''=s_{30}
 
 \land
 
-\displaystyle{\set{\gamma_3}= \mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{3 i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{3 j} } }} 
+\displaystyle{\set{\gamma_3}= \mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{3 i}}\subst{\bigodot_{j=i-1}^{0} \Post_{3 j} } }} 
 
 \land 
 
-\Pred_3\!=\!\bigwedge_{i=0}^{m_1}(\Pred_{3i} \subst{\bigotimes_{j=i-1}^{0}\Post_{3 j}} )
+\Pred_3\!=\!\bigwedge_{i=0}^{m_1}(\Pred_{3i} \subst{\bigodot_{j=i-1}^{0}\Post_{3 j}} )
 
 \land 
 
- \Post_3= \bigotimes_{i=m_1}^{0} \subst{\Post_{3i}} 
+ \Post_3= \bigodot_{i=m_1}^{0} \subst{\Post_{3i}} 
 \end{mathpar}
 
 \item Concerning the middle reduction, by induction hypothesis there exists a set of open transitions in $\mathcal{T}$ such that:
@@ -3887,14 +3886,14 @@ s''=s_{30}
 where
 \begin{align*}
 s'=s_{20} &\wedge s_{2(n_2+1)}=s_2 \wedge  s_2' = s_{20}' \wedge s_{2(m_2+1)}'=s''\\
-\alpha''=&\alpha'\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}\\
-\set{\gamma_2}=&\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{2 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigotimes_{j=n_2}^{0}\Post_{2j}}} \dotcup\\
+\alpha''=&\alpha'\subst{\bigodot_{j=n_2}^{0}\Post_{2j}}\\
+\set{\gamma_2}=&\mybigdotcup_{i=0}^{n_2} \vis{\set{\beta_{2i}}\subst{\bigodot_{j=i-1}^{0} \Post_{2 j} } }  \dotcup  \vis{\set{\beta'}\subst{\bigodot_{j=n_2}^{0}\Post_{2j}}} \dotcup\\
 &
- \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{2i}} \subst{\bigotimes_{j=i-1}^{0}\Post\,'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j=n_2}^{0}\Post_{2j}}}
+ \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{2i}} \subst{\bigodot_{j=i-1}^{0}\Post\,'_{2j}\shortodot\Post\,'\shortodot\bigodot_{j=n_2}^{0}\Post_{2j}}}
 \\
-\Pred_2=&\bigwedge_{i=0}^{n_2}\Pred_{2i}\subst{\bigotimes_{j=i-1}^{0}\Post_{2j}}\land\Pred\,' \subst{\bigotimes_{j={n_2}}^{0}\Post_{2j}}\land\\ 
-&\Big(\bigwedge_{i=0}^{m_2}\Pred\,'_{2i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j={n_2}}^{0}\Post_{2j}}\Big)\\
-\Post_2=&\bigotimes_{j=m_2}^{0}\Post\,'_{2j}\shortotimes\Post\,'\shortotimes\bigotimes_{j={n_2}}^{0}\Post_{2j}
+\Pred_2=&\bigwedge_{i=0}^{n_2}\Pred_{2i}\subst{\bigodot_{j=i-1}^{0}\Post_{2j}}\land\Pred\,' \subst{\bigodot_{j={n_2}}^{0}\Post_{2j}}\land\\ 
+&\Big(\bigwedge_{i=0}^{m_2}\Pred\,'_{2i}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{2j}\shortodot\Post\,'\shortodot\bigodot_{j={n_2}}^{0}\Post_{2j}}\Big)\\
+\Post_2=&\bigodot_{j=m_2}^{0}\Post\,'_{2j}\shortodot\Post\,'\shortodot\bigodot_{j={n_2}}^{0}\Post_{2j}
 \end{align*}
 
 
@@ -3942,13 +3941,13 @@ s_{2i-m_1}' & \mbox{if }i\geq m_1
 Also, we have the following assertions:
 \begin{align*}
 s\!=\!s_{40}& ~\wedge~s_{4(n_1+n_2+1)}\!=s_2 ~\wedge~s_2' = s_{50} ~\wedge~ s_{5(m_1+m_2+1)}\!=\!s'\\
-\alpha''=&\alpha\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}\\
-\set{\gamma}=&\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}}\dotcup \\
-&\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{5i}\shortotimes\Post\,'\shortotimes\!\!\bigotimes_{j=n_1+n_2}^{0}\!\!\!\Post_{4i}} }\\
+\alpha''=&\alpha\subst{\!\!\bigodot_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}\\
+\set{\gamma}=&\mybigdotcup_{i=0}^{n_1+n_2} \vis{\set{\beta_{4i}}\subst{\bigodot_{j=i-1}^{0} \Post_{4 j} } }  \dotcup  \vis{\set{\beta'}\subst{\!\!\bigodot_{j=n_1+n_2}^{0}\!\!\!\Post_{4j}}}\dotcup \\
+&\mybigdotcup_{i=0}^{m_1+m_2}\!\!\vis{\set{\beta_{5i}}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{5i}\shortodot\Post\,'\shortodot\!\!\bigodot_{j=n_1+n_2}^{0}\!\!\!\Post_{4i}} }\\
 \Pred=&
-\bigwedge_{i=0}^{n_1+n_2}\!\!\Pred_{4i}\subst{\bigotimes_{j=i-1}^{0}\Post_{4j}}\land\Pred\,' \subst{\!\!\bigotimes_{j={n_1+n_2}}^{0}\!\!\!\Post_{4j}}\land\\ 
-&\quad\bigwedge_{i=0}^{m_1+m_2}\Pred_{5i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{5j}\shortotimes\Post\,'\shortotimes\!\!\!\bigotimes_{j={n_1+n_2}}^{0}\!\!\!\Post_{4j}}\\
-\Post=&\bigotimes_{j=m_1+m_2}^{0}\!\!\!\Post_{5j}\shortotimes\Post\,'\shortotimes\!\!\bigotimes_{j={n_1+n_2}}^{0}\!\!\Post_{4j}
+\bigwedge_{i=0}^{n_1+n_2}\!\!\Pred_{4i}\subst{\bigodot_{j=i-1}^{0}\Post_{4j}}\land\Pred\,' \subst{\!\!\bigodot_{j={n_1+n_2}}^{0}\!\!\!\Post_{4j}}\land\\ 
+&\quad\bigwedge_{i=0}^{m_1+m_2}\Pred_{5i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{5j}\shortodot\Post\,'\shortodot\!\!\!\bigodot_{j={n_1+n_2}}^{0}\!\!\!\Post_{4j}}\\
+\Post=&\bigodot_{j=m_1+m_2}^{0}\!\!\!\Post_{5j}\shortodot\Post\,'\shortodot\!\!\bigodot_{j={n_1+n_2}}^{0}\!\!\Post_{4j}
 \end{align*}
 
 
@@ -3980,7 +3979,7 @@ $t\in\mathcal{S}_2$ such that $(s,t|\Pred_{s,t})\in\mathcal{R}$, we
          {s \OTWeakarrow {\alpha} s'}
 
 \end{mathpar}
- there exist weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
+ there exists an indexed set of weak open transitions $\symb{WOT}_x^{x\in X} \subseteq \WT_2$:
  \begin{mathpar}
     \openrule
          {
@@ -4057,15 +4056,16 @@ Moreover, by using Lemma \ref{lem-rel-OT-WOT} we know that:
 \bigg)
 \end{mathpar}
 where
+
 \begin{align*}
 s=s_{10} &\wedge s_{1(n+1)}=s_{20} \wedge s_{21} = s_{30} \wedge s_{3(m+1)}=s'\\
-\alpha=&\alpha'\subst{\bigotimes_{j=n}^{0}\Post_{1j}}\\
-\gamma_j^{j\in J'}=&\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=n}^{0}\Post_{1j}}} \dotcup\\
-&\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}} }
+\alpha=&\alpha'\subst{\bigodot_{j=n}^{0}\Post_{1j}}\\
+\gamma_j^{j\in J'}=&\mybigdotcup_{i=0}^n \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{0} \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=n}^{0}\Post_{1j}}} \dotcup\\
+&\mybigdotcup_{i=0}^m \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}} }
 \\
-\Pred_{OT}=&\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=n}^{0}\Post_{1j}}\land\\ 
-&\qquad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}}\Big)\\
-\Post_{OT}=&\bigotimes_{j=m}^{0}\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=n}^{0}\Post_{1j}
+\Pred_{OT}=&\bigwedge_{i=0}^n\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j=n}^{0}\Post_{1j}}\land\\ 
+&\qquad\Big(\bigwedge_{i=0}^m\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}}\Big)\\
+\Post_{OT}=&\bigodot_{j=m}^{0}\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=n}^{0}\Post_{1j}
 \end{align*}
 
 
@@ -4177,9 +4177,9 @@ Based on cases described above by applying \WTTrois~rule on the resulting $\symb
            \gamma_{jc}^{j\in J_{c}}, \Pred_{OT_{c}}, \Post_{OT_{c}}}
          {v_{b} \OTWeakarrow {\tau} w_{c}}
 \\ 
-\set{\gamma'}=\gamma_{j a}^{j\in J_{a}} \dotcup \gamma_{jb}^{j\in J_{b}} \subst{\Post_{OT_a}} \dotcup\gamma_{jc}^{j\in J_{c}} \subst{\Post_{OT_{ b}}\shortotimes\Post_{OT_a}}\\
-\Pred=\Pred_{OT_a}\land\Pred_{OT_{b}}\subst{\Post_{OT_a}}\land \Pred_{OT_{c}}\subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}\\
-\Post= \Post_{OT_{c}} \shortotimes \Post_{OT_{b}}\shortotimes\Post_{OT_{a}}\quad \alpha''=\alpha_{2}\subst{\Post_{OT_a}}\\
+\set{\gamma'}=\gamma_{j a}^{j\in J_{a}} \dotcup \gamma_{jb}^{j\in J_{b}} \subst{\Post_{OT_a}} \dotcup\gamma_{jc}^{j\in J_{c}} \subst{\Post_{OT_{ b}}\shortodot\Post_{OT_a}}\\
+\Pred=\Pred_{OT_a}\land\Pred_{OT_{b}}\subst{\Post_{OT_a}}\land \Pred_{OT_{c}}\subst{\Post_{OT_{b}}\shortodot\Post_{OT_a}}\\
+\Post= \Post_{OT_{c}} \shortodot \Post_{OT_{b}}\shortodot\Post_{OT_{a}}\quad \alpha''=\alpha_{2}\subst{\Post_{OT_a}}\\
 }
 {
 \openrule
@@ -4196,8 +4196,8 @@ $\Pred_{s,t} \land \Pred\implies
      \land \alpha \!=\! \alpha'' \land  
      \Pred_{s',x}\subst{\Post_{OT}\uplus\Post\,})$\\
 We have:\\
-$\Pred_{OT}= \Pred_1 \wedge \Pred_2\subst{\Post_1} \wedge \Pred_3\subst{\Post_2\shortotimes\Post_1}$\\
-$\Post_{OT}=\Post_3\shortotimes \Post_2\shortotimes\Post_1$\\
+$\Pred_{OT}= \Pred_1 \wedge \Pred_2\subst{\Post_1} \wedge \Pred_3\subst{\Post_2\shortodot\Post_1}$\\
+$\Post_{OT}=\Post_3\shortodot \Post_2\shortodot\Post_1$\\
 Moreover, we have the following  statement:\\
 $\Pred_{s,t} \land \Pred_1\implies
  \displaystyle{\bigvee_{a\in A}}
@@ -4231,28 +4231,28 @@ By replacing the inner predicate $(\Pred_{s_{11},u_a}\wedge\Pred_2)$ by the conc
 This can be rewritten into:
 \begin{multline*}(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1} \implies\\
 {\bigvee_{a\in A}}\, {\bigvee_{b\in B}} 
-(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}\subst{\Post_1\uplus\Post_{OT_a}}   \land\Pred_{OT_a} \land \\ \Pred_{OT_{b}} \subst{\Post_1\uplus\Post_{OT_a}} \land  (\alpha'\!=\!\alpha_{2 b}) \subst{\Post_1\uplus\Post_{OT_a}} \land \\ \Pred_{s_{21},b}\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})
+(\forall j\in J_a. \vis{\beta_{1j}}\!\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\!=\!\gamma_{jb}\subst{\Post_1\uplus\Post_{OT_a}}   \land\Pred_{OT_a} \land \\ \Pred_{OT_{b}} \subst{\Post_1\uplus\Post_{OT_a}} \land  (\alpha'\!=\!\alpha_{2 b}) \subst{\Post_1\uplus\Post_{OT_a}} \land \\ \Pred_{s_{21},b}\subst{\Post_2\shortodot\Post_1\uplus \Post_{OT_{b}}\shortodot \Post_{OT_a}})
 \end{multline*}
 Since $Post_1$  does not act on $\gamma_{jb}$, nor on $ \Pred_{OT_{b}}$ and $  \alpha_{2}$. As well $\Post_{OT_a}$  does not act on $\alpha'$, nor on  $\beta_{2j}$ the formula can be simplified as follows:
 \begin{multline*}(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1}\implies\\
 \displaystyle{\bigvee_{a\in A}}\, \displaystyle{\bigvee_{b\in B}} 
-(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}=\gamma_{jb} \subst{\Post_{OT_a}}  \land\Pred_{OT_a} \land \\ \Pred_{OT_{b}} \subst{\Post_{OT_a}} \land \alpha'\subst{\Post_1}=\alpha_{2 b} \subst{\Post_{OT_a}} \land\\ \Pred_{s_{21},b}\subst{\Post_2\shortotimes\Post_1\uplus \Post_{OT_{b}}\shortotimes \Post_{OT_a}})\end{multline*}
-Finally, the conjunction with the term $\Pred_3\subst{\Post_2\shortotimes\Post_1}$ of the both sides of the implication and rewriting, we get:
-\begin{multline*}(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortotimes\Post_1}\implies \\
+(\forall j\in J_a. \vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}=\gamma_{jb} \subst{\Post_{OT_a}}  \land\Pred_{OT_a} \land \\ \Pred_{OT_{b}} \subst{\Post_{OT_a}} \land \alpha'\subst{\Post_1}=\alpha_{2 b} \subst{\Post_{OT_a}} \land\\ \Pred_{s_{21},b}\subst{\Post_2\shortodot\Post_1\uplus \Post_{OT_{b}}\shortodot \Post_{OT_a}})\end{multline*}
+Finally, the conjunction with the term $\Pred_3\subst{\Post_2\shortodot\Post_1}$ of the both sides of the implication and rewriting, we get:
+\begin{multline*}(\Pred_{s,t} \land \Pred_1)\wedge\Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortodot\Post_1}\implies \\
 \displaystyle{\bigvee_{a\in A}}\, \displaystyle{\bigvee_{b\in B}} 
-(\forall j\in J_a.\vis{\beta^1_j}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}\land \Pred_{OT_a}\land\\\Pred_{OT_{b}}\subst{\Post_{OT_a}} \land  \alpha'\subst{\Post_1}= \alpha_{2 b} \subst{\Post_{OT_a}} \land (\Pred_{s_{21},v_b} \land  \Pred_3)\\ \subst{\Post_2\shortotimes \Post_1\uplus \Post_{OT_{b}}\shortotimes\Post_{OT_a}})\end{multline*} 
-Again note that because of the domain  of the substitution function is independent from some predicates and expressions, we removed $\Post_1$ and  we  added the term $\Post_{OT_{b}}\shortotimes\,\Post_{OT_a}$ in the substitution of the right side of the implication.\\
+(\forall j\in J_a.\vis{\beta^1_j}\!=\!\gamma_{ja} \land  \forall j \in J_{b}. \vis{\beta_{2j}}\subst{\Post_1}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}\land \Pred_{OT_a}\land\\\Pred_{OT_{b}}\subst{\Post_{OT_a}} \land  \alpha'\subst{\Post_1}= \alpha_{2 b} \subst{\Post_{OT_a}} \land (\Pred_{s_{21},v_b} \land  \Pred_3)\\ \subst{\Post_2\shortodot \Post_1\uplus \Post_{OT_{b}}\shortodot\Post_{OT_a}})\end{multline*} 
+Again note that because of the domain  of the substitution function is independent from some predicates and expressions, we removed $\Post_1$ and  we  added the term $\Post_{OT_{b}}\shortodot\,\Post_{OT_a}$ in the substitution of the right side of the implication.\\
 Finally, by replacing the predicate $(\Pred_{s_{21},b} \land  \Pred_3)$
 by the conclusion of the  implication given in case 3, we get:
-\begin{multline*}\Pred_{s,t} \land \underbrace{\Pred_1\land \Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortotimes\Post_1}}_{\Pred_{OT}}\implies\\
+\begin{multline*}\Pred_{s,t} \land \underbrace{\Pred_1\land \Pred_2\subst{\Post_1} \land \Pred_3\subst{\Post_2\shortodot\Post_1}}_{\Pred_{OT}}\implies\\
  {\bigvee_{a\in A}}\, {\bigvee_{b\in B}}\, {\bigvee_{c\in C}} 
 (\forall\! j\in\! J_a.\vis{\beta_{1j}}\!=\!\gamma_{ja} \land  \forall j \!\in\! J_{b}.\vis{\beta_{2j}\subst{\Post_{OT_a}}}\!=\!\gamma_{jb} \subst{\Post_{OT_a}}  \land \\
- \forall j\!\in\! J_{c}. \vis{\beta_{3j} \subst{\Post_2\,\shortotimes\,\Post_1}} \!=\!\gamma_{jc} \subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}  \land\\
+ \forall j\!\in\! J_{c}. \vis{\beta_{3j} \subst{\Post_2\,\shortodot\,\Post_1}} \!=\!\gamma_{jc} \subst{\Post_{OT_{b}}\shortodot\Post_{OT_a}}  \land\\
    \underbrace{\Pred_{OT_a}\land\Pred_{OT_{b}} \subst{\Post_{OT_a}} \land 
-  \Pred_{OT_{c}}\subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}}_{\Pred} \land  \underbrace{\alpha'\subst{\Post_1}}_{\alpha}=\underbrace{\alpha_{2 b} \subst{\Post_{OT_a}}}_{\alpha''} \\\land \Pred_{s_{31},c}  \subst{\underbrace{\Post_3\shortotimes\Post_2\shortotimes\Post_1}_{\Post_{OT}}\uplus \underbrace{\Post_{OT_{c}}\shortotimes \Post_{OT_{b}}\shortotimes\Post_{OT_a}}_{\Post}})
+  \Pred_{OT_{c}}\subst{\Post_{OT_{b}}\shortodot\Post_{OT_a}}}_{\Pred} \land  \underbrace{\alpha'\subst{\Post_1}}_{\alpha}=\underbrace{\alpha_{2 b} \subst{\Post_{OT_a}}}_{\alpha''} \\\land \Pred_{s_{31},c}  \subst{\underbrace{\Post_3\shortodot\Post_2\shortodot\Post_1}_{\Post_{OT}}\uplus \underbrace{\Post_{OT_{c}}\shortodot \Post_{OT_{b}}\shortodot\Post_{OT_a}}_{\Post}})
 \end{multline*}
 The three for all statements (on $J_a$, $J_b$ and $J_c$) can be concatenated using $\dotcup$, the list union lifted to indexed sets (if $\gamma=\gamma'$ and $\gamma''=\gamma'''$ then $\gamma\dotcup\gamma''=\gamma'\dotcup\gamma'''$).
-\begin{multline*}\forall j\in J_a\uplus J_b\uplus J_c.  \vis{\beta_{1j}}\dotcup \vis{\beta_{2j}\subst{\Post_{OT_a}}}\dotcup \vis{\beta_{3j} \subst{\Post_2\shortotimes\Post_1}}=\\ ~\hspace{5.5cm} \gamma_{j a} \dotcup \gamma_{jb} \subst{\Post_{OT_a}}  \dotcup \gamma_{jc} \subst{\Post_{OT_{b}}\shortotimes\Post_{OT_a}}
+\begin{multline*}\forall j\in J_a\uplus J_b\uplus J_c.  \vis{\beta_{1j}}\dotcup \vis{\beta_{2j}\subst{\Post_{OT_a}}}\dotcup \vis{\beta_{3j} \subst{\Post_2\shortodot\Post_1}}=\\ ~\hspace{5.5cm} \gamma_{j a} \dotcup \gamma_{jb} \subst{\Post_{OT_a}}  \dotcup \gamma_{jc} \subst{\Post_{OT_{b}}\shortodot\Post_{OT_a}}
 \end{multline*}
 We have  $s_{31}=s'$, so can rewrite the formula:\\
 $\Pred_{s,t} \land \Pred_{OT}\implies
@@ -4326,11 +4326,11 @@ This section gives decomposition/composition lemmas and their proofs, these are 
 \\
 		\text{such that~\qquad}  \bigcup_{p=0}^nJ_{p} = J\cap\Holes(Q) 
 \text{, }
- \gamma_j^{j\in J\cap\Holes(Q)}= \mybigdotcup_{p=0}^n (\gamma_{p j}^{j\in J_p})\subst{\bigotimes_{i=p-1}^{0}\Post_i}, \\
+ \gamma_j^{j\in J\cap\Holes(Q)}= \mybigdotcup_{p=0}^n (\gamma_{p j}^{j\in J_p})\subst{\bigodot_{i=p-1}^{0}\Post_i}, \\
 {~\hspace{2cm}}\Pred \iff \Pred\,'
-		\land \!\!\bigwedge_{p=0}^n(\alpha_p\subst{\bigotimes_{i=p-1}^{0}\Post_i} = \beta_p\land \Pred_p\subst{\bigotimes_{i=p-1}^{0}\Post_i} ),
+		\land \!\!\bigwedge_{p=0}^n(\alpha_p\subst{\bigodot_{i=p-1}^{0}\Post_i} = \beta_p\land \Pred_p\subst{\bigodot_{i=p-1}^{0}\Post_i} ),
 \\
-{~\hspace{2cm}}\Post=\Post\,' \uplus \bigotimes_{p=n}^0
+{~\hspace{2cm}}\Post=\Post\,' \uplus \bigodot_{p=n}^0
 		\Post_p,   \text{and\quad} \forall i \in L_Q.\, s_{(n+1) i} = s_i'\land s_{0 i} = s_i\\
 		\end{mathpar} 
 where for any $p$, $\Post_p$ only acts upon  variables $\vars(Q)$.
@@ -4367,13 +4367,13 @@ $\\
 where\\
 {\small \begin{align*}
 \forall l\in L.\,&s_l=s_{0 l} \wedge s_{(m_1+1) l}=t_l \wedge t'_l = u_{0 l} \wedge u_{(m_2+1) l}=s'_l\\
-\alpha=&\alpha'{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}}\\
-\gamma_j^{j\in J}=&\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0}\!\! \Post_{1j}}}\dotcup\  \vis{\set{\beta_2}\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \dotcup  
-{\mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} }}
+\alpha=&\alpha'{\subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}}\\
+\gamma_j^{j\in J}=&\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{0}\!\! \Post_{1j}}}\dotcup\  \vis{\set{\beta_2}\subst{\bigodot_{j=m_1}^{0}\Post_{1j}}} \dotcup  
+{\mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} }}
 \\
-\Pred=&\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\land
-\bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\\
-\Post=&\bigotimes_{j=m_2}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}
+\Pred=&\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\land
+\bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\\
+\Post=&\bigodot_{j=m_2}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}
 \end{align*}}
 
 
@@ -4448,7 +4448,7 @@ such that  $\Pred_2 \iff {\Pred\,'_2}
 		\land {\Pred\,''_2}\land \alpha_2=\beta_{2j_0}$, $\Post_2={\Post\,'_2}\uplus 
 		{\Post\,''_2}$ where ${\Post\,''_2}$ is the restriction of $\Post_2$ over variables  $\vars(Q)$.
 
-Else $Q$ does not move and we have \\
+Else $Q$ does not move and we have: \\
 $\begin{small} P\models{\openrule
 			{
 				(\beta_{2j})^{j\in (J_2\setminus \Holes(Q)) \cup \{j_0\}}, 
@@ -4473,36 +4473,36 @@ By using  Lemma \ref{lem-rel-OT-WOT}, and denoting $\displaystyle{J=\bigcup_{i=0
 		}%\]
 \end{mathpar}
 where
-$\alpha''=\alpha'\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}}$\\
+$\alpha''=\alpha'\displaystyle{\subst{\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}}$\\
 On the other hand, we have:
-$\alpha=\alpha'\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}}\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,''_{1j}}}=\alpha''\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,''_{1j}}}$.\\
-As $\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,''_{1j}}}$ has no effect on variables of $P$ and thus on variables of $\alpha''$, so we have $\alpha=\alpha''$.
+$\alpha=\alpha'\displaystyle{\subst{\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}}\displaystyle{\subst{\bigodot_{j=m_1}^{0}\!\!\Post\,''_{1j}}}=\alpha''\displaystyle{\subst{\bigodot_{j=m_1}^{0}\!\!\Post\,''_{1j}}}$.\\
+As $\displaystyle{\subst{\bigodot_{j=m_1}^{0}\!\!\Post\,''_{1j}}}$ has no effect on variables of $P$ and thus on variables of $\alpha''$, so we have $\alpha=\alpha''$.
 \\
 {\small \begin{align*}
 \forall l\in L.\,&s_l=s_{0l} \wedge s_{(m_1+1)l}=t_l \wedge t'_l = u_{0l} \wedge u_{(m_2+1)l}=s'_l\\
-{(\gamma_j')}^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}=&\displaystyle{\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{1j}}}\dotcup  \vis{\set{\beta_{2}}\subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}}} \dotcup\\
+{(\gamma_j')}^{j\in (J\setminus \Holes(Q)) \cup \{j_0\}}=&\displaystyle{\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{1j}}}\dotcup  \vis{\set{\beta_{2}}\subst{\bigodot_{j=m_1}^{0}\Post\,'_{1j}}}} \dotcup\\
 & \mybigdotcup_{i=0}^{m_2}
-\vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}} }
+\vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}} }
 \\
-\Pred\,'=&\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land\\ 
-&\bigwedge_{i=0}^{m_2}\Pred\,'_{3i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}\\
-\Post'=&\bigotimes_{j=m_2}^{0}\!\!\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}
+\Pred\,'=&\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land\\ 
+&\bigwedge_{i=0}^{m_2}\Pred\,'_{3i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}\\
+\Post'=&\bigodot_{j=m_2}^{0}\!\!\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}
 \end{align*}}
 
  
 
 Note that for all $j\in J\setminus \Holes(Q)$, $\gamma_j' = \gamma_j$ because for all $l$ $\Post\,'_{1l}$ coincide with $\Post_{1l}$ on the variables of $\beta_{1ij}$, and similarly for $\Post\,'_2$ and $\Post\,'_{3l}$.
 %Concerning $\gamma'_{j_0}$ we have:
-%\[\gamma'_{j_0}=\displaystyle{\mybigdotcup_{i=0}^{m_1} \vis{{\alpha_{1i}}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post'_{1j}}}\dotcup  \vis{\set{\beta_{2}}\subst{\bigotimes_{j=m_1}^{0}\Post'_{1j}}}} \dotcup\\
+%\[\gamma'_{j_0}=\displaystyle{\mybigdotcup_{i=0}^{m_1} \vis{{\alpha_{1i}}\subst{\bigodot_{j=i-1}^{0}\!\!\Post'_{1j}}}\dotcup  \vis{\set{\beta_{2}}\subst{\bigodot_{j=m_1}^{0}\Post'_{1j}}}} \dotcup\\
 %~~\qquad \mybigdotcup_{i=0}^{m_2}
-%\vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\Post'_{3j}\shortotimes\Post'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post'_{1j}} }\]
+%\vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\Post'_{3j}\shortotimes\Post'_2\shortotimes\bigodot_{j=m_1}^{0}\!\!\Post'_{1j}} }\]
 
 We introduce the following predicate (we will need it for reasoning on the global predicate and will reason on it along the proof):\\
 $\begin{array}{l}\displaystyle{
-\Pred_\beta=\bigwedge_{p=0}^{m_1}(\beta_{1pj_0}=\alpha_{1p})\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{1j}} \wedge (\beta_{2j_0}=\alpha_{20})\subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}} \wedge \\\qquad\qquad
+\Pred_\beta=\bigwedge_{p=0}^{m_1}(\beta_{1pj_0}=\alpha_{1p})\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{1j}} \wedge (\beta_{2j_0}=\alpha_{20})\subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}} \wedge \\\qquad\qquad
 \displaystyle{
 \bigwedge_{p=0}^{m_2}(\beta_{3pj_0}=\alpha_{3p})
-\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}}
+\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}}
 \end{array}$
 
 
@@ -4550,17 +4550,17 @@ $\\
 In this equation, and using case 1 above for all $k\in [0\ldots n_1]$ there is a $p\in [0..m_1]$ such that $\alpha_{1p}=\alpha'_k$ (following the re-indexing done in the removal of steps where $Q$ does not move), we know that $\Pred_{1p}$ contains the predicate $( \alpha_{1p}=\beta_{1 p j_0})$. Because $\beta_{1 p j_0}$ only contains variables of $P$ and $\alpha'_k$ only variables of $Q$, we have:
 \begin{equation*}
 \begin{split}
-(\alpha_{1p}=\beta_{1pj_0})\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{1j}}&\iff
-\alpha_{1p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post\,''_{1j}}
-= \beta_{1 p j_0}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post\,'_{1j}} \\
-&\iff\alpha'_k\subst{\bigotimes_{j=k-1}^{0}\!\!\Post\,''_{j}}= \beta_{1 p j_0}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post\,'_{1j}} 
+(\alpha_{1p}=\beta_{1pj_0})\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{1j}}&\iff
+\alpha_{1p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post\,''_{1j}}
+= \beta_{1 p j_0}\subst{\bigodot_{j=p-1}^{0}\!\!\Post\,'_{1j}} \\
+&\iff\alpha'_k\subst{\bigodot_{j=k-1}^{0}\!\!\Post\,''_{j}}= \beta_{1 p j_0}\subst{\bigodot_{j=p-1}^{0}\!\!\Post\,'_{1j}} 
 \end{split}
 \end{equation*}
 We can obtain similar equations for $\alpha'_{n_1+1}$ related with $\beta_{2 j_0}$ and the  $\alpha'_k$ for $k\geq n_1+2$ related with $\beta_{3 p j_0}$ for some $p$. Note that the substitutions are however more complex in the other cases. 
 Overall we obtain (we skip here the details about the three cases 1, 2, and 3 above that all fall into the same equation because of the re-indexing we perform): 
 \begin{equation}\label{eqproofbeta}
 \Pred_\beta \iff \gamma_{j_0}=
-\vis{[\alpha'_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post\,''_{j}}|p\in[0..n_1+n_2+2]]}
+\vis{[\alpha'_{p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post\,''_{j}}|p\in[0..n_1+n_2+2]]}
 \end{equation}
 
 
@@ -4627,40 +4627,40 @@ with:
 {\small
 \begin{align*}
 \forall l \in L_Q. &v_{kl}=v_{(n'_{k})l} \wedge v_{kl}'=v_{(n'_k)l}\\
-\alpha_k=&\alpha'_{n_k}{\subst{\bigotimes_{j=n_k-1}^{n'_{k}}\!\!\Post\,''_{j}}}\\
-{\gamma_{kj}^{j\in J\cap\Holes(Q)} }=&{\mybigdotcup_{i=n'_{k}}^{(n_k\!-\!1)} \vis{{\beta_{ij}^{j\in J\cap\Holes(Q)}}\subst{\bigotimes_{l=i-1}^{n'_{k}}\!\!\!\Post\,''_{l}}}\dotcup \vis{{\beta_{n_k j}^{j\in J\cap\Holes(Q)}}\subst{\bigotimes_{l=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{l}}}} \dotcup\\
+\alpha_k=&\alpha'_{n_k}{\subst{\bigodot_{j=n_k-1}^{n'_{k}}\!\!\Post\,''_{j}}}\\
+{\gamma_{kj}^{j\in J\cap\Holes(Q)} }=&{\mybigdotcup_{i=n'_{k}}^{(n_k\!-\!1)} \vis{{\beta_{ij}^{j\in J\cap\Holes(Q)}}\subst{\bigodot_{l=i-1}^{n'_{k}}\!\!\!\Post\,''_{l}}}\dotcup \vis{{\beta_{n_k j}^{j\in J\cap\Holes(Q)}}\subst{\bigodot_{l=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{l}}}} \dotcup\\
 &\mybigdotcup_{i=n_k+1}^{n'_{k+1}-1}
-\vis{{\beta_{ij}^{j\in J\cap\Holes(Q)}} \subst{\bigotimes_{l=i-1}^{n_k\!+\!1}\!\Post\,''_{l}\shortotimes\Post\,''_{n_k}\shortotimes\!\!\bigotimes_{l=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{l}} }\\
-\Pred_k=&\bigwedge_{i=n'_{k}}^{n_k\!-\!1}\!\!\Pred\,''_{i}\subst{\bigotimes_{j=i-1}^{n'_{k}}\!\!\Post\,''_{j}}\land\Pred\,''_{n_k} \subst{\bigotimes_{j=n_k-1}^{n'_{k}}\!\!\Post\,''_{j}}\land\\ 
-&\bigwedge_{i=n_k+1}^{n'_{k+1}-1}\!\!\!\Pred\,''_{i}\subst{\bigotimes_{j=i-1}^{n'_{k}}\!\!\!\Post\,''_{j}\shortotimes\Post\,''_{n_k}\shortotimes\!\!\bigotimes_{j=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{j}}
+\vis{{\beta_{ij}^{j\in J\cap\Holes(Q)}} \subst{\bigodot_{l=i-1}^{n_k\!+\!1}\!\Post\,''_{l}\shortodot\Post\,''_{n_k}\shortodot\!\!\bigodot_{l=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{l}} }\\
+\Pred_k=&\bigwedge_{i=n'_{k}}^{n_k\!-\!1}\!\!\Pred\,''_{i}\subst{\bigodot_{j=i-1}^{n'_{k}}\!\!\Post\,''_{j}}\land\Pred\,''_{n_k} \subst{\bigodot_{j=n_k-1}^{n'_{k}}\!\!\Post\,''_{j}}\land\\ 
+&\bigwedge_{i=n_k+1}^{n'_{k+1}-1}\!\!\!\Pred\,''_{i}\subst{\bigodot_{j=i-1}^{n'_{k}}\!\!\!\Post\,''_{j}\shortodot\Post\,''_{n_k}\shortodot\!\!\bigodot_{j=n_k-1}^{n'_{k}}\!\!\!\Post\,''_{j}}
 \\
-\Post_k= &\bigotimes_{j=n'_{k+1}-1}^{n'_{k}}\!\!\Post\,''_{j}
+\Post_k= &\bigodot_{j=n'_{k+1}-1}^{n'_{k}}\!\!\Post\,''_{j}
 \end{align*}
 }
 
 
 \noindent Note that for all $k\in[0..n-1]$, $v_{kl}'=v_{(k+1)l}$,  $v_{0l}=s_{0l}=s_l$, and $v'_{nl}=v_{(n_1+n_2+3) l}=u_{(n_2+1) l} = s'_l$.
 
-\noindent By definition of $\Post_k$, we have $\displaystyle{\bigotimes_{j=n'_{k}-1}^{0}\!\!\Post\,''_{j} = \bigotimes_{j=k-1}^{0}\!\!\Post_{j}}$.
+\noindent By definition of $\Post_k$, we have $\displaystyle{\bigodot_{j=n'_{k}-1}^{0}\!\!\Post\,''_{j} = \bigodot_{j=k-1}^{0}\!\!\Post_{j}}$.
 %In this case, the number of weak open transitions
 %might not be exactly the number of open transitions that take part in the reduction but something smaller, thus the resulting set of weak open transitions could also be smaller.\\
 Consequently,  we have:
-\[\alpha'_{n_k}{\subst{\!\bigotimes_{j=n_k-1}^{0}\!\!\!\Post\,''_{j}}} =
-\alpha'_{n_k}\displaystyle{\subst{\!\bigotimes_{j=n_k-1}^{n'_{k}}\!\!\!\Post''_{j}\otimes\!\!\!\bigotimes_{j=n'_{k}-1}^{0}\!\!\!\Post\,''_{j}}} = \alpha_k\displaystyle{\subst{\!\bigotimes_{j=n'_{k}-1}^{0}\!\!\!\Post\,''_{j}}} = 
-\alpha_k\displaystyle{\subst{\!\bigotimes_{j=k-1}^{0}\!\!\Post_{j}}}\]
+\[\alpha'_{n_k}{\subst{\!\bigodot_{j=n_k-1}^{0}\!\!\!\Post\,''_{j}}} =
+\alpha'_{n_k}\displaystyle{\subst{\!\bigodot_{j=n_k-1}^{n'_{k}}\!\!\!\Post''_{j}\otimes\!\!\!\bigodot_{j=n'_{k}-1}^{0}\!\!\!\Post\,''_{j}}} = \alpha_k\displaystyle{\subst{\!\bigodot_{j=n'_{k}-1}^{0}\!\!\!\Post\,''_{j}}} = 
+\alpha_k\displaystyle{\subst{\!\bigodot_{j=k-1}^{0}\!\!\Post_{j}}}\]
 From equation~\ref{eqproofbeta}, we obtain the following equation (we recall that the actions $\alpha_k$ are the actions $\alpha'_{p}$ that are observable): 
 \begin{eqnarray*}
 \Pred_\beta &\iff& \gamma_{j_0}=
 \mybigdotcup_{p=0}^{p=n_1+n_2+2}
-\vis{\alpha'_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{j}}}\\
+\vis{\alpha'_{p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{j}}}\\
 %&\iff&\gamma_{j_0}=
 %\mybigdotcup_{p=0}^{p=n_1+n_2+2}
-%\vis{\alpha_{p}\subst{\bigotimes_{j=p-1}^{n'_p}\!\!\Post_{j}}\subst{\bigotimes_{j=n'_p-1}^{0}\!\!\Post_{j}}}\\
-%\vis{[\alpha_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{j}}|p\in[0..n_1+n_2+2]]}\\
+%\vis{\alpha_{p}\subst{\bigodot_{j=p-1}^{n'_p}\!\!\Post_{j}}\subst{\bigodot_{j=n'_p-1}^{0}\!\!\Post_{j}}}\\
+%\vis{[\alpha_{p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{j}}|p\in[0..n_1+n_2+2]]}\\
 %&\iff& \gamma_{j_0}=
-%\vis{[\alpha'_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{j}}|p\in[1..n]]}\\
+%\vis{[\alpha'_{p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{j}}|p\in[1..n]]}\\
 &\iff& \gamma_{j_0}=
-[\alpha_{p}\subst{\bigotimes_{j=p-1}^{0}\!\!\Post_{j}}|p\in[0..n]]
+[\alpha_{p}\subst{\bigodot_{j=p-1}^{0}\!\!\Post_{j}}|p\in[0..n]]
 \end{eqnarray*}
 
  
@@ -4674,60 +4674,60 @@ We need now to show that the set of WOT obtained above verifies the conditions o
 		}\]
 with
 \[  \bigcup_{p=0}^nJ_{p} = J\cap\Holes(Q) \qquad\text{trivial}\]
-\[ \gamma_j^{j\in J\cap\Holes(Q)}= \mybigdotcup_{p=0}^n (\gamma_{p j}^{j\in J_p})\subst{\bigotimes_{i=p-1}^{0}\Post_i)}\]
+\[ \gamma_j^{j\in J\cap\Holes(Q)}= \mybigdotcup_{p=0}^n (\gamma_{p j}^{j\in J_p})\subst{\bigodot_{i=p-1}^{0}\Post_i)}\]
 Indeed we have:
 \begin{equation*}
 \begin{split}
-\gamma_j^{j\in J}=&\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigotimes_{j=i-1}^{0}\!\! \Post_{1j}}}\dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \dotcup\\& \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} }\\
+\gamma_j^{j\in J}=&\mybigdotcup_{i=0}^{m_1} \vis{\set{\beta_{1i}}\subst{\bigodot_{j=i-1}^{0}\!\! \Post_{1j}}}\dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=m_1}^{0}\Post_{1j}}} \dotcup\\& \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} }\\
 \end{split}\end{equation*}
 
 And thus, because $\beta_{pj}^{j\in J\cap \Holes(Q)}$ are equal to the concatenation of  $(\beta'_{1pj})^{j\in J\cap \Holes(Q)}$, $(\beta'_{2j})^{j\in J\cap \Holes(Q)}$, and $(\beta_{3pj}')^{j\in J\cap \Holes(Q)}$ (re-indexed because we skipped some transitions), and additionally $(\beta_{1pj}')^{j\in J\cap \Holes(Q)}$, $(\beta_{2j}')^{j\in J\cap \Holes(Q)}$, and $(\beta_{3pj}')^{j\in J\cap \Holes(Q)}$ are identical to the hole labels $\beta_{1kj}^{j\in J\cap \Holes(Q)}$, $\beta_{2j}^{j\in J\cap \Holes(Q)}$, and $\beta_{3kj}^{j\in J\cap \Holes(Q)}$ (re-indexed) when $Q$ moves\footnote{more precisely, when $Q$ moves either $\beta_{1kj}^{j\in J\cap \Holes(Q)}$ is not empty  and thus $(\beta_{1pj}')^{j\in J\cap \Holes(Q)}=\beta_{1kj}^{j\in J\cap \Holes(Q)}$, or both are empty if the holes of $Q$ perform no action}. We can assert a similar equality on post-conditions, i.e. between $\Post\,''_p$ and $\Post\,''_{1k}$, $\Post\,''_{2}$, $\Post\,''_{3k}$ where $\Post\,''_{1p}$ is the restriction of $\Post_{1p}$ over $\vars(Q)$ (see initial decomposition, case 1, 2, and 3 above). Overall, we have
 $\forall i \in L_Q.\, s_{(n+1) i} = s_i'\land s_{0 i} = s_i$ (see above):\\
 {\scriptsize \begin{equation*}
 \begin{split}
-\gamma_j^{j\in J\cap \Holes(Q)}&=\mybigdotcup_{i=0}^{m_1} \vis{\set{(\beta_{1i}')}\subst{\bigotimes_{j=i-1}^{0}\!\! \Post''_{1j}}}\dotcup  \vis{\set{\beta'_2}\subst{\bigotimes_{j=m_1}^{0}\Post''_{1j}}} \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\Post''_{3j}\shortotimes\Post''_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post''_{1j}} }\\
-&=\mybigdotcup_{k=0}^n \left( \mybigdotcup_{i=n'_k}^{n'_{k+1}-1}\vis{\beta_{ij}^{j\in J\cap \Holes(Q)}\subst{\bigotimes_{j=i-1}^{n'_k}\!\!\Post''_{j}\bigotimes_{j=n'_k-1}^{0}\!\!\Post''_{j}}}\right)\\
-&=\mybigdotcup_{k=0}^n \left( \gamma_{kj}^{j\in J\cap \Holes(Q)}\subst{\bigotimes_{j=k-1}^{0}\!\!\Post_{k}}\right)
+\gamma_j^{j\in J\cap \Holes(Q)}&=\mybigdotcup_{i=0}^{m_1} \vis{\set{(\beta_{1i}')}\subst{\bigodot_{j=i-1}^{0}\!\! \Post''_{1j}}}\dotcup  \vis{\set{\beta'_2}\subst{\bigodot_{j=m_1}^{0}\Post''_{1j}}} \dotcup \mybigdotcup_{i=0}^{m_2} \vis{\set{\beta'_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\Post''_{3j}\shortodot\Post''_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post''_{1j}} }\\
+&=\mybigdotcup_{k=0}^n \left( \mybigdotcup_{i=n'_k}^{n'_{k+1}-1}\vis{\beta_{ij}^{j\in J\cap \Holes(Q)}\subst{\bigodot_{j=i-1}^{n'_k}\!\!\Post''_{j}\bigodot_{j=n'_k-1}^{0}\!\!\Post''_{j}}}\right)\\
+&=\mybigdotcup_{k=0}^n \left( \gamma_{kj}^{j\in J\cap \Holes(Q)}\subst{\bigodot_{j=k-1}^{0}\!\!\Post_{k}}\right)
 \end{split}\end{equation*}
 }
-Next, we have
+Next, we have:
 \[\Pred = \displaystyle{\Pred\,'
-		\land \!\!\bigwedge_{p=0}^n\Big((\alpha_p\subst{\bigotimes_{i=p-1}^{0}\Post_i}) = \beta_p\land (\Pred_p\subst{\bigotimes_{i=p-1}^{0}\Post_i}) \Big)}\]
+		\land \!\!\bigwedge_{p=0}^n\Big((\alpha_p\subst{\bigodot_{i=p-1}^{0}\Post_i}) = \beta_p\land (\Pred_p\subst{\bigodot_{i=p-1}^{0}\Post_i}) \Big)}\]
 Indeed,
 \begin{scriptsize}
 \begin{align*}
-\Pred&\iff\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\land
-\bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\\
+\Pred&\iff\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\land
+\bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\\
 &\iff\bigwedge_{i=0}^{m_1}\left(\Pred\,'_{1i}
-		\land {\Pred\,''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}\right)\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}} \\
+		\land {\Pred\,''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}\right)\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{1j}} \\
 &\qquad\land\left(\Pred\,'_{2}
-		\land {\Pred\,''_{2}}\land \alpha_{20}=\beta_{2j_0}\right)\subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\\
+		\land {\Pred\,''_{2}}\land \alpha_{20}=\beta_{2j_0}\right)\subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\\
 &\qquad\land\bigwedge_{i=0}^{m_2} \left(\Pred\,'_{3i}
-		\land {\Pred\,''_{3i}}\land \alpha_{3i}=\beta_{3ij_0}\right) \subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\displaybreak[0]\\
-&\iff\bigwedge_{i=0}^{m_1}\left((\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{1j}})
-		\land ({\Pred\,''_{1i}}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,''_{1j}})\land (\alpha_{1i}=\beta_{1ij_0})\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}}\right) \\
-&\qquad\land \left(\Pred\,'_{2}\subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}
-		\land {\Pred\,''_{2}} \subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} \land (\alpha_{20}=\beta_{2j_0})\subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} \right) \\
-&\qquad\land\bigwedge_{i=0}^{m_2} \Bigg(\Pred\,'_{3i} \subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} 
-		\land {\Pred\,''_{3i}} \subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}  \\
-		 & \qquad \land (\alpha_{3i}=\beta_{3ij_0}) \subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}\Bigg)  \\
-&\iff \Pred\,'\land\bigwedge_{k=0}^n\Pred_k\subst{\bigotimes_{j=k-1}^{0}\!\!\Post_{j}}\land\Pred_\beta
-\\&\iff \Pred\,'\land\bigwedge_{k=0}^n\Pred_k\subst{\bigotimes_{j=k-1}^{0}\!\!\Post_{j}}\land
-(\gamma_{j_0}=[\alpha_{i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{j}}|i\in[0..n]])
+		\land {\Pred\,''_{3i}}\land \alpha_{3i}=\beta_{3ij_0}\right) \subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\displaybreak[0]\\
+&\iff\bigwedge_{i=0}^{m_1}\left((\Pred\,'_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{1j}})
+		\land ({\Pred\,''_{1i}}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,''_{1j}})\land (\alpha_{1i}=\beta_{1ij_0})\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{1j}}\right) \\
+&\qquad\land \left(\Pred\,'_{2}\subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}
+		\land {\Pred\,''_{2}} \subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} \land (\alpha_{20}=\beta_{2j_0})\subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} \right) \\
+&\qquad\land\bigwedge_{i=0}^{m_2} \Bigg(\Pred\,'_{3i} \subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} 
+		\land {\Pred\,''_{3i}} \subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}  \\
+		 & \qquad \land (\alpha_{3i}=\beta_{3ij_0}) \subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}\Bigg)  \\
+&\iff \Pred\,'\land\bigwedge_{k=0}^n\Pred_k\subst{\bigodot_{j=k-1}^{0}\!\!\Post_{j}}\land\Pred_\beta
+\\&\iff \Pred\,'\land\bigwedge_{k=0}^n\Pred_k\subst{\bigodot_{j=k-1}^{0}\!\!\Post_{j}}\land
+(\gamma_{j_0}=[\alpha_{i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{j}}|i\in[0..n]])
 \end{align*}
 \end{scriptsize}
 which is exactly what is needed with $\gamma_{j_0}=[\beta_0..\beta_n]$.
 
 Finally we have~~
-$\Post=\displaystyle{\Post\,' \uplus \bigotimes_{p=n}^0
+$\Post=\displaystyle{\Post\,' \uplus \bigodot_{p=n}^0
 		\Post_p}$\quad
 because
 {\small \begin{align*}
-\Post&=\bigotimes_{j=m_2}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}\\
-&=\bigotimes_{j=m_2}^{0}\!\!\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j} \uplus \bigotimes_{j=m_2}^{0}\!\!\Post\,''_{3j}\shortotimes\Post\,''_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,''_{1j}\\
-&=\Post\,' \uplus \bigotimes_{j=n'_{n+1}-1}^{0}\!\!\Post\,''_{j}
+\Post&=\bigodot_{j=m_2}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post_{1j}\\
+&=\bigodot_{j=m_2}^{0}\!\!\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j} \uplus \bigodot_{j=m_2}^{0}\!\!\Post\,''_{3j}\shortodot\Post\,''_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,''_{1j}\\
+&=\Post\,' \uplus \bigodot_{j=n'_{n+1}-1}^{0}\!\!\Post\,''_{j}
 \end{align*}}
-Which concludes because we have we have $\displaystyle{\bigotimes_{j=n'_{k}-1}^{0}\!\!\Post\,''_{j} = \bigotimes_{j=k-1}^{0}\!\!\Post_{j}}$.
+Which concludes because  we have $\displaystyle{\bigodot_{j=n'_{k}-1}^{0}\!\!\Post\,''_{j} = \bigodot_{j=k-1}^{0}\!\!\Post_{j}}$.
 %
 %Consequently, we have $n$ weak open transitions  $\symb{WOT}_k$ such that $k\in [1..n]$.
 %Therefore, we can conclude that we have for all $k\in [1..n]$:  
@@ -4760,35 +4760,35 @@ Which concludes because we have we have $\displaystyle{\bigotimes_{j=n'_{k}-1}^{
 %%$\\
 %%and similarly for $\beta_p$. Thus, we can rewrite $\gamma$ given in the hypothesis as: \\
 %%$\set{\gamma}= \displaystyle{\mybigdotcup_{p=0}^{n}
-%%\vis{\set{\beta_{p}}}\subst{\bigotimes_{p=n}^{0} \Post_{p}}}$\\
+%%\vis{\set{\beta_{p}}}\subst{\bigodot_{p=n}^{0} \Post_{p}}}$\\
 %Furthermore, still by hypothesis we have:\\
-%$\Pred=\displaystyle{\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}} }\land \\
-%~\qquad \quad \bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}$\\
+%$\Pred=\displaystyle{\bigwedge_{i=0}^{m_1}\Pred_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{1j}}\land\Pred_2 \subst{\bigodot_{j=m_1}^{0}\!\!\Post_{1j}} }\land \\
+%~\qquad \quad \bigwedge_{i=0}^{m_2}\Pred_{3i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}$\\
 %By replacing $\Pred_{1i}$,  $\Pred_2$, and $\Pred_{3i}$ by their equivalent formula obtained from cases 1, 2 and 3 we have:\\
 %$\Pred =\displaystyle{\bigwedge_{i=0}^{m_1}({\Pred'_{1i}}
-%		\land {\Pred''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}) \bigotimes_{j=i-1}^{0}\subst{\Post_{1j}}\land}\\
-%~~\qquad\qquad({\Pred'_2}\land {\Pred''_2}\land \alpha_2=\beta_{2j_0})	\bigotimes_{i=m_1}^{0}\subst{\Post_{1i}}\land\\
+%		\land {\Pred''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}) \bigodot_{j=i-1}^{0}\subst{\Post_{1j}}\land}\\
+%~~\qquad\qquad({\Pred'_2}\land {\Pred''_2}\land \alpha_2=\beta_{2j_0})	\bigodot_{i=m_1}^{0}\subst{\Post_{1i}}\land\\
 %~~\qquad\qquad\bigwedge_{i=0}^{m_2} ({\Pred'_{3i}}\land {\Pred''_{3i}}\land \alpha_{3i}=\beta_{3ij_0})
-%\subst{\bigotimes_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}$\\
+%\subst{\bigodot_{j=i-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}$\\
 %By distribution of the substitution operation over the logical operator we reformulate as:\\
 %$\Pred= \displaystyle{\big(\bigwedge_{i=0}^{m_1}
-%{\Pred'_{1i}}\bigotimes_{j=i-1}^{0}\subst{{\Post'_{1j}}}\big)
-%\land{\Pred'_2}\bigotimes_{i=m_1}^{0}\subst{{\Post'_{1i}}}\land} \\
-%~~\qquad\qquad\bigwedge_{i=0}^{m_2}{\Pred'_{3i}}\bigotimes_{j=i-1}^{0}\subst{{\Post'_{3j}}}\subst{{\Post'_2}}\bigotimes_{j=m_1}^{0}\subst{{\Post'_{1j}}} \land\\	
-%~\qquad\qquad\bigwedge_{i=0}^{m_1}({\Pred''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}) \bigotimes_{j=i-1}^{0}\subst{\Post_{1j}}\land({\Pred''_2}\land \alpha_2=\beta_{2j_0})	\bigotimes_{i=m_1}^{0}\subst{\Post_{1i}}\land\\
-%~\qquad\qquad\bigwedge_{i=0}^{m_2} ({\Pred''_{3i}}\land \alpha_{3i}=\beta_{3ij_0})\bigotimes_{j=i-1}^{0}\subst{\Post_{3j}}\subst{\Post_2}  \bigotimes_{i=m_1}^{0}\subst{\Post_{1i}}
+%{\Pred'_{1i}}\bigodot_{j=i-1}^{0}\subst{{\Post'_{1j}}}\big)
+%\land{\Pred'_2}\bigodot_{i=m_1}^{0}\subst{{\Post'_{1i}}}\land} \\
+%~~\qquad\qquad\bigwedge_{i=0}^{m_2}{\Pred'_{3i}}\bigodot_{j=i-1}^{0}\subst{{\Post'_{3j}}}\subst{{\Post'_2}}\bigodot_{j=m_1}^{0}\subst{{\Post'_{1j}}} \land\\	
+%~\qquad\qquad\bigwedge_{i=0}^{m_1}({\Pred''_{1i}}\land \alpha_{1i}=\beta_{1ij_0}) \bigodot_{j=i-1}^{0}\subst{\Post_{1j}}\land({\Pred''_2}\land \alpha_2=\beta_{2j_0})	\bigodot_{i=m_1}^{0}\subst{\Post_{1i}}\land\\
+%~\qquad\qquad\bigwedge_{i=0}^{m_2} ({\Pred''_{3i}}\land \alpha_{3i}=\beta_{3ij_0})\bigodot_{j=i-1}^{0}\subst{\Post_{3j}}\subst{\Post_2}  \bigodot_{i=m_1}^{0}\subst{\Post_{1i}}
 %$\\		
 %Thus, we can write the formula as follows:\\
-%$\Pred= \Pred\,' \wedge \displaystyle{\bigwedge_{p=0}^{n}}((\alpha_p= \beta_{pj_0}\land \Pred_p)\bigotimes_{i=p-1}^{0}\Post_i)$\\
+%$\Pred= \Pred\,' \wedge \displaystyle{\bigwedge_{p=0}^{n}}((\alpha_p= \beta_{pj_0}\land \Pred_p)\bigodot_{i=p-1}^{0}\Post_i)$\\
 %We proceed the same way with the postcondition,  we have:\\
-%$\Post=\displaystyle{\bigotimes_{j=m_2}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post_{1j}}$\\
+%$\Post=\displaystyle{\bigodot_{j=m_2}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigodot_{j=m_1}^{0}\!\!\Post_{1j}}$\\
 %By replacing ${\Post_{1i}}$,  $\Post_2$, and ${\Post_{3i}}$ their values obtained from the cases 1, 2, and 3, and because the ${\Post'_i}$ and ${\Post''_i}$ are independent (the ${\Post'_i}$ concern the leaves of $P$ while the ${\Post''_i}$ concern the leaves of $Q$), we obtain:\\
-%$\Post= \displaystyle{\bigotimes_{i=m_2}^{0}\subst{{\Post'_{3i}}\uplus 
+%$\Post= \displaystyle{\bigodot_{i=m_2}^{0}\subst{{\Post'_{3i}}\uplus 
 %		{\Post''_{3i}}} \subst{{\Post'_2}\uplus 
-%		{\Post''_2}} \bigotimes_{j=m_1}^{0}\subst{ {\Post'_{1i}}\uplus 
+%		{\Post''_2}} \bigodot_{j=m_1}^{0}\subst{ {\Post'_{1i}}\uplus 
 %		{\Post''_{1i}}}}\\
-%~~\qquad= \bigotimes_{i=m_2}^{0}{\Post'_{3i}}\subst{{\Post'_2}}\bigotimes_{j=m_1}^{0}\subst{{\Post'_{1j}}} \uplus \bigotimes_{i=m_2}^{0}{\Post''_{3i}}\subst{{\Post''_2}}\bigotimes_{j=m_1}^{0}\subst{{\Post''_{1j}}} \\
-%~~\qquad= \Post' \uplus \bigotimes_{j=n}^{0} \Post_j $\\
+%~~\qquad= \bigodot_{i=m_2}^{0}{\Post'_{3i}}\subst{{\Post'_2}}\bigodot_{j=m_1}^{0}\subst{{\Post'_{1j}}} \uplus \bigodot_{i=m_2}^{0}{\Post''_{3i}}\subst{{\Post''_2}}\bigodot_{j=m_1}^{0}\subst{{\Post''_{1j}}} \\
+%~~\qquad= \Post' \uplus \bigodot_{j=n}^{0} \Post_j $\\
 %\qed
 \end{proof}
 
@@ -4823,7 +4823,7 @@ $\Pred\,'=\Pred\land (\beta_{j_0}=\alpha_Q\land \Pred_Q) \quad\text{~~and~~}\qua
 \Post\,'=\Post\uplus\Post_Q
 $
 
-Then, we have
+Then, we have:
 {\small	\[ P[Q]_{j_0}  
 	\models
 	{\openrule
@@ -4860,14 +4860,14 @@ such that\\
 \begin{small}
 $s_i^{i\in L_Q}=s_{10} \wedge s_{1(k+1) i}=s_{20} \wedge  s_{21}= s_{30} \wedge s_{3(k'+1) i}={s'}_i^{i\in L_Q}$
 \begin{align*}
-\alpha_Q=&\alpha'_Q\displaystyle{\subst{\bigotimes_{j=k}^{0}\Post_{1j}}}\\
-\set{\gamma}=&\mybigdotcup_{h=0}^k \vis{\set{\beta_{1h}}\subst{\!\!\bigotimes_{j=h-1}^{0}\!\! \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigotimes_{j=k}^{0}\!\!\Post_{1j}}} \dotcup%\\
+\alpha_Q=&\alpha'_Q\displaystyle{\subst{\bigodot_{j=k}^{0}\Post_{1j}}}\\
+\set{\gamma}=&\mybigdotcup_{h=0}^k \vis{\set{\beta_{1h}}\subst{\!\!\bigodot_{j=h-1}^{0}\!\! \Post_{1j} } }  \dotcup  \vis{\set{\beta_2}\subst{\bigodot_{j=k}^{0}\!\!\Post_{1j}}} \dotcup%\\
 		%&
- \mybigdotcup_{h=0}^{k'} \vis{\set{\beta_{3h}} \subst{\!\!\bigotimes_{j=h-1}^{0}\!\!\Post_{3j}\shortotimes\Post_2\shortotimes\bigotimes_{j=k}^{0}\Post_{1j}} }\\
-\Pred_Q=&\bigwedge_{h=0}^{k}\!\Pred_{1h}\subst{\!\!\bigotimes_{j=h-1}^{0}\!\!\!\!\Post_{1 j}}\land \Pred_2\subst{\bigotimes_{h=k}^{0}\Post_{1h}}\land%\\
+ \mybigdotcup_{h=0}^{k'} \vis{\set{\beta_{3h}} \subst{\!\!\bigodot_{j=h-1}^{0}\!\!\Post_{3j}\shortodot\Post_2\shortodot\bigodot_{j=k}^{0}\Post_{1j}} }\\
+\Pred_Q=&\bigwedge_{h=0}^{k}\!\Pred_{1h}\subst{\!\!\bigodot_{j=h-1}^{0}\!\!\!\!\Post_{1 j}}\land \Pred_2\subst{\bigodot_{h=k}^{0}\Post_{1h}}\land%\\
 %&
-	\!\bigwedge_{h=0}^{k'}\!\Pred_{3h}\subst{\!\! 	\bigotimes_{j=h-1}^{0}\!\!\!{\Post_{3j}}\otimes{\Post_2}  \otimes\bigotimes_{h=k}^{0}\!\!\Post_{1h}}\\
-\Post_Q=&\bigotimes_{h=k'}^{0}\!\!\Post_{3h}\otimes\Post_2\otimes\bigotimes_{j=k}^{0}\!\!\Post_{1j}
+	\!\bigwedge_{h=0}^{k'}\!\Pred_{3h}\subst{\!\! 	\bigodot_{j=h-1}^{0}\!\!\!{\Post_{3j}}\otimes{\Post_2}  \otimes\bigodot_{h=k}^{0}\!\!\Post_{1h}}\\
+\Post_Q=&\bigodot_{h=k'}^{0}\!\!\Post_{3h}\otimes\Post_2\otimes\bigodot_{j=k}^{0}\!\!\Post_{1j}
 \end{align*}
 
 
@@ -4915,20 +4915,20 @@ Using Lemma \ref{lem-rel-OT-WOT}, from cases $(1)$, $(2)$ and $(3)$ we get:
          {\ostate{s_{10}\uplus s^{i\in L}_{i}} \OTWeakarrow {\alpha'} 
 	\ostate{{{s'}^{i\in L}_{i}\uplus s_{3(k'+1)}}}}\] 
 where ~~
-$\alpha'=\alpha\displaystyle{\subst{\bigotimes_{j=k}^{0}\Post_{1j}}}$
+$\alpha'=\alpha\displaystyle{\subst{\bigodot_{j=k}^{0}\Post_{1j}}}$
 and $\alpha=\alpha'$  because $\Post_{1j}$ acts on variables of $Q$ and $\alpha$ contains only variables of $P$.
 \begin{small}
 \begin{align*}
-\set{\gamma_c}=&\mybigdotcup_{h=0}^k \vis{\set{\beta_{1h}}\subst{\bigotimes_{i=h-1}^{0}\!\! \Post_{1i} } }  \dotcup  \vis{({\beta_{j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2})\subst{\bigotimes_{i=k}^{0}\Post_{1i}}} \dotcup\\
-&\mybigdotcup_{h=0}^{k'} \vis{\set{\beta_{3h}} \subst{\bigotimes_{i=h-1}^{0}\!\!\Post_{3i}\shortotimes\Post_2\shortotimes\bigotimes_{i=k}^{0}\Post_{1i}} }\\
+\set{\gamma_c}=&\mybigdotcup_{h=0}^k \vis{\set{\beta_{1h}}\subst{\bigodot_{i=h-1}^{0}\!\! \Post_{1i} } }  \dotcup  \vis{({\beta_{j}}^{(j\in J\setminus\{j_0\})} \uplus \set{\beta_2})\subst{\bigodot_{i=k}^{0}\Post_{1i}}} \dotcup\\
+&\mybigdotcup_{h=0}^{k'} \vis{\set{\beta_{3h}} \subst{\bigodot_{i=h-1}^{0}\!\!\Post_{3i}\shortodot\Post_2\shortodot\bigodot_{i=k}^{0}\Post_{1i}} }\\
 =&\set{\gamma}\uplus\vis{\beta_j^{\in J\setminus \{j_0\}}} \quad  \text{ because $\Post_{1j}$  does not act on variables of $\beta_j$.}  
 \displaybreak[0]\\
 \Pred_c=&
-\bigwedge_{h=0}^k{\Pred_{1h}}\subst{\bigotimes_{i=h-1}^{0}\Post_{1i}}\land
-\left(Pred\land\Pred_2\land \alpha'_Q=\beta_{j_0}\right) \subst{\bigotimes_{i=k}^{0}{\Post_{1i}}}\land\\
-&\bigwedge_{h=0}^{k'}{\Pred_{3h}}\subst{\bigotimes_{i=h-1}^{0}{\Post_{3i}}\shortotimes({\Post\uplus \Post_2})\shortotimes\bigotimes_{i=k}^{0}{\Post_{1i}}}
+\bigwedge_{h=0}^k{\Pred_{1h}}\subst{\bigodot_{i=h-1}^{0}\Post_{1i}}\land
+\left(Pred\land\Pred_2\land \alpha'_Q=\beta_{j_0}\right) \subst{\bigodot_{i=k}^{0}{\Post_{1i}}}\land\\
+&\bigwedge_{h=0}^{k'}{\Pred_{3h}}\subst{\bigodot_{i=h-1}^{0}{\Post_{3i}}\shortodot({\Post\uplus \Post_2})\shortodot\bigodot_{i=k}^{0}{\Post_{1i}}}
 \\
-\Post_c=&(\bigotimes_{i=k'}^{0}{\Post_{3i}})\shortotimes({\Post\uplus \Post_2})\shortotimes\bigotimes_{i=k}^{0}{\Post_{1i}}
+\Post_c=&(\bigodot_{i=k'}^{0}{\Post_{3i}})\shortodot({\Post\uplus \Post_2})\shortodot\bigodot_{i=k}^{0}{\Post_{1i}}
 \end{align*}
 \end{small}
 \noindent Note that we have $s_i^{i\in L_Q}=s_{10} \wedge s_{1(k+1) i}=s_{20} \wedge  s_{21}= s_{30} \wedge s_{3(k'+1) i}={s'}_i^{i\in L_Q}$.
@@ -4936,8 +4936,8 @@ and $\alpha=\alpha'$  because $\Post_{1j}$ acts on variables of $Q$ and $\alpha$
 Note also that $\Post$ only acts on variables of $P$ while $\Post_{1i}$ only acts on  variables of $Q$. We conclude on predicate and posts as follows\footnote{$\Post_{1i}$ only has an effect on variables of $Q$ and thus does not modify $\Pred$ or $\beta_{j_0}$}:
 \begin{equation*}
 \begin{split}
-\Pred_c&=\Pred_Q\land\Pred\subst{\bigotimes_{i=k}^{0}{\Post_{1i}}}\land
-(\alpha'_Q=\beta_{j_0})\subst{\bigotimes_{i=k}^{0}{\Post_{1i}}}\\
+\Pred_c&=\Pred_Q\land\Pred\subst{\bigodot_{i=k}^{0}{\Post_{1i}}}\land
+(\alpha'_Q=\beta_{j_0})\subst{\bigodot_{i=k}^{0}{\Post_{1i}}}\\
 &=\Pred_Q\land\Pred\land \alpha_Q=\beta_{j_0}\\[.3ex]
 \Post_c&=\Post\uplus\Post_Q \qedhere
 \end{split}
@@ -4973,14 +4973,14 @@ J_Q=\displaystyle{\bigcup_{p=0}^nJ_{p}}
 
 \forall{i\in L_Q}.\,s_i=s_{0i}~~\land~~s'_i=s_{(n+1) i}
 
-\forall j\in J_p,\,\gamma_j= \displaystyle{\mybigdotcup_{p=0}^n \gamma_{p j}\subst{\bigotimes_{k=p}^{0}{\Post_k}}}
+\forall j\in J_p,\,\gamma_j= \displaystyle{\mybigdotcup_{p=0}^n \gamma_{p j}\subst{\bigodot_{k=p}^{0}{\Post_k}}}
 
-\Pred\,'=\Pred\land \bigwedge_{p=0}^{n}(\alpha_p=\beta_p\land \Pred_p)\subst{\bigotimes_{i=p-1}^{0}\Post_i} 
+\Pred\,'=\Pred\land \bigwedge_{p=0}^{n}(\alpha_p=\beta_p\land \Pred_p)\subst{\bigodot_{i=p-1}^{0}\Post_i} 
 
-\Post\,'=\Post\uplus\bigotimes_{p=n}^{0}
+\Post\,'=\Post\uplus\bigodot_{p=n}^{0}
 		\Post_p
 \end{mathpar}
-Then, we have
+Then, we have:
 	\[ P[Q]_{j_0}  
 	\models
 	{\openrule
@@ -5027,13 +5027,13 @@ and  $\forall p \in [0\,..\,m_2].P\models\openrule
 {\small
 \begin{align*}
 \forall i\in L.&~~s_i=s_{10 i} \wedge s_{1(m_1+1) i}=s_{20i} \wedge  s_{21i}= s_{30 i} \wedge s_{3(m_2+1) i}=s'_i\\
-\alpha=&\alpha'{\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}} \\
-\gamma_j^{j\in J}=&{\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}^{j\in J_{1p}}}\subst{\bigotimes_{k=i-1}^{0}\!\! \Post_{1k} } }  \dotcup \, \vis{{\beta_{2j}^{j\in J_{2}}}\subst{\bigotimes_{k=m_1}^{0}\Post_{1k}}}}\, \dotcup\\
-&\mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij}^{j\in J_{3p}} \subst{\bigotimes_{k=i-1}^{0}\Post_{3k}\shortotimes\Post_2\shortotimes\bigotimes_{k=m_1}^{0}\Post_{1k}}}\\
-\Pred=&{\bigwedge_{p=0}^{m_1}\!\big(\Pred_{1p}\subst{\!\bigotimes_{j=p-1}^{0}\!\!\Post_{1j}}\big)\land\Pred_2\subst{\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}\land}%\\ 
+\alpha=&\alpha'{\subst{\bigodot_{j=m_1}^{0}\Post_{1j}}} \\
+\gamma_j^{j\in J}=&{\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}^{j\in J_{1p}}}\subst{\bigodot_{k=i-1}^{0}\!\! \Post_{1k} } }  \dotcup \, \vis{{\beta_{2j}^{j\in J_{2}}}\subst{\bigodot_{k=m_1}^{0}\Post_{1k}}}}\, \dotcup\\
+&\mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij}^{j\in J_{3p}} \subst{\bigodot_{k=i-1}^{0}\Post_{3k}\shortodot\Post_2\shortodot\bigodot_{k=m_1}^{0}\Post_{1k}}}\\
+\Pred=&{\bigwedge_{p=0}^{m_1}\!\big(\Pred_{1p}\subst{\!\bigodot_{j=p-1}^{0}\!\!\Post_{1j}}\big)\land\Pred_2\subst{\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}\land}%\\ 
 %&
-{\bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\bigotimes_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}}\\
-\Post=&{\bigotimes_{p=m_2}^{0}\Post_{3p}\otimes\Post_2\otimes\bigotimes_{j=m_1}^{0}\Post_{1j}}
+{\bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\bigodot_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}}\\
+\Post=&{\bigodot_{p=m_2}^{0}\Post_{3p}\otimes\Post_2\otimes\bigodot_{j=m_1}^{0}\Post_{1j}}
 \end{align*}
 }
 
@@ -5046,15 +5046,15 @@ which the hole $j_0$ moves in the 3 sets of OTs above ($\beta_m$ is the action t
 \begin{align*}
 \gamma_{j_0}\!=&~[\beta_0..\beta_n]\\
  =&\!\!
-{\mybigdotcup_{\substack{i=0\\j_0\in J_{1i}}}^{m_1}\!\!\! \vis{{\beta_{1ij_0}}\subst{\!\bigotimes_{k=i-1}^{0} \!\!\!\!\Post_{1k} } }  \,\dotcup\, \vis{{\beta_{2j_0}}\subst{\!\bigotimes_{k=m_1}^{0}\!\!\!\Post_{1k}}}}\dotcup\! %\\
+{\mybigdotcup_{\substack{i=0\\j_0\in J_{1i}}}^{m_1}\!\!\! \vis{{\beta_{1ij_0}}\subst{\!\bigodot_{k=i-1}^{0} \!\!\!\!\Post_{1k} } }  \,\dotcup\, \vis{{\beta_{2j_0}}\subst{\!\bigodot_{k=m_1}^{0}\!\!\!\Post_{1k}}}}\dotcup\! %\\
 %&
-{ \!\mybigdotcup_{\substack{i=0\\j_0\in J_{3i}}}^{m_2}\!\! \vis{{\beta_{3ij_0}} \subst{\!\bigotimes_{k=i-1}^{0}\!\!\!\Post_{3k}\shortotimes\Post_2\shortotimes
-\!\!\bigotimes_{k=m_1}^{0}\!\!\!\Post_{1k}}}}
+{ \!\mybigdotcup_{\substack{i=0\\j_0\in J_{3i}}}^{m_2}\!\! \vis{{\beta_{3ij_0}} \subst{\!\bigodot_{k=i-1}^{0}\!\!\!\Post_{3k}\shortodot\Post_2\shortodot
+\!\!\bigodot_{k=m_1}^{0}\!\!\!\Post_{1k}}}}
 \end{align*}}
 
 \noindent We have, by definition of $n_i$ and $n'_i$:\\
-$\displaystyle{\forall{i\in[0\,..\,m\!-\!1]}, \beta_{1 n_i j_0}\subst{\bigotimes_{k=n_i-1}^{0}\Post_{1k}}=\beta_i}$, \qquad$\displaystyle{\beta_{2 j_0}\subst{\bigotimes_{k=m_1}^{0} \Post_{1k} }=\beta_m}$, and \\
-$\displaystyle{\forall{i\in[m\!+\!1\,..\,n]}, \beta_{3 n_i' j_0}\subst{\bigotimes_{k=n_i'-1}^{0}\Post_{3k}\shortotimes\Post_2\shortotimes\bigotimes_{k=m_1}^{0}\Post_{1k}}=\beta_i}$\\
+$\displaystyle{\forall{i\in[0\,..\,m\!-\!1]}, \beta_{1 n_i j_0}\subst{\bigodot_{k=n_i-1}^{0}\Post_{1k}}=\beta_i}$, \qquad$\displaystyle{\beta_{2 j_0}\subst{\bigodot_{k=m_1}^{0} \Post_{1k} }=\beta_m}$, and \\
+$\displaystyle{\forall{i\in[m\!+\!1\,..\,n]}, \beta_{3 n_i' j_0}\subst{\bigodot_{k=n_i'-1}^{0}\Post_{3k}\shortodot\Post_2\shortodot\bigodot_{k=m_1}^{0}\Post_{1k}}=\beta_i}$\\
 
 
 \noindent Now, we compose OTs for each of the case above (depending on the OT of $P$):
@@ -5166,15 +5166,15 @@ $\set{\gamma'_{3p}}=\set{\beta_{3p}}, \Pred\,'_{3p} =\Pred_{3p}, \Post\,'_{3p} =
 Where
 {\small 
 \begin{align*}
-\alpha''=&\alpha'{\subst{\bigotimes_{j=m_1}^{0}\Post'_{1j}}}\\
+\alpha''=&\alpha'{\subst{\bigodot_{j=m_1}^{0}\Post'_{1j}}}\\
 \set{\gamma'}=&
- \mybigdotcup_{i=0}^{m_1}\set{\gamma'_{1i}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{1k}}\,\dotcup\,
-\set{\gamma'_{2}}\subst{\bigotimes_{k=m_1}^{0}\Post\,'_{1k}}\,\dotcup
- \mybigdotcup_{i=0}^{m_2}\set{\gamma'_{3i}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{3k}\shortotimes\Post\,'_2\shortotimes\bigotimes_{k=n}^{0}\Post\,'_{1k}}
+ \mybigdotcup_{i=0}^{m_1}\set{\gamma'_{1i}}\subst{\bigodot_{k=i-1}^{0}\Post\,'_{1k}}\,\dotcup\,
+\set{\gamma'_{2}}\subst{\bigodot_{k=m_1}^{0}\Post\,'_{1k}}\,\dotcup
+ \mybigdotcup_{i=0}^{m_2}\set{\gamma'_{3i}}\subst{\bigodot_{k=i-1}^{0}\Post\,'_{3k}\shortodot\Post\,'_2\shortodot\bigodot_{k=n}^{0}\Post\,'_{1k}}
 \displaybreak[0]\\
-\Pred\,''=&\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\land\\ 
-&\bigwedge_{i=0}^{m_2}\Pred\,'_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_2}^{0}\Post\,'_{1j}}\displaybreak[0]\\
-\Post\,''=&\bigotimes_{j=m_2}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}
+\Pred\,''=&\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigodot_{j=m_1}^{0}\Post\,'_{1j}}\land\\ 
+&\bigwedge_{i=0}^{m_2}\Pred\,'_{3i}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_2}^{0}\Post\,'_{1j}}\displaybreak[0]\\
+\Post\,''=&\bigodot_{j=m_2}^{0}\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\Post\,'_{1j}
 \end{align*}
 }
 
@@ -5182,17 +5182,17 @@ However it must be noticed that in steps 1 and 3, we have two kinds of WOTs with
 
 We now  compare each element of the obtained WOT with the conclusion of the lemma:
 {\small \begin{align*}
-\alpha''&=\alpha'\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}}\\
-& = \alpha'\displaystyle{\subst{\bigotimes_{j=m_1}^{0}\Post_{1j}}}&\text{$\alpha'$ only contains variables of $P$ untouched by $\Post_i$}\\
+\alpha''&=\alpha'\displaystyle{\subst{\bigodot_{j=m_1}^{0}\Post\,'_{1j}}}\\
+& = \alpha'\displaystyle{\subst{\bigodot_{j=m_1}^{0}\Post_{1j}}}&\text{$\alpha'$ only contains variables of $P$ untouched by $\Post_i$}\\
 & = \alpha
 \end{align*}}
 
 For $\set{\gamma'}$ we distinguish elements in the holes of $P$ and of $Q$.
 
- First suppose $j\in J\setminus\{j_0\}$ we have $\gamma'_j=\gamma_j$ because $\Post^{\,\prime}_{ij}$ has no effect on variables of $P$ and on $\beta_{1pj}$, consequently\\
+ First suppose $j\in J\setminus\{j_0\}$ we have $\gamma'_j=\gamma_j$ because $\Post^{\,\prime}_{ij}$ has no effect on variables of $P$ and on $\beta_{1pj}$, consequently we have:\\
 {\small \begin{equation*}
-\begin{split}\gamma'_j=&\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}}\subst{\bigotimes_{k=i-1}^{0}\! \Post_{1k} } }  \dotcup  \vis{{\beta_{2j}}\subst{\bigotimes_{k=m_1}^{0}\!\Post_{1k}}}\, \dotcup
-\mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij} \subst{\!\bigotimes_{k=i-1}^{0}\!\!\!\Post_{3k}\shortotimes\Post_2\shortotimes\bigotimes_{k=m_1}^{0}\!\!\Post_{1k}}}
+\begin{split}\gamma'_j=&\mybigdotcup_{i=0}^{m_1} \vis{{\beta_{1ij}}\subst{\bigodot_{k=i-1}^{0}\! \Post_{1k} } }  \dotcup  \vis{{\beta_{2j}}\subst{\bigodot_{k=m_1}^{0}\!\Post_{1k}}}\, \dotcup
+\mybigdotcup_{i=0}^{m_2} \vis{\beta_{3ij} \subst{\!\bigodot_{k=i-1}^{0}\!\!\!\Post_{3k}\shortodot\Post_2\shortodot\bigodot_{k=m_1}^{0}\!\!\Post_{1k}}}
 \end{split}
 \end{equation*}
 }
@@ -5203,10 +5203,10 @@ We obtain:
 {\small\begin{equation*}
 \begin{split}
 \gamma'_j =&
-\mybigdotcup_{i=0}^{m_1}{\gamma'_{1ij}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{1k}}\dotcup
- {\gamma'_{2 j}}\subst{\bigotimes_{k=m_1}^{0}\Post\,'_{1k}}\,\dotcup\, \mybigdotcup_{i=0}^{m_2}{\gamma'_{3ij}}\subst{\bigotimes_{k=i-1}^{0}\Post\,'_{3k}\shortotimes\Post\,'_2\shortotimes\bigotimes_{k=n}^{0}\Post\,'_{1k}}\\
+\mybigdotcup_{i=0}^{m_1}{\gamma'_{1ij}}\subst{\bigodot_{k=i-1}^{0}\Post\,'_{1k}}\dotcup
+ {\gamma'_{2 j}}\subst{\bigodot_{k=m_1}^{0}\Post\,'_{1k}}\,\dotcup\, \mybigdotcup_{i=0}^{m_2}{\gamma'_{3ij}}\subst{\bigodot_{k=i-1}^{0}\Post\,'_{3k}\shortodot\Post\,'_2\shortodot\bigodot_{k=n}^{0}\Post\,'_{1k}}\\
 =&
-{\mybigdotcup_{t=0}^{n} {\gamma_{tj}}\subst{\bigotimes_{k=t-1}^{0} \Post_{k}}}   
+{\mybigdotcup_{t=0}^{n} {\gamma_{tj}}\subst{\bigodot_{k=t-1}^{0} \Post_{k}}}   
 \end{split}
 \end{equation*}
 }
@@ -5215,28 +5215,28 @@ Concerning predicates, we also separate predicates on $P$ from predicates on $Q$
 %\begin{small}
 %\begin{equation*}
 %\begin{split}
-%\Pred\,''&=\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\land\\
-%&~~{\bigwedge_{i=0}^{m_3}\Pred\,'_{3i}\subst{\bigotimes_{j=i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}}\\
-%&=\big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigotimes_{j=p-1}^{0}\Post_{1j}}\land\Pred_2\subst{\bigotimes_{p=m_1}^{0}\Post_{1p}}\land\\
-%&~~~\bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigotimes_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigotimes_{p=m_1}^{0}\Post_{1p}}\big) \land \bigwedge_{t=0}^{n} \Pred_t\bigotimes_{i=t-1}^{0}\Post_i \land
-%%$~\qquad\qquad\,\displaystyle{\bigwedge_{i=0}^{m-1}(\beta_{1{n_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j={n_i}-1}^{0}\Post\,'_{1j}}\land(\beta_{2{j_0}}=\alpha_m) \subst{\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\land}
+%\Pred\,''&=\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigodot_{j=m_1}^{0}\Post\,'_{1j}}\land\\
+%&~~{\bigwedge_{i=0}^{m_3}\Pred\,'_{3i}\subst{\bigodot_{j=i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigodot_{j=m_1}^{0}\Post\,'_{1j}}}\\
+%&=\big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\bigodot_{j=p-1}^{0}\Post_{1j}}\land\Pred_2\subst{\bigodot_{p=m_1}^{0}\Post_{1p}}\land\\
+%&~~~\bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\bigodot_{j=p-1}^{0}\Post_{3j}\otimes\Post_2 \otimes\bigodot_{p=m_1}^{0}\Post_{1p}}\big) \land \bigwedge_{t=0}^{n} \Pred_t\bigodot_{i=t-1}^{0}\Post_i \land
+%%$~\qquad\qquad\,\displaystyle{\bigwedge_{i=0}^{m-1}(\beta_{1{n_i}{j_0}}=\alpha_i)\subst{\bigodot_{j={n_i}-1}^{0}\Post\,'_{1j}}\land(\beta_{2{j_0}}=\alpha_m) \subst{\bigodot_{j=m_1}^{0}\Post\,'_{1j}}\land}
 %\end{split}
 %\end{equation*}
-%%$~\qquad\qquad\,\displaystyle{\bigwedge_{i=m+1}^{n}(\beta_{3{n'_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j=n'_i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}}\Big)}$\\
+%%$~\qquad\qquad\,\displaystyle{\bigwedge_{i=m+1}^{n}(\beta_{3{n'_i}{j_0}}=\alpha_i)\subst{\bigodot_{j=n'_i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigodot_{j=m_1}^{0}\Post\,'_{1j}}\Big)}$\\
 %\end{small}
 \begin{footnotesize}
 \begin{align*}
-\Pred\,''&=\Big(\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land%\\ &\qquad
+\Pred\,''&=\Big(\bigwedge_{i=0}^{m_1}\Pred\,'_{1i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{1j}}\land\Pred\,'_2 \subst{\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land%\\ &\qquad
 %~\quad
-\bigwedge_{i=0}^{m_3}\Pred\,'_{3i}\subst{\bigotimes_{j=i-1}^{0}\!\!\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\Post\,'_{1j}}\Big)\\
-&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\!\!\bigotimes_{j=p-1}^{0}\!\!\Post_{1j}}\land\Pred_2\subst{\!\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\!\bigotimes_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}\Big)\\&\qquad
-\land \bigwedge_{t=0}^{n} \Pred_t\bigotimes_{i=t-1}^{0}\!\!\Post_i%\\&\qquad
-\land \Big( \bigwedge_{i=0}^{m-1}(\beta_{1{n_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j={n_i}-1}^{0}\Post\,'_{1j}}\land(\beta_{2{j_0}}=\alpha_m) \subst{\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land\\ &\qquad
-~\quad\bigwedge_{i=m+1}^{n}(\beta_{3{n'_i}{j_0}}=\alpha_i)\subst{\bigotimes_{j=n'_i-1}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\!\!\Post\,'_{1j}}\Big)\displaybreak[0]\\
-&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\!\!\bigotimes_{j=p-1}^{0}\!\!\Post_{1j}}\big)\land\Pred_2\subst{\!\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\!\bigotimes_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\!\bigotimes_{p=m_1}^{0}\!\!\Post_{1p}}\Big)\\&\qquad 
-\land \bigwedge_{t=0}^{n} \Pred_t\bigotimes_{i=t-1}^{0}\!\!\Post_i
-\land \Big(\bigwedge_{i=0}^{m-1}(\beta_{i}=\alpha_i)\subst{\bigotimes_{j={i-1}}^{0}\!\!\Post_{j}}\land(\beta_m=\alpha_m )\subst{\bigotimes_{j=m}^{0}\Post_{j}}\land\\ &\qquad
-~\quad\bigwedge_{i=m+1}^{n}(\beta_i=\alpha_i)\subst{\bigotimes_{j=i-1}^{m}\!\!\Post_j\shortotimes\Post_m\shortotimes\bigotimes_{j=m-1}^{0}\!\!\Post_{j}}\Big)\\
+\bigwedge_{i=0}^{m_3}\Pred\,'_{3i}\subst{\bigodot_{j=i-1}^{0}\!\!\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\Post\,'_{1j}}\Big)\\
+&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\!\!\bigodot_{j=p-1}^{0}\!\!\Post_{1j}}\land\Pred_2\subst{\!\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\!\bigodot_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}\Big)\\&\qquad
+\land \bigwedge_{t=0}^{n} \Pred_t\bigodot_{i=t-1}^{0}\!\!\Post_i%\\&\qquad
+\land \Big( \bigwedge_{i=0}^{m-1}(\beta_{1{n_i}{j_0}}=\alpha_i)\subst{\bigodot_{j={n_i}-1}^{0}\Post\,'_{1j}}\land(\beta_{2{j_0}}=\alpha_m) \subst{\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}\land\\ &\qquad
+~\quad\bigwedge_{i=m+1}^{n}(\beta_{3{n'_i}{j_0}}=\alpha_i)\subst{\bigodot_{j=n'_i-1}^{0}\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\!\!\Post\,'_{1j}}\Big)\displaybreak[0]\\
+&=\Big(\bigwedge_{p=0}^{m_1}\!\Pred_{1p}\subst{\!\!\bigodot_{j=p-1}^{0}\!\!\Post_{1j}}\big)\land\Pred_2\subst{\!\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}\land \bigwedge_{p=0}^{m_2}\!\Pred_{3p}\subst{\!\!\bigodot_{j=p-1}^{0}\!\!\Post_{3j}\otimes\Post_2 \otimes\!\!\bigodot_{p=m_1}^{0}\!\!\Post_{1p}}\Big)\\&\qquad 
+\land \bigwedge_{t=0}^{n} \Pred_t\bigodot_{i=t-1}^{0}\!\!\Post_i
+\land \Big(\bigwedge_{i=0}^{m-1}(\beta_{i}=\alpha_i)\subst{\bigodot_{j={i-1}}^{0}\!\!\Post_{j}}\land(\beta_m=\alpha_m )\subst{\bigodot_{j=m}^{0}\Post_{j}}\land\\ &\qquad
+~\quad\bigwedge_{i=m+1}^{n}(\beta_i=\alpha_i)\subst{\bigodot_{j=i-1}^{m}\!\!\Post_j\shortodot\Post_m\shortodot\bigodot_{j=m-1}^{0}\!\!\Post_{j}}\Big)\\
 &=\Pred
 \end{align*}
 \end{footnotesize}
@@ -5245,9 +5245,9 @@ Concerning predicates, we also separate predicates on $P$ from predicates on $Q$
 Finally, concerning post-conditions:
 {\footnotesize \begin{equation*}
 \begin{split}
-\Post\,''&=\bigotimes_{j=m_2}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}\\
-&=\left(\bigotimes_{j=m_2}^{0}\Post\,'_{3j}\shortotimes\Post\,'_2\shortotimes\bigotimes_{j=m_1}^{0}\Post\,'_{1j}\right)\uplus \bigotimes_{j=n}^{0}\Post_j\\
-&=\Post \uplus \bigotimes_{j=n}^{0}\Post_j\
+\Post\,''&=\bigodot_{j=m_2}^{0}\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\Post\,'_{1j}\\
+&=\left(\bigodot_{j=m_2}^{0}\Post\,'_{3j}\shortodot\Post\,'_2\shortodot\bigodot_{j=m_1}^{0}\Post\,'_{1j}\right)\uplus \bigodot_{j=n}^{0}\Post_j\\
+&=\Post \uplus \bigodot_{j=n}^{0}\Post_j\
 \end{split}
 \end{equation*}
 }
@@ -5429,7 +5429,7 @@ We conclude by observing that $\Post_P$ has no effect on variables of $Q$ and $Q
 %\end{theorem}
 
 
- \begin{proof}   Consider $P$ weak FH-bisimilar to $P'$.  There exist a FH-bisimulation $\mathcal{R}_{P,P'}$ relating $P$ and $P'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P'[Q]_{j_0}$: 
+ \begin{proof}   Consider $P$ weak FH-bisimilar to $P'$.  There exists a FH-bisimulation $\mathcal{R}_{P,P'}$ relating $P$ and $P'$. We define a relation $\mathcal{R}$ relating states of $P[Q]_{j_0}$ with states of $P'[Q]_{j_0}$: 
 \[\mathcal{R} = \{(\ostate{S_P\uplus S_Q},\ostate{S_{P'}\uplus S_Q}, \Pred_{P,P'})|\,(S_P,S_{P'}, \Pred_{P,P'})\in\mathcal{R}_{P,P'}\}\]
 
 
@@ -5744,7 +5744,7 @@ vector SV3 <_,_,q_b>->q_b [q_b != q_recv(x,y)]
 In Figure \ref{Appendix:ImplOA2} we recall the weak open automaton of \symb{SimpleProtocolImpl}. 
 This drawing is based on the observation that states 202 and 000 are only linked by a "pure $\tau$" transition, and have exactly the same possible behaviours.
 %More tricky, they do not have the same state variables, as 202 has the variables of state $s2$, but none of these variables are used in transitions from 202.
-In this configuration we can guarantee that they are Weak bisimilar, and we have merged their (incoming and outgoing) transitions in the figure. We denote this 
+In this configuration we can guarantee that they are weak bisimilar, and we have merged their (incoming and outgoing) transitions in the figure. We denote this 
 equivalence class of states as $\{000,202\}$.
 
 % \TODO{May be express this property more formerly, but this could be also part of another paper, more oriented towards algorithms and optimisation of the Weak}
@@ -5830,10 +5830,10 @@ $ WI_{6a}(n) = \openrule
 
 Because 
 \begin{align*}
-Post_{6a}&=\ post_{4}\shortotimes\ post_{456}^*\shortotimes\ post_{6}\\
+Post_{6a}&=\ post_{4}\shortodot\ post_{456}^*\shortodot\ post_{6}\\
 &= \left( (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets \texttt{s\_ec})
-\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+n) \right)
-\shortotimes (\texttt{s\_ec}\gets \texttt{s\_ec}+1) \\
+\shortodot (\texttt{s\_ec}\gets \texttt{s\_ec}+n) \right)
+\shortodot (\texttt{s\_ec}\gets \texttt{s\_ec}+1) \\
 &= (\texttt{m\_msg}\gets \texttt{s\_msg}, \texttt{m\_ec}\gets (\texttt{s\_ec}+1)+n, \texttt{s\_ec}\gets (\texttt{s\_ec}+1)+n)
 \end{align*}
 
@@ -6004,7 +6004,7 @@ $SI_3 << WS_3$
 \bigskip
 
          
-         Note: if we were using the alternative Weak bisimulation relation from Appendix \ref{app-WFH-equiv}, Lemma \ref{lem-rel-OT-WOT}, that is checking strong bisimulation between the corresponding 
+         Note: if we were using the alternative weak bisimulation relation from Appendix \ref{app-WFH-equiv}, Lemma \ref{lem-rel-OT-WOT}, that is checking strong bisimulation between the corresponding 
 weak automaton, we would have a more transitions coverage to examine, as we have 4 weak transitions for $b0$ in the \symb{SimpleProtocolSpec} weak automaton, and 7 WOTs (including 4 
 parameterised WOTs) from 000 in the \symb{SimpleProtocolImpl} automaton.
          
