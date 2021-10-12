@@ -11,6 +11,8 @@
 \usepackage{nccrules}
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 
+\DeclareMathOperator{\dom}{dom}
+
 \newcommand{\symb}[1]{\makebox{\it #1}}
 \input{common.tex}
 \input{preamble.tex}
@@ -145,7 +147,7 @@ To define their refinement and inheritance relation they use trace and failure s
 \section{Background: Open Automata and their Composition}\label{sec:background}
 \TODO{3.5 pages}
 
-This section presents the notations we used and the principles of automata. Except for minor changes in the notations, the only new contribution of this section is the definition of a composition operator for open automata.
+This section presents our notations and the principles of automata. Except for minor changes in the notations, compared to previous works~\cite{pnets} the only new contribution is the definition of a composition operator for open automata.
 %
 %Notations will be defined with the operator \(\defnotation\) and names are given with the operator \(\defobject\) as follows:
 %\begin{align*}
@@ -170,7 +172,7 @@ In a formula, a quantifier followed by a finite set will be used as a shorthand 
 %\begin{definition}[Expression algebra, Action algebra, Formulas, Terms]
 An expression algebra \(E\) is the disjoint union  of  terms,  actions, and  formulas
 \( E=\terms \uplus \actions \uplus \formulas\) .
-\(\terms\) and \(\actions\) are term algebras.
+\(\terms\) and \(\actions\) are term algebras \TODO{do we explain term algebras}.
 The formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\). 
 %\end{definition}
 
@@ -186,9 +188,9 @@ The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), is d
 We will  use two satisfiability relations:
 \begin{itemize}
 \item The satisfiability of a formula \(f \in \formulas\) under some valuation \(\sigma: V \to \values\) is defined as follows:
-\( \sigma \vdash f ::= \vdash \exists \fvars{f\psubst{\sigma}}, f\psubst{\sigma} \)
+\( \sigma \vdash f \iff \vdash \exists \fvars{f\psubst{\sigma}}, f\psubst{\sigma} \)
 \item The satisfiability of a formula \(f \in \formulas\) with some variable set \(V\) as context is defined as follows:
-\( V \vdash f ::=  \vdash \forall V, \exists\mpar{\fvars{f} \setminus V}, f \)
+\( V \vdash f \iff  \vdash \forall V, \exists\mpar{\fvars{f} \setminus V}, f \)
 \end{itemize}
 
 %For instance a formula with quantifiers on variables might not be provable even if it is true for all values of these variables.
@@ -202,15 +204,11 @@ An \emph{open automaton} is a tuple \(\OAg\) with \(S\) the set of states, \(s_0
 An \emph{open transition} is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
 \end{definition}
 
-The following terminology will be used to reason on open automata
-\begin{definition}[Configuration, instantiated transition]
-A pair of a state and a valuation is called a \emph{configuration}.
-An \emph{instantiated transition} of an automaton \(\OAg\) is a transition  \(t\psi\) where $t\in T$ and $\psi$ is a  well-formed substitution of the unbound variables of $t$  minus the automaton variables $V$.
-\end{definition}
 
 
 
-\TODO{useful or not?}
+
+%\TODO{useful or not?}
 \begin{definition}[Guard, Out-transition, Transition variables]
 Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(r\) one of its states.
 \(\fOT[T]{r} \in T\) are called the out-transitions of the state \(r\).
@@ -218,16 +216,22 @@ Let \(V\) be the variable names of the considered automaton, \(T\) its transitio
 When the transition set is clear from the context, it will be omitted.
 The local variables of a transition \(\fvars{t}\) are all variables appearing in transition \(t\) except the global variables of the automaton.
 \begin{align*}
-	\fOT[T]{r} & ::= \mset{\OTg \in T}{s = r} &
-	\fIT[T]{r} & ::= \mset{\OTg \in T}{s' = r} \\
+	\fOT[T]{r} & = \mset{\OTg \in T}{s = r} &
+	\fIT[T]{r} & = \mset{\OTg \in T}{s' = r} \\
 \end{align*}
 \vspace{-1cm}
 \begin{gather*}
-	\fguard{\OTg} ::= g \\
-	\fvars{\OTg} ::= \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V
+	\fguard{\OTg} = g \\
+	\fvars{\OTg} = \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V
 \end{gather*}
 \end{definition}
 
+
+The following terminology will be used to reason on open automata
+\begin{definition}[Configuration, instantiated transition]
+A pair consisting of a state and a valuation is called a \emph{configuration}.
+An \emph{instantiated transition} of an automaton \(\OAg\) is a transition  \(t\psi\) where $t\in T$ and $\psi$ is a  well-formed substitution with $\dom(\psi)=vars(t)$. %\setminus V$.
+\end{definition}
 
 \paragraph{Open automaton composition}
 
@@ -236,6 +240,8 @@ A hole is an interface in which we can plug an open automaton.
 The plugging operation is called composition.
 The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
+
+\TODO{peut etre echanger c et p? ou c devient p et p devient? }
 \begin{definition}[Composition of open automata]
 The composition of \(A_c = \OAg[c]\) in the hole \(k \in J_p\) of \(A_p = \OAg[p]\) is the OA defined as follows:
 \[A_p\subst{A_c}{k} ::=  \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \] \text{with }
@@ -256,7 +262,7 @@ TODO OR NOT?
 \subsection{Example}
 
 As an example, the traffic light system  that controls  
- traffic at the intersection of a busy highway. The open automaton  
+ traffic at an intersection. The open automaton  
 modeling this system  is illustrated in  Figure \ref{fig:tls}. This automaton has three states  remembering which coloured light
 is on (Red, Yellow or Green). It includes two holes: a controller ($\symb{ctl}$) and a counter ($\symb{cnt}$)  depicting together the behaviour of the timer. The color switches when the counter and the controller component agree that the time is over. The new time limit can be set by the counter component and the exposed action to the environment is an unobservable  action $\tau$.
 
@@ -278,34 +284,34 @@ However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \m
 
 
 
-\begin{figure}
+\begin{figure}[!tb]
 \centering
-\input{Traffic_Lights_Spec.tex}
+\scalebox{.75}{\input{Traffic_Lights_Spec.tex}}
 \caption{The specification of a Traffic Light system}
 \label{fig:tls}
 \end{figure}
 
 
-\begin{figure}
+\begin{figure}[!tb]
 %\centering
-\input{Traffic_Lights_Controller.tex}
-\input{Traffic_Lights_Register.tex}
+\scalebox{.75}{\input{Traffic_Lights_Controller.tex}}
+\scalebox{.75}{\input{Traffic_Lights_Register.tex}}
 \caption{(a) An example of controller component ~~  (b) An example of counter component}
 \label{fig:ctlandcnt}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[!tb]
 \centering
-\input{Traffic_Lights_Interm.tex}
+\scalebox{.75}{\input{Traffic_Lights_Interm.tex}}
 \caption{The incomplete Specification Traffic Lights system}
 \label{fig:tlf}
 \end{figure}
 
 
 
-\begin{figure}
+\begin{figure}[!tb]
 \centering
-\input{Traffic_Lights_Full.tex}
+\scalebox{.75}{\input{Traffic_Lights_Full.tex}}
 \caption{The full Traffic Lights system}
 \label{fig:tlf}
 \end{figure}
@@ -313,11 +319,22 @@ However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \m
 
 \section{A First Refinement Relation}\label{sec:refinement}
 
-Similarly to FH-bisimulation~\cite{fhbisim} we are interested here in finding relations between states of to open automata that contain variables and holes. However here we want to build a refinement relation that is a simulation but also guarantees that no deadlock is introduced.
-Our objective is to characterize when a relation between two states of two open automata have the desired property. Such a relation has the following signature: \( S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
-We first define when a relations is deadlock reducing, before characterising a first simple refinement relation only valid to compare automata with identical holes.
+Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between states of to open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton.
+The refinement relation should be conditioned by the internal states of the automata. More precisely, a refinement relation characterizes when two states are related, this  characterisation is expressed as a predicate on the variables of the two automata.
+Thus, a refinement relation has the following signature: \( S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+
+\TODO{check deadlock reduction/reducing in the literature}
+We first define when a relation is deadlock reducing, before characterising a first simple refinement relation  to compare automata with identical holes.
 
 \subsection{Deadlock Reduction, Reachability, and Composition}
+
+\TODO{commmenter avec}
+
+perhaps say that one of the automaton is expected to be the reinement of the other BUT the def is not dependent on the notion of refinement
+
+Beware implicit existential quantification on vars of t1
+
+Next definition is not intuitive, it does not say much because it says that if t2 is not in a deldlock position then t1 can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
 
 \begin{definition}[Deadlock reduction]\label{def:dpwd}\\
 Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
@@ -327,26 +344,28 @@ A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_
 \end{multline*}
 \end{definition}
 
-One important aspect to notice is that in this definition, because of the symbolic nature of OAs and their structure, the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered more symbolic. An equivalent  definition of deadlock reduction can be expressed: it states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more complex, in particular because of the multiple quantifiers over transitions and automaton state.
+One important aspect to notice is that in this definition, because of the symbolic nature of OAs and their structure, the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered more symbolic. An equivalent  definition of deadlock reduction can be expressed: it states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more complex, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
 
 Unfortunately, in the general case, this property is not much useful in general because it conflicts with the possibility to compose automata: The composition operator can itself introduce a deadlock.
 A way to solve the conflict between deadlock reduction and the properties involving composition is to only consider a composition that do not introduce deadlocks.
 
 Before characterising a composition which does not introduce deadlocks we need to be able to tell which states are reachable.
 \begin{definition}[Reachability]
-For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is preserved across transitions, and valid on initial state:
+For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
 \[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 \end{definition}
-Reachability takes into account all paths, and potentially over-approximate the reachable configurations and must be representable as a formula.
+Reachability takes into account all paths, and can over-approximate the reachable configurations. 
+\TODO{rediger la phrase suivante}
+Because of the over approximation, to implement a verifier it is possible to try find a formula that over-approximate the reachability property and is representable in the tool.
 % LUDO HERE
 \begin{definition}[Non-locking composition]
-Let \(A_i = \OAg[i], 0 \leq i \leq n\).
-The composition \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) 
- is a non-locking composition if if \(A \) has a reachability predicate satisfying the following.
-From reachable configurations, if there was a possible transition in \(A_0\) then there is a possible transition in \(A\):
-\[ \forall s = \mpar{s_0, s'} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
+Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
+Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
+
+The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
+\[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
 \end{definition}
-Again we use guards as a characteristics that the transition occurs.
+Again we use guards to characterise that the transition occurs. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
 
 
 
