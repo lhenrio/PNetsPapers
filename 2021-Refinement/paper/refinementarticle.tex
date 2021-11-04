@@ -1,6 +1,6 @@
 \documentclass[runningheads]{llncs}
 
-\usepackage{tikz}
+\usepackage{tikz,mathpartir}
 
 \usepackage{amsmath,amssymb,mathabx}
 %\usepackage{amsthm}
@@ -76,7 +76,8 @@ We illustrate these notions on several simple use-cases.
 
 Contributions:
 
-We first: introduce open automata (NOT NEW), their composition, and the deadlock-free composition.
+We first: introduce open automata (NOT NEW), their composition, 
+and the deadlock-free composition.
 
 Then we define a refinement relation for open automata that has the following characteristics:
 
@@ -84,9 +85,10 @@ Then we define a refinement relation for open automata that has the following ch
 
 - refinement does not introduce deadlock
 
-- a first relation that focuses on the automaton part and a second that deals partially with open behaviour
+- a first relation that focuses on the automaton part 
+and a second that deals with open behaviour
 
-we will see that having at the same time composition and transitivity also raises challenges; we introduce a relation that addresses this challenge.
+we will see that having at the same time composition and transitivity also raises challenges; we introduce a new form of refinement relation that addresses this challenge.
 
 
 \section{Related Work}
@@ -95,7 +97,7 @@ we will see that having at the same time composition and transitivity also raise
 \TODO{1 page}
 
 
-The notion of refinement aims of capturing the relation between  a specification and an implementation of the same component. It is usually defined as trace inclusion or simulation \cite{Milner:1980, Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
+The notion of refinement aims captures the relation between  a specification and an implementation of the same component. It is usually defined as trace inclusion or simulation \cite{Milner:1980, Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
 
 There are some works that have focused on  the refinement of open systems. Defining refinement of open systems as trace inclusion  is  addressed  as a notion of subtyping in type theory 
 \cite{GayH:2005,BravettiZ:2021}. Such refinement is  instead based  on interface-oriented approach, it allows the expression more internal choices and less external choices. The refinement of open systems is also defined in terms of  alternating simulation \cite{Alur:1998,deAlfaro:2021}, which deals with game-based models.
@@ -199,9 +201,13 @@ We will  use two satisfiability relations:
  Open automata (abbreviated OA) are labelled transition systems with variables  that can be used to compose other automata: they are made of transitions that are dependent of the actions of ``holes'', a composition operation consists in filling a hole with another automaton to obtain a more complete automaton. The variables makes the OA symbolic, and the holes allow for a partial definition of the behaviour.
 
 \begin{definition}[Open transition, Open automaton (OA)]
-An \emph{open automaton} is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the finite set of variable names, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions.
+An \emph{open automaton} is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the finite set of variable names, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions. 
 
 An \emph{open transition} is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
+To be well-formed, an open transition should use only variables of the automaton and variables appearing in the involved actions, formally: 
+\begin{align*}
+\fvars(g)&\subseteq \fvars(\alpha)\cup \bigcup_{j \in J'} \fvars{\beta_j} \cup V \\ \forall v\in V.\, \fvars(\psi(v))&\subseteq \fvars(\alpha)\cup \bigcup_{j \in J'} \fvars{\beta_j} \cup V
+\end{align*}
 \end{definition}
 
 
@@ -220,10 +226,10 @@ The local variables of a transition \(\fvars{t}\) are all variables appearing in
 	\fIT[T]{r} & = \mset{\OTg \in T}{s' = r} \\
 \end{align*}
 \vspace{-1cm}
-\begin{gather*}
-	\fguard{\OTg} = g \\
-	\fvars{\OTg} = \mpar{\fvars{\alpha} \cup \fvars{g} \cup \bigcup_{j \in J'} \fvars{\beta_j} \cup \bigcup_{v \in V} \fvars{\psi\mpar{v}}} \setminus V
-\end{gather*}
+\begin{mathpar}
+	\fguard{\OTg} \!=\! g \qquad
+	\fvars{\OTg} \!=\! \mpar{\fvars{\alpha}  \cup \bigcup_{j \in J'} \!\fvars{\beta_j} } \setminus V
+\end{mathpar}
 \end{definition}
 
 
@@ -365,7 +371,7 @@ Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
 \[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
 \end{definition}
-Again we use guards to characterise that the transition occurs. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
+Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
 
 
 
