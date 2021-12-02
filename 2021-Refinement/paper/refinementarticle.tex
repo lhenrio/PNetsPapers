@@ -336,11 +336,11 @@ We first define when a relation is deadlock reducing, before characterising a fi
 
 \TODO{commmenter avec}
 
-perhaps say that one of the automaton is expected to be the reinement of the other BUT the def is not dependent on the notion of refinement
+perhaps say that one of the automaton is expected to be the refinement of the other BUT the def is not dependent on the notion of refinement
 
 Beware implicit existential quantification on vars of t1
 
-Next definition is not intuitive, it does not say much because it says that if t2 is not in a deldlock position then t1 can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
+Next definition is not intuitive, it does not say much because it says that if t2 is not in a deadlock position then t1 can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
 
 \begin{definition}[Deadlock reduction]\label{def:dpwd}\\
 Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
@@ -494,19 +494,35 @@ When we will introduce refinements in Section \ref{sec:prelref}, setting an unde
 \begin{quote}
 If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{quote}
+\proof 
+Suppose we have $R_{12}$ a relation between states
+of $A_1$ and of $A_2$;  Suppose we also have $R_{23}$ a relation between states of $A_2$ and of $A_3$. We build a relation between
+ states of $A_1$ and of $A_3$ as follows:  for each pair of states $s_1$, $s_3$, for each state $s_2$ such that $R_{12}$ relates $s_1$ and $s_2$, and $R_{23}$ relates $s_2$ and $s_3$.
+Let $R_{13}$ be the relation:\\
+  $R_{13}=\{(s_1,s_3) \in S_1\times S_2 | (s_1,s_2) \in R_{12}\wedge (s_2,s_3) \in R_{23} \} $ 
 
+We will show that ($R_{13}$, $H\cap H'$) is a hole-tracking simulation of $A_1$ by  $A_3$.
 
-\proof We consider different conditions:
+Consider each condition of the definition of a refinement of open automata.
 \begin{enumerate}
 \item One has to prove it first initial configurations. By knowing that substitutions only have an effect on the variables of the open automaton they belong to, they also produce terms containing only variables of the open automaton they belong to. We have:
 \begin{multline*}
 \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar
 {\sigma_{02} \uplus \sigma_{03} \vdash R_{23}\mpar{s_{02}, s_{03}}}\implies\\
 R_{12}\mpar{s_{01},s_{02}}\psubst{\sigma_{01} \uplus \sigma_{02}} \wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{02} \uplus \sigma_{03}}\implies\\
-R_{12}\mpar{s_{01},s_{02}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}} \wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}}\implies\\R_{12}\mpar{s_{01},s_{02}}\wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}}
+R_{12}\mpar{s_{01},s_{02}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}} \wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}}\implies\\ \underbrace{R_{12}\mpar{s_{01},s_{02}}\wedge R_{23}\mpar{s_{02}, s_{03}}}_{R_{13} \mpar{s_{01}, s_{03}}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}} \implies\\
+\sigma_{01} \uplus \sigma_{03} \vdash R_{13} \mpar{s_{01}, s_{03}}
 \end{multline*}
-\TODO{I will continue???}
-\item For any open transition $t_1$ in $T_1$  originating from $s_1$:
+
+\item Consider $\mpar{s_{1}, s_{3}} \in R_{13}$ then there is a set of states of $A_2$ relating  $s_{1}$ and $s_{3}$, let $(t_x)^{x\in X}$ be the family of transition originating from  these states:
+\[R_{13}=\bigcup_{\begin{array}{c}       		
+       			\mpar{s_1,s_{2x}} \in R_{12}\\
+\mpar{s_{2x},s_3}\in R_{23}
+       		\end{array}
+}R_{12}\mpar{s_1,s_{2x}} \wedge R_{23}\mpar{s_{2x},s_3} \]
+
+
+On one side, we have for any open transition $t_1$ in $T_1$  originating from $s_1$:
 \begin{align*}
 \OTx{1}{}{1}{1} \in \fOT{s_1}
 \end{align*}
@@ -514,7 +530,7 @@ there exist an indexed family of OTs originating from $s_2$:
 \begin{align*}
 \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X} \subseteq T_2
 \end{align*}
-such that $\mpar{\forall x \in X, J'_{2x} \cap H = J'_1 \cap H}$ and
+such that $\forall x \in X, J'_{2x} \cap H = J'_1 \cap H$ and
 \begin{multline*}
 %\everymath{\displaystyle}
 V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\ \mpar{R_{12}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
@@ -523,9 +539,27 @@ V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\ \mpar{R_{12}\mpar{s_1, s_2} \wedge g_
 			\nwedge g_{2x} \wedge R_{12}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}} 
 \end{multline*}		
+that can be re-written:
+\begin{multline*}
+%\everymath{\displaystyle}
+\forall v \in \mpar{\fvars{\alpha_{2x}}  \cup \bigcup_{j \in J'} \!\fvars{\beta_{2jx}}} \setminus \mpar{V_1 \uplus V_2 \uplus \fvars{t_1}}, \\ \mpar{R_{12}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2jx} \\
+			\nwedge g_{2x} \wedge R_{12}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
+		\end{array}}} \\
+	\end{multline*}	
 \medskip
+Multiplying the two terms of the implication by $R_{23}\mpar{s_2,s_3}$ we get:
 
-For any open transition $t_{2x}$ in $T_2$, since  originating from $s_2$:
+\begin{multline*}
+ \mpar{R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2,s_3} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2jx} \nwedge\\
+			R_{23}\mpar{s_2,s_3}\wedge g_{2x} \wedge R_{12}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
+		\end{array}}} \\
+	\end{multline*}	
+
+On the other side, from the relation between $A_2$ and $A_3$ we have for any open transition $t_{2x}$ in $T_2$ originating from $s_2$:
 \begin{align*}
 \OTx{2}{x}{2x}{2x} \in \fOT{s_2}
 \end{align*}
@@ -533,30 +567,36 @@ there exist an indexed family of OTs originating from $s_3$:
 \begin{align*}
 \mpar{\OTx{3}{xy}{3xy}{3xy} \in \fOT{s_3}}^{y \in Y} \subseteq T_3
 \end{align*}
-such that $\mpar{\forall y \in Y, J'_{2x} \cap H' = J'_{3xy} \cap H'}$ and
+such that $\forall y \in Y, J'_{2x} \cap H' = J'_{3xy} \cap H'$ and
 \begin{multline*}
 \everymath{\displaystyle}
-V_2 \uplus V_3 \uplus \fvars{t_{2x}} \vdash\\\hspace{2em} \mpar{R_{23}\mpar{s_1, s_{2x}} \wedge g_{2x} \implies \operatorname*{\bigsymb{\bigvee}}_{y \in Y} \mpar{\everymath{\displaystyle}
+V_2 \uplus V_3 \uplus \fvars{t_{2x}} \vdash\\\hspace{2em} \mpar{R_{23}\mpar{s_2, s_{3}} \wedge g_{2x} \implies \operatorname*{\bigsymb{\bigvee}}_{y \in Y} \mpar{\everymath{\displaystyle}
 \begin{array}{l}
-			 \alpha_{2x}=\alpha_{3xy} \wedge \bigwedge_\subbox{j \in J'_{3xy} \cap H'} \beta_{2xj}=\beta_{3xyj} \\
+			 \alpha_{2x}=\alpha_{3xy} \wedge \bigwedge_\subbox{j \in J'_{3xy} \cap H'} \beta_{2jx}=\beta_{3jxy} \\
 			\nwedge g_{3xy} \wedge R_{23}\mpar{s'_{2x}, s'_{3xy}}\psubst{\psi_{2x} \uplus \psi_{3xy}}
 		\end{array}}} 
 \end{multline*}
-\item For the third condition. We have: 
+that can be re-written:
+\begin{multline*}
+\everymath{\displaystyle}
+\forall v\in \mpar{\fvars{\alpha_{2x}}  \cup \bigcup_{j \in J'} \!\fvars{\beta_{2jx}}} \setminus \mpar{V_2 \uplus V_3 \uplus \fvars{t_{2x}}},\\ \mpar{R_{23}\mpar{s_2, s_{3}} \wedge g_{2x} \implies \operatorname*{\bigsymb{\bigvee}}_{y \in Y} \mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			 \alpha_{2x}=\alpha_{3xy} \wedge \bigwedge_\subbox{j \in J'_{3xy} \cap H'} \beta_{2jx}=\beta_{3jxy} \\
+			\nwedge g_{3xy} \wedge R_{23}\mpar{s'_{2x}, s'_{3xy}}\psubst{\psi_{2x} \uplus \psi_{3xy}}
+		\end{array}}} 
+\end{multline*}
 
-
-
+\item For the third condition. First from the relation between $A_1$ and $A_2$ we have:
+\begin{multline*}
+\forall \mpar{s_1, s_2} \in S_1 \times S_2,\\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
+\end{multline*}
+Second, from the relation between $A_2$ and $A_3$ we have:
 \begin{multline*}
 \forall \mpar{s_2, s_3} \in S_2 \times S_3,\\ V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash \left(R_{23}\mpar{s_2, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \right)
 \end{multline*}
 We get:
-\begin{multline*}
- V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash\\ \left(R_{12}\mpar{s_1, s_2} \wedge R_{23}\mpar{s_2, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \right)
- \end{multline*}
- But we have already:
-\begin{multline*}
-\forall \mpar{s_1, s_2} \in S_1 \times S_2,\\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R_{12}\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
-\end{multline*}
+
+
 
 
 \newpage
