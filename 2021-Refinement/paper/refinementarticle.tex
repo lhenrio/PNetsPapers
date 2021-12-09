@@ -429,7 +429,7 @@ In practice, when performing successive refinements, we  keep track of which hol
 
 \TODO{say explicitly what is the difference in the formalisation compared to previous def}
 \begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
-For two open automata \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
+For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
 \begin{multline*}
@@ -463,13 +463,29 @@ We will  show  that  the  refinement  is  reflexive  and  transitive,  so  it  i
 
 \begin{lemma} The relation \(\wrel{}{}{H}\) is a preorder thus enables stepwise refinement.
 \end{lemma}
-The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\),  by taking $R\mpar{s_1, s_2} \mapsto \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$ to be $s_1= s_2$  and checking the above conditions (Definition \ref{Def:OA-Refinement}), we can see that\\
+The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\),  by taking $R\mpar{s_1, s_2} \mapsto \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$ to be $s_1= s_2$  and checking the above conditions (Definition \ref{Def:OA-Refinement}), we can see that \TODO{finish the sentence}\\
 
 
 \begin{theorem}[Transitivity]
-If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H}'$, then $\wrel{A_1}{A_3}{H\cap H'}$.
+If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{theorem}
-\TODO{proof in appendix + proof sketch}
+
+Appendix~\ref{sec:proof-transitivity} presents the proof. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
+  \[R_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{R_{12}(s_1,s_2) \land R_{23}(s_2,s_3) } \]
+We then prove that this relation defines is a refinement, according to Definition~\ref{Def:OA-Refinement}.
+
+
+
+
+\TODO{find an informal introduction to the following:}
+The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
+
+\begin{theorem}[Context refinement]
+Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_1}{A_2}{H}$. 
+Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-locking.
+We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\].
+\end{theorem}
+
 
 - composition is a refinement (under which condition? non-locking composition?)
 
@@ -485,12 +501,12 @@ If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H}'$, then $\wrel{A_1}{A_3}{H\cap H
 \TODO{0.5 pages}
 
 
-\section{a recuperer si on se rend comtpte que c'est utile}
+\section{a recuperer si on se rend compte que c'est utile}
 When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
 
 
 \appendix
-\section{Proof of transitivity}
+\section{Proof of Transitivity}\label{sec:proof-transitivity}
 \begin{quote}
 If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{quote}
@@ -718,7 +734,7 @@ This can be rewritten as follows:
  \setminus \mpar{V_1\! \uplus\! V_2\!\! \uplus \biguplus_\subbox{t_{2p} \in \fOT{s_{2p}}} \fvars{t_{2p}}},\\
 R_{12}\mpar{s_1, s_{2p}} \wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
-In the same way as this formula is valid for all $s_{2p} \in (s_{2p})^{p\in P}$, we get:
+This formula is valid for all $s_{2p} \in (s_{2p})^{p\in P}$,  thus we can state the following:
 \begin{align*}
 \operatorname*{\bigsymb{\bigvee}}_{p\in P}\mpar{R_{12}\mpar{s_1, s_{2p}} \wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} }  \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{align*}
@@ -738,6 +754,8 @@ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3}
 \end{multline*}
 
 \end{enumerate}
+
+\section{Proof of Context Refinement}
 
  \bibliographystyle{splncs04}
  \bibliography{biblio}
