@@ -260,6 +260,15 @@ T=& \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c 
 The first OA decides when the second can evolve by involving its hole in a transition:
 The action emitted when \(A_c\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_p\) .
 
+\paragraph{Relations between open automata}
+A relation (bisimulation, refinement, etc.) between open automata requires to compare their states. To do so we will suppose that the variables of the two OAs are disjoint (a renaming of variables may have to be applied before comparing OA states)
+\begin{definition}[Relation on OA states] Suppose $V_1$ and $V_2$ are disjoint.
+A relation on states of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+\end{definition}
+The idea is that two states are related if the variables they refer to verify a certain formula. Additionally, we may check that initial states of the automata are related by checking that: \(\sigma_{01} \uplus \sigma_{022} \vdash R\mpar{s_{01}, s_{02}}\).
+
+\TODO{I do not think we reason on configurations for the moment, if we want to, we should introduce this:}
+Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 
 \paragraph{A bisimulation for open automata}
 
@@ -692,7 +701,7 @@ R_{13}(s_1,s_3)  \wedge g_1 \implies
 Overall, we have a family of open transitions $t^{p\in P,x\in X,y\in Y}_{pxy} \subseteq T_3$ that should simulate $t_1$. All  combinations of elements in $P$, $X$, and $Y$ provide a set $Z$ of weak open transitions.  This allows us to get the desired conclusion, that there is a set of weak open transitions indexed over $Z$:\\
 %This provides the desired conclusion:\\
 $\forall z \in Z,  J'_1 \cap (H \cap H') = J'_{3z} \cap (H\cap H')$\\
-$\displaystyle {\forall v \in \mpar{\fvars{\alpha_{1}}  \cup\!\!\! \bigcup_{j \in J'_{3z} \cap H \cap H'} \!\!\!\fvars{\beta_{1j} } } \setminus  \mpar{V_1 \uplus  V_3 \uplus \fvars{t_1}}} ,  $
+$\displaystyle {\forall v \in \mpar{\fvars{\alpha_{1}}  \cup\!\!\! \bigcup_{j \in J'_{3z} \cap H \cap H'} \!\!\!\fvars{\beta_{1j} } } \setminus  \mpar{V_1 \uplus  V_3 \uplus \fvars{t_1}}},$
 \begin{align*}
 \mpar{R_{13}\mpar{s_1, s_3} \wedge g_1 \implies 
 \operatorname*{\bigsymb{\bigvee}}_{z \in Z}
@@ -762,9 +771,11 @@ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3}
 
 \section{Proof of Context Refinement}
 Let us denote by $A_{13}$ (resp. $A_{23}$) the open automaton resulting from $A_1\subst{A_3}{k}$ ($A_2\subst{A_3}{k}$),  to prove the theorem it sufficient to prove that there exists a relation between states of the two open automata that satisfies the conditions of the Definition \ref{Def:OA-Refinement}. Let $R$ be the refinement relation relating states of $A_1$ and $A_2$.\\
-Let us consider any two states $s_{13} = \mpar{s_1,s_3}$ and $s_{23} = \mpar{s_2,q_3}$ we define a relation $R'$ relating states of $A_{13}$ and $A_{23}$ as follows:
-\[R' \mpar{s_{13}, s_{23}} = \choice{R\mpar{s_{1}, s_{2}} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge\!\!\!\! \bigwedge_\subbox{v\in \fvars{s_{3}}
-}\!\!\! \sigma_{13}(v)=\sigma_{23}(v) & \text{ if } s_{3} = q_{3} \\ \bot & \text{otherwise}} \]
+Let us consider any two states $s_{13} = \mpar{s_1,s^1_3}$ and $s_{23} = \mpar{s_2,s^2_3}$ ($s^1_3$ and $s^2_3$  are same with renaming). We define a relation $R'$ relating states of $A_{13}$ and $A_{23}$ as follows:
+\[ R' \mpar{s_{13}, s_{23}} = R\mpar{s_{1}, s_{2}} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge s^1_3 = s^2_3\]
+
+\TODO{Old version \[R' \mpar{s_{13}, s_{23}} = \choice{R\mpar{s_{1}, s_{2}} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge\!\!\!\! \bigwedge_\subbox{v\in \fvars{s_{3}}
+}\!\!\! \sigma_{13}(v)=\sigma_{23}(v) & \text{ if } s_{3} = q_{3} \\ \bot & \text{otherwise}} \]}
 We want to prove that $\mpar{R', H\cup J_3 \setminus\{k\}}$ is a hole-tracking simulation of $A_{13}$ and $A_{23}$.
 \begin{enumerate}
 \item By using the fact $R$ relates initial configurations of  $A_1$ and $A_2$, initial states are reachable and by renaming $\sigma_{03}$ by  $\sigma_{013}$ and  $\sigma_{023}$ we need to prove:
@@ -799,20 +810,8 @@ where
 V_{23}= V_2\uplus V_3\\
 & H'=J_3'\uplus H \setminus \{k\} \subseteq J_3'\uplus \mpar{J_1' \cap J_2'} \setminus \{k\} = \mpar{J_3'\uplus J_1' \setminus \{k\} } \cap \mpar{J_3'\uplus J_2' \setminus \{k\}} = J_{13}'\cap J_{12}'\\
 \end{align*}
-The open transition $t_{13}$ is obtained by the composition of $t_1=\OTx{1}{}{1}{1}$ and $t_3=\OTx{3}{}{3}{3} $, which gives,  according to Definition \ref{Def:CompOA}, an open transition in one of the following forms:
-% \[  \choice{
-%	\OTx{1}{}{1}{1} \text{ and }  \OTx{3}{}{3}{3}
-%	& \text{if } k \in J'_{1} \\
-%	\OTx{1}{}{1}{1}	 & \text{otherwise}
-%	} \]
-\[
-\choice{
-\OT{\mpar{s_1, s_3}}{\mpar{s'_1, s'_3}}{\alpha_1}{\beta_j^{j \in J'_1 \uplus J'_3 \setminus \{k\}}}{g_1 \wedge g_3 \wedge \alpha_3 = \beta_k}{\psi_1 \uplus \psi_3} & \text{ if } k \in J'_{1} \\
-\OT{\mpar{s_1, s_3}}{\mpar{s'_1, s_3}}{\alpha_1}{\beta_j^{j \in J'_1}}{g_1}{\psi_1}& \text{otherwise}
-}
-\]
 
-
+\medskip
 
 We have by hypothesis $\wrel{A_1}{A_2}{H}$, then for any open transition $t_1$ in $T_1$  originating from $s_1$:
 \begin{align*}
@@ -831,18 +830,35 @@ V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\ \mpar{R\mpar{s_1, s_{2}} \wedge g_1 \
 			 g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}}  \qquad (*)
 \end{multline*}	
-We have  $k \in H$ and $k \in J'_{1}$ then  we have $k \in J'_{2x}$.\\
-By composing the family of OTs  $t_{2x}^{x\in X}$ originating from  $s_2$ with an open transition $t_3 =\OT{q_3}{q_3'}{\alpha_{3}'}{\beta_j^{j \in J''_{3}}}{g_{3}'}{\psi_{3}'} \in T_3$ %${\OT{q_{3}}{q'_{3}}{\alpha_{3}}{\beta_{ j}^{j \in J'_{3}}}{g_{3}}{\psi_{3}}}$, 
-gives a family of OTs $t_{23x}^{x\in X}$.  The result of the composition will be as follows:
-\begin{enumerate}
-\item if $ s_3=q_3$
+\smallskip
+
+The open transition $t_{13}$ is obtained by the composition of $t_1=\OTx{1}{}{1}{1}$ and $t_3=\OTx{3}{}{3}{3} $, that gives,  according to Definition \ref{Def:CompOA}, an open transition in one of the following forms:
+% \[  \choice{
+%	\OTx{1}{}{1}{1} \text{ and }  \OTx{3}{}{3}{3}
+%	& \text{if } k \in J'_{1} \\
+%	\OTx{1}{}{1}{1}	 & \text{otherwise}
+%	} \]
 \[
 \choice{
-\OT{\mpar{s_2, q_3}}{\mpar{s'_{2x}, q'_3}}{\alpha_{2x}}{\beta_j^{j \in J'_{2x} \uplus J''_3 \setminus \{k\}}}{g_{2x} \wedge g_3' \wedge \alpha_3' = \beta_{2xk}}{\psi_{2x} \uplus \psi_3'} & \text{ if } k \in J'_{2x} \\
-\OT{\mpar{s_2, q_3}}{\mpar{s'_{2x}, q_3}}{\alpha_{2x}}{\beta_j^{j \in J'_{2x}}}{g_{2x}}{\psi_{2x}}& \text{otherwise}
+\OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, {s^1_3}'}}{\alpha_1}{\beta_j^{j \in J'_1 \uplus J'_3 \setminus \{k\}}}{g_1 \wedge g_3 \wedge \alpha_3 = \beta_{1k}}{\psi_1 \uplus \psi_3} & \text{ if } k \in J'_{1} \\
+\OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, s^1_3}}{\alpha_1}{\beta_j^{j \in J'_1}}{g_1}{\psi_1}& \text{otherwise}
 }
 \]
-\item if $s_3 \neq q_3$ no element is produced that results an empty family.
+
+
+We have  $k \in H$ and $k \in J'_{1}$ then  we have $k \in J'_{2x}$.\\
+By composing the family of OTs  $t_{2x}^{x\in X}$ originating from  $s_2$ with an open transition $t_3=\OTx{3}{}{3}{3} \in T_3$
+%$t_3 =\OT{q_3}{q_3'}{\alpha_{3}'}{\beta_j^{j \in J''_{3}}}{g_{3}'}{\psi_{3}'} \in T_3$ %${\OT{q_{3}}{q'_{3}}{\alpha_{3}}{\beta_{ j}^{j \in J'_{3}}}{g_{3}}{\psi_{3}}}$, 
+gives a family of OTs $t_{23x}^{x\in X}$.  The result of the composition will be as follows:
+\begin{enumerate}
+\item if $ s^1_3=s^2_3$
+\[
+\choice{
+\OT{\mpar{s_2, s^2_3}}{\mpar{s'_{2x}, {s^2_3}'}}{\alpha_{2x}}{\beta_j^{j \in J'_{2x} \uplus J'_3 \setminus \{k\}}}{g_{2x} \wedge g_3 \wedge \alpha_3 = \beta_{2xk}}{\psi_{2x} \uplus \psi_3} & \text{ if } k \in J'_{2x} \\
+\OT{\mpar{s_2, s^2_3}}{\mpar{s'_{2x}, s^2_3}}{\alpha_{2x}}{\beta_j^{j \in J'_{2x}}}{g_{2x}}{\psi_{2x}}& \text{otherwise}
+}
+\]
+\item if $s^1_3 \neq s^2_3$ no element is produced that results an empty family.
 \end{enumerate}
 
 It remains to prove that we have:
@@ -868,20 +884,34 @@ For all $x \in X$ we have two cases:
 		&&& = J'_{13} \cap H'
 		\end{align*}
 	
-By hypothesis $\reach{A_{13}}\mpar{s_{13}}$ holds,  we then have according to the Definition \ref{Def:Reach} the following:
-\[ \fvars{t_{13}} \vdash \left(\reach{A_{13}}\mpar{s_{13}} \wedge g_{13} \implies \reach{A_{13}}\mpar{s_{13}'}\psubst{\psi_{13}}\right) \]	
-\TODO{Un peu de gymnastique est necessaire sur les valuations, etc...}
-From this formula and $(*)$ 
+
+\smallskip
+
+By adding the same terms to both sides of the implication of the  formula $(*)$, we get:
+
+\begin{itemize}
+\item In the case $ s^1_3=s^2_3$ and $k \in J'_1$:\\
+$\displaystyle {\forall v \in \mpar{\fvars{\alpha_{1}}  \cup\!\!\! \bigcup_{j \in J'_{2x}} \!\!\!\fvars{\beta_{1j} } } \setminus  \mpar{V_1 \uplus  V_2 \uplus \fvars{t_1}}},$
 \begin{multline*}
-%\everymath{\displaystyle}
-V_1 \uplus V_2 \uplus V_3 \uplus \fvars{t_1} \vdash\\ \mpar{R\mpar{s_1, s_{2}} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge g_{13} 
-\wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
+R\mpar{s_1, s_{2}} \wedge g_1 \wedge g_3 \wedge \alpha_3=\beta_{1k} \wedge s^1_3=s^2_3\implies\\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
 \begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2xj} \nwedge\\
 			 g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
-		\end{array}}} \wedge \reach{A_{13}}\mpar{s_{13}'}\psubst{\psi_{13}}
+		\end{array}}  \wedge g_3 \wedge \alpha_3=\beta_{1k} \wedge s^1_3=s^2_3
+\end{multline*}	
+Based on the fact that the composition doesn't change the resulting actions, nor the variables, and on the fact that for $k \in H$ we have $\beta_{1k}=\beta_{2xk}$, the we get after simplification:
+\begin{multline*}
+R\mpar{s_1, s_{2}} \wedge g_{13} \wedge s^1_3=s^2_3\implies\\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			\alpha_{13} = \alpha_{23x} \wedge \bigwedge_\subbox{j \in J'_{23x} \cap H} \beta_{1j} = \beta_{2xj} \nwedge\\
+			 g_{2x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
+		\end{array}}  \wedge g_3 \wedge \alpha_3=\beta_{1k} \wedge s^1_3=s^2_3
 \end{multline*}	
 
+
+By hypothesis $\reach{A_{13}}\mpar{s_{13}}$ holds,  we then have according to the Definition \ref{Def:Reach} the following:
+\[ \fvars{t_{13}} \vdash \left(\reach{A_{13}}\mpar{s_{13}} \wedge g_{13} \implies \reach{A_{13}}\mpar{s_{13}'}\psubst{\psi_{13}}\right) \]	
+\end{itemize}
 \TODO{Pas termine: valider d'abord la definition de R}
 \item The last formula to prove is the following:
 \begin{multline*}
