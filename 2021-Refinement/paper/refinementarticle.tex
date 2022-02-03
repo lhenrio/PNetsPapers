@@ -133,7 +133,7 @@ In their article they work with transition systems with variable which makes the
 This aspect is also present in open automata.
 They show how invariants, a notion near to our reachability predicates, are composed.
 By relation on these invariants they introduce several refinement relations.
-We could have done something similar for non-locking composition reachability predicates which are introduced in Section \ref{sec:proofelts}.
+We could have done something similar for non-blocking composition reachability predicates which are introduced in Section \ref{sec:proofelts}.
 
 On the deadlock prevention aspect, an article by Dihego, Sampaio and Oliveira \cite{DIHEGO2020110598} present a refinement relation on process algebra (translated to LTS).
 This refinement relation is a special case of inheritance and prevents the introduction of deadlocks.
@@ -343,41 +343,36 @@ We first define when a relation is deadlock reducing, before characterising a fi
 
 \subsection{Deadlock Reduction, Reachability, and Composition}
 
-\TODO{commmenter avec}
+A notion that is often used in the context of refinement is the notion of deadlock reduction. This property considers that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. This notion is not much interesting in the general case as there is a priori no relation between the two transitions. However, when the relation that relates states is a simulation, this will relate the possible transitions and the deadlock reduction will become a valuable property.
 
-perhaps say that one of the automaton is expected to be the refinement of the other BUT the def is not dependent on the notion of refinement
-
-Beware implicit existential quantification on vars of t1
-
-Next definition is not intuitive, it does not say much because it says that if t2 is not in a deadlock position then t1 can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
+Next definition states that if $T_2$ is not in a deadlock position then $T_1$ can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
 
 \begin{definition}[Deadlock reduction]\label{def:dpwd}\\
 Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
-A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if  it satisfies the following:
+A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if  it satisfies the following\footnote{Note that variables of $T_1$ are existentially quantified in the proposition.}:
 \begin{multline*}
  \forall \mpar{s_1, s_2} \in S_1 \times S_2,\\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
 \end{multline*}
 \end{definition}
 
-One important aspect to notice is that in this definition, because of the symbolic nature of OAs and their structure, the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered more symbolic. An equivalent  definition of deadlock reduction can be expressed: it states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more complex, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
+Because of the symbolic nature of OAs and their structure, in this definition,  the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered very symbolic. An equivalent but more classical definition of deadlock reduction could be expressed as well. It states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more verbose, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
 
-Unfortunately, in the general case, this property is not much useful in general because it conflicts with the possibility to compose automata: The composition operator can itself introduce a deadlock.
-A way to solve the conflict between deadlock reduction and the properties involving composition is to only consider a composition that do not introduce deadlocks.
+Unfortunately, this property is not compositional: the composition operator can itself introduce a deadlock. In other words, when filling the hole of two related automata with a third one, even if there is a deadlock reduction between the two original automata , there might not be a deadlock reduction in the composed ones. The same problem may arise when two related automata are composed in the same hole of a third one. 
 
-Before characterising a composition which does not introduce deadlocks we need to be able to tell which states are reachable.
+This creates a conflict between deadlock reduction and the properties involving composition. One possible solution to avoid this conflict is to only consider a composition that do not introduce deadlocks, we will define such a composition below.
+But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
 \begin{definition}[Reachability] \label{Def:Reach}
 For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
 \[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 \end{definition}
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
-\TODO{rediger la phrase suivante}
-Because of the over approximation, to implement a verifier it is possible to try find a formula that over-approximate the reachability property and is representable in the tool.
-% LUDO HERE
-\begin{definition}[Non-locking composition]
+From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
+
+\begin{definition}[Non-blocking composition]
 Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
 Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 
-The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-locking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
+The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
 \[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
 \end{definition}
 Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
@@ -489,16 +484,16 @@ The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ a
 \begin{theorem}[Context refinement]
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_1}{A_2}{H}$. 
 Let $J_3$ be the set of holes of $A_3$.
-Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-locking.
+Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\].
 \end{theorem}
 
 \begin{theorem}[Congruence]
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
-Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-locking.
+Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\].
 \end{theorem}
-- composition is a refinement (under which condition? non-locking composition?)
+- composition is a refinement (under which condition? non-blocking composition?)
 
 - what is the property wrt deadlocks?
 
@@ -947,7 +942,7 @@ $g_{13} \Leftrightarrow g_1 \wedge g_3 \wedge \alpha_3=\beta_{1k}$,
 $g_{23x}  \Leftrightarrow g_{2x} \wedge g_3 \wedge \alpha_3=\beta_{2xk}$ and $\beta_{1k} = \beta_{2xk}$\\
 
 
-\TODO{the subtelty here is that the original relation implies that valuations in A3 are equal (ie the value for each variable are the same in both valuations, modulo renaming), after a transition we should obtain ``equal'' valuations because Post are deterministic}
+\TODO{The subtlety here is that the original relation implies that valuations in A3 are equal (ie the value for each variable are the same in both valuations, modulo renaming), after a transition we should obtain ``equal'' valuations because Post are deterministic}
 
 From the formula $(*)$ to which we have added the same terms ($g_3 \wedge \alpha_3=\beta_{1k} {\displaystyle \wedge\bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3\wedge s^1_3=s^2_3}$) to both sides of the implication and from all the points mentioned above, we get:
 \begin{multline*}
@@ -1072,7 +1067,7 @@ By adding the term $\displaystyle{\bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3
 \begin{multline*}
 \forall \mpar{s_1, s_2,s_3} \in S_1 \times S_2 \times S_3, V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash\\ \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3}\right)
 \end{multline*}
-By hypothesis we also have \(A_1\subst{A_3}{k}\) is non-locking,  thus we can write the following:
+By hypothesis we also have \(A_1\subst{A_3}{k}\) is non-blocking,  thus we can write the following:
 \[ \fvars{t_{13}} \vdash \left(\reach{A_{13}}\mpar{s_{13}} \wedge g_{13} \implies \reach{A_{13}}\mpar{s_{13}'}\psubst{\psi_{13}}\right) \]	
 \end{enumerate}
 
