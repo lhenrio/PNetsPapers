@@ -6,7 +6,7 @@
 %%
 %% elsarticle.dtx  (with options: `class')
 %% 
-%% Copyright 2007-2019 Elsevier Ltd
+%% Copyright 2007-2020 Elsevier Ltd
 %% 
 %% This file is part of the 'Elsarticle Bundle'.
 %% -------------------------------------------
@@ -25,8 +25,8 @@
 %%
 %%
  \def\RCSfile{elsarticle}%
- \def\RCSversion{3.2}%
- \def\RCSdate{2019/02/25}%
+ \def\RCSversion{3.3}%
+ \def\RCSdate{2020/11/20}%
  \def\@shortjnl{\relax}
  \def\@journal{Elsevier Ltd}
  \def\@company{Elsevier Ltd}
@@ -40,6 +40,16 @@
 \newif\iflongmktitle \longmktitlefalse
 \newif\ifnopreprintline \nopreprintlinefalse
 \newif\ifdoubleblind \doubleblindfalse
+
+\newif\ifuseexplthreefunctions \useexplthreefunctionsfalse
+
+\IfFileExists{expl3.sty}{%
+  \global\useexplthreefunctionstrue%
+  \RequirePackage{expl3}}{}
+\ifuseexplthreefunctions\relax%
+\IfFileExists{xparse.sty}{\RequirePackage{xparse}}{}
+\IfFileExists{etoolbox.sty}{\RequirePackage{etoolbox}}{}
+\fi
 
 \def\@blstr{1}
 \newdimen\@bls
@@ -280,7 +290,6 @@
 
 \def\elsaddress{}
 \def\addsep{\par\vskip6pt}
-\def\address{\@ifnextchar[{\@@address}{\@address}}
 
 \def\@alph#1{%
   \ifcase#1\or a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or k\or
@@ -311,6 +320,320 @@
 
 \newcounter{affn}
 \renewcommand\theaffn{\alph{affn}}
+
+\ifuseexplthreefunctions\relax%
+  \ExplSyntaxOn
+  \def\ca_affitem_postskip{\mbox{~}\unskip\ignorespaces}
+  %%Author Address
+  \DeclareDocumentCommand \ca_organization { O{,} m }
+    {
+  %    #2 #1\mbox{~}\unskip\ignorespaces
+      \csgappto { ca_affiliation_values } { #2 #1\ca_affitem_postskip }
+    }
+  \DeclareDocumentCommand \ca_postal_code { O{,} m }
+    {
+  %    #2 #1\mbox{~}\unskip\ignorespaces
+      \csgappto { ca_affiliation_values } { #2 #1\ca_affitem_postskip }
+    }
+  \DeclareDocumentCommand \ca_aff_city { O{,}  m }
+    {
+  %    #2 #1\mbox{~}\unskip\ignorespaces
+      \csgappto { ca_affiliation_values } { #2 #1\ca_affitem_postskip }
+    }
+  \DeclareDocumentCommand \ca_address_line { O{,}m }
+    {
+  %    #2 #1\mbox{~}\unskip\ignorespaces
+      \csgappto { ca_affiliation_values } { #2 #1\ca_affitem_postskip }
+    }
+  \DeclareDocumentCommand \ca_state { O{,} m }
+    {
+  %    #2 #1\mbox{~}\unskip\ignorespaces
+      \csgappto { ca_affiliation_values } { #2 #1\ca_affitem_postskip }
+    }
+  \DeclareDocumentCommand \ca_country { O{ } m }
+    {
+  %    #2 #1
+      \csgappto { ca_affiliation_values } { #2 #1 }
+    }
+
+  \DeclareDocumentCommand \ca_stm_organization { O{,} m }
+    {
+      #2 #1\ca_affitem_postskip
+    }
+  \DeclareDocumentCommand \ca_stm_postal_code { O{,} m }
+    {
+      #2 #1\ca_affitem_postskip
+    }
+  \DeclareDocumentCommand \ca_stm_aff_city { O{,}  m }
+    {
+      #2 #1\ca_affitem_postskip
+    }
+  \DeclareDocumentCommand \ca_stm_aff_address_line { O{,}m }
+    {
+      #2 #1\ca_affitem_postskip
+    }
+  \DeclareDocumentCommand \ca_stm_state { O{,} m }
+    {
+      #2 #1\ca_affitem_postskip
+    }
+  \DeclareDocumentCommand \ca_stm_country { O{ } m }
+    {
+      #2 #1
+    }
+
+  \keys_define:nn { stm / affiliation }
+    {
+      op   .tl_set_x:N   = \l_organization_punc_tl,
+      oraganizationsep   .tl_set_x:N   = \l_organization_punc_tl,
+      ap   .tl_set_x:N   = \l_address_line_punc_tl,
+      addresslinesep   .tl_set_x:N   = \l_address_line_punc_tl,
+      cp   .tl_set_x:N   = \l_city_punc_tl,
+      citysep   .tl_set_x:N   = \l_city_punc_tl,
+      pp   .tl_set_x:N   = \l_postal_code_punc_tl,
+      postcodesep   .tl_set_x:N   = \l_postal_code_punc_tl,
+      sp   .tl_set_x:N   = \l_state_punc_tl,
+      statesep   .tl_set_x:N   = \l_state_punc_tl,
+      o    .code:n       = { \ca_organization[\l_organization_punc_tl]{#1} },
+      organization    .code:n       = { \ca_organization[\l_organization_punc_tl]{#1} },
+      a    .code:n       = { \ca_address_line[\l_address_line_punc_tl]{#1} },
+      addressline    .code:n       = { \ca_address_line[\l_address_line_punc_tl]{#1} },
+      c    .code:n       = { \ca_aff_city[\l_city_punc_tl]{#1} },
+      city .code:n       = { \ca_aff_city[\l_city_punc_tl]{#1} },
+      p    .code:n       = { \ca_postal_code[\l_postal_code_punc_tl]{#1} },
+      postcode    .code:n       = { \ca_postal_code[\l_postal_code_punc_tl]{#1} },
+      s    .code:n       = { \ca_state[\l_state_punc_tl]{#1} },
+      state    .code:n       = { \ca_state[\l_state_punc_tl]{#1} },
+      orp  .tl_set_x:N   = \l_organization_punc_tl,
+      adp  .tl_set_x:N   = \l_address_line_punc_tl,
+      cip  .tl_set_x:N   = \l_city_punc_tl,
+      pcp  .tl_set_x:N   = \l_postal_code_punc_tl,
+      stp  .tl_set_x:N   = \l_state_punc_tl,
+      cyp  .tl_set_x:N   = \l_country_punc_tl,
+      or   .code:n       = { \ca_organization[\l_organization_punc_tl]{#1} },
+      ad   .code:n       = { \ca_address_line[\l_address_line_punc_tl]{#1} },
+      ci   .code:n       = { \ca_aff_city[\l_city_punc_tl]{#1} },
+      pc   .code:n       = { \ca_postal_code[\l_postal_code_punc_tl]{#1} },
+      st   .code:n       = { \ca_state[\l_state_punc_tl]{#1} },
+      cy   .code:n       = { \ca_country[\l_country_punc_tl]{#1} },
+      country   .code:n  = { \ca_country[\l_country_punc_tl]{#1} },
+      unknown   .code:n  = {
+                             \ifstrempty { #1 } {
+                                  \csxappto { ca_affiliation_values }
+                                       { {\l_keys_key_tl}~ }
+                                } {
+                                  \csxappto { ca_affiliation_values }
+                                       { {#1}~ }
+                                }
+                           }
+    }
+
+  \cs_set:Npn \__reset_affiliation:
+  {
+    \tl_gset:Nn \l_organization_punc_tl { , }
+    \tl_gset:Nn \l_address_line_punc_tl { , }
+    \tl_gset:Nn \l_city_punc_tl { , }
+    \tl_gset:Nn \l_postal_code_punc_tl { , }
+    \tl_gset:Nn \l_state_punc_tl { , }
+    \tl_gset:Nn \l_country_punc_tl { }
+  }
+
+  \DeclareDocumentCommand\affiliation{ o m }{
+    \__reset_affiliation:
+    \csgdef { ca_affiliation_values } { }
+    \IfNoValueTF { #2 }
+      { }
+      {
+       \keys_set:nn { stm / affiliation } { #2 }
+      }
+     \csgappto{elsaddress}{
+      \def\baselinestretch{1}%
+      \refstepcounter{affn}
+      \xdef\@currentlabel{\theaffn}
+      \IfNoValueTF { #1 }
+        { }
+        { \elsLabel{#1} }
+      \textsuperscript{\theaffn}}
+      \csxappto{elsaddress}{
+        \csuse { ca_affiliation_values }
+        \par
+      }
+  }
+  \ExplSyntaxOff
+  \else%
+  \def\caaffitempostskip{\space}
+
+  \DeclareRobustCommand\caorganization[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\capostalcode[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\caaffcity[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\caaddressline[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\castate[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\cacountry[2][,]{%
+     \g@addto@macro\caaffiliationvalues{#2#1\caaffitempostskip}%
+  }
+  \DeclareRobustCommand\castmorganization[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+  \DeclareRobustCommand\castmpostalcode[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+  \DeclareRobustCommand\castmaffcity[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+  \DeclareRobustCommand\castmaddressline[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+  \DeclareRobustCommand\castmstate[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+  \DeclareRobustCommand\castmcountry[2][,]{%
+     #2#1\caaffitempostskip%
+  }
+
+  \define@key{affiliation}{op}{\xdef\@organizationpunc{#1}}
+  \define@key{affiliation}{orp}{\xdef\@organizationpunc{#1}}
+  \define@key{affiliation}{organizationsep}{\xdef\@organizationpunc{#1}}
+  \define@key{affiliation}{ap}{\xdef\@addresslinepunc{#1}}
+  \define@key{affiliation}{adp}{\xdef\@addresslinepunc{#1}}
+  \define@key{affiliation}{addresslinesep}{\xdef\@addresslinepunc{#1}}
+  \define@key{affiliation}{cp}{\xdef\@citypunc{#1}}
+  \define@key{affiliation}{cip}{\xdef\@citypunc{#1}}
+  \define@key{affiliation}{cyp}{\xdef\@countrypunc{#1}}
+  \define@key{affiliation}{citysep}{\xdef\@citypunc{#1}}
+  \define@key{affiliation}{pp}{\xdef\@postcodepunc{#1}}
+  \define@key{affiliation}{pop}{\xdef\@postcodepunc{#1}}
+  \define@key{affiliation}{postcodesep}{\xdef\@postcodepunc{#1}}
+  \define@key{affiliation}{sp}{\xdef\@statepunc{#1}}
+  \define@key{affiliation}{stp}{\xdef\@statepunc{#1}}
+  \define@key{affiliation}{statesep}{\xdef\@statepunc{#1}}
+  \define@key{affiliation}{countrysep}{\xdef\@countrypunc{#1}}
+
+  \define@key{affiliation}{organization}{%
+   \caorganization[\@organizationpunc]{#1}}
+  \define@key{affiliation}{addressline}{%
+   \caaddressline[\@addresslinepunc]{#1}}
+  \define@key{affiliation}{city}{%
+   \caaffcity[\@citypunc]{#1}}
+  \define@key{affiliation}{postcode}{%
+   \capostalcode[\@postcodepunc]{#1}}
+  \define@key{affiliation}{state}{%
+   \castate[\@statepunc]{#1}}
+  \define@key{affiliation}{or}{%
+   \caorganization[\@organizationpunc]{#1}}
+  \define@key{affiliation}{ad}{%
+   \caaddressline[\@addresslinepunc]{#1}}
+  \define@key{affiliation}{ci}{%
+   \caaffcity[\@citypunc]{#1}}
+  \define@key{affiliation}{po}{%
+   \capostalcode[\@postcodepunc]{#1}}
+  \define@key{affiliation}{st}{%
+   \castate[\@statepunc]{#1}}
+  \define@key{affiliation}{o}{%
+   \caorganization[\@organizationpunc]{#1}}
+  \define@key{affiliation}{a}{%
+   \caaddressline[\@addresslinepunc]{#1}}
+  \define@key{affiliation}{c}{%
+   \cacity[\@citypunc]{#1}}
+  \define@key{affiliation}{p}{%
+   \capostcode[\@postcodepunc]{#1}}
+  \define@key{affiliation}{s}{%
+   \castate[\@statepunc]{#1}}
+  \define@key{affiliation}{cy}{%
+   \cacountry[\@countrypunc]{#1}}
+  \define@key{affiliation}{country}{%
+   \cacountry[\@countrypunc]{#1}}
+
+  \gdef\@resetaffiliation{%
+    \gdef\@organizationpunc{,}%
+    \gdef\@addresslinepunc{,}%
+    \gdef\@citypunc{,}%
+    \gdef\@statepunc{,}%
+    \gdef\@postcodepunc{,}%
+    \gdef\@countrypunc{}%
+  }
+
+  \def\affiliation{\@ifnextchar[{\@@affiliation}{\@affiliation}}
+
+  \newcommand*{\newstmrobustcmd}{}
+  \protected\def\newstmrobustcmd{\@star@or@long\stmetb@new@command}
+
+  \def\stmetb@new@command#1{\@testopt{\stmetb@newcommand#1}0}
+
+  \def\stmetb@newcommand#1[#2]{%
+    \@ifnextchar[%]
+      {\stmetb@xargdef#1[#2]}
+      {\ifx\l@ngrel@x\relax
+         \let\l@ngrel@x\protected
+       \else
+         \protected\def\l@ngrel@x{\protected\long}%
+       \fi
+       \@argdef#1[#2]}}
+
+  \long\def\stmetb@xargdef#1[#2][#3]#4{%
+    \@ifdefinable#1{%
+      \expandafter\protected
+      \expandafter\def
+      \expandafter#1%
+      \expandafter{%
+        \expandafter\@testopt
+        \csname\string#1\endcsname{#3}}%
+      \expandafter\@yargdef\csname\string#1\endcsname\tw@{#2}{#4}}}
+  %
+  \newcommand{\ifstmundef}[1]{%
+    \ifdefined#1%
+      \ifx#1\relax
+        \expandafter\expandafter
+        \expandafter\@firstoftwo
+      \else
+        \expandafter\expandafter
+        \expandafter\@secondoftwo
+      \fi
+    \else
+      \expandafter\@firstoftwo
+    \fi}
+  \newcommand{\stmexpandonce}[1]{%
+    \unexpanded\expandafter{#1}}
+  \newstmrobustcmd{\gstmappto}[2]{%
+    \ifundef{#1}
+      {\xdef#1{\unexpanded{#2}}}
+      {\xdef#1{\stmexpandonce#1\unexpanded{#2}}}}
+  \newstmrobustcmd{\xstmappto}[2]{%
+    \ifstmundef{#1}
+      {\xdef#1{#2}}
+      {\xdef#1{\stmexpandonce#1#2}}}
+
+  \long\def\@@affiliation[#1]#2{%
+      \@resetaffiliation%
+      \gdef\caaffiliationvalues{}%
+      \elsLabel{#1}%
+      \setkeys{affiliation}{#2}%
+      \g@addto@macro\elsaddress{%
+      \def\baselinestretch{1}%
+      \refstepcounter{affn}%
+      \xdef\@currentlabel{\theaffn}%
+      \elsLabel{#1}%
+      \textsuperscript{\theaffn}}
+      \xstmappto\elsaddress{\caaffiliationvalues\par}}
+
+  \long\def\@affiliation#1{%
+      \@resetaffiliation%
+      \gdef\caaffiliationvalues{}%
+      \setkeys{affiliation}{#1}%
+      \g@addto@macro\elsauthors{%
+      \def\baselinestretch{1}}%
+      \xstmappto\elsaddress{\caaffiliationvalues\par}}
+\fi
+
+\def\address{\@ifnextchar[{\@@address}{\@address}}
 
 \long\def\@@address[#1]#2{\g@addto@macro\elsaddress{%
     \def\baselinestretch{1}%
