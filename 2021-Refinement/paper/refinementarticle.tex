@@ -409,10 +409,15 @@ Note in this definition, instead of matching an instantiated transition of the f
 Intuitively, this means that for every pair of related
 states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update. Our definition captures a simple kind of sub-classing of open automata with the same holes. It is stronger than a strict simulation since it matches a transition with a family of transitions. 
 With such a relation we are able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions,  reinforcing  guards, modifying variables. 
-However, this refinement is inappropriate in the setting of composition which is the main advantage of the open automaton-based approach. 
-\TODO{introduce somewhere refinement through composition} 
-Refinement through composition  leads to a model in which composition can be used both to add new holes to a system and to fill holes, obtaining a system with less holes.
-Next section will identify a refinement relation with the possibility to have different holes in the compared automata.
+
+
+ We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, reflexivity, etc.
+
+The refinement relation defined above is insufficient in the setting of composition which is the main advantage of the open automaton-based approach. Indeed, it should be possible to refine an automaton by filling its hole, providing a concrete view of a part of the application that was not specified originally. 
+More generally, it should be possible to relate automata that do not have the same holes because composition is a crucial part of system specification.
+Thus, we believe composition should also be a form of refinement and call this feature \emph{refinement through composition}.
+However, filling holes can result in a system with more or less holes than the original system because the plugged subsystem can contain itself many holes.
+Next section will define  a more powerful refinement relation able to reason on automata with different sets of holes.
 
 
 
@@ -420,19 +425,17 @@ Next section will identify a refinement relation with the possibility to have di
 
 \TODO{add an example}
 
-\TODO{refer to properties of section 6} We will show in Section~\ref{sec:prop} that this refinement relation has god properties in terms of transitivity, compositionality, reflexivity, etc.
 
-\TODO{4 pages}
 
 \section{A Refinement Relation that Takes Holes into Account}\label{sec:holes}
 \TODO{3.5 pages}
 
-Above we designed a refinement relation that compares OAs with the same holes, it ensures simulation at the automaton level, with symbolic evaluation of the guards and transitions. We want now to extend this to automata where the set of holes is not the same. A trivial use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
+This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
 
-The major challenge in this case is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two OAs are taken into account in the simulation. Unfortunately this does not work well with transitivity as if $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no proven property on the way $A_1$ and $A_3$ takes his hole into account, and in general  $A_1$ does not simulate $A_3$. The way we solve this issue is to remember in the simulation relation which holes have been compared. This way the relation is parameterized by the set of holes that belong to the two automata and are taken into account.
-In practice, when performing successive refinements, we  keep track of which holes are in common at each step of refinement.
+The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This way the relation is parameterized by the set of holes that belong to the two automata and are taken into account.
+This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
 
-\TODO{say explicitly what is the difference in the formalisation compared to previous def}
+In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
 \begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
 For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
@@ -452,53 +455,59 @@ For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}
 Giving \(R\) and \(H\) is sufficient to characterise the refinement, so we call \(\mpar{R, H}\) a hole-tracking simulation of \(A_1\) by \(A_2\).
 Hole in \(H\) are called tracked holes.
 \end{definition}
-It is important to note that every action of the holes outside \(H\) is unconstrained in the related automata.
-It is easy to see that the hole-equal simulation is a particular case of open automata refinement, when  $J_1=J_2=H$.
+Note that every action of the holes outside \(H\) is unconstrained in the related automata. 
 
 
 \TODO{example}
 
-\section{Properties}\label{sec:prop}
+\section{Properties of our Refinement Relations}\label{sec:prop}
 \TODO{1.5 pages}
+We now  state the properties of our refinement relations, proofs of the properties can be found in the appendices. We express these properties in terms of open automata refinement because hole-equal simulation is a particular case of Definition~\ref{Def:OA-Refinement} when  $J_1=J_2=H$, and thus most of the properties shown here are easy to adapt to hole-equal simulation.
+
+The first crucial property of  refinement  is that it is  a  preorder on the set of open automata. This property enables stepwise refinement.
 
 
-The first crucial property of  refinement  is that it is reflexive  and  transitive,  so  it  is  a  preorder on the set of open automata. This property enables stepwise refinement.
+\begin{theorem}[Refinement is a preorder]
+Refinement   is reflexive  and  transitive:  it  is  a  preorder on the set of open automata.
+\end{theorem}
 
 
 The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\),  by taking $R\mpar{s_1, s_2} \mapsto \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$ to be $s_1= s_2$  and checking the above conditions (Definition \ref{Def:OA-Refinement}), we can see that the relation is indeed reflexive.
-
-
-\begin{theorem}[Transitivity]
-If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
-\end{theorem}
-
-Appendix~\ref{sec:proof-transitivity} presents the proof. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
+%
+%\begin{theorem}[Transitivity]
+%If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
+%\end{theorem}
+Appendix~\ref{sec:proof-transitivity} presents the proof of transitivity. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
   \[R_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{R_{12}(s_1,s_2) \land R_{23}(s_2,s_3) } \]
 We then prove that this relation defines is a refinement, according to Definition~\ref{Def:OA-Refinement}.
 
 
+The next to theorems state that refinement is compositional in the sense that it is sufficient to prove refinement for the composed automata separately to obtain a refinement relation. This can be split into theorems that can be trivially composed by transitivity.
+%
+%
+%The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
 
-
-\TODO{find an informal introduction to the following:}
-The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
-
-\begin{theorem}[Context refinement]
+\begin{theorem}[Context refinement]\label{thm:ContextRefinement}
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_1}{A_2}{H}$. 
 Let $J_3$ be the set of holes of $A_3$.
 Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\]
 \end{theorem}
 
-\begin{theorem}[Congruence]
+
+
+\begin{theorem}[Congruence]\label{thm:Congruence}
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
 Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
 \end{theorem}
+
+\TODO{i did not put the global composition theorem, de we state it?}
+
 - composition is a refinement (under which condition? non-blocking composition?)
 
 - what is the property wrt deadlocks?
 
-- congruence? a[b/j] if $a'$ refines $a$ and if $b'$ refines $b$?
 
 - relation with fh bisimulation
 
@@ -508,13 +517,16 @@ We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \m
 \TODO{0.5 pages}
 
 
+ \bibliographystyle{splncs04}
+ \bibliography{biblio}
+
 \section{a recuperer si on se rend compte que c'est utile}
 When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
 
 
 \appendix
 
-\section{Proof of Transitivity}\label{sec:proof-transitivity}
+\section{Proof of Transitivity for Refinement}\label{sec:proof-transitivity}
 \begin{quote}
 If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{quote}
@@ -760,7 +772,7 @@ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3}
 
 
 
-\section{Proof of Context Refinement}
+\section{Proof of Context Refinement (Theorem~\ref{thm:ContextRefinement})}
 
 
 \begin{quote}
@@ -1022,7 +1034,7 @@ which gives us what we needed to demonstrate. \qed
 % \end{enumerate}
 
 
-\section{Proof of Congruence}
+\section{Proof of Congruence (Theorem~\ref{thm:Congruence})}
 
 Suppose that $\wrel{A_2}{A_3}{H}$, \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
@@ -1274,8 +1286,5 @@ From the two previous formulas and considering that each valuations $\sigma_{1}^
  
 
 %\[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\].
-
- \bibliographystyle{splncs04}
- \bibliography{biblio}
 
 \end{document}
