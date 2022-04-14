@@ -1,15 +1,14 @@
 \documentclass[runningheads]{llncs}
 
 \usepackage{tikz,mathpartir}
-\usepackage{mathtools}
+
 \usepackage{amsmath,amssymb,mathabx}
+%\usepackage{amsthm}
 %\usepackage{unicode-math}
 \usepackage{tikz}
 \usetikzlibrary{external}
 \usepackage{hyperref}
 \usepackage{nccrules}
-
-
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 
 \DeclareMathOperator{\dom}{dom}
@@ -52,12 +51,12 @@ blibli\\
 Establishing equivalences and refinement relations between programs is an important mean for 
 verifying the correctness of programs, by formally proving the relation between a specification and an implementation, 
 proving that two implementation are equivalent, or justifying optimisations and transformations, by establishing that the
-behaviours of a modified program simulate those of to the source one.
+behaviors of a modified program simulate those of to the source one.
 
 In this article, we discuss a notion of refinement between so-called "open automata", which are symbolic
-behavioural models for communicating systems. Open automata may have "holes" modelling elements of their
-context, and can be composed by instantiation of the holes. This allows for a compositional approach for
-verification of their behaviour, essential to address proofs about large realistic systems.
+behavioral models for communicating systems. Open automata may have "holes" modeling elements of their
+context, and can be composed by instanciation of the holes. This allows for a compositional approach for
+verification of their behavior, essential to address proofs about large realistic systems.
 
 We define several variants of refinement between systems including either equal or different sets of holes, and 
 show under which conditions these refinements are preserved by composition of open automata. We also discuss
@@ -369,7 +368,7 @@ For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to 
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
 From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
 
-\begin{definition}[Non-blocking composition]\label{Def:Non-blockcomp}
+\begin{definition}[Non-blocking composition]
 Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
 Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 
@@ -409,15 +408,10 @@ Note in this definition, instead of matching an instantiated transition of the f
 Intuitively, this means that for every pair of related
 states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update. Our definition captures a simple kind of sub-classing of open automata with the same holes. It is stronger than a strict simulation since it matches a transition with a family of transitions. 
 With such a relation we are able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions,  reinforcing  guards, modifying variables. 
-
-
- We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, reflexivity, etc.
-
-The refinement relation defined above is insufficient in the setting of composition which is the main advantage of the open automaton-based approach. Indeed, it should be possible to refine an automaton by filling its hole, providing a concrete view of a part of the application that was not specified originally. 
-More generally, it should be possible to relate automata that do not have the same holes because composition is a crucial part of system specification.
-Thus, we believe composition should also be a form of refinement and call this feature \emph{refinement through composition}.
-However, filling holes can result in a system with more or less holes than the original system because the plugged subsystem can contain itself many holes.
-Next section will define  a more powerful refinement relation able to reason on automata with different sets of holes.
+However, this refinement is inappropriate in the setting of composition which is the main advantage of the open automaton-based approach. 
+\TODO{introduce somewhere refinement through composition} 
+Refinement through composition  leads to a model in which composition can be used both to add new holes to a system and to fill holes, obtaining a system with less holes.
+Next section will identify a refinement relation with the possibility to have different holes in the compared automata.
 
 
 
@@ -425,17 +419,19 @@ Next section will define  a more powerful refinement relation able to reason on 
 
 \TODO{add an example}
 
+\TODO{refer to properties of section 6} We will show in Section~\ref{sec:prop} that this refinement relation has god properties in terms of transitivity, compositionality, reflexivity, etc.
 
+\TODO{4 pages}
 
 \section{A Refinement Relation that Takes Holes into Account}\label{sec:holes}
 \TODO{3.5 pages}
 
-This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
+Above we designed a refinement relation that compares OAs with the same holes, it ensures simulation at the automaton level, with symbolic evaluation of the guards and transitions. We want now to extend this to automata where the set of holes is not the same. A trivial use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
 
-The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This way the relation is parameterized by the set of holes that belong to the two automata and are taken into account.
-This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
+The major challenge in this case is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two OAs are taken into account in the simulation. Unfortunately this does not work well with transitivity as if $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no proven property on the way $A_1$ and $A_3$ takes his hole into account, and in general  $A_1$ does not simulate $A_3$. The way we solve this issue is to remember in the simulation relation which holes have been compared. This way the relation is parameterized by the set of holes that belong to the two automata and are taken into account.
+In practice, when performing successive refinements, we  keep track of which holes are in common at each step of refinement.
 
-In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
+\TODO{say explicitly what is the difference in the formalisation compared to previous def}
 \begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
 For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
@@ -455,72 +451,53 @@ For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}
 Giving \(R\) and \(H\) is sufficient to characterise the refinement, so we call \(\mpar{R, H}\) a hole-tracking simulation of \(A_1\) by \(A_2\).
 Hole in \(H\) are called tracked holes.
 \end{definition}
-Note that every action of the holes outside \(H\) is unconstrained in the related automata. 
+It is important to note that every action of the holes outside \(H\) is unconstrained in the related automata.
+It is easy to see that the hole-equal simulation is a particular case of open automata refinement, when  $J_1=J_2=H$.
 
 
 \TODO{example}
 
-\section{Properties of our Refinement Relations}\label{sec:prop}
+\section{Properties}\label{sec:prop}
 \TODO{1.5 pages}
-We now  state the properties of our refinement relations, proofs of the properties can be found in the appendices. We express these properties in terms of open automata refinement because hole-equal simulation is a particular case of Definition~\ref{Def:OA-Refinement} when  $J_1=J_2=H$, and thus most of the properties shown here are easy to adapt to hole-equal simulation.
-
-The first crucial property of  refinement  is that it is  a  preorder on the set of open automata. This property enables stepwise refinement.
 
 
-\begin{theorem}[Refinement is a preorder]
-Refinement   is reflexive  and  transitive:  it  is  a  preorder on the set of open automata.
-\end{theorem}
+The first crucial property of  refinement  is that it is reflexive  and  transitive,  so  it  is  a  preorder on the set of open automata. This property enables stepwise refinement.
 
 
 The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\),  by taking $R\mpar{s_1, s_2} \mapsto \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$ to be $s_1= s_2$  and checking the above conditions (Definition \ref{Def:OA-Refinement}), we can see that the relation is indeed reflexive.
-%
-%\begin{theorem}[Transitivity]
-%If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
-%\end{theorem}
-Appendix~\ref{sec:proof-transitivity} presents the proof of transitivity. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
+
+
+\begin{theorem}[Transitivity]
+If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
+\end{theorem}
+
+Appendix~\ref{sec:proof-transitivity} presents the proof. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
   \[R_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{R_{12}(s_1,s_2) \land R_{23}(s_2,s_3) } \]
 We then prove that this relation defines is a refinement, according to Definition~\ref{Def:OA-Refinement}.
 
 
-The next to theorems state that refinement is compositional in the sense that it is sufficient to prove refinement for the composed automata separately to obtain a refinement relation. This can be split into theorems that can be trivially composed by transitivity.
-%
-%
-%The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
 
-\begin{theorem}[Context refinement]\label{thm:ContextRefinement}
+
+\TODO{find an informal introduction to the following:}
+The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
+
+\begin{theorem}[Context refinement]
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_1}{A_2}{H}$. 
 Let $J_3$ be the set of holes of $A_3$.
 Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
-We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\]
+We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\].
 \end{theorem}
 
-
-\begin{center}
-\includegraphics[scale=0.7]{Figures/Theorem2}
-\end{center}
-
-
-
-
-
-\begin{theorem}[Congruence]\label{thm:Congruence}
+\begin{theorem}[Congruence]
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
 Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
-We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
+We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\].
 \end{theorem}
-
-\begin{center}
-\includegraphics[scale=0.7]{Figures/Theorem1}
-\end{center}
-
-
-\TODO{i did not put the global composition theorem, de we state it?}
-
-
 - composition is a refinement (under which condition? non-blocking composition?)
 
 - what is the property wrt deadlocks?
 
+- congruence? a[b/j] if $a'$ refines $a$ and if $b'$ refines $b$?
 
 - relation with fh bisimulation
 
@@ -530,16 +507,13 @@ We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \m
 \TODO{0.5 pages}
 
 
- \bibliographystyle{splncs04}
- \bibliography{biblio}
-
 \section{a recuperer si on se rend compte que c'est utile}
 When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
 
 
 \appendix
 
-\section{Proof of Transitivity for Refinement}\label{sec:proof-transitivity}
+\section{Proof of Transitivity}\label{sec:proof-transitivity}
 \begin{quote}
 If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{quote}
@@ -604,7 +578,8 @@ V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\ \mpar{R_{12}\mpar{s_1, s_{2p}} \wedge
 			 g_{2px} \wedge R_{12}\mpar{s'_1, s'_{2px}}\psubst{\psi_1 \uplus \psi_{2px}}
 		\end{array}}} 
 \end{multline*}		
-Adding to both sides of the implication the predicate $R_{23}\mpar{s_{2p},s_3}$ we get: 
+Adding to both sides of the implication the predicate $R_{23}\mpar{s_{2p},s_3}$ we get: \footnote{Note for the sake of readability, when we justify each step in a a proof
+we omit to rewrite the quantification over of formula which remains unchanged.}
 \begin{multline*}
 V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1} \vdash\\
 R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies\hspace{5.5cm}\\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
@@ -632,14 +607,13 @@ R_{23}\mpar{s_{2p}, s_{3}} \wedge g_{2px} \implies \hspace{7cm}\\ \operatorname*
 		\end{array}}  \qquad (**)
 \end{multline*}
 
-From the  two previous cases: 
+The following  can be derived from the two previous cases: \\
 $\forall x \in X, J'_{2px} \cap H = J'_1 \cap H$ and
-$\forall y \in Y, J'_{2px} \cap H' = J'_{3pxy} \cap H'$ we conclude:
+$\forall y \in Y, J'_{2px} \cap H' = J'_{3pxy} \cap H'$ leading to the conclusion:\\
 $\forall x \in X, \forall y \in Y,  J'_1 \cap (H \cap H') = J'_{3pxy} \cap (H\cap H')$ \\
-
-In addition, by combining  formula $(**)$ and $(*)$, we get: 
+By combining  formula $(**)$ in $(*)$, we get: 
 \begin{multline*}
-V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1}\uplus \fvars{t_{2px}} \vdash\\
+V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1} \vdash\\
 R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies \hspace{4.5cm}\\\operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
 \begin{array}{l}
 			\alpha_1 = \alpha_{2px} \wedge \bigwedge_\subbox{j \in J'_{2px} \cap H} \beta_{1j} = \beta_{2pxj}  \wedge R_{12}\mpar{s'_1, s'_{2px}}\psubst{\psi_1 \uplus \psi_{2px}} \\ 
@@ -651,7 +625,7 @@ R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies \hsp
 		\end{array}}	
 		\end{array}} 
 \end{multline*}		
-With  the rearrangement of the formula, we get:
+With the restriction of the domain and the rearrangement of the formula, we get:
 \begin{multline*}
 V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1}\uplus \fvars{t_{2px}}  \vdash\\
 R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies 
@@ -665,7 +639,7 @@ R_{12}\mpar{s'_1, s'_{2px}}\psubst{\psi_1 \uplus \psi_{2px}} \wedge R_{23}\mpar{
 \end{array}}
 \end{multline*}	
 
-Because of the domain of the substitutions of the relations, the formula can be re-written:
+Because of the domain of the substitutions of the relations, we have:
 \begin{multline*}
 V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1}\uplus \fvars{t_{2px}} \vdash\\
 R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies 
@@ -678,7 +652,7 @@ R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1 \implies
 \mpar{R_{12}\mpar{s'_1, s'_{2px}} \wedge R_{23}\mpar{s'_{2px}, s'_{3pxy}}}\psubst{\psi_1 \uplus \psi_{2px} \uplus \psi_{3pxy}}
 \end{array}}
 \end{multline*}
-The formula is valid for all $s_{2p} \in (s_{2p})^{p\in P}$. To build $R_{13}$ we need to rely on the disjunction of all possible paths to relate $s_1$ and $s_3$, which leads to\\ ${\displaystyle R_{13}(s_1,s_3)=\bigvee_{{p\in P}}\mpar{R_{12}\mpar{s_1,s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3}}}$.
+This is valid for all $s_{2p} \in (s_{2p})^{p\in P}$. We need to rely on the disjunction of all possible paths to relate $s_1$ and $s_3$ with ${\displaystyle R_{13}(s_1,s_3)=\bigvee_{{p\in P}}\mpar{R_{12}\mpar{s_1,s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3}}}$.
 \begin{multline*}
 V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1} \uplus  \biguplus_\subbox{p \in P} \fvars{t_{2px}} \vdash\\
 \operatorname*{\bigsymb{\bigvee}}_{p\in P} \mpar{R_{12}\mpar{s_1, s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3} \wedge g_1} \implies 
@@ -692,7 +666,7 @@ V_1 \uplus V_2 \uplus V_3  \uplus \fvars{t_1} \uplus  \biguplus_\subbox{p \in P}
 \underbrace{R_{12}\mpar{s'_1, s'_{2px}} \wedge R_{23}\mpar{s'_{2px}, s'_{3pxy}}}_{\implies R_{13}\mpar{s'_1,s'_{3pxy}}}\psubst{\psi_1 \uplus \psi_{2px} \uplus \psi_{3pxy}}
 \end{array}}
 \end{multline*}
-Indeed, since $\psi_{2px}$ has no effect on variables of $A_1$ and $A_3$ we have:
+Since $\psi_{2px}$ has no effect on variables of $A_1$ and $A_3$, it then implies:
 \begin{align*}
 R_{12}\mpar{s'_1, s'_{2px}} \wedge R_{23}\mpar{s'_{2px}, s'_{3pxy}}\psubst{\psi_1 \uplus \psi_{2px} \uplus \psi_{3pxy}}  \\  
 \implies R_{13}\mpar{s'_1,s'_{3pxy}}
@@ -713,7 +687,7 @@ R_{13}(s_1,s_3)  \wedge g_1 \implies
 {\wedge R_{13}\mpar{s'_1,s'_{3pxy}}}\psubst{\psi_1  \uplus \psi_{3pxy}}
 \end{array}}
 \end{multline*}
-Overall, we have a family of open transitions $t^{p\in P,x\in X,y\in Y}_{pxy} \subseteq T_3$ that should simulate $t_1$. All  combinations of elements in $P$, $X$, and $Y$ provide a set $Z$ of  open transitions.  This allows us to get the desired conclusion, that there is a set of  open transitions indexed over $Z$:
+Overall, we have a family of open transitions $t^{p\in P,x\in X,y\in Y}_{pxy} \subseteq T_3$ that should simulate $t_1$. All  combinations of elements in $P$, $X$, and $Y$ provide a set $Z$ of weak open transitions.  This allows us to get the desired conclusion, that there is a set of weak open transitions indexed over $Z$:
 %This provides the desired conclusion:\\
 \begin{multline*}
 V_1 \uplus  V_3 \uplus \fvars{t_1}
@@ -727,7 +701,7 @@ V_1 \uplus  V_3 \uplus \fvars{t_1}
 \end{array}}}
 \end{multline*}	
 \medskip
-\item Finally, we need to prove the satisfaction of the  deadlock reducing condition. According to the refinement relation relating   $A_2$ and $A_3$ we have for all $\mpar{s_{2p}, s_3} \in S_2 \times S_3$:
+\item Finally, the satisfaction of the condition of deadlock reducing. According to the relation between   $A_2$ and $A_3$ we have for all $\mpar{s_{2p}, s_3} \in S_2 \times S_3$:
 \begin{multline*}
  V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash \left(R_{23}\mpar{s_{2p}, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} \right)
 \end{multline*}
@@ -744,20 +718,17 @@ R_{12}\mpar{s_1,s_{2p}}\wedge R_{23}\mpar{s_{2p}, s_3} \wedge \bigvee_\subbox{t_
 \end{multline*}
 This results in:
 \begin{multline*}
-V_1 \uplus V_2 \uplus V_3 \uplus\biguplus_\subbox{p \in P} \fvars{t_{2p}} \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash \\
+ V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash \\
 R_{13}\mpar{s_1,s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \operatorname*{\bigsymb{\bigvee}}_{p\in P}\mpar{ R_{12}\mpar{s_1,s_{2p}}\wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}}} 
 \end{multline*}
 Yet according to the relation between $A_1$ and $A_2$ we have  for all $\mpar{s_1, s_{2p}} \in S_1 \times S_2$:
 \begin{multline*}
- V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{2p} \in \fOT{s_{2p}}} \fvars{t_{2p}} \vdash R_{12}\mpar{s_1, s_{2p}} \wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} 
+ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{2p} \in \fOT{s_{2p}}} \fvars{t_{2p}} \vdash \left(R_{12}\mpar{s_1, s_{2p}} \wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
 \end{multline*}
-
-
 
 This formula is valid for all $s_{2p} \in (s_{2p})^{p\in P}$,  thus we can state the following:
 \begin{multline*}
- V_1 \uplus V_2 \uplus \biguplus_{\mathclap{\substack{t_{2p} \in \fOT{s_{2p}}\\ p \in P}}} \fvars{t_{2p}} 
-\vdash \\
+ V_1 \uplus V_2 \uplus  \biguplus_\subbox{t_{2p} \in \fOT{s_{2p}}} \fvars{t_{2p}} \vdash \\
 \operatorname*{\bigsymb{\bigvee}}_{p\in P}\mpar{R_{12}\mpar{s_1, s_{2p}} \wedge \bigvee_\subbox{t_{2p} \in \fOT{s_{2p}}} \fguard{t_{2p}} }  \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
 \end{multline*}
 By using transitive property of implication on formula obtained form both relations and by removing the $A_2$ variables that have not effect on   $A_1$ et  $A_3$, we get the desired result:
@@ -785,15 +756,7 @@ V_1 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3}
 
 
 
-\section{Proof of Context Refinement (Theorem~\ref{thm:ContextRefinement})}
-
-
-\begin{quote}
-Suppose that $\wrel{A_1}{A_2}{H}$, \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
-We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\]
-\end{quote}
-
-\TODO{The subtlety here is that the original relation implies that valuations in A3 are equal (ie the value for each variable are the same in both valuations, modulo renaming), after a transition we should obtain ``equal'' valuations because Post are deterministic}
+\section{Proof of Context Refinement}
 
 \proof
 Let us denote by $A_{13}$ (resp. $A_{23}$) the open automaton resulting from $A_1\subst{A_3}{k}$ (resp. $A_2\subst{A_3}{k}$),  to prove the theorem it is sufficient to prove that there exists a relation between states of the two open automata that satisfies the conditions of the Definition \ref{Def:OA-Refinement}. 
@@ -813,13 +776,13 @@ We want to prove that $\mpar{R', H\uplus J_3 \setminus\{k\}}$ is a hole-tracking
 \[\sigma_{013} \uplus \sigma_{023} \vdash R'\mpar{s_{013}, s_{023}}\]
 with $\sigma_{013} = \sigma_{01} \uplus \sigma_{03}^1$, $\sigma_{023} = \sigma_{02} \uplus \sigma_{03}^2$, $s_{013}=(s_{01},s_{03}^1)$, and $s_{023}=(s_{02},s_{02}^2)$.\\
 By using the fact that $R$ relates initial configurations of  $A_1$ and $A_2$, we have  the following statement:
-$\mpar{\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}}$,  and based on the  fact that initial states are reachable $\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}$ we have 
+$\mpar{\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}}$,  and relying on the  fact that initial states are reachable $\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}$ we have 
 \[ \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}} \wedge 
 \mpar{\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}}\]
 
-Considering that initial valuations $\sigma_{03}^1$ and $\sigma_{03}^2$ associate the same values to the ``same'' variables modulo renaming, so the following holds:\\ $\left(\,\,{\displaystyle \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_3\wedge s^1_3 = s^2_3}\right)\psubst{\sigma_{03}^1 \uplus \sigma_{03}^2 }$.
+Considering that initial valuations $\sigma_{03}^1$ and $\sigma_{03}^2$ associate the same values to the ``same'' variables modulo renaming, we have the tautology:\\ $\left(\,\,{\displaystyle \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_3\wedge s^1_3 = s^2_3}\right)\psubst{\sigma_{03}^1 \uplus \sigma_{03}^2 }$.
 
-Additionally, because  the domains of the substitution function are disjoint, the substitution function has an effect only on the related elements,  we get:
+Because  the domains of the substitution function are disjoint, the substitution function has an effect only on the related elements,  we get:
 \begin{align*}
 & \mpar{\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}} \wedge 
 \mpar{\sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}}\\
@@ -831,7 +794,7 @@ Additionally, because  the domains of the substitution function are disjoint, th
 \begin{align*}
 		&  \OTx{13}{}{13}{13} \in \fOT{s_{13}}
 \end{align*}		
-there exists an indexed family $t_{23x}$ of OTs originating from $s_{23}$ that simulate it: 
+there exists an indexed family $t_{23x}$ of OTs originating from $s_{23}$ that simulates it: 
 \begin{align*}
 		&  \mpar{\OTx{23}{x}{23x}{23x} \in \fOT{s_{23}}}^{x \in X}
 \end{align*}	
@@ -842,13 +805,13 @@ there exists an indexed family $t_{23x}$ of OTs originating from $s_{23}$ that s
 			 g_{23x} \wedge R'\mpar{s'_{13}, s'_{23x}}\psubst{\psi_{13} \uplus \psi_{23x}}
 		\end{array}} 
 	\end{align*}
-Recall that by definition of composition and open automata refinement we have: 
+By definition of composition and open automata refinement we have: 
 \begin{align*}
 &V_{13}= V_1\uplus V^1_3 \text{ and }
 V_{23}= V_2\uplus V^2_3\\
 & H' \subseteq J_3\uplus \mpar{J_1 \cap J_2} \setminus \{k\} = \mpar{J_3\uplus J_1 \setminus \{k\} } \cap \mpar{J_3\uplus J_2 \setminus \{k\}} \\
 \end{align*}
-First of all, we have by hypothesis $\wrel{A_1}{A_2}{H}$, then for any open transition $t_1$ in $T_1$  originating from $s_1$:
+We have by hypothesis $\wrel{A_1}{A_2}{H}$, then for any open transition $t_1$ in $T_1$  originating from $s_1$:
 \begin{align*}
 \OTx{1}{}{1}{1} \in \fOT{s_1}
 \end{align*}
@@ -866,63 +829,94 @@ V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\ \mpar{R\mpar{s_1, s_{2}} \wedge g_1 \
 		\end{array}}}  \qquad \quad (*)
 \end{multline*}	
 \smallskip
+Consider any transition $t_{13}$ in $A_{13}$,  $t_{13}$ is obtained (by case analysis on the definition of composition) 
 
-Consider any transition $t_{13}$ in $A_{13}$.  Based on  the definition of composition $t_{13}$ can be obtained from two different cases, we will consider the two cases separately. 
-%\begin{enumerate}
-%\item 
-\paragraph{First case: Both automata perform a transition.}
-The transition $t_{13}$ is obtained by the composition of  transitions $t_1=\OTx{1}{}{1}{1}$ and  \[t_3^1=
+* either by the composition of a transition $t_1=\OTx{1}{}{1}{1}$ and a transition \[t_3^1=
 \OT{ s^1_3}{{s^1_3}'}{\alpha_3^1}{   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{ g^1_3 }{ \psi^1_3} \qquad \text{ when } k \in J'_{1} 
-\] The result is:
+\]. We obtain:
+%%%% Attention deactiver ici
 \[
 t_{13} = \OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, {s^1_3}'}}{\alpha_1}{\beta_{1j}^{j \in J'_1 \setminus \{k\}} \uplus  {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{g_1 \wedge g^1_3 \wedge \alpha^1_3 = \beta_{1k}}{\psi_1 \uplus \psi^1_3} \qquad \text{ where } k \in J'_{1} 
 \]
-We then obtain a family of OTs by the simulation of $A_1$ by $A_2$ (as stated above).
+We then obtain a family of OTs by the simulation of $A_1$ by $A_2$ (stated above).
 By hypothesis we have $k \in H$, so in the case where $k \in J'_{1}$, we deduce that $k \in J'_{2x}$ we can  then build  a family of OTs $t_{23x}^{x\in X}$ with the same transitions of $A_3$ (up to renaming) as those used to build $t_{13}$.
 \[
 t_{23x} = \left(\OT{\mpar{s_2, s^2_3}}{\mpar{s'_{2x}, {s^2_3}'}}{\alpha_{2x}}{\beta_{2xj}^{j \in J'_{2x}  \setminus \{k\}} \uplus   {(\beta^2_{3j})^{j \in J^{2 \prime}_3} }}{g_{2x} \wedge g^2_3 \wedge \alpha^2_3 = \beta_{2xk}}{\psi_{2x} \uplus \psi^2_3}
 \right)^{x\in X}\]
-Recall that in this case  $k \in J'_{1}$, so $\forall x \in X$ we have
+Recall that in this case  $k \in J'_{1}$
+
+
+* or by an the transition $t_1=\OTx{1}{}{1}{1}$ alone with the state $s^1_3$ unchanged, if $k \not\in J_1'$
+\[t_{13} = \OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, s^1_3}}{\alpha_1}{\beta_{1j}^{j \in J'_1}}{g_1}{\psi_1}
+\]
+We then obtain a family of OTs by the simulation of $A_1$ by $A_2$ (stated above).
+As  $k \in H$ we have $k \not\in J'_{2x}$ and we build:
+\[t_{23x} = \left(
+\OT{\mpar{s_2, s^2_3}}{\mpar{s'_{2x}, s^2_3}}{\alpha_{2x}}{\beta_{2xj}^{j \in J'_{2x}}}{g_{2x}}{\psi_{2x}} \right)^{x\in X}\]
+
+
+
+
+These two cases define (depending on how $t_{13}$ is built) the family $t_{23x}$ of OTs we are looking for.
+Thus, for both cases we have to prove the following:
+\begin{align*}		
+		&\mpar{\forall x \in X, J'_{23x} \cap H' =
+ J'_{13} \cap H'} \text{ and }\\
+		&  V_{13} \uplus V_{23} \uplus \fvars{t_{13}} \vdash\\ & R'\mpar{s_{13}, s_{23}} \wedge g_{13} \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
+			\alpha_{13} = \alpha_{23x} \wedge \bigwedge_\subbox{j \in J'_{23x} \cap H'} \beta_{13j} = \beta_{23xj} \\[12pt]
+			\nwedge g_{23x} \wedge R'\mpar{s'_{13}, s'_{23x}}\psubst{\psi_{13} \uplus \psi_{23x}}
+		\end{array}} 
+	\end{align*}
+For all $x \in X$ we have to consider both  cases:
 \begin{align*}
-  J'_{23x} \cap H'  
-&=((J'_{2x}  \setminus \mbrc{k})\uplus J^{2 \prime}_{3} ) \cap (H\uplus J_3 \setminus\{k\} )\\
+	\text{if } k \in J'_1:\quad &  J'_{23x} \cap H'  
+=((J'_{2x}  \setminus \mbrc{k})\uplus J^{2 \prime}_{3} ) \cap (H\uplus J_3 \setminus\{k\} )\\
 &=((J'_{2x}\cap (H\uplus J_3))\uplus (J^{2 \prime}_{3}\cap (H\uplus J_3)))\setminus \mbrc{k}\\
 &=((J'_{2x}\cap H)\uplus (J^{2 \prime}_{3}\cap  J_3))\setminus \mbrc{k}\text{ since } J_3\cap J'_{2x} = \emptyset \text{ and } H\cap J^{2 \prime}_{3} = \emptyset\\
 & =((J'_{2x}\cap H)\uplus J^{2 \prime}_{3})\setminus \mbrc{k}\text{ since } J^{2 \prime}_{3}\subseteq J_3\\
-& =((J'_1\cap H)\uplus J^{1 \prime}_{3})\setminus \mbrc{k}\quad \text{ since } J^{1 \prime}_{3}=J^{2 \prime}_{3} \text{ and } J'_1 \cap H = J'_{2x} \cap H\\
+& =(J'_1\cap H)\uplus J^{1 \prime}_{3}\setminus \mbrc{k}\quad \text{ since } J^{1 \prime}_{3}=J^{2 \prime}_{3} \text{ and } J'_1 \cap H = J'_{2x} \cap H\\
 &= ((J'_1 \cap H) \uplus (J^{1 \prime}_{3} \cap J_3)) \setminus \mbrc{k}\text{ since } J^{1 \prime}_{3}\subseteq J_3\\ 
 & = (J'_1\cap (J_3 \uplus H)) \uplus ((J^{1 \prime}_{3} \cap (J_3 \uplus H)) \setminus \mbrc{k} \text{ since } J_3\cap J'_{1} = \emptyset \text{ and } H\cap J^{1 \prime}_{3} = \emptyset\\
 		& = \mpar{(J'_1  \uplus J^{1 \prime}_{3})\setminus \mbrc{k}} \cap \mpar{(J_{3} \uplus H) \setminus \mbrc{k}}\\
-		& = J'_{13} \cap H'
-\end{align*}	
-
-In this case the composition gives: \[g_{13} \Leftrightarrow g_1 \wedge g^1_3 \wedge \alpha^1_3=\beta_{1k} \text{ and }
-g_{23x}  \Leftrightarrow g_{2x} \wedge g^2_3 \wedge \alpha^2_3=\beta_{2xk}\]
-As $k \in H$ we have   
-$\beta_{1k} = \beta_{2xk}$ then we  deduce:
-\[g^1_3 \wedge \alpha^1_3=\beta_{1k}  \Leftrightarrow g^2_3 \wedge \alpha^2_3= \beta_{2xk}\]
-The proof of the rest  is based on the following facts: 
-\begin{enumerate}
-\item  Because composition doesn't change the resulting actions, nor their variables, we can extend the valuation context of the variables to cover the variables of the transition $t_3$.   By construction of  $t_{13}$ and $t_{23}$ we have $\alpha_{13}=
+		& = J'_{13} \cap H'\\
+\text{if } k \notin J'_1:\quad &	J'_{23x} \cap H'  = \mpar{J'_{2x} } \cap \mpar{J_3 \uplus H \setminus \mbrc{k}} \\
+& = \mpar{J'_{2x}\cap H } \text{ since } J'_{2x}\cap J_3=\emptyset \land k\not\in J'_{2x} \\
+& = \mpar{J'_1\cap H }\\
+& = \mpar{J'_{13}\cap H' } \text{ since } J_3\cap J'_1=\emptyset \land k\not\in J_1'
+\end{align*}
+For the rest of the formula we will also consider the two cases separately. 
+\begin{itemize}
+\item if $k \in J'_1$:\\
+The proof is based on the following facts.
+First, because composition doesn't change the resulting actions, nor their variables, we can extend the valuation context of the variables to cover the variables of the transition $t_3$.   By construction of  $t_{13}$ and $t_{23}$ we have $\alpha_{13}=
 \alpha_{1}$ and $\alpha_{23x}=\alpha_{2x}$. So we deduce: 
-$\alpha_{1} = \alpha_{2x} \Rightarrow \alpha_{13} = \alpha_{23x}$.
-\item By composition we have also: \\ $\beta_{13j}^{j\in J'_{13}}= \beta_{1j}^{j \in J'_{1}  \setminus \{k\}} \uplus   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }$
+$\alpha_{1} = \alpha_{2x} \Rightarrow \alpha_{13} = \alpha_{23x}$.\\
+Second, we have: \\ $\beta_{13j}^{j\in J'_{13}}= \beta_{1j}^{j \in J'_{1}  \setminus \{k\}} \uplus   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }$
 and $\beta_{23xj}^{j\in J'_{23}}= \beta_{2xj}^{j \in J'_{2x}  \setminus \{k\}} \uplus   {(\beta^2_{3j})^{j \in J^{2 \prime}_3} }$\\
-Therefore, we have for all $j\in J'_{13}$ (recall that $J'_{13}=J'_{23}$):  \[\beta_{13j} = \beta_{23xj} \Rightarrow (j\in J_1 \land \beta_{1j} = \beta_{2xj}) \vee (j\in J_3^1 \land \beta^1_{3j}= \beta^2_{3j})\]
-\item 
-Considering $\beta^1_{3j}$ and  $\beta^2_{3j}$  are the same (up to renaming)  we have: \\
-${\displaystyle V^1_{3} \uplus V^2_{3} \uplus \fvars{t_{13}} \vdash \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3\implies \bigwedge_\subbox{j \in J^{2 \prime}_3} \beta^1_{3j}= \beta^2_{3j}}$\\
-The disjunction with the following hypothesis:\\ $V_{1} \uplus V_{2} \uplus \fvars{t_1}  \vdash {\displaystyle \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2xj}}$  will give:
+Therefore, we have for all $j\in J'_{13}$ (recall that $J'_{13}=J'_{23}$):  \[\beta_{13j} = \beta_{23xj} \Rightarrow (j\in J_1 \land \beta_{1j} = \beta_{2xj}) \vee (j\in J_3^1 \land \beta^1_{3j}= \beta^2_{3j})\]\\
+Third, considering $\beta^1_{3j}$ and  $\beta^2_{3j}$  are the same (up to renaming)  we have: 
+${\displaystyle V^1_{3} \uplus V^2_{3} \uplus \fvars{t_{13}} \vdash \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3\implies \bigwedge_\subbox{j \in J^{2 \prime}_3} \beta^1_{3j}= \beta^2_{3j}}$
+
+
+
+And suppose that  $V_{1} \uplus V_{2} \uplus \fvars{t_1}  \vdash {\displaystyle \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2xj}}$ holds then we can deduce:
 \begin{align*}
  V_{1} \uplus V_{2}  \uplus V^1_{3} \uplus V^2_{3} \uplus \fvars{t_{13}}\vdash &    \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3 \implies {\displaystyle \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2xj}} \vee {\displaystyle \bigwedge_\subbox{j \in J^{2 \prime}_3} \beta^1_{3j}= \beta^2_{3j}}\\
 \Rightarrow  V_{13} \uplus V_{23}  \uplus \fvars{t_{13}}\vdash & \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3\implies {\displaystyle \bigwedge_\subbox{j \in (J'_{2x}   \cap H)\uplus J^{2 \prime}_3 } \beta_{13j} = \beta_{23xj}} \\  
 \Rightarrow  V_{13} \uplus V_{23}  \uplus \fvars{t_{13}}\vdash & \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3\implies {\displaystyle \bigwedge_\subbox{j \in \Rightarrow   ((J'_{2x}   \cap H)\uplus J^{2 \prime}_3)\setminus \{k\} } \beta_{13j} = \beta_{23xj}} \\
 \Rightarrow    V_{13} \uplus V_{23}  \uplus \fvars{t_{13}}\vdash & \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3\implies {\displaystyle \bigwedge_\subbox{j \in (J'_{23x}   \cap H') } \beta_{13j} = \beta_{23xj}}
 \end{align*}
-\end{enumerate}
+Finally, the composition gives $g_{13} \Leftrightarrow g_1 \wedge g^1_3 \wedge \alpha^1_3=\beta_{1k}$ and
+$g_{23x}  \Leftrightarrow g_{2x} \wedge g^2_3 \wedge \alpha^2_3=\beta_{2xk}$. \\
+Furthermore, as $k \in H$ we have   
+$\beta_{1k} = \beta_{2xk}$ then we  deduce:
+$g^1_3 \wedge \alpha^1_3=\beta_{1k}  \Leftrightarrow g^2_3 \wedge \alpha^2_3= \beta_{2xk}$
 
 
-By the extension of the valuation context mentioned above in the formula $(*)$ and by using the statements resulting from the cases (a), (b) and (c), we get:
+
+
+
+From all the implications induced by the extension of the valuation context mentioned above, and by entering   all previous intermediate results in the formula $(*)$, we get:
 \begin{multline*}
 V_{13} \uplus V_{23}  \uplus \fvars{t_{13}} \vdash\\
 R\mpar{s_1, s_{2}} \wedge \mpar{g_1 \wedge g^1_3 \wedge \alpha^1_3=\beta_{1k}}\wedge \bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3 %\wedge s^1_3=s^2_3
@@ -944,28 +938,29 @@ R\mpar{s_1, s_{2}} \wedge g_{13}  \land \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_
 			\nwedge g_{23x} \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}   
 \end{multline*}	
+\TODO{The subtlety here is that the original relation implies that valuations in A3 are equal (ie the value for each variable are the same in both valuations, modulo renaming), after a transition we should obtain ``equal'' valuations because Post are deterministic}
 
-Moreover, we have  for any transition $t_3$ in $A_3$ relying $s_3$ and $s^{\prime}_3$ the following:
+We can deduce for any transition $t_3$ in $A_3$ relying $s_3$ and $s^{\prime}_3$ we have:
 \begin{multline*}
 V_{13} \uplus V_{23}  \uplus \fvars{t_{13}} \vdash\\
 \bigwedge_\subbox{v_3\in V_3}\!\! v^1_3=v^2_3  \wedge s^1_3 = s^2_3 \implies \bigwedge_\subbox{v_3\in V_3}\!\! \psi_{13}(v^1_3)=\psi_{13}(v^2_3)  \wedge s^{1\prime}_3 = s^{2\prime}_3 
  \end{multline*}	
-From the two previous formulas, we get:
+Therefore, we get:
 \begin{multline*}
 V_{13} \uplus V_{23} \uplus \fvars{t_{13}}  \vdash\\
 R\mpar{s_1, s_{2}} \wedge g_{13}  \land \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_3 \wedge s^1_3 = s^2_3
 \implies \hspace{7em} \\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
 \begin{array}{l}
 			\alpha_{13} = \alpha_{23x} \wedge \bigwedge_\subbox{j \in J'_{23x} \cap H'} \beta_{13j} = \beta_{23xj} \nwedge g_{23x}\land\\
-			  R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}} \wedge
+			 \wedge R\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
  \bigwedge_\subbox{v_3\in V_3}\!\! \psi_{13}(v^1_3)=\psi_{13}(v^2_3) \wedge s^{1\prime}_3 = s^{2\prime}_3
 		\end{array}}   
 \end{multline*}
-And finally by hypothesis we have  \(A_1\subst{A_3}{k}\) is non-blocking,   by definition of reachability (Definition \ref{Def:Reach}) we obtain $ \sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}$ and for all $t_{13} \in T_{13}$:
+And finally By hypothesis we have  \(A_1\subst{A_3}{k}\) is non-blocking,  then according to the Definition \ref{Def:Reach} we have $ \sigma_{013} \vdash \reach{A_{13}}\mpar{s_{013}}$ and for all $t_{13} \in T_{13}$:
 \[ \fvars{t_{13}} \vdash \left(\reach{A_{13}}\mpar{s_{13}} \wedge g_{13} \implies \reach{A_{13}}\mpar{s_{13}'}\psubst{\psi_{13}}\right) \]	
 Thus, we get:
 \begin{multline*}
-V_{13} \uplus V_{23} \uplus  \fvars{t_{13}} \vdash\\
+V_{13} \uplus V_{23} \uplus \fvars{t_1}  \cap \fvars{t_{13}} \vdash\\
 R\mpar{s_1, s_{2}} \wedge g_{13}  \wedge \reach{A_{13}}\mpar{s_{13}}
 \wedge \bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3\wedge s^1_3=s^2_3
 \implies \hspace{5em} \\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
@@ -975,49 +970,18 @@ R\mpar{s_1, s_{2}} \wedge g_{13}  \wedge \reach{A_{13}}\mpar{s_{13}}
 \wedge \bigwedge_\subbox{v_3\in V_3}  \psi_{13}(v^1_3)=\psi_{13}(v^2_3)\wedge s^{1\prime}_3=s^{2\prime}_3
 		\end{array}}   
 \end{multline*}	
-Because of the independence of the substitution domains, we simplify and get the expected formula:
+Because of the independence of the substitution domains, we get the expected formula:
 	\begin{multline*}
   V_{13} \uplus V_{23} \uplus \fvars{t_{13}} \vdash\\ R^{\prime}\mpar{s_{13}, s_{23}} \wedge g_{13} \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
 			\alpha_{13} = \alpha_{23x} \wedge \bigwedge_\subbox{j \in J'_{23x} \cap H'} \beta_{13j} = \beta_{23xj} \\[12pt]
 			\nwedge g_{23x} \wedge R^{\prime}\mpar{s'_{13}, s'_{23x}}\psubst{\psi_{13} \uplus \psi_{23x}}
 		\end{array}} 
 	\end{multline*}
-	
-\smallskip
 
-\paragraph{Second case: Only the encompassing automaton performs a transition}
- $t_{13}$ is obtained  by  the transition $t_1=\OTx{1}{}{1}{1}$ alone with the state $s^1_3$ unchanged, if $k \not\in J_1'$
-\[t_{13} = \OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, s^1_3}}{\alpha_1}{\beta_{1j}^{j \in J'_1}}{g_1}{\psi_1}
-\]
-We then obtain a family of OTs by the simulation of $A_1$ by $A_2$ (stated above).
-As  $k \in H$ we have $k \not\in J'_{2x}$ and we build:
-\[t_{23x} = \left(
-\OT{\mpar{s_2, s^2_3}}{\mpar{s'_{2x}, s^2_3}}{\alpha_{2x}}{\beta_{2xj}^{j \in J'_{2x}}}{g_{2x}}{\psi_{2x}} \right)^{x\in X}\]
-
-\end{enumerate}
-
-These two cases define (depending on how $t_{13}$ is built) the family $t_{23x}$ of OTs we are looking for.
-Thus, for both cases we have to prove the following:
-\begin{align*}		
-		&\mpar{\forall x \in X, J'_{23x} \cap H' =
- J'_{13} \cap H'} \text{ and }\\
-		&  V_{13} \uplus V_{23} \uplus \fvars{t_{13}} \vdash\\ & R'\mpar{s_{13}, s_{23}} \wedge g_{13} \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
-			\alpha_{13} = \alpha_{23x} \wedge \bigwedge_\subbox{j \in J'_{23x} \cap H'} \beta_{13j} = \beta_{23xj} \\[12pt]
-			\nwedge g_{23x} \wedge R'\mpar{s'_{13}, s'_{23x}}\psubst{\psi_{13} \uplus \psi_{23x}}
-		\end{array}} 
-	\end{align*}
-	
-Recall in this case $k \notin J'_1$, $\forall x \in X$ we have
-\begin{align*}		
-J'_{23x} \cap H' & = J'_{2x}  \cap \mpar{J_3 \uplus H \setminus \mbrc{k}} \\
-& = \mpar{J'_{2x}\cap H } \text{ since } J'_{2x}\cap J_3=\emptyset \land k\not\in J'_{2x} \\
-& = \mpar{J'_1\cap H } \text{ since } J'_1 \cap H = J'_{2x} \cap H\\
-& = \mpar{J'_{13}\cap H' } \text{ since } J_3\cap J'_1=\emptyset \land k\not\in J_1'
-\end{align*}
-
-The proof of the rest of the formula follows the same steps as the previous case the only argument that changes is that by composition we obtain:  $g_{13} \Leftrightarrow g_1$ and
+\item if $k \notin J'_1$:\\
+The proof of this case follows the same steps as the previous case the only argument that changes is that  $g_{13} \Leftrightarrow g_1$ and
 $g_{23x}  \Leftrightarrow g_{2x}$.
-
+ \end{itemize}
 \item The last formula we need to prove is the following: for all $\mpar{s_{13}, s_{23}} \in S_{13} \times S_{23}$
 \begin{multline*}
 V_{13} \uplus V_{23} \uplus \biguplus_\subbox{t_{23}\in \fOT{s_{23}}} \fvars{t_{23}} \vdash \\ \left(R^{\prime}\mpar{s_{13}, s_{23}} \wedge \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}} \implies \bigvee_\subbox{t_1 \in \fOT{s_{13}}} \fguard{t_{13}} \right)
@@ -1026,52 +990,51 @@ Let's start  with the hypothesis of the theorem stating that $\wrel{A_1}{A_2}{H}
 \begin{multline*}
 V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
 \end{multline*}
-We extend the valuation to cover the variables of  $t^2_3$ in $t_{23}$ and using their value in $t_3$ and because the following statement holds: $\fvars{t_{13}} \vdash \reach{A_{13}}\mpar{s_{13}}$, we get:
-\begin{multline*}
-V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{23} \in \fOT{s_{23}}} \fvars{t_{23}} \vdash\\ \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}}  \wedge \reach{A_{13}}\mpar{s_{13}} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}   \wedge \reach{A_{13}}\mpar{s_{13}}\right)
-\end{multline*}
-We have a second hypothesis stating that the result of the composition \(A_1\subst{A_3}{k}\) is non-blocking, by Definition \ref{Def:Non-blockcomp} we have:
+We have a second hypothesis stating that the result of the composition \(A_1\subst{A_3}{k}\) is non-blocking, which leads to:
 \begin{multline*}
 V_{13}  \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash \left( \reach{A_{13}}\mpar{s_{13}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}} \right)
 \end{multline*}
-By transitivity  we obtain:
+We use the the first, we extend the valuation to cover the variables of  $t^2_3$ in $t_{23}$ using their value in $t_3$ and because $\fvars{t_{13}} \vdash \reach{A_{13}}\mpar{s_{13}}$, we get:
+\begin{multline*}
+V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{23} \in \fOT{s_{23}}} \fvars{t_{23}} \vdash\\ \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}}  \wedge \reach{A_{13}}\mpar{s_{13}} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}   \wedge \reach{A_{13}}\mpar{s_{13}}\right)
+\end{multline*}
+By transitivity with the second hypothesis we obtain:
 \begin{multline*}
 V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{23} \in \fOT{s_{23}}} \fvars{t_{23}} \vdash\\ \left(R\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}}   \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}\right)
 \end{multline*}
-
-Considering that each valuations $\sigma_{3}^1$ and $\sigma_{3}^2$ associate the same values to the ``same'' variables modulo renaming, so the following holds:\\ $\left(\,\,{\displaystyle \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_3\wedge s^1_3 = s^2_3}\right)\psubst{\sigma_{3}^1 \uplus \sigma_{3}^2 }$, we obtain:
+That implies:
 \begin{multline*}
 V_1 \uplus V_2 \uplus \biguplus_\subbox{t_{23} \in \fOT{s_{23}}} \fvars{t_{23}} \vdash\\ \left(\underbrace{R\mpar{s_1, s_2} \wedge \reach{A_{13}}\mpar{s_{13}} \wedge \bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3\wedge s^1_3=s^2_3}_{R^{\prime}(s_{13},s_{23})}  \wedge \bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}}   \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}\right)
 \end{multline*}
 which gives us what we needed to demonstrate. \qed
-% \end{enumerate}
+ \end{enumerate}
 
 
-\section{Proof of Congruence (Theorem~\ref{thm:Congruence})}
+\section{Proof of Congruence}
 
-Suppose that $\wrel{A_2}{A_3}{H}$, \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
-We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
 \proof
-Let us denote by $A_{12}$ (resp. $A_{13}$) the open automaton resulting from $A_1\subst{A_2}{k}$ (resp. $A_1\subst{A_3}{k}$),  to prove the theorem it is sufficient to prove that there exists a relation between states of the two open automata that satisfies the conditions of the Definition \ref{Def:OA-Refinement}. We denote $A_1=  \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}$ and \(A_2 = \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and $A_3 = \OA{S_3}{s_{03}}{J_3}{V_3}{\sigma_{03}}{T_3}$.
+Let us denote by $A_{12}$ (resp. $A_{13}$) the open automaton resulting from $A_1\subst{A_2}{k}$ (resp. $A_1\subst{A_3}{k}$),  to prove the theorem it is sufficient to prove that there exists a relation between states of the two open automata that satisfies the conditions of the Definition \ref{Def:OA-Refinement}. 
+
+We denote $A_1=  \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}$ and \(A_2 = \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\) and $A_3 = \OA{S_3}{s_{03}}{J_3}{V_3}{\sigma_{03}}{T_3}$.
 
 % The proof requires  to rename the variables of one instance of the two $A_3$ automata to avoid clashes in variable names (this is required by the definition of refinement). In practice we will use superscripts ${}^1$ and ${}^2$ to distinguish elements of the two instances of $A_3$.
 
 Let $R$ be the refinement relation relating states of $A_2$ and $A_3$. 
 Let us denote with $t^2$ and $t^3$  the elements of $A_2$ and $A_3$ respectively.
-Consider any two states $s_{12} = \mpar{s^1_1,s_2}$ and $s_{13} = \mpar{s^2_1,s_3}$ ($s^1_1$ and $s^2_1$  are the same with renaming). We define a relation $R'$ relating states of $s_{12}$ and $s_{13}$ as follows:
+Consider any two states $s_{12} = \mpar{s_1,s^1_2}$ and $s_{13} = \mpar{s^2_1,s_3}$ ($s^1_1$ and $s^2_1$  are the same with renaming). We define a relation $R'$ relating states of $s_{12}$ and $s_{13}$ as follows:
 \[ R' \mpar{s_{12}, s_{13}} = R\mpar{s_{2}, s_{2}} \wedge \reach{A_{12}}\mpar{s_{12}} \wedge \bigwedge_\subbox{v_1\in V_1}
  v^1_1=v^2_1\wedge s^1_1 = s^2_1\]
-Let us denote $H'=H\uplus J_1 \setminus\{k\}$.
-We want to prove that $\mpar{R', H'}$  is a hole-tracking simulation of $A_{12}$ and $A_{13}$. As for the previous proof we proceed by cases:
+Let us denote $H'=H\cup J_1 \setminus\{k\}$.
+We want to prove that $\mpar{R', H'}$  is a hole-tracking simulation of $A_{12}$ and $A_{13}$. As for the previous proof we deal with cases:
 \begin{enumerate}
 \item We have to prove that it holds for the initial configurations:
 \[\sigma_{012} \uplus \sigma_{013} \vdash R'\mpar{s_{012}, s_{013}}\]
-with $\sigma_{012} = \sigma_{01}^1 \uplus \sigma_{02}$, $\sigma_{013} = \sigma_{01}^2 \uplus \sigma_{03}$, $s_{012}=(s_{01}^1,s_{02})$, and $s_{013}=(s_{01}^2,s_{03})$.
+with $\sigma_{012} = \sigma_{01}^1 \uplus \sigma_{02}$, $\sigma_{013} = \sigma_{01}^2 \uplus \sigma_{03}$, $s_{012}=(s_{01}^1,s_{02})$, and $s_{013}=(s_{01}^2,s_{03})$.\\
 By using the fact that $R$ relates initial configurations of  $A_2$ and $A_3$, we have  the following statement:
-$\mpar{\sigma_{02} \uplus \sigma_{03} \vdash R\mpar{s_{02}, s_{03}}}$,  and based on the  fact that initial states are reachable $\sigma_{012} \vdash \reach{A_{12}}\mpar{s_{012}}$ we have:
+$\mpar{\sigma_{02} \uplus \sigma_{03} \vdash R\mpar{s_{02}, s_{03}}}$,  and relying on the  fact that initial states are reachable $\sigma_{012} \vdash \reach{A_{12}}\mpar{s_{012}}$ we have 
 \[ \mpar{\sigma_{02} \uplus \sigma_{03} \vdash R\mpar{s_{02}, s_{03}}} \wedge 
 \mpar{\sigma_{012} \vdash \reach{A_{12}}\mpar{s_{012}}}\]
-Because initial valuations $\sigma_{01}^1$ and $\sigma_{01}^2$ associate the same values to the ``same'' variables modulo renaming, so the following holds:\\ $\left(\,\,{\displaystyle \bigwedge_\subbox{v_1\in V_1} v^1_1=v^2_1\wedge s^1_1 = s^2_1}\right)\psubst{\sigma_{01}^1 \uplus \sigma_{01}^2 }$.
+Because initial valuations $\sigma_{01}^1$ and $\sigma_{01}^2$ associate the same values to the ``same'' variables modulo renaming, we have the tautology:\\ $\left(\,\,{\displaystyle \bigwedge_\subbox{v_1\in V_1} v^1_1=v^2_1\wedge s^1_1 = s^2_1}\right)\psubst{\sigma_{01}^1 \uplus \sigma_{01}^2 }$.
 
 Furthermore, because  the domains of the substitution function are disjoint, the substitution function has an effect only on the related elements,  we get:
 \begin{align*}
@@ -1087,7 +1050,7 @@ Furthermore, because  the domains of the substitution function are disjoint, the
 \begin{align*}
 		&  \OTx{12}{}{12}{12} \in \fOT{s_{12}}
 \end{align*}		
-there exists an indexed family $t_{13x}$ of OTs originating from $s_{13}$ that simulate it: 
+there exists an indexed family $t_{13x}$ of OTs originating from $s_{13}$ that simulates it: 
 \begin{align*}
 		&  \mpar{\OTx{13}{x}{13x}{13x} \in \fOT{s_{13}}}^{x \in X}
 \end{align*}	
@@ -1098,9 +1061,9 @@ V_{12} \uplus V_{13} \uplus \fvars{t_{12}} \vdash\\ R'\mpar{s_{12}, s_{13}} \wed
 			 g_{13x} \wedge R'\mpar{s'_{12}, s'_{13x}}\psubst{\psi_{12} \uplus \psi_{13x}}
 		\end{array}} 
 	\end{multline*}
-By the definition of composition and open automata refinement we have: 
+By definition of composition and open automata refinement we have: 
 \begin{align*}
-&V_{12}= V^1_1\uplus V_2 \text{ and }
+&V_{12}= V^1_1\uplus V_3 \text{ and }
 V_{13}= V^2_1\uplus V_3\\
 & H'=H_{23}\uplus J_1 \setminus \{k\} \subseteq J_1\uplus \mpar{J_2 \cap J_3} \setminus \{k\} = \mpar{J^1_1\uplus J_2 \setminus \{k\} } \cap \mpar{J^2_1\uplus J_3 \setminus \{k\}} = J_{12 } \cap J_{13} \\
 \end{align*}
@@ -1122,15 +1085,12 @@ V_2 \uplus V_3 \uplus \fvars{t_2} \vdash\\ \mpar{R\mpar{s_2, s_3} \wedge g_2 \im
 		\end{array}}}  \qquad \quad (*)
 \end{multline*}	
 \smallskip
-Consider any transition $t_{12}$ in $A_{12}$,  $t_{12}$ is obtained (by case analysis on the definition of composition).  
- 
-%\begin{enumerate}
-%\item 
-\paragraph{First case: Both automata perform a transition.} ~~\\
-The transition $t_{12}$ is obtained  by the composition of transitions $t_2=\OTx{2}{}{2}{2}$ and  \[t_1^1=
+Consider any transition $t_{12}$ in $A_{12}$,  $t_{12}$ is obtained (by case analysis on the definition of composition) 
+
+* either by the composition of a transition $t_2=\OTx{2}{}{2}{2}$ and a transition \[t_1^1=
 \OT{ s^1_1}{{s^1_1}'}{\alpha_1^1}{   {(\beta^1_{1j})^{j \in J^{1 \prime}_1} }}{ g^1_1 }{ \psi^1_1} \qquad \text{ when } k \in {J^1_{1}}^{\prime}
-\]
-The result is the transition:
+\]. We obtain:
+%%%% Attention deactiver ici
 \[
 t_{12} = \OT{\mpar{s^1_1, s_2}}{\mpar{{s^1_1}',s'_2 }}{\alpha^1_1}{{\beta^1_{1j}}^{j \in J^{1 \prime}_1 \setminus \{k\}} \uplus  {(\beta_{2j})^{j \in J^{\prime}_2} }}{g^1_1 \wedge g_2 \wedge \alpha_2 = \beta^1_{1k}}{\psi^1_1 \uplus \psi_2} \qquad \text{ where } k \in {J^1_{1}}^{\prime} 
 \]
@@ -1138,166 +1098,27 @@ t_{12} = \OT{\mpar{s^1_1, s_2}}{\mpar{{s^1_1}',s'_2 }}{\alpha^1_1}{{\beta^1_{1j}
 We then obtain a family of OTs by the simulation of $A_2$ by $A_3$ (stated above).
 By hypothesis we have $k \in H$, so in the case where $k \in {J^1_{1}}^{\prime}$, we deduce that $k \in J'_{3x}$ we can  then build  a family of OTs $t_{13x}^{x\in X}$ with the same transitions of $A_1$ (up to renaming) as those used to build $t_{12}$.
 \[
-t_{13x} = \left(\OT{\mpar{s^2_1, s_3}}{\mpar{{s^2_{1}}',s'_{3x}}}{\alpha^2_{1}}  {{(\beta^2_{1j})^{{j \in J^{2 \prime}_1} \setminus \{k\}}}\uplus \beta_{3xj}^{j \in J'_{3x}  } }{ g^2_1 \wedge  g_{3x}  \wedge \alpha_{3x} =  \beta^2_{1k}}{\psi_{3x} \uplus \psi^2_1}
+t_{13x} = \left(\OT{\mpar{s^2_1, s_3}}{\mpar{{s^2_{1}}',s'_{3x}}}{\alpha^2_{1}}  {{(\beta^2_{1j})^{j \in J^{2 \prime}_1}}\uplus \beta_{3xj}^{j \in J'_{3x}  \setminus \{k\}} }{g_{3x} \wedge g^2_1 \wedge \alpha^2_1 = \beta_{3xk}}{\psi_{3x} \uplus \psi^2_1}
 \right)^{x\in X}\]
 Recall that in this case  $k \in {J^1_{1}}^{\prime}$
-\begin{align*}
-J'_{13} \cap H'  
-&=((J^{2 \prime}_{1} \uplus J'_{3x}) \setminus \mbrc{k}) \cap ((H\uplus J_1) \setminus\{k\} )\\
-& =((J^{2 \prime}_{1} \cap (H\uplus J_1)) \uplus (J'_{3x} \cap  (H\uplus J_1)))\setminus \mbrc{k}\\
-& =((J^{2 \prime}_{1} \cap  J_1)) \uplus (J'_{3x} \cap H))\setminus \mbrc{k}\text{ since }  J^{2 \prime}_{1}\cap H = \emptyset \text{ and } J'_{3x}\cap J_1 = \emptyset  \\
-& =(J^{2 \prime}_{1} \uplus (J'_{3x} \cap H))\setminus \mbrc{k} \text{ since } J^{1 \prime}_{1}\subseteq J_1\\
-& =(J^{1 \prime}_{1} \uplus (J'_{2} \cap H))\setminus \mbrc{k}  \text{ since } J^{1 \prime}_{1}=J^{2 \prime}_{1} \text{ and } J'_2 \cap H = J'_{3x} \cap H\\
-&  =((J^{1 \prime}_{1} \cap J_{1}) \uplus (J'_{2} \cap H))\setminus \mbrc{k} \text{ since } J^{1 \prime}_{1} \subseteq J_1 \\
-& = (J'_{2} \cap (J_1 \uplus H)) \uplus (J^{1 \prime}_{1}\cap (J_1 \uplus H))\setminus \mbrc{k} \text{ since } 
-J_1 \cap  J'_{2}= \emptyset \text{ and } H \cap J^{1 \prime}_{1} = \emptyset\\
-& = ((J'_{2} \uplus J^{1 \prime}_{1})\setminus \mbrc{k}) \cap   ((J_1 \uplus H)\setminus \mbrc{k})\\
-& = J'_{12}\cap H'
-\end{align*}
-In this case the composition gives:
-\[g_{12} \Leftrightarrow g^1_1 \wedge g_2 \wedge \alpha_2=\beta^1_{1k} \text{ and } g_{13x}  \Leftrightarrow g^2_1 \wedge  g_{3x}  \wedge \alpha_{3x}=\beta^2_{1k}\] 
-Furthermore, as $\beta^1_{1k} = \beta^2_{1k}$ then we get:
-\[ g^1_1  \wedge \alpha_2=\beta^1_{1k}  \Leftrightarrow g^2_1  \wedge \alpha_{3x}=\beta^2_{1k}\]
-As the previous case, the rest of the proof is based  on the fact:
-\begin{enumerate}
-\item The composition doesn't change the resulting actions, nor their variables, we can extend the valuation context of the variables to cover the variables of the transition $t_3$.   By construction of  $t_{12}$ and $t_{13}$ we have $\alpha_{12}=
-\alpha^1_{1}$ and $\alpha_{13x}=\alpha^2_{1}$. As  $\alpha^1_{1}=\alpha^2_{1}$  we deduce: 
-$\alpha_{12} = \alpha_{13x}$. 
-\item By composition we have also:\\
- $\beta_{12j}^{j\in J'_{12}}= {({\beta^1_{1j}})^{j \in J^{1 \prime}_1 \setminus \{k\}} \uplus  {\beta_{2j}^{j \in J^{\prime}_2} }}$ and $\beta_{13xj}^{j\in J'_{13}}= {{(\beta^2_{1j})^{j \in {J^{2 \prime}_1} \setminus \{k\}}}\uplus \beta_{3xj}^{j \in J'_{3x} } }$
 
-Therefore, we have for all $j\in J'_{12}$ (recall that $J'_{12}=J'_{13}$):  
-\[\beta_{12j} = \beta_{13xj} \Rightarrow (j\in J^{1 \prime}_1 \land \beta^1_{1j}= \beta^2_{1j}) \vee  (j\in J'_2 \land \beta_{2j} = \beta_{3xj})  \]
-
-\item And considering $\beta^1_{1j}$ and  $\beta^2_{1j}$  are the same (up to renaming)  we have: 
-${\displaystyle V^1_{1} \uplus V^2_{1} \uplus \fvars{t_{1}} \vdash \bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1\implies \bigwedge_\subbox{j \in J^{\prime}_1} \beta^1_{1j}= \beta^2_{1j}}$.
-
-Suppose that  $V_{2} \uplus V_{3} \uplus \fvars{t_{3x}}  \vdash {\displaystyle \bigwedge_\subbox{j \in J'_{3x} \cap H} \beta_{2j} = \beta_{3xj}}$ holds then we can deduce:
-\begin{align*}
-V^1_{1} \uplus V^2_{1} \uplus V_{2} \uplus V_{3} \uplus \fvars{t_{13x}}
-\vdash &   \bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1\implies \bigwedge_\subbox{j \in J^{\prime}_1} \beta^1_{1j}= \beta^2_{1j} \vee  
-\bigwedge_\subbox{j \in J'_{3x} \cap H} \beta_{2j} = \beta_{3xj}\\
-\Rightarrow  V_{12} \uplus V_{13}  \uplus \fvars{t_{13x}}\vdash & 
-\bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1
-\implies {\displaystyle \bigwedge_\subbox{j \in (J'_{3x}   \cap H)\uplus J^{1 \prime}_1 } \beta_{12j} = \beta_{13xj}} \\  
-\Rightarrow   V_{12} \uplus V_{13}  \uplus \fvars{t_{13x}} \vdash & 
-\bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1
-\implies 
-{\displaystyle \bigwedge_\subbox{j \in ((J'_{3x}   \cap H)\uplus J^{1 \prime}_1)\setminus \{k\} } \beta_{12j} = \beta_{13xj}}\\
-\Rightarrow  V_{12} \uplus V_{13}  \uplus \fvars{t_{13x}} \vdash & 
-\bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1
-\implies 
-{\displaystyle \bigwedge_\subbox{j \in (J'_{13x}   \cap H')} \beta_{12j} = \beta_{13xj}}
-\end{align*}
-\end{enumerate}
-From the statements resulting the cases (a), (b) and (c),  and by  the formula $(*)$ we get:
-\begin{multline*}
-%\everymath{\displaystyle}
-V_2 \uplus V_3 \uplus \fvars{t_2} \vdash\\ R\mpar{s_2, s_3} \wedge g_2 \wedge  \mpar{g^1_1  \wedge \alpha_2=\beta^1_{1k}} \wedge \bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1
-\implies\hspace{5em}\\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
-\begin{array}{l}
-			\alpha_{12} = \alpha_{13x} \wedge \bigwedge_\subbox{j \in J'_{13x} \cap H'} \beta_{12j} = \beta_{13xj} \nwedge\\
-			 g_{3x} \wedge R\mpar{s'_2, s'_{3x}}\psubst{\psi_2 \uplus \psi_{3x}}
-		\end{array}} \wedge    \mpar{g^2_1  \wedge \alpha_{3x}=\beta^2_{1k}}
-\end{multline*}	
-which can be simplified and re-written as follows:
-\begin{multline*}
-%\everymath{\displaystyle}
-V_{12} \uplus V_{13} \uplus \fvars{t_{13x}} \vdash\\ R\mpar{s_2, s_3} \wedge g_{12} \wedge \bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1
-\implies\operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
-\begin{array}{l}
-			\alpha_{12} = \alpha_{13x} \wedge \bigwedge_\subbox{j \in J'_{13x} \cap H'} \beta_{12j} = \beta_{13xj} \nwedge\\
-			 g_{13x} \wedge R\mpar{s'_2, s'_{3x}}\psubst{\psi_2 \uplus \psi_{3x}}
-		\end{array}} 
-\end{multline*}	
-Furthermore, we have for any transition $t_1$ in $A_1$ relying $s_1$ and $s^{\prime}_1$ and for each $x \in X$ :
-\begin{multline*}
-V_{12} \uplus V_{13}  \uplus \fvars{t_{13x}} \vdash\\
-\bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1  \wedge s^1_1 = s^2_1 \implies \bigwedge_\subbox{v_1\in V_1}\!\! \mpar{v^1_1=v^2_1} \psubst{\psi_{13x}} \wedge s^{1\prime}_1 = s^{2\prime}_1 
- \end{multline*}	
-We can deduce for all  $x \in X$ the following statement:
-\begin{multline*}
-V_{12} \uplus V_{13}  \uplus \fvars{t_{13x}} \vdash\\
-\bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1  \wedge s^1_1 = s^2_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\,\,\everymath{\displaystyle}\bigwedge_\subbox{v_1\in V_1}\!\! \mpar{v^1_1=v^2_1} \psubst{\psi_{13x}} \wedge s^{1\prime}_1 = s^{2\prime}_1 }
- \end{multline*}	
-Therefore, we get:
-\begin{multline*}
-%\everymath{\displaystyle}
-V_{12} \uplus V_{13} \uplus \fvars{t_{13x}} \vdash\\ R\mpar{s_2, s_3} \wedge g_{12} \wedge \bigwedge_\subbox{v_1\in V_1}\!\! v^1_1=v^2_1 \wedge s^1_1 = s^2_1
-\implies \hspace{7em} \\ \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}
-\begin{array}{l}
-			\alpha_{12} = \alpha_{13x} \wedge \bigwedge_\subbox{j \in J'_{13x} \cap H'} \beta_{12j} = \beta_{13xj} \nwedge\\
-			 g_{13x} \wedge R\mpar{s'_2, s'_{3x}}\psubst{\psi_2 \uplus \psi_{3x}} \wedge\bigwedge_\subbox{v_1\in V_1}\!\! \mpar{v^1_1=v^2_1} \psubst{\psi_{13x}} \wedge s^{1\prime}_1 = s^{2\prime}_1
-		\end{array}   } 
-		\end{multline*}	
-		
-From the hypothesis, we have \(A_1\subst{A_2}{k}\) is non-blocking.  Then, by definition of the reachability  (Definition \ref{Def:Reach}) we have  for all $t_{12} \in T_{12}$:
-\[ \fvars{t_{12}} \vdash \left(\reach{A_{12}}\mpar{s_{12}} \wedge g_{12} \implies \reach{A_{12}}\mpar{s_{12}'}\psubst{\psi_{12}}\right) \]	
-With the conjunction of the  formula obtained above and after simplifying, we get the expected result:
-\begin{multline*}	
-V_{12} \uplus V_{13} \uplus \fvars{t_{12}} \vdash\\ R'\mpar{s_{12}, s_{13}} \wedge g_{12} \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
-			\alpha_{12} = \alpha_{13x} \wedge \bigwedge_\subbox{j \in J'_{13x} \cap H'} \beta_{12j} = \beta_{13xj} \wedge\\[12pt]
-			 g_{13x} \wedge R'\mpar{s'_{12}, s'_{13x}}\psubst{\psi_{12} \uplus \psi_{13x}}
-		\end{array}} 
-	\end{multline*}
-
-\smallskip
-\paragraph{Second case: Only the encompassing automaton performs a transition.}~\\
-The transition $t_{12}$ is obtained  by  the transition $t_1^1=
-\OT{ s^1_1}{{s^1_1}'}{\alpha_1^1}{{(\beta^1_{1j})^{j \in J^{1 \prime}_1} }}{ g^1_1 }{ \psi^1_1}$  alone with the state $s_2$ unchanged, if $k \not\in {J^1_{1}}^{\prime}$
-\[t_{12} = \OT{\mpar{s^1_1, s_2}}{\mpar{{s^1_1}', s_2}}{\alpha_1^1}{ {(\beta^1_{1j})^{j \in J^{1 \prime}_1} }}{g^1_1}{\psi^1_1}
+* or by an the transition $t_1^2=
+\OT{ s^2_1}{{s^2_1}'}{\alpha_1^2}{{(\beta^2_{1j})^{j \in J^{2 \prime}_1} }}{ g^2_1 }{ \psi^2_1}$  alone with the state $s_2$ unchanged, if $k \not\in {J^1_{1}}^{\prime}$
+\[t_{12} = \OT{\mpar{s^2_1, s_2}}{\mpar{{s^2_1}', s'_2}}{\alpha_1^2}{ {(\beta^2_{1j})^{j \in J^{1 \prime}_1} }}{g^2_1}{\psi^2_1}
 \]
 We then obtain a family of OTs by the simulation of $A_2$ by $A_3$ (stated above).
-As  $k \in H$ we have $k \not\in J'_{3x}$ and we build with the same transitions of $A_1$ (up renaming):
-\[t_{13x} = \left(\OT{\mpar{s^2_1, s_3}}{\mpar{{s^2_1}', s_{3}}}{\alpha_1^2}{ {(\beta^2_{1j})^{j \in J^{2 \prime}_1} }}{g^2_1}{\psi^2_1} \right)^{x\in X}\]
-\end{enumerate}
-We have to  prove the following formula in both cases (depending on how the transition $t_{12}$ is built): $\mpar{\forall x \in X, J'_{13x} \cap H' = J'_{12} \cap H'}$ and
-\begin{multline*}	
-V_{12} \uplus V_{13} \uplus \fvars{t_{12}} \vdash\\ R'\mpar{s_{12}, s_{13}} \wedge g_{12} \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\everymath{\displaystyle}\begin{array}{l}
-			\alpha_{12} = \alpha_{13x} \wedge \bigwedge_\subbox{j \in J'_{13x} \cap H'} \beta_{12j} = \beta_{13xj} \wedge\\[12pt]
-			 g_{13x} \wedge R'\mpar{s'_{12}, s'_{13x}}\psubst{\psi_{12} \uplus \psi_{13x}}
-		\end{array}} 
-	\end{multline*}
-Recall in this case  $k \notin {J^1_{1}}^{\prime}$, so for all $x \in X$ we have:
-\begin{align*}
-	J'_{13x} \cap H' & = J'_{3x}  \cap \mpar{J_1 \uplus H \setminus \mbrc{k}} \\
-& = \mpar{J'_{3x}\cap H } \text{ since } J'_{3x}\cap J_1=\emptyset \land k\not\in J'_{3x} \\
-& = \mpar{J'_2\cap H } \text{ since } J'_2 \cap H = J'_{3x} \cap H\\
-& = \mpar{J'_{12}\cap H' } \text{ since } J_2\cap J'_1=\emptyset \land k\not\in {J^1_{1}}^{\prime}
-\end{align*}
-The proof of this case follows the same steps as the previous case the only argument that changes is that by composition we obtain:  $g_{12} \Leftrightarrow g^1_1$ and
-$g_{13x}  \Leftrightarrow g^1_{2}$.
+As  $k \in H$ we have $k \not\in J'_{2x}$ and we build:
+\[t_{13x} = \left(
+\OT{\mpar{s^1_1, s_3}}{\mpar{s^2_1,s'_{2x}}}{\alpha_{3x}}{\beta_{3xj}^{j \in J'_{3x}}}{g_{3x}}{\psi_{3x}} \right)^{x\in X}\]
 
-\item It remains to prove the  satisfaction of the  deadlock reducing condition:  for all $\mpar{s_{12}, s_{13}} \in S_{12} \times S_{13}$
-\begin{multline*}
-V_{12} \uplus V_{13} \uplus \biguplus_\subbox{t_{13}\in \fOT{s_{13}}} \fvars{t_{13}} \vdash \\ \left(R^{\prime}\mpar{s_{12}, s_{13}} \wedge \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}} \implies \bigvee_\subbox{t_{12} \in \fOT{s_{12}}} \fguard{t_{12}} \right)
-\end{multline*}
-
-
-Let's start with the hypothesis  stating that $\wrel{A_2}{A_3}{H}$, thus we have for all $\mpar{s_{2}, s_3} \in S_2 \times S_3$:
-\begin{multline*}
- V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash \left(R\mpar{s_{2}, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \implies \bigvee_\subbox{t_{2p} \in \fOT{s_{2}}} \fguard{t_{2}} \right)
-\end{multline*}
-By adding the same term ${\displaystyle \reach{A_{12}}\mpar{s_{12}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}}$ to both sides of the implication, we get:
-\begin{multline*}
- V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash\\ R\mpar{s_{2}, s_3} \wedge \bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3} \wedge \reach{A_{12}}\mpar{s_{12}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies\\ \bigvee_\subbox{t_{2p} \in \fOT{s_{2}}} \fguard{t_{2}} \wedge \reach{A_{12}}\mpar{s_{12}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
-\end{multline*}
-that can be re-written
-\begin{multline*}
- V_2 \uplus V_3 \uplus \biguplus_\subbox{t_3 \in \fOT{s_3}} \fvars{t_3} \vdash\\ R\mpar{s_{2}, s_3} \wedge \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}} \wedge \reach{A_{12}}\mpar{s_{12}}  \implies \bigvee_\subbox{t_{2} \in \fOT{s_{2}}} \fguard{t_{2}} \wedge \reach{A_{12}}\mpar{s_{12}} \wedge \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}
-\end{multline*}
-
-Yet we have by hypothesis  \(A_1\subst{A_2}{k}\) is non-blocking, by definition of non-blocking composition (Definition \ref{Def:Non-blockcomp}) we have:
-\begin{multline*}
- V_{12} \uplus  \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash
- \reach{A_{12}} \mpar{s_{12}}  \wedge  \bigvee_\subbox{t_{1} \in \fOT{s_{1}}} \fguard{t_{1}}  \implies \bigvee_\subbox{t_{12} \in \fOT{s_{12}}} \fguard{t_{12}}
-\end{multline*}
-From the two previous formulas and considering that each valuations $\sigma_{1}^1$ and $\sigma_{1}^2$ associate the same values to the ``same'' variables modulo renaming we obtain the expected result.
 
 ~\qed
-%\end{enumerate}
+\end{enumerate}
  
 
 %\[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\].
+
+ \bibliographystyle{splncs04}
+ \bibliography{biblio}
 
 \end{document}
