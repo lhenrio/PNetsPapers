@@ -339,48 +339,22 @@ However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \m
 \caption{The full Traffic Lights system}
 \label{fig:tlf}
 \end{figure}
+\subsection{Reachability : check if useful?}
+\begin{definition}[Reachability] \label{Def:Reach}
+For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
+\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
+\end{definition}
+Reachability takes into account all paths, and can over-approximate the reachable configurations. 
+From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
 
-
-\section{A First Refinement Relation}\label{sec:refinement}
+\section{Refinement Relations for automata with the same holes}\label{sec:refinement}
 
 Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between states of to open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton.
 The refinement relation should be conditioned by the internal states of the automata. More precisely, a refinement relation characterizes when two states are related, this  characterisation is expressed as a predicate on the variables of the two automata.
 Thus, a refinement relation has the following signature: \( S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 
-\TODO{check deadlock reduction/reducing in the literature}
-We first define when a relation is deadlock reducing, before characterising a first simple refinement relation  to compare automata with identical holes.
+%\TODO{check deadlock reduction/reducing in the literature}
 
-\subsection{Deadlock Reduction, Reachability, and Composition}
-
-A notion that is often used in the context of refinement is the notion of deadlock reduction. This property considers that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. This notion is not much interesting in the general case as there is a priori no relation between the two transitions. However, when the relation that relates states is a simulation, this will relate the possible transitions and the deadlock reduction will become a valuable property.
-
-Next definition states that if $T_2$ is not in a deadlock position then $T_1$ can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
-
-
-\begin{definition}[Preservation along identical transitions]\label{def:preservation} \\
-Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
-A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
-  is preserved along identical transitions if  it satisfies the following:
-\begin{multline*}
-\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \implies  R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\\
-\end{multline*}
-\end{definition}
-
-
-\begin{definition}[Preservation along identical transitions]\label{def:preservation} \\
-Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
-A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
-  is preserved along identical transitions if  it satisfies the following:
-\begin{multline*}
-\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 
-%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} 
-\implies \\
-\exists
-\OTx{1}{a}{3}{3}\in \fOT{s_1}. \alpha_1=\alpha_{1 a} \land g_{1 a} \land \bigwedge_\subbox{j \in J'_3 \cap J'_2} \beta_{2j} = \beta_{3j}\land
- R\mpar{s'_{1 a}, s'_2}\psubst{\psi_{1 a} \uplus \psi_2}\\
-\end{multline*}
-\end{definition}
-\TODO{check les actions des trous -- Je pense que c est mieux maintenant}
 %
 %\begin{definition}[Deadlock reduction]\label{def:dpwd}\\
 %Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
@@ -391,44 +365,80 @@ A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[
 %\end{multline*}
 %\end{definition}
 
-Because of the symbolic nature of OAs and their structure, in this definition,  the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered very symbolic. An equivalent but more classical definition of deadlock reduction could be expressed as well. It states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more verbose, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
+%Because of the symbolic nature of OAs and their structure, in this definition,  the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered very symbolic. An equivalent but more classical definition of deadlock reduction could be expressed as well. It states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more verbose, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
 
-Unfortunately, this property is not compositional: the composition operator can itself introduce a deadlock. In other words, when filling the hole of two related automata with a third one, even if there is a deadlock reduction between the two original automata, there might not be a deadlock reduction in the composed ones. The same problem may arise when two related automata are composed in the same hole of a third one. 
+%Unfortunately, this property is not compositional: the composition operator can itself introduce a deadlock. In other words, when filling the hole of two related automata with a third one, even if there is a deadlock reduction between the two original automata, there might not be a deadlock reduction in the composed ones. The same problem may arise when two related automata are composed in the same hole of a third one. 
 
-\TODO{add a notion of composable at hole i:
-An OA is composable at hole k if it is partially deterministic relatively to actions of hole k
-}
+%\TODO{add a notion of composable at hole i:
+%An OA is composable at hole k if it is partially deterministic relatively to actions of hole k
+%}
+%
+%
+%\begin{multline*}
+%\forall s_1\in S,\, \forall \OTx{1}{a}{1}{1}, \OTx{1}{b}{2}{2} \in \fOT{s_1}.\\
+%\neg\left(\alpha_{1 a} = \alpha_{1 b}\land s'_{1 a}\neq s'_{1 b}\land g_{1 a}\land g_{1 b} \land\beta_{1 k} \neq \beta_{2 k}\right)
+%\end{multline*}
+%
+%An composable automaton cannot transform external non-determinism of the sub-automaton into internal non-determinism.
 
 
+%This creates a conflict between deadlock reduction and the properties involving composition. One possible solution to avoid this conflict is to only consider a composition that do not introduce deadlocks, we will define such a composition below.
+%But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
+
+%
+%\begin{definition}[Non-blocking composition]\label{Def:Non-blockcomp}
+%Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
+%Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
+%
+%The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
+%\[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
+%\end{definition}
+%Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
+
+
+
+
+We first define when a relation is preserved along identical transition deadlock reducing, before characterising a first simple refinement relation  to compare automata with identical holes.
+
+%\subsection{Deadlock Reduction, Reachability, and Composition}
+\TODO{rewrite}
+A notion that is often used in the context of refinement is the notion of deadlock reduction. This property considers that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. This notion is not much interesting in the general case as there is a priori no relation between the two transitions. However, when the relation that relates states is a simulation, this will relate the possible transitions and the deadlock reduction will become a valuable property.
+%
+%Next definition states that if $T_2$ is not in a deadlock position then $T_1$ can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
+
+
+%\begin{definition}[Preservation along identical transitions]\label{def:preservation} \\
+%Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
+%A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
+%  is preserved along identical transitions if  it satisfies the following:
+%\begin{multline*}
+%\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \implies  R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\\
+%\end{multline*}
+%\end{definition}
+
+
+\begin{definition}[Preservation along identical transitions]\label{def:preservation} \\
+Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
+A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
+  is preserved along identical transitions if  it satisfies the following:
 \begin{multline*}
-\forall s_1\in S,\, \forall \OTx{1}{a}{1}{1}, \OTx{1}{b}{2}{2} \in \fOT{s_1}.\\
-\neg\left(\alpha_{1 a} = \alpha_{1 b}\land s'_{1 a}\neq s'_{1 b}\land g_{1 a}\land g_{1 b} \land\beta_{1 k} \neq \beta_{2 k}\right)
+\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\ 
+\exists 
+\mpar{t_{1x} = \OTx{1}{x}{1x}{1x} \in \fOT{s_1}}^{x \in X},
+ V_1 \uplus V_2 \uplus \biguplus_{x\in X}\fvars{t_{1x}} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} 
+\implies \\
+%\exists
+%\OTx{1}{a}{3}{3}\in \fOT{s_1}. \\
+\bigwedge_{x\in X}
+\mpar{
+\alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_2 \land \bigwedge_\subbox{j \in J'_2 } \beta_{2j} = \beta_{1xj}\land g_{1 x}\land
+ R\mpar{s'_{1 x}, s'_2}\psubst{\psi_{1 x} \uplus \psi_2}}\\
 \end{multline*}
-
-An composable automaton cannot transform external non-determinism of the sub-automaton into internal non-determinism.
-
-
-This creates a conflict between deadlock reduction and the properties involving composition. One possible solution to avoid this conflict is to only consider a composition that do not introduce deadlocks, we will define such a composition below.
-But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
-\begin{definition}[Reachability] \label{Def:Reach}
-For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
-\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 \end{definition}
-Reachability takes into account all paths, and can over-approximate the reachable configurations. 
-From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
 
-\begin{definition}[Non-blocking composition]\label{Def:Non-blockcomp}
-Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
-Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
+\medskip
 
-The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
-\[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
-\end{definition}
-Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
-
-
-
-\subsection{Refinement Relations for automata with the same holes}
 
 We define here simulation between labelled transition systems to Hole-equal simulation  between  open automata that have exactly the same holes.
 \begin{definition}[Hole-equal simulation]
@@ -550,7 +560,7 @@ The next two theorems state that refinement is compositional in the sense that i
 \begin{theorem}[Context refinement]\label{thm:ContextRefinement}
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_1}{A_2}{H}$. 
 Let $J_3$ be the set of holes of $A_3$.
-Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
+%Suppose that \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\]
 \end{theorem}
 
@@ -565,7 +575,7 @@ We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \m
 
 \begin{theorem}[Congruence]\label{thm:Congruence}
 Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
-Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
+%Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
 We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
 \end{theorem}
 
@@ -934,8 +944,8 @@ Consider any transition $t_{13}$ in $A_{13}$.  Based on  the definition of compo
 %\begin{enumerate}
 %\item 
 \paragraph{First case: Both automata perform a transition.}
-The transition $t_{13}$ is obtained by the composition of  transitions $t_1=\OTx{1}{}{1}{1}$ and  \[t_3^1=
-\OT{ s^1_3}{{s^1_3}'}{\alpha_3^1}{   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{ g^1_3 }{ \psi^1_3} \qquad \text{ when } k \in J'_{1} 
+The transition $t_{13}$ is obtained by the composition of  transitions $t_1=\OTx{1}{}{1}{1}\in \fOT{s_1}$ and  \[t_3^1=
+\OT{ s^1_3}{{s^1_3}'}{\alpha_3^1}{   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{ g^1_3 }{ \psi^1_3}\in \fOT{s^1_3} \qquad \text{ when } k \in J'_{1} 
 \] The result is:
 \[
 t_{13} = \OT{\mpar{s_1, s^1_3}}{\mpar{s'_1, {s^1_3}'}}{\alpha_1}{\beta_{1j}^{j \in J'_1 \setminus \{k\}} \uplus  {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{g_1 \wedge g^1_3 \wedge \alpha^1_3 = \beta_{1k}}{\psi_1 \uplus \psi^1_3} \qquad \text{ where } k \in J'_{1} 
@@ -1081,7 +1091,78 @@ The proof of the rest of the formula follows the same steps as the previous case
 $g_{23x}  \Leftrightarrow g_{2x}$.\\
 
 
-\item The last formula we need to prove is that the relation is preserved along identical transitions, i.e. the following is satisfied 
+\item The last formula we need to prove is that the relation is preserved along identical transitions, i.e. the following is satisfied (we define $V_{13} = V_1 \uplus V_3$ and $ V_{23} = V_2\uplus V_3$) 
+
+\begin{multline*}
+\forall \mpar{s_{13}, s_{23}} \in S_{13} \times S_{23}, \bigsymb{\forall} \mpar{t_{13}, t_{23}} = \mpar{\OTx{13}{}{13}{13}, \OTx{23}{}{23}{23}} \in \fOT{s_{13}} \times \fOT{s_{23}} \\  V_{13} \uplus V_{23} \uplus \fvars{t_{13}} \uplus \fvars{t_{23}} \vdash \hspace{6cm}\\  R\mpar{s_{13}, s_{23}} \wedge 	g_{13} \wedge g_{23} \wedge \alpha_{13} = \alpha_{23} 
+\implies 
+\exists
+\OT{s_{13}}{s'_{13a}}{\alpha_{13a}}{\beta_{13aj}^{j \in J'_{13a}}}{g_{13a}}{\psi_{13a}}\in \fOT{s_{13}}.\\ \alpha_{13}=\alpha_{1 3a} \land
+J'_{13a}  = J'_{23} \land g_{1 3a} \land \bigwedge_\subbox{j \in  J'_{23}} \beta_{12j} = \beta_{13aj}\land
+ R\mpar{s'_{1 3a}, s'_{23}}\psubst{\psi_{1 3a} \uplus \psi_{23}}\\
+\end{multline*}
+
+We pick $s_{13}$, $s'_{13a}$, and two open transitions $t_{13}$ and $t_{23}$.
+Where $s_{13}=(s_1,s_3)$ and $s_{23}=(s_2,s_3)$ by construction of $R$.
+
+
+We reason on the way the OT $t_{23}$ has been obtained: either the hole $k$ of A2 is involved in the transition or not.
+
+\paragraph{First case: Both A2 and A3 are involved in transition $t_{23}$.}
+The transition $t_{23}$ is obtained by the composition of  transitions $t_2=\OTx{2}{}{2}{2}\in\fOT{s_2}$ and  \[t_3^2=
+\OT{ s_3}{{s^2_3}'}{\alpha_3^2}{   {(\beta^2_{3j})^{j \in J^{2 \prime}_3} }}{ g^2_3 }{ \psi^2_3}\in\fOT{s_3} \qquad \text{ when } k \in J'_{2} 
+\] The result is:
+\[
+t_{23} = \OT{\mpar{s_2, s_3}}{\mpar{s'_2, {s^2_3}'}}{\alpha_2}{\beta_{2j}^{j \in J'_2 \setminus \{k\}} \uplus  {(\beta^2_{3j})^{j \in J^{2 \prime}_3} }}{g_2 \wedge g^2_3 \wedge \alpha^2_3 = \beta_{2k}}{\psi_2 \uplus \psi^2_3} \qquad \text{ where } k \in J'_{2} 
+\]
+
+Two cases are possible for $t_{13}$: either the hole $k$ of A1 is involved in the transition or not.
+
+$\bullet$ if  the hole $k$ of A1 is involved in the transition: 
+The transition $t_{13}$ is obtained by the composition of  transitions $t_1=\OTx{1}{}{1}{1}\in\fOT{s_1}$ and  \[t_3^1=
+\OT{ s_3}{{s^1_3}'}{\alpha_3^1}{   {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{ g^1_3 }{ \psi^1_3} \qquad \text{ when } k \in J'_{1} 
+\] The result is:
+\[
+t_{13} = \OT{\mpar{s_1, s_3}}{\mpar{s'_1, {s^1_3}'}}{\alpha_1}{\beta_{1j}^{j \in J'_1 \setminus \{k\}} \uplus  {(\beta^1_{3j})^{j \in J^{1 \prime}_3} }}{g_1 \wedge g^1_3 \wedge \alpha^1_3 = \beta_{1k}}{\psi_1 \uplus \psi^1_3} \qquad \text{ where } k \in J'_{1} 
+\]
+
+$\bullet$ if  the hole $k$ of A1 is not involved in the transition:
+$t_1=\OTx{1}{}{1}{1}$ when  $k \not\in J'_{1} $
+and 
+\[
+t_{13} = \OT{\mpar{s_1, s_3}}{\mpar{s'_1, {s_3}}}{\alpha_1}{\beta_{1j}^{j \in J'_1}}{g_1}{\psi_1}
+\]
+
+\smallskip
+In both cases note that $g_{13} \implies g_1$, with  $\mpar{s_1, s_2} \in S_1 \times S_2$, Definition~\ref{def:preservation} applied to OTs $t_1,\,t_2$ gives the following:
+
+\begin{multline*}
+  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} 
+\implies \\
+\exists
+\OT{s_1}{s_4}{\alpha_4}{\beta_{4j}^{j \in J'_4}}{g_4}{\psi_4}\in \fOT{s_1}. \alpha_1=\alpha_{4} \land J'_4 =J'_2 \land g_{4} \land \bigwedge_\subbox{j \in J'_2} \beta_{2j} = \beta_{4j}\land
+ R\mpar{s'_{4}, s'_2}\psubst{\psi_{4} \uplus \psi_2}\\
+\end{multline*}
+
+We reason on such a $t_1'=\OT{s_1}{s_4}{\alpha_4}{\beta_{4j}^{j \in J'_4}}{g_4}{\psi_4}\in \fOT{s_1}$ to obtain a new open transition of A1 and compose it with $t_3^2$
+
+We obtain 
+\[
+t_{13}' = \OT{\mpar{s_1, s_3}}{\mpar{s_4, {s_3}}}{\alpha_4}{\beta_{4j}^{j \in J'_4 \setminus \{k\}} \uplus  {(\beta^2_{3j})^{j \in J^{2 \prime}_3} }}{g_4 \wedge g^2_3 \wedge \alpha^2_3 = \beta_{4k}}{\psi_4 \uplus \psi^2_3} \qquad \text{ where } k \in J'_{4} 
+\]
+
+ON REVIENT A NOTRE BUT INITIAL
+ON VEUT:
+\begin{multline*}
+  V_{13} \uplus V_{23} \uplus \fvars{t_{13}} \uplus \fvars{t_{23}} \vdash \hspace{6cm}\\  R\mpar{s_{13}, s_{23}} \wedge 	g_{13} \wedge g_{23} \wedge \alpha_{13} = \alpha_{23} 
+\implies 
+\exists
+\OT{s_{13}}{s'_{13a}}{\alpha_{13a}}{\beta_{13aj}^{j \in J'_{13a}}}{g_{13a}}{\psi_{13a}}\in \fOT{s_{13}}.\\ \alpha_{13}=\alpha_{1 3a} \land
+J'_{13a}  = J'_{23} \land g_{1 3a} \land \bigwedge_\subbox{j \in  J'_{23}} \beta_{12j} = \beta_{13aj}\land
+ R\mpar{s'_{1 3a}, s'_{23}}\psubst{\psi_{1 3a} \uplus \psi_{23}}\\
+\end{multline*}
+
 \TODO{NEW PROOF SKETCH}
 HYPOTHESES and OBJECTIVES
 
