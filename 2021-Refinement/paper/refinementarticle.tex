@@ -78,26 +78,30 @@ show under which conditions these refinements are preserved by composition of op
 %
 %
 \section{Introduction}
-\TODO{1.5 pages}
+
+Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can veify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically).We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+
+Refinement relations verify that and implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additionla behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+
+Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools.
+An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables makes autoomata symbolic and allow them to encode infinite state systems. Holes enables the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' of the main automaton has been provided.
+
+In previous works \cite{2007.10770,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
+
+This article first introduces open automata that were defined in  \cite{henrio:01299562},  but compared to previous works, we additionally define the composition of open automata.
+Then we define  a refinement relation for open automata that has the following characteristics:
+\begin{itemize}
+\item Classical simulation characterisation but also an additional criteria ensuring that refinement does not introduce deadlocks when following a trace from the simulated automaton.
+\item Good properties relatively to composition: we prove here that filling the same hole  with the same automaton preserves the refinement relation.
+\item Ability to take into account both composition and transitivity: this is a challenge because composition changes the set of holes of the open automaton and refinement takes into account actions of the holes.
+\end{itemize}
+The refinement relation is introduced in two steps. First we define a refinement that relates two automata with the same holes, which allows us to focus on the automaton aspect. Second we introduce a relation that relates two automata with different sets of holes, which allows us to take into account the open nature of open automata, and to deal with composition.
 
 
-
-Contributions:
-
-We first: introduce open automata (NOT NEW), their composition, 
-and the deadlock-free composition.
-
-Then we define a refinement relation for open automata that has the following characteristics:
-
-- good behaviour wrt composition
-
-- refinement does not introduce deadlock
-
-- a first relation that focuses on the automaton part 
-and a second that deals with open behaviour
-
-we will see that having at the same time composition and transitivity also raises challenges; we introduce a new form of refinement relation that addresses this challenge.
-
+The following of this article is organised as follows. 
+We first review related works in Section~\ref{sec:sota}; then Section~\ref{sec:background} recalls the definition of open automata and defines their composition. 
+We  then  define a refinement relation for open automata, first only considering two automata with the same set of holes in Section~\ref{sec:refinement} and generalize it to automataa with a different set of holes in Section~\ref{sec:holes} before proving basic properties of refinement in Section~\ref{sec:prop}; here we prove that refinement is a preorder and we focus on one composition property. 
+Section~\ref{sec:ccl} concludes the paper.
 
 \section{Related Work}
 \label{sec:sota}
@@ -105,7 +109,7 @@ we will see that having at the same time composition and transitivity also raise
 \TODO{1 page}
 
 
-The notion of refinement aims captures the relation between  a specification and an implementation of the same component. It is usually defined as trace inclusion or simulation \cite{Milner:1980, Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
+The notion of refinement  captures the relation between  a specification and an implementation of the same component. It is usually defined as trace inclusion or simulation \cite{Milner:1980, Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
 
 There are some works that have focused on  the refinement of open systems. Defining refinement of open systems as trace inclusion  is  addressed  as a notion of subtyping in type theory 
 \cite{GayH:2005,BravettiZ:2021}. Such refinement is  instead based  on interface-oriented approach, it allows the expression more internal choices and less external choices. The refinement of open systems is also defined in terms of  alternating simulation \cite{Alur:1998,deAlfaro:2021}, which deals with game-based models.
@@ -507,6 +511,8 @@ To illustrate the refinement simulation of open automata, consider a variation o
 \end{figure}
 
 
+\TODO{The refinement relation  also specifies that the refined process must follow the behaviour of the specification, not only at every compatible state but also along any trace.}
+
  We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, reflexivity, etc.
 
 The refinement relation defined above is insufficient in the setting of composition which is the main advantage of the open automaton-based approach. Indeed, it should be possible to refine an automaton by filling its hole, providing a concrete view of a part of the application that was not specified originally. 
@@ -624,7 +630,7 @@ We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \m
 \includegraphics[scale=0.7]{Figures/Theorem1}
 \end{center}
 
-Open automata compositionis a refinement where
+Open automata composition is a refinement where
 the tracked holes are the holes of the base automaton minus the composed hole.
 \begin{theorem}[Composition is a refinement]\label{thm:Composition}
 Let $A_1$ and  $A_2$  be three two automata with $J_1$ the set of holes of $A_1$.
@@ -644,14 +650,19 @@ TODO: FOCUS on the two following items (look at quentin's article):
 
 
 \section{Conclusion}\label{sec:ccl}
-\TODO{0.5 pages}
+In this article we investigated the notion of refinement for a symbolic and open model: open automata. 
+Open automata are convenient to model parallel systems that are parameterised both by the use of variables and by the possibility to compose automata.
+The refinement relation first relies on a simulation relation between the specification and its refinement, but it also specifies that the refined process must follow the behaviour of the specification, not only at every compatible state but also along any trace.
+We finally showed that refinement is a preorder that is preserved when filling a hole.
 
+In the future we will focus on the other composition property that considers the preservation of refinement when automata are placed in the same context, namely filling the hole of the same automaton by an automaton and its refinement. This property should require some restriction on the composed processes.
+ Finally, we will investigate under which condition, the composition operation produces a refinement in the sense that filling a hole produces a refined process.
 
  \bibliographystyle{splncs04}
  \bibliography{biblio}
 
-\section{a recuperer si on se rend compte que c'est utile}
-When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
+%\section{a recuperer si on se rend compte que c'est utile}
+%When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
 
 
 \appendix
