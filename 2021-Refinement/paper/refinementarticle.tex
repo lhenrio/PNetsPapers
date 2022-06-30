@@ -247,6 +247,19 @@ A pair consisting of a state and a valuation is called a \emph{configuration}.
 An \emph{instantiated transition} of an automaton \(\OAg\) is a transition  \(t\psi\) where $t\in T$ and $\psi$ is a  well-formed substitution with $\dom(\psi)=vars(t)$. %\setminus V$.
 \end{definition}
 
+In Fig. \ref{Fig:SpecOA} we present a very simple example of an open automaton inspired from \cite{Gorrieri:2001}. An automaton that we name \texttt{database} modelling a data base that can be queried and updated. The open automaton \texttt{counter}    depicting  the behaviour of the timer is illustrated in Fig. \ref{Fig:counter}. 
+
+\begin{figure}[h]
+ \centering
+   \includegraphics[width=.9\textwidth]{Figures/database.pdf}
+   \caption{Open Automaton. It exposes an unspecified counter in the hole
+ to count external tick actions. The system sets a counter when a query is enabled and updates  when  the time is over.\label{Fig:SpecOA}}
+\end{figure}
+
+
+
+
+
 \paragraph{Open automaton composition}
 
 Open automata are partially specified automata, that partiality comes mostly from the holes.
@@ -255,21 +268,34 @@ The plugging operation is called composition.
 The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
 The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
 
-\TODO{peut etre echanger c et p? ou c devient p et p devient? }
+
+
+
+
+
 \begin{definition}[Composition of open automata] \label{Def:CompOA}
-The composition of \(A_c = \OAg[c]\) in the hole \(k \in J_p\) of \(A_p = \OAg[p]\) is the OA defined as follows:
-\[A_p\subst{A_c}{k} ::=  \OA{S_p \times S_c}{\mpar{s_{0p}, s_{0c}}}{V_p \uplus V_c}{\sigma_{0p} \uplus \sigma_{0c}}{J_c \uplus J_p \setminus \mbrc{k}}{T} \] \text{with }
+The composition of \(A_p = \OAg[p]\) in the hole \(k \in J_c\) of \(A_c = \OAg[c]\) is the OA defined as follows:
+\[A_c\subst{A_p}{k} ::=  \OA{S_c \times S_p}{\mpar{s_{0c}, s_{0p}}}{V_c \uplus V_p}{\sigma_{0c} \uplus \sigma_{0p}}{J_p \uplus J_c \setminus \mbrc{k}}{T} \] \text{with }
 
 \begin{align*}
-T=& \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s'_c}}{\alpha_p}{\beta_j^{j \in J'_c \uplus J'_p}}{g_p \wedge g_c \wedge \alpha_c = \beta_k}{\psi_p \uplus \psi_c}}{ \OT{s_p}{s'_p}{\alpha_p}{\beta_j^{j \in J'_p \uplus \mbrc{k} }}{g_p}{\psi_p} \in T_p, \OTx{c}{}{}{c} \in T_c} \\
-	& \cup \mset{\OT{\mpar{s_p, s_c}}{\mpar{s'_p, s_c}}{\alpha_p}{\beta_j^{j \in J'_p}}{g_p}{\psi_p}}{\OTx{p}{}{}{p} \in T_p, k \notin J'_p, s_c \in S_c}
+T=& \mset{\OT{\mpar{s_c, s_p}}{\mpar{s'_c, s'_p}}{\alpha_c}{\beta_j^{j \in J'_p \uplus J'_c}}{g_c \wedge g_p \wedge \alpha_p = \beta_k}{\psi_c \uplus \psi_p}}{ \OT{s_c}{s'_c}{\alpha_c}{\beta_j^{j \in J'_c \uplus \mbrc{k} }}{g_c}{\psi_c} \in T_c, \OTx{p}{}{}{p} \in T_p} \\
+	& \cup \mset{\OT{\mpar{s_c, s_p}}{\mpar{s'_c, s_p}}{\alpha_c}{\beta_j^{j \in J'_c}}{g_c}{\psi_c}}{\OTx{c}{}{}{c} \in T_c, k \notin J'_c, s_p \in S_p}
 \end{align*}
 \end{definition}
+
 The first OA decides when the second can evolve by involving its hole in a transition:
-The action emitted when \(A_c\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_p\) .
+The action emitted when \(A_p\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_c\).
+
+\begin{figure}[h]
+ \centering
+   \includegraphics[width=.5\textwidth]{Figures/counter.pdf}\hfill 
+   \includegraphics[width=.3\textwidth]{Figures/compose_count_db.pdf}
+   \caption{Open Automaton of \texttt{counter} process (left).  Its role is to get a target, then count ticks until that target is reached, then emit an action with the elapsed time and restart. And Open Automation of  the composition \texttt{database}[\texttt{counter}] (right).\label{Fig:counter}}
+\end{figure}
+
 
 \paragraph{Relations between open automata}
-A relation (bisimulation, refinement, etc.) between open automata requires to compare their states. To do so we will suppose that the variables of the two OAs are disjoint (a renaming of variables may have to be applied before comparing OA states)
+A relation (bisimulation, refinement, etc.) between open automata requires to compare their states. To do so we will suppose that the variables of the two OAs are disjoint (a renaming of variables may have to be applied before comparing OA states).
 \begin{definition}[Relation on OA states] Suppose $V_1$ and $V_2$ are disjoint.
 A relation on states of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 \end{definition}
@@ -471,6 +497,14 @@ Note in this definition, instead of matching an instantiated transition of the f
 Intuitively, this means that for every pair of related
 states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update. Our definition captures a simple kind of sub-classing of open automata with the same holes. It is stronger than a strict simulation since it matches a transition with a family of transitions. 
 With such a relation we are able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions,  reinforcing  guards, modifying variables. 
+
+To illustrate the refinement simulation of open automata, consider a variation on the \texttt{database} automaton of Fig. \ref{Fig:RefineOA}. We suppose that on more concrete level, in addition to querying and updating the data base,  a backup copy of it may also be made.
+
+\begin{figure}[h]
+ \centering
+   \includegraphics[width=.9\textwidth]{Figures/databaseRefine.pdf}
+   \caption{The refined Open Automaton of the automaton of Fig.\ref{Fig:SpecOA}.  Two other actions,  in addition to  \texttt{qry} and \texttt{upd},  \texttt{back} representing a request to make a backup copy and    \texttt{cpy} is used to reflect the actual operation of copying. \label{Fig:RefineOA}}
+\end{figure}
 
 
  We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, reflexivity, etc.
