@@ -60,7 +60,7 @@ blibli\\
 
 Establishing equivalences and refinement relations between programs is an important mean for 
 verifying the correctness of programs. By establishing that the
-behaviours of a modified program simulate those of to the source one, simulaiton and bisimulation relations  formalise the desired  relation between a specification and an implementation, 
+behaviours of a modified program simulate those of to the source one,  and bisimulation relations  formalise the desired  relation between a specification and an implementation, 
  two equivalent implementations, or a program and its optimised implementation.
 This article discusses a notion of refinement between \emph{open automata}, which are symbolic
 behavioural models for communicating systems. 
@@ -79,12 +79,12 @@ show under which conditions these refinements are preserved by composition of op
 %
 \section{Introduction}
 
-Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can veify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically).We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can verify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically).We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
 
-Refinement relations verify that and implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additionla behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+Refinement relations verify that and implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
 
 Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools.
-An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables makes autoomata symbolic and allow them to encode infinite state systems. Holes enables the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' of the main automaton has been provided.
+An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables makes automata symbolic and allow them to encode infinite state systems. Holes enables the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' of the main automaton has been provided.
 
 In previous works \cite{2007.10770,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
 
@@ -173,7 +173,7 @@ This section presents our notations and the principles of automata. Except for m
 %This helps distinguishing the manipulated objects.
 %Every such notation will be introduced in the definition of the object.
 
-Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), \(\mset{i \gets x_i}{i \in I}\) or \(x_i^{i \in I}\). % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
+Families of values, or equivalently maps will be noted \(x_i^{i \in I}\), \(\mset{i \mapsto x_i}{i \in I}\) or \(\mset{i \gets x_i}{i \in I}\). % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
 %For instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
 %They will be used depending on what is more convenient.
 %For instance \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no simple generating expression and is better represented with the finite version of first notation.
@@ -870,6 +870,102 @@ V_1 \uplus  V_3 \uplus \fvars{t_1}
 \alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_3 \land \bigwedge_\subbox{j \in J'_3 } \beta_{3j} = \beta_{1xj}\land g_{1 x}\land
  R_{13}\mpar{s'_{1 x}, s'_3}\psubst{\psi_{1 x} \uplus \psi_3}}
 \end{multline*}
+
+ Consider $\mpar{s_{1}, s_{3}} \in R_{13}$ then there is a set of states $(s_{2p})^{p\in P}$ of $A_2$ relating  $s_{1}$ and $s_{3}$:
+\[R_{13}(s_1,s_3)=\bigvee_{{p\in P}
+}\mpar{R_{12}\mpar{s_1,s_{2p}} \wedge R_{23}\mpar{s_{2p},s_3}} \]
+
+
+Let's consider any $s_{2p} \in (s_{2p})^{p\in P}$. According to the refinement relation between  $A_1$ and $A_2$ and Definition \ref{def:preservation} we have:
+
+\begin{multline*}
+\bigforall \mpar{s_1, s_{2p}} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_{2p}} = \mpar{\OTx{1}{}{1}{1}, \OTx{2p}{}{2p}{2p}} \in \fOT{s_1} \times \fOT{s_{2p}} \\ 
+\bigsymb{\bigexists} 
+\mpar{t_{1x} = \OTx{1}{x}{1x}{1x} \in \fOT{s_1}}^{x \in X},
+ V_1 \uplus V_2 \uplus \biguplus_{x\in X}\fvars{t_{1x}} \uplus \fvars{t_1} \uplus \fvars{t_{2p}} \vdash \hspace{6cm}\\  R_{12}\mpar{s_1, s_{2p}} \wedge 	g_1 \wedge g_{2p} \wedge \alpha_1 = \alpha_{2p} 
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_{2p}} \beta_{1j} = \beta_{2pj} 
+\implies \hspace{6cm}\\
+%\exists
+%\OTx{1}{a}{3}{3}\in \fOT{s_1}. \\
+\bigsymb{\bigwedge_{x\in X}}
+\mpar{
+\alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_{2p} \land \bigwedge_\subbox{j \in J'_{2p} } \beta_{2pj} = \beta_{1xj}\land g_{1 x}\land
+ R_{12}\mpar{s'_{1 x}, s'_{2p}}\psubst{\psi_{1 x} \uplus \psi_{2p}}}
+\end{multline*}
+
+
+Furthermore, according to the refinement relation between  $A_2$ and $A_3$ and Definition \ref{Def:OA-Refinement} we have  for any open transition $t_{2px}$ in $T_2$ originating from $s_{2p}$ the following:
+\begin{align*}
+\OTx{2p}{x}{2px}{2px} \in \fOT{s_{2p}}
+\end{align*}
+there exists an indexed family of OTs originating from $s_3$: 
+\begin{align*}
+\mpar{\OTx{3}{py}{3py}{3py} \in \fOT{s_3}}^{y \in Y} 
+\end{align*}
+such that $\forall y \in Y, J'_{2p} \cap H = J'_{3py} \cap H$ and
+\begin{multline*}
+%\everymath{\displaystyle}
+V_2 \uplus V_3 \uplus \fvars{t_{2p}} \vdash\\
+R_{23}\mpar{s_{2p}, s_{3}} \wedge g_{2p} \implies  \operatorname*{\bigsymb{\bigvee}}_{y \in Y} \mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			 \alpha_{2p}=\alpha_{3py} \wedge \bigwedge_\subbox{j \in J'_{3py} \cap H} \beta_{2pj}=\beta_{3pyj} \nwedge \\
+			g_{3py} \wedge R_{23}\mpar{s'_{2p}, s'_{3y}}\psubst{\psi_{2p} \uplus \psi_{3py}}
+		\end{array}}  
+\end{multline*}
+
+Based on             the above two properties, we get:
+\begin{multline*}
+R_{12}\mpar{s_1, s_{2p}} \wedge  R_{23}\mpar{s_{2p}, s_{3}} \wedge	g_1 \wedge g_{2p} \wedge \alpha_1 = \alpha_{2p} 
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_{2p}} \beta_{1j} = \beta_{2pj} 
+\implies \hspace{6cm}\\
+%\exists
+%\OTx{1}{a}{3}{3}\in \fOT{s_1}. \\
+\bigsymb{\bigwedge_{x\in X}}
+\operatorname*{\bigsymb{\bigvee}}_{y \in Y} \mpar{\mpar{\everymath{\displaystyle}
+\begin{array}{l}
+			 \alpha_{2p}=\alpha_{3py} \wedge \bigwedge_\subbox{j \in J'_{3py} \cap H} \beta_{2pj}=\beta_{3pyj} \nwedge \\
+			g_{3py} \wedge R_{23}\mpar{s'_{2p}, s'_{3y}}\psubst{\psi_{2p} \uplus \psi_{3py}}
+		\end{array}}\bigwedge
+\mpar{\everymath{\displaystyle}\begin{array}{l}		
+\alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_{2p} \land \bigwedge_\subbox{j \in J'_{2p}} \beta_{2pj} = \beta_{1xj} \land\\ g_{1 x} \land
+ R_{12}\mpar{s'_{1 x}, s'_{2p}}\psubst{\psi_{1 x} \uplus \psi_{2p}}
+ \end{array}}
+ }
+\end{multline*}
+By  rearranging the terms in the formula we get:
+\begin{multline*}
+R_{12}\mpar{s_1, s_{2p}} \wedge  R_{23}\mpar{s_{2p}, s_{3}} \wedge	g_1 \wedge g_{2p} \wedge \operatorname*{\bigsymb{\bigvee}}_{y \in Y}\mpar{ \alpha_1 = \alpha_{2p} \wedge \alpha_{2p}=\alpha_{3py} \wedge g_{3py} }
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_{2p}} \beta_{1j} = \beta_{2pj} 
+\implies \hspace{6cm}\\
+%\exists
+%\OTx{1}{a}{3}{3}\in \fOT{s_1}. \\
+\bigsymb{\bigwedge_{x\in X}}
+\operatorname*{\bigsymb{\bigvee}}_{y \in Y} 
+\mpar{\everymath{\displaystyle}\begin{array}{l}		
+\alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_{2p} \land \bigwedge_\subbox{j \in J'_{2p}} \beta_{2pj} = \beta_{1xj} \land  \bigwedge_\subbox{j \in J'_{3py} \cap H} \beta_{2pj}=\beta_{3pyj} \\ g_{1 x}  \land
+ R_{12}\mpar{s'_{1 x}, s'_{2p}} \wedge R_{23}\mpar{s'_{2p}, s'_{3y}} \psubst{\psi_{1 x} \uplus \psi_{2p}\uplus \psi_{3py}}
+ \end{array}}
+\end{multline*}
+
+The formula is valid for all  $s_{2p} \in (s_{2p})^{p\in P}$. To build $R_{13}$ we need to rely on the disjunction of all possible path to relate $s_1$ and $s_3$:
+\begin{multline*}
+\operatorname*{\bigsymb{\bigvee}}_{p \in P} \mpar{R_{12}\mpar{s_1, s_{2p}} \wedge  R_{23}\mpar{s_{2p}, s_{3}} \wedge	g_1 \wedge g_{2p} \wedge \operatorname*{\bigsymb{\bigvee}}_{y \in Y}\mpar{ \alpha_1 = \alpha_{3py} \wedge g_{3py}}}
+%\wedge \bigwedge_\subbox{j \in J'_1 \cap J'_{2p}} \beta_{1j} = \beta_{2pj} 
+\implies \hspace{6cm}\\
+%\exists
+%\OTx{1}{a}{3}{3}\in \fOT{s_1}. \\
+\bigsymb{\bigwedge_{x\in X}}
+\operatorname*{\bigsymb{\bigvee}}_{p \in P}\operatorname*{\bigsymb{\bigvee}}_{y \in Y} 
+\mpar{\everymath{\displaystyle}\begin{array}{l}		
+\alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_{2p} \land \bigwedge_\subbox{j \in J'_{2p}} \beta_{2pj} = \beta_{1xj} \land  \bigwedge_\subbox{j \in J'_{3py} \cap H} \beta_{2pj}=\beta_{3pyj} \\ g_{1 x}  \land
+ R_{12}\mpar{s'_{1 x}, s'_{2p}} \wedge R_{23}\mpar{s'_{2p}, s'_{3y}} \psubst{\psi_{1 x} \uplus \psi_{2p}\uplus \psi_{3py}}
+ \end{array}}
+\end{multline*}
+
+
+  
+--------------------------------------
+
 Firstly, according to the refinement relation between  $A_1$ and $A_2$ we have:
 \begin{multline*}
 \bigforall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\ 
@@ -885,7 +981,7 @@ Firstly, according to the refinement relation between  $A_1$ and $A_2$ we have:
 \alpha_1=\alpha_{1 x}  \land J'_{1x}= J'_2 \land \bigwedge_\subbox{j \in J'_2 } \beta_{2j} = \beta_{1xj}\land g_{1 x}\land
  R_{12}\mpar{s'_{1 x}, s'_2}\psubst{\psi_{1 x} \uplus \psi_2}}
 \end{multline*}
-Yet according to the relation between   $A_2$ and $A_3$ we have:
+Yet according to the refinement  relation between   $A_2$ and $A_3$ and Definition \ref{Def:OA-Refinement} we have:
 
 \begin{multline*}
 \bigforall \mpar{s_2, s_3} \in S_1 \times S_3, \bigsymb{\forall} \mpar{t_2, t_3} = \mpar{\OTx{2}{}{2}{2}, \OTx{3}{}{3}{3}} \in \fOT{s_2} \times \fOT{s_3} \\ 
