@@ -79,14 +79,24 @@ show under which conditions these refinements are preserved by composition of op
 %
 \section{Introduction}
 
-Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can verify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically).We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can verify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically). We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+
 
 Refinement relations verify that and implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+
+
+The notion of refinement  captures the relation between  a specification and an implementation of the same component. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. 
+ It is usually defined as trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification.
+ This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
+In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+
+
+
 
 Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools.
 An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables makes automata symbolic and allow them to encode infinite state systems. Holes enables the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' of the main automaton has been provided.
 
-In previous works \cite{2007.10770,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
+In previous works \cite{fhbisim,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
 
 This article first introduces open automata that were defined in  \cite{henrio:01299562},  but compared to previous works, we additionally define the composition of open automata.
 Then we define  a refinement relation for open automata that has the following characteristics:
@@ -107,9 +117,8 @@ Section~\ref{sec:ccl} concludes the paper.
 \label{sec:sota}
 
 \TODO{1 page}
+\TODO{move to the end?}
 
-
-The notion of refinement  captures the relation between  a specification and an implementation of the same component. It is usually defined as trace inclusion or simulation \cite{Milner:1980, Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
 
 There are some works that have focused on  the refinement of open systems. Defining refinement of open systems as trace inclusion  is  addressed  as a notion of subtyping in type theory 
 \cite{GayH:2005,BravettiZ:2021}. Such refinement is  instead based  on interface-oriented approach, it allows the expression more internal choices and less external choices. The refinement of open systems is also defined in terms of  alternating simulation \cite{Alur:1998,deAlfaro:2021}, which deals with game-based models.
@@ -124,7 +133,7 @@ For the composability, we shall see that we use the notion of comparability of h
 
 Previous work on open automata focused on equivalence relations compatible with composition.
 In an article by Hou, Zechen and Madelaine \cite{10.1145/3372884.3373161}, a computable bisimulation is introduced and proved equivalent to the previous bisimulation already introduced.
-In a more recent work by Ameur-Boulifa, Henrio and Madelaine \cite{2007.10770}, a weak version of the bisimulation on open automata is introduced.
+In a more recent work by Ameur-Boulifa, Henrio and Madelaine \cite{fhbisim}, a weak version of the bisimulation on open automata is introduced.
 These works differ from ours because the relation introduced in this report is a refinement relation in the form of a simulation and not a bisimulation.
 Also we do not have results as strong as computability neither a weak version able to tackle silent actions.
 
@@ -158,8 +167,7 @@ We define a deadlock as a configuration without possible transition and assume w
 To define their refinement and inheritance relation they use trace and failure semantics, which are weaker than (bi)simulations \cite{10.5555/640428.640430} and could break with open automata composition.
 
 
-\section{Background: Open Automata and their Composition}\label{sec:background}
-\TODO{3.5 pages}
+\section{Open Automata and their Composition}\label{sec:background}
 
 This section presents our notations and the principles of automata. Except for minor changes in the notations, compared to previous works~\cite{pnets} the only new contribution is the definition of a composition operator for open automata.
 %
@@ -173,12 +181,17 @@ This section presents our notations and the principles of automata. Except for m
 %This helps distinguishing the manipulated objects.
 %Every such notation will be introduced in the definition of the object.
 
-Families of values, or equivalently maps will be noted \(x_i^{i \in I}\), \(\mset{i \mapsto x_i}{i \in I}\) or \(\mset{i \gets x_i}{i \in I}\). % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
+
+\subsection{Preliminaries and notations}
+Families of values, or equivalently maps will be noted \(\mset{i \mapsto x_i}{i \in I}\), or \(\mset{i \gets x_i}{i \in I}\), or \(x_i^{i \in I}\) depending on what is more convenient. % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
+
 %For instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
 %They will be used depending on what is more convenient.
 %For instance \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no simple generating expression and is better represented with the finite version of first notation.
-The disjoint union on set is noted \(\uplus\)\footnote{\(\uplus\) notation either supposes that the sets are disjoint or rename conflicting objects depending on the context}. Disjoint union is also used on maps.
-%There are several ways of ensuring a union is disjoint, we will indifferently either suppose sets are disjoint or rename conflicting object (useful for variables).
+The disjoint union on set is noted \(\uplus\).
+%\footnote{Depending on the context, \(\uplus\) notation either supposes that the sets are disjoint or constraints joined sets to be disjoints if several choices are possible}.
+Disjoint union is also used on maps.
+There are several ways of ensuring a union is disjoint, we will indifferently either suppose sets are disjoint or rename conflicting object (useful for variables).
 %The disjoint union of two maps \(\varphi: I \to X\) and \(\psi: J \to Y\) with \(I \cap J = \emptyset\) is noted \(\varphi \uplus \psi\) and has the following signature \(I \uplus J \to X \cup Y\).
 In a formula, a quantifier followed by a finite set will be used as a shorthand for the quantification on every variable in the set:
 \(\forall \mbrc{a_1, \dots, a_n}, \exists \mbrc{b_1, \dots, b_m}, P\) means \(\forall a_1, \dots, \forall a_n, \exists b_1, \dots, \exists b_m, P\).
@@ -186,13 +199,13 @@ In a formula, a quantifier followed by a finite set will be used as a shorthand 
 %\begin{definition}[Expression algebra, Action algebra, Formulas, Terms]
 An expression algebra \(E\) is the disjoint union  of  terms,  actions, and  formulas
 \( E=\terms \uplus \actions \uplus \formulas\) .
-\(\terms\) and \(\actions\) are term algebras \TODO{do we explain term algebras}.
+\(\terms\) and \(\actions\) are term algebras.
 The formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\). 
 %\end{definition}
 
- \(\fvars{e}\) is the set of variables in \(e \in E\) that are not bound by any binder. An expression is closed if \(\fvars{e}=\emptyset\).
+For \(e \in E\),
+ \(\fvars{e}\) is the set of variables in  $e$that are not bound by a binder. An expression is closed if \(\fvars{e}=\emptyset\).
 The set \(\values\) denote values which is a subset of closed terms. \(\rformulas[V]\) is the set of formulas $f$ that only use variables in $V$, i.e. the formulas such that  \(\fvars{f}\subseteq V\).
-
 The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), is denoted \(e\subst{t}{x}\), and its generalisation to the parallel substitution of variables in \(V\) by \(\psi: V \to \terms\) is denoted \(e\psubst{\psi}\).
 
 
@@ -213,7 +226,7 @@ We will  use two satisfiability relations:
  Open automata (abbreviated OA) are labelled transition systems with variables  that can be used to compose other automata: they are made of transitions that are dependent of the actions of ``holes'', a composition operation consists in filling a hole with another automaton to obtain a more complete automaton. The variables makes the OA symbolic, and the holes allow for a partial definition of the behaviour.
 
 \begin{definition}[Open transition, Open automaton (OA)]
-An \emph{open automaton} is a tuple \(\OAg\) with \(S\) the set of states, \(s_0 \in S\) the initial state, \(V\) the finite set of variable names, \(\sigma_0: V' \to \values\) the initial valuation of variables where \(V' \subseteq V\), \(J\) the set of hole names and \(T\) the set of open transitions. 
+An \emph{open automaton} is a tuple \(\OAg\) with \(S\) a set of states, \(s_0 \in S\) the initial state, \(V\) the finite set of variable names, \(\sigma_0: V \to \values\) the initial valuation of variables, \(J\) the set of hole names and \(T\) the set of open transitions. 
 
 An \emph{open transition} is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(\beta_j \in \actions\) the actions of the holes, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable assignments.
 To be well-formed, an open transition should use only variables of the automaton and variables appearing in the involved actions, formally: 
@@ -227,29 +240,31 @@ To be well-formed, an open transition should use only variables of the automaton
 
 
 %\TODO{useful or not?}
-\begin{definition}[Guard, Out-transition, Transition variables]
+\begin{definition}[Out-transition, Transition variables]
 Let \(V\) be the variable names of the considered automaton, \(T\) its transitions and \(r\) one of its states.
 \(\fOT[T]{r} \in T\) are called the out-transitions of the state \(r\).
-\(\fIT[T]{r} \in T\) are called the in-transitions of the state \(r\).
+%\(\fIT[T]{r} \in T\) are called the in-transitions of the state \(r\).
 When the transition set is clear from the context, it will be omitted.
 The local variables of a transition \(\fvars{t}\) are all variables appearing in transition \(t\) except the global variables of the automaton.
-\begin{align*}
-	\fOT[T]{r} & = \mset{\OTg \in T}{s = r} &
-	\fIT[T]{r} & = \mset{\OTg \in T}{s' = r} \\
-\end{align*}
-\vspace{-1cm}
+%\begin{align*}
+% %&
+%%	\fIT[T]{r} & = \mset{\OTg \in T}{s' = r} \\
+%\end{align*}
+%\vspace{-1cm}
 \begin{mathpar}
-	\fguard{\OTg} \!=\! g \qquad
+%	\fguard{\OTg} \!=\! g \qquad
+	\fOT[T]{r}  = \mset{\OTg \in T}{s = r}
+
 	\fvars{\OTg} \!=\! \mpar{\fvars{\alpha}  \cup \bigcup_{j \in J'} \!\fvars{\beta_j} } \setminus V
 \end{mathpar}
 \end{definition}
 
-
-The following terminology will be used to reason on open automata
-\begin{definition}[Configuration, instantiated transition]
 A pair consisting of a state and a valuation is called a \emph{configuration}.
-An \emph{instantiated transition} of an automaton \(\OAg\) is a transition  \(t\psi\) where $t\in T$ and $\psi$ is a  well-formed substitution with $\dom(\psi)=vars(t)$. %\setminus V$.
-\end{definition}
+%
+%The following terminology will be used to reason on open automata
+%\begin{definition}[Configuration, instantiated transition]
+%An \emph{instantiated transition} of an automaton \(\OAg\) is a transition  \(t\psi\) where $t\in T$ and $\psi$ is a  well-formed substitution with $\dom(\psi)=vars(t)$. %\setminus V$.
+%\end{definition}
 
 In Fig. \ref{Fig:SpecOA} we present a very simple example of an open automaton inspired from \cite{Gorrieri:2001}. An automaton that we name \texttt{database} modelling a data base that can be queried and updated. The open automaton \texttt{counter}    depicting  the behaviour of the timer is illustrated in Fig. \ref{Fig:counter}. 
 
@@ -266,11 +281,11 @@ In Fig. \ref{Fig:SpecOA} we present a very simple example of an open automaton i
 
 \paragraph{Open automaton composition}
 
-Open automata are partially specified automata, that partiality comes mostly from the holes.
-A hole is an interface in which we can plug an open automaton.
+OA are partially specified automata, that partiality comes  from the holes.
+A hole is a port in which we can plug an OA.
 The plugging operation is called composition.
-The composition of open automata was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never completely formalised on open automata.
-The definition of composition below is a direct translation of what happens with pNets composition without the need of introducing pNets.
+The composition of OA was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never  formalised on OA.
+The definition of composition below is a direct translation of what happens with pNets composition without  introducing pNets.
 
 
 
@@ -299,14 +314,14 @@ The action emitted when \(A_p\) makes a transition is synchronised with the acti
 
 
 \paragraph{Relations between open automata}
-A relation (bisimulation, refinement, etc.) between open automata requires to compare their states. To do so we will suppose that the variables of the two OAs are disjoint (a renaming of variables may have to be applied before comparing OA states).
+A relation (bisimulation, refinement, etc.) between OA requires to compare their states. To do so we will suppose that the variables of the two OA are disjoint (a renaming of variables may have to be applied before comparing OA states).
 \begin{definition}[Relation on OA states] Suppose $V_1$ and $V_2$ are disjoint.
 A relation on states of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 \end{definition}
 The idea is that two states are related if the variables they refer to verify a certain formula. Additionally, we may check that initial states of the automata are related by checking that: \(\sigma_{01} \uplus \sigma_{022} \vdash R\mpar{s_{01}, s_{02}}\).
 
-\TODO{I do not think we reason on configurations for the moment, if we want to, we should introduce this:}
-Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
+%\TODO{I do not think we reason on configurations for the moment, if we want to, we should introduce this:}
+%Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 
 \paragraph{A bisimulation for open automata}
 
@@ -368,6 +383,7 @@ However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \m
 \caption{The full Traffic Lights system}
 \label{fig:tlf}
 \end{figure}
+\begin{comment}
 \subsection{Reachability : check if useful?}
 \begin{definition}[Reachability] \label{Def:Reach}
 For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
@@ -375,6 +391,8 @@ For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to 
 \end{definition}
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
 From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
+
+\end{comment}
 
 \section{Refinement Relations for automata with the same holes}\label{sec:refinement}
 
@@ -496,7 +514,7 @@ Consider two OAs \(\OAg[1]\) and \(\OAg[2]\) with  \(J_1 = J_2\), the relation o
 \end{definition}
 
 
-Note in this definition, instead of matching an instantiated transition of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$. %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
+Note in this definition, instead of matching an instantiated transition (with all variables assigned) of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$. %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
 
 Intuitively, this means that for every pair of related
 states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update. Our definition captures a simple kind of sub-classing of open automata with the same holes. It is stronger than a strict simulation since it matches a transition with a family of transitions. 
@@ -1465,7 +1483,7 @@ J'_{13x}  = J'_{23}  \land \bigwedge_\subbox{j \in  J'_{23}} \beta_{23j} = \beta
  R'\mpar{s'_{1 3x}, s'_{23}}\psubst{\psi_{1 3x} \uplus \psi_{23}}}
 \end{multline*}
 
-This concludes for the second case.
+This concludes for the second case and the proof of the theorem.
 
 
 \begin{comment}
@@ -1523,6 +1541,8 @@ which gives us what we needed to demonstrate. \qed
 \end{comment}
 
 \end{enumerate}
+\end{document}
+
 \section{Proof of Congruence (Theorem~\ref{thm:Congruence})}
 
 Suppose that $\wrel{A_2}{A_3}{H}$, \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
