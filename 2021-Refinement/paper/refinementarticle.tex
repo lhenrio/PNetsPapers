@@ -257,8 +257,10 @@ The action emitted when \(A_p\) makes a transition is synchronised with the acti
  \centering
    \includegraphics[width=.5\textwidth]{Figures/counter.pdf}\hfill 
    \includegraphics[width=.3\textwidth]{Figures/compose_count_db.pdf}
-   \caption{Open Automaton of \texttt{counter} process (left).  Its role is to get a target, then count ticks until that target is reached, then emits an action with the elapsed time and restart. And Open Automation of  the composition \texttt{database}[\texttt{counter/cnt}] (right).\label{Fig:counter}}
+   \caption{Open Automaton of \texttt{counter} process (left).  Its role is to get a target, then count ticks until that target is reached, then emits an action with the elapsed time and restart. And Open Automaton of  the composition \texttt{database}[\texttt{counter/cnt}] (right).\label{Fig:counter}}
 \end{figure}
+In Fig. \ref{Fig:counter} (right) we present the composition \texttt{database}[\texttt{counter/cnt}] of the two open automata \texttt{database} and \texttt{counter}. Each state of the composite consists of a state of \texttt{database} together with a state of \texttt{counter}. The composed automaton  takes over  the same steps as the   \texttt{database} automaton but it also includes new steps,  indicting the change of states for the setting of timer. 
+
 \paragraph{Relations between open automata}
 A relation (bisimulation, refinement, etc.) between OA requires to compare their states. To do so we will suppose that the variables of the two OA are disjoint (a renaming of variables may have to be applied before comparing OA states).
 \begin{definition}[Relation on OA states] Suppose $V_1$ and $V_2$ are disjoint.
@@ -460,6 +462,12 @@ Next section will define  a more powerful refinement relation able to reason on 
 
 
 
+\begin{figure}[h]
+ \centering
+   \includegraphics[width=.6\textwidth]{Figures/composeRefined.pdf}
+   \caption{The refined Open Automaton composed with the counter \label{Fig:ComposeRefine}}
+\end{figure}
+
 \section{A Refinement Relation that Takes Holes into Account}\label{sec:holes}
 \TODO{3.5 pages}
 
@@ -550,7 +558,7 @@ We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \m
 
 
 \begin{center}
-\includegraphics[scale=0.7]{Figures/Theorem2}
+\includegraphics[scale=0.7]{Figures/Theorem2bis}
 \end{center}
 
 
@@ -660,62 +668,6 @@ In the future we will focus on the other composition property that considers the
 \appendix
 
 
-\subsection{Example}
-
-As an example, the traffic light system  that controls  
- traffic at an intersection. The open automaton  
-modeling this system  is illustrated in  Figure \ref{fig:tls}. This automaton has three states  remembering which coloured light
-is on (Red, Yellow or Green). It includes two holes: a controller ($\symb{ctl}$) and a counter ($\symb{cnt}$)  depicting together the behaviour of the timer. The color switches when the counter and the controller component agree that the time is over. The new time limit can be set by the counter component and the exposed action to the environment is an unobservable  action $\tau$.
-
-The open automata shown in Figure  \ref{fig:ctlandcnt} models  the timer. On the left, the controller component designed to be connected in the hole $\symb{ctl}$.  Its role is to decide the duration before switching the lights. 
-We control the time interval for each light by setting them by prior knowledge:  17s for the first duration, 3s for the second, and 20s for the third. On the right, the tick counter component designed to be connected in the hole $\symb{cnt}$.                                                                                                                                     
-
-
-
-
-In Figure \ref{fig:tlf} we present the composition of the three automata. Each state of the result of the composition consists  of  a state of traffic light system together with a state of controller component and one of counter component. The composed automaton  takes over  the same steps as the traffic light automaton but it also includes new steps,  indicting the change of states for the setting of timer. Its $\tau$ transitions involve both the traffic light automaton and the hole  automata, they correspond to  a joint step of  sending time thresholds of the controller, the time setting of the counter. For instance, the  $\tau$  transition starting from \(R1S\), it is obtained by composition of both 
-\nmm{\OT{R}{R}{\tau}{\mbrc{cnt \mapsto \act{set}\mpar{x}, ctl \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}, \nmm{\OT{1}{2}{\theta\mpar{17}}{\mbrc{}}{\top}{\mbrc{}}} and   \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}}. \\ 
-However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \mapsto \act{set}\mpar{x}, ctl \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}, \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} and 
-\nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} is not agreed because it would produce a transition whose guard is not satisfiable. It will produce the following transition: \nmm{\OT{R2C}{R3C}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x}}{\mbrc{c \gets c + 1}}} which requires to be triggered  the equality of completely different actions. 
-
-
-
-
-
-
-
-
-\begin{figure}[!tb]
-\centering
-\scalebox{.75}{\input{Traffic_Lights_Spec.tex}}
-\caption{The specification of a Traffic Light system}
-\label{fig:tls}
-\end{figure}
-
-
-\begin{figure}[!tb]
-%\centering
-\scalebox{.75}{\input{Traffic_Lights_Controller.tex}}
-\scalebox{.75}{\input{Traffic_Lights_Register.tex}}
-\caption{(a) An example of controller component ~~  (b) An example of counter component}
-\label{fig:ctlandcnt}
-\end{figure}
-
-\begin{figure}[!tb]
-\centering
-\scalebox{.75}{\input{Traffic_Lights_Interm.tex}}
-\caption{The incomplete Specification Traffic Lights system}
-\label{fig:tlf}
-\end{figure}
-
-
-
-\begin{figure}[!tb]
-\centering
-\scalebox{.75}{\input{Traffic_Lights_Full.tex}}
-\caption{The full Traffic Lights system}
-\label{fig:tlf}
-\end{figure}
 
 
 
@@ -1901,6 +1853,65 @@ From the two previous formulas and considering that each valuations $\sigma_{1}^
 
 
 \section{Proof that Composition is a refinement (Theorem~\ref{thm:Composition})}
+
+
+\section{Example}
+
+As an example, the traffic light system  that controls  
+ traffic at an intersection. The open automaton  
+modeling this system  is illustrated in  Figure \ref{fig:tls}. This automaton has three states  remembering which coloured light
+is on (Red, Yellow or Green). It includes two holes: a controller ($\symb{ctl}$) and a counter ($\symb{cnt}$)  depicting together the behaviour of the timer. The color switches when the counter and the controller component agree that the time is over. The new time limit can be set by the counter component and the exposed action to the environment is an unobservable  action $\tau$.
+
+The open automata shown in Figure  \ref{fig:ctlandcnt} models  the timer. On the left, the controller component designed to be connected in the hole $\symb{ctl}$.  Its role is to decide the duration before switching the lights. 
+We control the time interval for each light by setting them by prior knowledge:  17s for the first duration, 3s for the second, and 20s for the third. On the right, the tick counter component designed to be connected in the hole $\symb{cnt}$.                                                                                                                                     
+
+
+
+
+In Figure \ref{fig:tlf} we present the composition of the three automata. Each state of the result of the composition consists  of  a state of traffic light system together with a state of controller component and one of counter component. The composed automaton  takes over  the same steps as the traffic light automaton but it also includes new steps,  indicting the change of states for the setting of timer. Its $\tau$ transitions involve both the traffic light automaton and the hole  automata, they correspond to  a joint step of  sending time thresholds of the controller, the time setting of the counter. For instance, the  $\tau$  transition starting from \(R1S\), it is obtained by composition of both 
+\nmm{\OT{R}{R}{\tau}{\mbrc{cnt \mapsto \act{set}\mpar{x}, ctl \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}, \nmm{\OT{1}{2}{\theta\mpar{17}}{\mbrc{}}{\top}{\mbrc{}}} and   \nmm{\OT{S}{C}{\act{set}\mpar{x}}{\mbrc{}}{\top}{\mbrc{t \gets x, c \gets 0}}}. \\ 
+However, the joint composition of transitions  \nmm{\OT{R}{R}{\tau}{\mbrc{cnt \mapsto \act{set}\mpar{x}, ctl \mapsto \theta\mpar{x}}}{\top}{\mbrc{}}}, \nmm{\OT{2}{3}{\delta\mpar{x}}{\mbrc{}}{\top}{\mbrc{}}} and 
+\nmm{\OT{C}{C}{\act{tick}}{\mbrc{}}{c < t}{\mbrc{c \gets c + 1}}} is not agreed because it would produce a transition whose guard is not satisfiable. It will produce the following transition: \nmm{\OT{R2C}{R3C}{\tau}{\mbrc{}}{\top \wedge \top \wedge c < t \wedge \act{set}\mpar{x} = \act{tick} \wedge \theta\mpar{x} = \delta\mpar{x}}{\mbrc{c \gets c + 1}}} which requires to be triggered  the equality of completely different actions. 
+
+
+
+
+
+
+
+
+\begin{figure}[!tb]
+\centering
+\scalebox{.75}{\input{Traffic_Lights_Spec.tex}}
+\caption{The specification of a Traffic Light system}
+\label{fig:tls}
+\end{figure}
+
+
+\begin{figure}[!tb]
+%\centering
+\scalebox{.75}{\input{Traffic_Lights_Controller.tex}}
+\scalebox{.75}{\input{Traffic_Lights_Register.tex}}
+\caption{(a) An example of controller component ~~  (b) An example of counter component}
+\label{fig:ctlandcnt}
+\end{figure}
+
+\begin{figure}[!tb]
+\centering
+\scalebox{.75}{\input{Traffic_Lights_Interm.tex}}
+\caption{The incomplete Specification Traffic Lights system}
+\label{fig:tlf}
+\end{figure}
+
+
+
+\begin{figure}[!tb]
+\centering
+\scalebox{.75}{\input{Traffic_Lights_Full.tex}}
+\caption{The full Traffic Lights system}
+\label{fig:tlf}
+\end{figure}
+
 
 
 \end{document}
