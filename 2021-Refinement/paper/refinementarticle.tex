@@ -58,9 +58,9 @@ blibli\\
 \begin{abstract}
 %\TODO{ The abstract should briefly summarize the contents of the paper in 150--250 words.}
 
-Establishing equivalences and refinement relations between programs is an important mean for 
+Establishing equivalence and refinement relations between programs is an important mean for 
 verifying the correctness of programs. By establishing that the
-behaviours of a modified program simulate those of to the source one,  and bisimulation relations  formalise the desired  relation between a specification and an implementation, 
+behaviours of a modified program simulate those of the source one,  and bisimulation relations  formalise the desired  relation between a specification and an implementation, 
  two equivalent implementations, or a program and its optimised implementation.
 This article discusses a notion of refinement between \emph{open automata}, which are symbolic
 behavioural models for communicating systems. 
@@ -68,7 +68,7 @@ Open automata may have \emph{holes} modelling elements of their
 context, and can be composed by instantiation of the holes. This allows for a compositional approach for
 verification of their behaviour.
 
-We define several variants of refinement between systems including either equal or different sets of holes, and 
+We define several variants of refinement relations between systems including either equal or different sets of holes, and 
 show under which conditions these refinements are preserved by composition of open automata. 
 
 
@@ -79,39 +79,40 @@ show under which conditions these refinements are preserved by composition of op
 %
 \section{Introduction}
 
-Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can verify efficiently, but programming often consist in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically). We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+Automata are convenient for specifying and verifying systems, but most automata definitions allow only the specifications of finite closed systems. Indeed those systems are the ones we can verify efficiently, but programming often consists in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically). We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
 
 
-Refinement relations verify that and implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+Refinement relations verify that an implementation satisfies some properties with respect to a specification. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a whole scenario, made of several steps, of the specification can also be simulated by the refined system, which is slightly richer than the traditional simulation relation.
 
 
 The notion of refinement  captures the relation between  a specification and an implementation of the same component. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. 
- It is usually defined as trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification.
+ It is usually defined as trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. \TODO{heu c'est pas le contraire, l'implem (le "refined"), peut avoir plus de comportements que la spec, non ?}
  This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
-In this article we mostly rely on a simulation point of view, where all the specified behaviour must be followed by the refined system but additional behaviours may exist. However we also ensure that a while scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
+In this article we mostly rely on a simulation point of view, where all the specified behaviours must be followed by the refined system but additional behaviours may exist. \TODO{the following sentence is a copy of the previous paragraph !} However we also ensure that a whole scenario, made of several steps, of the specification can also be simulated by the refined system, which is a bit richer than the traditional simulation relation.
 
 
 
 
 Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools.
-An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables makes automata symbolic and allow them to encode infinite state systems. Holes enables the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' of the main automaton has been provided.
+An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables make automata symbolic and allow them to encode infinite state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' \TODO{est-ce qu'on n'ecrirait pas ici "process parameter" pour les distinguer des variables standard ?} of the main automaton has been provided.
 
 In previous works \cite{fhbisim,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
 
-This article first introduces open automata that were defined in  \cite{henrio:01299562},  but compared to previous works, we additionally define the composition of open automata.
+This article first introduces open automata that were defined in  \cite{henrio:01299562}. %,  but compared to previous works, we 
+and additionaly defines the composition of open automata.
 Then we define  a refinement relation for open automata that has the following characteristics:
 \begin{itemize}
 \item Classical simulation characterisation but also an additional criteria ensuring that refinement does not introduce deadlocks when following a trace from the simulated automaton.
 \item Good properties relatively to composition: we prove here that filling the same hole  with the same automaton preserves the refinement relation.
-\item Ability to take into account both composition and transitivity: this is a challenge because composition changes the set of holes of the open automaton and refinement takes into account actions of the holes.
+\item Ability to take into account both composition and transitivity: this is a challenge because composition changes the set of holes of the open automaton and refinement takes into account the actions of the holes.
 \end{itemize}
 The refinement relation is introduced in two steps. First we define a refinement that relates two automata with the same holes, which allows us to focus on the automaton aspect. Second we introduce a relation that relates two automata with different sets of holes, which allows us to take into account the open nature of open automata, and to deal with composition.
 
 
 The following of this article is organised as follows. 
-We first review related works in Section~\ref{sec:sota}; then Section~\ref{sec:background} recalls the definition of open automata and defines their composition. 
-We  then  define a refinement relation for open automata, first only considering two automata with the same set of holes in Section~\ref{sec:refinement} and generalize it to automataa with a different set of holes in Section~\ref{sec:holes} before proving basic properties of refinement in Section~\ref{sec:prop}; here we prove that refinement is a preorder and we focus on one composition property. 
-Section~\ref{sec:ccl} concludes the paper.
+Section~\ref{sec:background} recalls the definition of open automata and defines their composition. 
+We  then  define a refinement relation for open automata, first only considering two automata with the same set of holes in Section~\ref{sec:refinement} and generalize it to automata with a different set of holes in Section~\ref{sec:holes}.  Section~\ref{sec:prop} is dedicated to formalize and prove basic properties of refinement in ; here we prove that refinement is a preorder and we focus on one composition property. 
+In Section~\ref{sec:sota} we review related works, and Section~\ref{sec:ccl} concludes the paper.
 
 
 \section{Open Automata and their Composition}\label{sec:background}
