@@ -88,13 +88,14 @@ Refinement relations verify that an implementation satisfies some properties wit
 
 
 The notion of refinement  captures the relation between  a specification and an implementation of the same component. Refinement entails that one system can be considered as a more precise version of the specification, featuring all the specified behaviours with more concrete details. 
- It is usually defined as trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}; this ensures that all behaviours of the implementation must be also behaviours of the specification. \TODO{heu c'est pas le contraire, l'implem (le "refined"), peut avoir plus de comportements que la spec, non ? +1}
+ It is usually defined as trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}; this ensures that all behaviours of the specification must belong to the behaviours of the implementation . 
  This definition, which is based on systems whose behaviour is fully defined, is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
 
 
-Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools.
-% TODO? This could be an opportunity to introduce pNets as they are reffered to later but not introduced
-An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables make automata symbolic and allow them to encode infinite state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``parameter'' \TODO{est-ce qu'on n'ecrirait pas ici "process parameter" pour les distinguer des variables standard ?} of the main automaton has been provided.
+Open automata were defined as a way to provide a semantics for open parameterized hierarchical LTSs used in verification tools and called \emph{pNets}.
+An open automaton \cite{henrio:01299562} is a classical automaton with variables and holes. Variables make automata symbolic and allow them to encode infinite state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is a more precise automaton where the behaviour of one ``process parameter'' % \TODO{est-ce qu'on n'ecrirait pas ici "process parameter" pour les distinguer des variables standard ?}
+% LUDO: DONE
+ of the main automaton has been provided.
 
 In previous works \cite{fhbisim,wang:03126313} a bisimulation relation was defined for open automata and open parameterized hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied.
 
@@ -130,7 +131,7 @@ This section presents our notations and the principles of automata. Except for m
 
 
 \subsection{Preliminaries and notations}
-Families of values, or equivalently maps will be noted \(x_i^{i \in I}\), \(\mset{i \mapsto x_i}{i \in I}\), or \(\mset{i \gets x_i}{i \in I}\), depending on what is more convenient. % TODO: introduire le fait que \exists c_j^{j \in J} défini J et {j \mapsto c_j}
+Families of values, or equivalently maps will be noted \(x_i^{i \in I}\), \(\mset{i \mapsto x_i}{i \in I}\), or \(\mset{i \gets x_i}{i \in I}\), depending on what is more convenient. Statements like  $\exists c_j^{j \in J}$ defines both $J$ and the mapping ${j \mapsto c_j}$.
 %For instance \(\mpar{ax}^{x \in \setR}\) represents a scaling function, \(c^{i \in I}\) is a constant function over \(I\).
 %They will be used depending on what is more convenient.
 %For instance \(\mbrc{\alpha \mapsto 1, \beta \mapsto 2, \gamma \mapsto 3}\) has no simple generating expression and is better represented with the finite version of first notation.
@@ -232,9 +233,7 @@ The open automaton \texttt{counter}    depicting  the behaviour of the timer is 
 OA are partially specified automata, that partiality comes  from the holes.
 A hole can be seen as a port in which we can plug an OA.
 The plugging operation is called composition.
-The composition of OA was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never  formalised on OA.
-The definition of composition below is a direct translation of what happens with pNets composition without  introducing pNets.
-\TODO{Beware, c'est la premiere apparition de "PNets", c'est un peu brutal...}
+The composition of OA was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never  formalised on OA\footnote{The definition of composition below is a direct translation of what happens with pNets composition without  introducing pNets.}
 
 
 
@@ -312,7 +311,7 @@ From an automation point of view, finding the most precise reachability predicat
 
 Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between states of two open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton (at least not among the scenarios originally planned in the specification).
 The refinement relation should be conditioned by the internal states of the automata. More precisely, a refinement relation characterizes when two states are related, and this  characterisation is expressed as a predicate on the variables of the two automata.
-Thus, a refinement relation has the following signature: \( S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\). % TODO: duplicata avec Def Relation on OA states
+Thus, a refinement relation is a relation on OA states.
 
 %\TODO{check deadlock reduction/reducing in the literature}
 
@@ -364,10 +363,9 @@ We rely on a classical notion of simulation inspired from~\cite{fh-bisim}. The i
 
 %\subsection{Deadlock Reduction, Reachability, and Composition}
 
-% TODO: simulation doesn't introduce deadlocks, it doesn't forbid it, or tolerates it but it doesn't introduces deadlocks by itself.
-Let us first explain the reasons why simulation can introduce deadlocks and how we want too limit them. 
+Let us first explain the reasons why simulation can introduce allow undesired bwhaviours to emerge and how we want to limit them. 
 The automaton that simulates a specification features any behaviour that contains the behaviour of the specification, or more precisely, for each state that simulates a state of the specification, the simulating automaton must at least feature the behaviour of the specification.
- In this definition, nothing prevents the implementation from adding non-determinism and non-deterministically reaching a state that is unrelated to the specification, this state could be a deadlock even though we only followed transitions that exist in the specification.
+ In this definition, nothing prevents the implementation from adding non-determinism and non-deterministically reaching a state that is unrelated to the specification, this state could even be a deadlock even though we only followed transitions that exist in the specification.
 To avoid the appearance of such deadlocks, we will state that, when both the implementation and the specification do the same transition, they stay related.
 This ensures a form of continuity in the comparison in the sense that the refined system is constrained to follow the behaviour of the simulated system along a given scenario. 
 In terms of traces this amounts to some form of deadlock reduction: for each trace followed by the simulated system if the refined system followed the beginning of the trace, it must be able to keep following the trace. 
@@ -393,6 +391,7 @@ Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
 A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
   is preserved along identical transitions if  it satisfies the following:
 % TODO: isn't it a2 = a1x instead of a1x = a1
+% TODO: ANS:  we have a1 = a2 so whatever, it is the same, we can change if it is more ``natural''
 \begin{multline*}
 \forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\ 
 \bigsymb{\bigexists} 
@@ -479,9 +478,8 @@ Next section will define  a more powerful refinement relation able to reason on 
 This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
 % TODO: what does this last part (after comma) means?
 
-The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This way the relation is parameterized by the set of holes that belong to the two automata and are taken into account.
+The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterized by a subset of the set of holes that belong to the two automata that we want to take into account.
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
-% TODO: Too many "way"
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
 \begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
@@ -586,23 +584,24 @@ We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \m
 \includegraphics[scale=0.7]{Figures/Theorem1}
 \end{center}
 
-% TODO: non-blocking is not defines afaik
-Open automata composition is a refinement where
-the tracked holes are the holes of the base automaton minus the composed hole.
-\begin{theorem}[Composition is a refinement]\label{thm:Composition}
-Let $A_1$ and  $A_2$  be three two automata with $J_1$ the set of holes of $A_1$.
-Suppose that \(k \in J_1\) and that \(A_1\subst{A_2}{k}\) is non-blocking. We have:
-\[ \wrel{A_1\subst{A_2}{k}}{A_1}{J_1\setminus \{k\}}\]
-\end{theorem}
+%% TODO: non-blocking is not defines afaik
+%% ANS: remove this from the submission because proof unfinished
+%Open automata composition is a refinement where
+%the tracked holes are the holes of the base automaton minus the composed hole.
+%\begin{theorem}[Composition is a refinement]\label{thm:Composition}
+%Let $A_1$ and  $A_2$  be three two automata with $J_1$ the set of holes of $A_1$.
+%Suppose that \(k \in J_1\) and that \(A_1\subst{A_2}{k}\) is non-blocking. We have:
+%\[ \wrel{A_1\subst{A_2}{k}}{A_1}{J_1\setminus \{k\}}\]
+%\end{theorem}
 
 
-TODO: FOCUS on the two following items (look at quentin's article):
-
-
-- what is the property wrt deadlocks?
-
-
-- relation with fh bisimulation
+%TODO: FOCUS on the two following items (look at quentin's article):
+%
+%
+%- what is the property wrt deadlocks?
+%
+%
+%- relation with fh bisimulation
 
 \section{Related Work}
 \label{sec:sota}
