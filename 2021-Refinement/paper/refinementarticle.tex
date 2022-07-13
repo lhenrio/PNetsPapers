@@ -268,8 +268,8 @@ In Fig. \ref{Fig:counter} (right) we present the composition \texttt{database}[\
 
 \paragraph{Relations between open automata}
 A relation (bisimulation, refinement, etc.) between OA requires to compare their states. To do so we will suppose that the variables of the two OA are disjoint (a renaming of variables may have to be applied before comparing OA states).
-\begin{definition}[Relation on OA states] Suppose $V_1$ and $V_2$ are disjoint.
-A relation on states of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
+\begin{definition}[Relation on OA configurations] Suppose $V_1$ and $V_2$ are disjoint.
+A relation on configurations of \(\OAg[1]\) and \(\OAg[2]\) is a function \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 \end{definition}
 %\TODO{C'est etrange, la formulation "the variables they refer to", comme il n'y a plus de variables d'etat... +1}
 The idea is that two states are related depending on the state of the automaton, i.e. if the variables of the OA verify a certain formula. 
@@ -317,9 +317,9 @@ From an automation point of view, finding the most precise reachability predicat
 
 \section{Refinement Relations for automata with the same holes}\label{sec:refinement}
 
-Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between states of two open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton (at least not among the scenarios originally planned in the specification).
+Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between configurations of two open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton (at least not among the scenarios originally planned in the specification).
 The refinement relation should be conditioned by the internal states of the automata. More precisely, a refinement relation characterizes when two states are related, and this  characterisation is expressed as a predicate on the variables of the two automata.
-Thus, a refinement relation is a relation on OA states.
+Thus, a refinement relation is a relation on OA configurations.
 
 %\TODO{check deadlock reduction/reducing in the literature}
 
@@ -367,7 +367,7 @@ An composable automaton cannot transform external non-determinism of the sub-aut
 
 
 %The idea is that 
-We rely on a classical notion of simulation inspired from~\cite{fhbisim}. The idea is that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. But to limit the creation of deadlocks when simulating an automaton, we first define when a relation is preserved along identical transitions before characterising a first simple refinement relation  to compare automata with identical holes. 
+We rely on a classical notion of simulation inspired from~\cite{fhbisim}. The idea is that two configurations related by a relation; if one state can do a transition, then the other can do a transition too. But to limit the creation of deadlocks when simulating an automaton, we first define when a relation is preserved along identical transitions before characterising a first simple refinement relation  to compare automata with identical holes. 
 
 %\subsection{Deadlock Reduction, Reachability, and Composition}
 
@@ -489,7 +489,7 @@ This way, in the example above, we would have no guarantee on actions the hole $
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
 \begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
-For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
+For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
 \begin{multline*}
@@ -553,9 +553,8 @@ The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\). This is shown 
 %If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 %\end{theorem}
 Appendix~\ref{sec:proof-transitivity} presents the proof of transitivity. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a refinement. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a a formula that defines the refinement relation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
-% TODO: this relation defines is
   \[R_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{R_{12}(s_1,s_2) \land R_{23}(s_2,s_3) } \]
-We then prove that this relation defines is a refinement, according to Definition~\ref{Def:OA-Refinement}.
+We then prove that this relation  is a refinement, according to Definition~\ref{Def:OA-Refinement}.
 
 
 The next  theorem states that if two automata are in refinement relation and the same automata is placed in the same hole of the two autaomata, then the refinement is rpreserved. This is the first step toward proving that
