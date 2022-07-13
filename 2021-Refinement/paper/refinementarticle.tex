@@ -233,7 +233,7 @@ The open automaton \texttt{counter}    depicting  the behaviour of the timer is 
 OA are partially specified automata, that partiality comes  from the holes.
 A hole can be seen as a port in which we can plug an OA.
 The plugging operation is called composition.
-The composition of OA was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never  formalised on OA\footnote{The definition of composition below is a direct translation of what happens with pNets composition without  introducing pNets.}
+The composition of OA was already implicitly defined by the means of composition on pNets in previous work \cite{henrio:01299562} but never  formalised on OA\footnote{The definition of composition below is a direct translation of what happens with pNets composition \cite{henrio:01299562} without  introducing pNets.}
 
 
 
@@ -473,10 +473,8 @@ Next section will define  a more powerful refinement relation able to reason on 
 \end{figure}
 
 \section{A Refinement Relation that Takes Holes into Account}\label{sec:holes}
-\TODO{3.5 pages}
 
-This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way, and filling the hole partially reduces the behaviour of the automaton.
-% TODO: what does this last part (after comma) means?
+This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way.
 
 The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterized by a subset of the set of holes that belong to the two automata that we want to take into account.
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
@@ -538,8 +536,9 @@ The first crucial property of  refinement  is that it is  a  preorder on the set
 Refinement   is reflexive  and  transitive:  it  is  a  preorder on the set of open automata.
 \end{theorem}
 
-% TODO: sorry, what is R? I don't understand this definition, why v = v on vars(s1), what about s2
-The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\),  by taking $R\mpar{s_1, s_2} \mapsto \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$ to be $s_1= s_2$  and checking the above conditions (Definition \ref{Def:OA-Refinement}), we can see that the relation is indeed reflexive.
+% TODO: I don't understand this definition, why v = v on vars(s1), what about s2
+% ANS: was copy paste from the report, polished now
+The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\). This is shown  by considering the relation $R$ such that $R\mpar{s_1, s_2} \triangleq s_1=s_2\land \displaystyle\bigwedge_\subbox{v \in vars(s_1)} {v=v}$   we can prove the conditions for Definition~\ref{Def:OA-Refinement}.
 %
 %\begin{theorem}[Transitivity]
 %If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
@@ -550,7 +549,9 @@ Appendix~\ref{sec:proof-transitivity} presents the proof of transitivity. It is 
 We then prove that this relation defines is a refinement, according to Definition~\ref{Def:OA-Refinement}.
 
 
-The next two theorems state that refinement is compositional in the sense that it is sufficient to prove refinement for the composed automata separately to obtain a refinement relation. This can be split into theorems that can be trivially composed by transitivity.
+The next  theorem states that if two automata are in refinement relation and the same automata is placed in the same hole of the two autaomata, then the refinement is rpreserved. This is the first step toward proving that
+ refinement is compositional in the sense that it is sufficient to prove refinement for the composed automata separately to obtain a refinement relation.
+The second part, i.e. proving that placing in the same context two OA in refinement, we obtain two OA in refinement is left for future works.
 %
 %
 %The composition of $A_1$ and $A_3$ is a refinement of the composition of $A_2$ and $A_3$ provided $A_1$ is a refinement of $A_2$ and the hole in which we are composing inside $A_1$ and $A_2$ is tracked by the refinement relation.
@@ -566,15 +567,15 @@ We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \m
 \includegraphics[scale=0.7]{Figures/Theorem2bis}
 \end{center}
 
-
-
-
-
-\begin{theorem}[Congruence]\label{thm:Congruence}
-Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
-%Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
-We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
-\end{theorem}
+%
+%
+%
+%
+%\begin{theorem}[Congruence]\label{thm:Congruence}
+%Let $A_1$, $A_2$ and $A_3$ be three open automata with $\wrel{A_2}{A_3}{H}$. 
+%%Suppose that \(k \in H\) and that \(A_1\subst{A_2}{k}\) is non-blocking.
+%We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
+%\end{theorem}
 
 \TODO{i did not put the global composition theorem, de we state it?}
 
