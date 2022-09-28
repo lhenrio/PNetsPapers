@@ -635,13 +635,13 @@ label plus the arity of the action.
 \item The set of variables of a pNet $P$, denoted $vars(P)$ is disjoint union the set of variables of  all pLTSs that compose $P$.
 
 \item
-The set of holes $\Holes(\pNet)$ of a pNet is the indices of the holes of the pNet 
+The set of holes $\Holes(\pNet)$ of a pNet is the set of indices of the holes of the pNet 
 itself plus the indices of all the holes of its sub-pNets.
-It is defined inductively (we suppose those indices 
+It is defined inductively (we suppose that those index sets are
 disjoints):
   \[\begin{array}{l}
 \Holes(\mylangle S,s_0,V, \to\myrangle) \!=\! \emptyset\\
-\Holes(\mylangle \pNet_i^{i\in I}\!,\set{\Sort}, \set{\symb{SV}}\myrangle) 
+\Holes(\mylangle \pNet_i^{i\in I}\!,\Sort_j^{j\in J}, \set{\symb{SV}}\myrangle) 
 =J\uplus{\displaystyle \bigcup_{i\in 
 I}\Holes(\pNet_i)}\\
 \forall i\in I.\, \Holes(\pNet_i)\cap J=\emptyset\\
@@ -659,6 +659,7 @@ I}\Leaves(\pNet_i)\uplus\{i\mapsto \pNet_i|\pNet_i \text{ is a }\pLTS\}}
 \end{array}\]
 \end{itemize}
 
+Note that  $\Holes(\pNet)$is a set of indexes because holes are characterized only by their indices, while entities at the leaves ar pLTSs and thus $\Leaves(\pNet)$ is a set of pLTSs.
 A pNet $Q$ is \emph{closed} if it has no hole: $\Holes(Q)=\emptyset$; else it
 is said to be \emph{open}.
 Sort comes naturally with a compatibility relation that is similar to a type-compatibility check. We simply say that two sorts are compatible if they consist of the same actions with the same arity. In practice, it is sufficient to check the equality of the two sets of action signatures of the two sorts\footnote{A more complex compatibility relation could be defined, but this is out of the scope of this article.}.
@@ -666,8 +667,8 @@ Sort comes naturally with a compatibility relation that is similar to a type-com
 \end{definition}
   
 The informal semantics of pNets is as follows. pLTSs behave more or less like  classical automata with conditional branching and variables. The actions on the \pLTS s can send or receive values, potentially modifying the value of variables. 
-pNets are synchronisation entities: a pNet node composes several sub-pNets and  define how the sub-pNets interact, where a sub-pNet is either a pNet or a pLTS. The synchronisation between sub-pNets is defined by synchronisation vectors (originally introduced by \cite{Arnold1982}) that express how an action of a sub-pNet can be synchronised with actions of other sub-pNet, and how the resulting synchronised action is visible from outside of the pNet. The synchronisation mechanism is very expressive, including pattern-matching/unification between the parameterized actions within the vector, and an additional predicate over their variables.
-Consider a pNet node that assembles several pLTSs, the synchronisation vectors specify the way that transitions of the composed pNet are built from the transitions of the sub-nets. This can be seen as "conditional transitions" of the pNet, or alternatively, as a syntax to encode structural operational semantics (SOS rules) of the system: each vector expresses not only the actions emitted by the pNet but also what transitions of the composed pLTSs must occur to trigger this global transition.
+pNets are synchronisation entities: a pNet node composes several sub-pNets and  defines how the sub-pNets interact, where a sub-pNet is either a pNet or a pLTS. The synchronisation between sub-pNets is defined by synchronisation vectors (originally introduced in \cite{Arnold1982}) that express how an action of a sub-pNet can be synchronised with actions of other sub-pNet, and how the resulting synchronised action is visible from outside of the pNet. The synchronisation mechanism is very expressive, including pattern-matching/unification between the parameterized actions within the vector, and an additional predicate over their variables.
+Consider a pNet node that assembles several pLTSs, the synchronisation vectors specify the way that transitions of the composed pNet are built from the transitions of the sub-nets. This can be seen as ``conditional transitions'' of the pNet, or alternatively, as a syntax to encode structural operational semantics (SOS rules) of the system: each vector expresses not only the actions emitted by the pNet but also what transitions of the composed pLTSs must occur to trigger this global transition.
 Synchronisation vectors can also express the exportation of an action of a sub-pNet to the next level, or to hide an interaction and make it non-observable. Finally, a pNet can leave sub-pNets undefined and instead declare holes with a well-defined signature. Holes can then be filled with a sub-pNet. This is defined as follows.
 
 
@@ -691,13 +692,13 @@ Synchronisation vectors can also express the exportation of an action of a sub-p
 
 pNets are composition entities equipped with a rich synchronisation mechanism: synchronisation vectors allow the expression of synchronisation between any number of entities and at the same time the passing of data between processes. Their strongest feature is that the data emitted by processes can be used  inside the synchronisation vector to do addressing: it is easy to synchronise a process indexed by $n$ with the action $a(v,n)$ of another process. This is very convenient to model systems and encode futures or message routing. 
 
-pNets have been used to model GCM distributed component systems, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. 
+pNets have been used to model distributed components using the Grid Component Model, illustrating the expressiveness of the model~\cite{AmeurBoulifa2017}. 
 These works show that pNets are convenient to express the behaviour of a system in a compositional way. 
-Unfortunately, the semantics of pNets and the existing tools at this point were only able to deal with a closed system completely instantiated: pNets could be used as composition operator in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. 
+Unfortunately, the semantics of pNets and the existing tools at that point were only able to deal with a closed and completely instantiated system: pNets could be used as composition operators in the definition of the semantics, which was sufficient to perform finite-state model checking on a closed system, but there was no theory for the use of pNets as operators and no tool for proving properties on open system. 
 Consequently, much of the formalisation efforts did not use holes and the interplay between holes, sorts, and synchronisation vector was not formalised.
-In previous works~\cite{AmeurBoulifa2017}, only closed pNets were equipped with a semantics, it was defined as labelled transition systems. 
+In previous works~\cite{AmeurBoulifa2017}, only closed pNets were equipped with a semantics, which was defined as labelled transition systems. 
 %The old semantics is not necessary to understand this article but it defines the semantics of pNets in a simpler and more operational setting. 
-The theory of pNets as operators able to fully take into account open systems is given in the following sections. Comparing formally the existing direct operational semantics and the semantics derived from open automata in the current article would be an interesting partial proof of soundness for our semantics. The proof could only be partial as the formal semantics that exists only consider closed and fully instantiated pNets. Proving 
+The theory of pNets as operators for open systems is given in the following sections. Comparing formally the existing direct operational semantics and the semantics derived from open automata in the current article would be an interesting partial proof of soundness for our semantics. The proof could only be partial as the formal semantics that exists only consider closed and fully instantiated pNets. Proving 
 % a bisimulation
 an equivalence between the semantics presented in this article and the operational one shown in~\cite{AmeurBoulifa2017} is outside the scope of this article because we focus here on the modelling of holes that were not considered in the previous semantics. 
 \TODO{Check}
@@ -712,7 +713,7 @@ To illustrate this work, we use a simple communication protocol, that provides s
 
 Figure \ref{SimpleProt:Spec} (left) shows the example principle, which corresponds to the hierarchical structure of a pNet: two unspecified
 processes $P$ and $Q$ (holes) communicate messages, with a data value
-argument, through the two protocol entities. Process $P$ sends an $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\nounderline{in(m)}}$% , where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names}
+argument, through the two protocol entities. Process $P$ sends a $\texttt{p-send(m)}$ message to the $\symb{Sender}$; this communication is denoted as $\texttt{\nounderline{in(m)}}$% , where underline actions represent internal actions that cannot be further synchronised with the environment, similarly to the $\tau$ of CCS. In our formalisation we will also denote these actions $\tau$ for simplicity of notations but the examples are easier to read when invisible actions have significant names}
 .
 At the other end, process $Q$ receives the message from the $\symb{Receiver}$. The holes $P$ and $Q$ can also have other interactions with their environment, represented here by actions $\texttt{p-a}$ and $\texttt{q-b}$. The underlying network is modelled by a medium entity transporting messages from the sender to the receiver, and that is able to detect transport errors and signal them to the sender. The return $\symb{ack}$ message from $\symb{Receiver}$ to $\symb{Sender}$ is supposed to be safe. The final transmission of the message to the recipient (the hole $Q$) includes the value of the ``error counter'' $ec$.
 
@@ -750,7 +751,7 @@ action of some holes, the transition occurs if some predicates hold, and can inv
 set of state modifications. This section defines open automata and a bisimulation theory for them. This section is an improved version of the formalism described in \cite{henrio:Forte2016}, extending the automata with a notion of global variable, which makes the state of the automaton more explicit. We also adopt a semantics and logical interpretation of the automata that intuitively can be stated as follows: ``if a transition belongs to an open automaton, any refinement of this transition also belongs to the automaton''.
 
 \subsection{Open automata}
- Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can reason on a set of variables (potentially with only symbolic values). 
+ Open automata (OA) are not composition structures but they are made of transitions that are dependent of the actions of the holes, and they can use variables (potentially with only symbolic values). 
 %\TODO{adopt a uniform notation for open transitions, almost each instance has a 
 %different 
 %notation! I suggest p,l,pr,po using \{\} for p,l,po as they are sets}
@@ -764,18 +765,16 @@ set of state modifications. This section defines open automata and a bisimulatio
 	{	\beta_j^{j\in J'}, \Pred, \Post}
 	{s \OTarrow {\alpha}s'}
 	\end{mathpar}
-	Where $J'\subseteq J$ is the set of holes involved in the transition; $s, s'\in\mathcal{S}$ are states of the automaton; and $\beta_j$
-        is a transition of the hole $j$, with $\Sortop(\beta_j)\in\Sort_j$. $\alpha$  is the resulting action of this open transition.
+	where $J'\subseteq J$ is the set of holes involved in the transition; $s, s'\in\mathcal{S}$ are states of the automaton; and $\beta_j$
+        is a transition of the hole $j$, with $\Sortop(\beta_j)\subseteq\Sort_j$. $\alpha$  is the resulting action of this open transition.
 %        We call \emph{source variables} of an OT the union of all variables
 %        in the different terms
 %        $\beta_j$ and $\alpha$, and the state variables of $s$.
         \Pred\ is a predicate, \Post\ is a set of 
-	assignments that are effective after the open transition, they are
+	assignments that are effective after the open transition, and are
         represented as a substitution function: $({x_k\gets e_k})^{k\in K}$.
-Predicates and expressions of an open transition can refer to the variables in $V$, and
-        in the different terms
+Predicates and expressions of an open transition can refer to the variables inside  $V$ and the different terms
         $\beta_j$ and $\alpha$. More precisely:
-
 \begin{multline*}
  \vars(\Pred) \subseteq V\cup\vars(\alpha)\cup
 			{\displaystyle \bigcup_{j\in J'}\!\!\vars(\beta_j)}\quad\land\\
@@ -797,15 +796,15 @@ Their  logic has a specific syntax  that can be mechanized; this logic includes 
 % mechanised way.
 
 
-An open automaton is  an automaton where each transition is an open transition.
+An open automaton is  an automaton where transitions are open transitions.
 \begin{definition}[Open automaton]
 	\label{def:open-automaton}
 	An \emph{open automaton} is a structure\\ $A =
 	\mylangle J,\mathcal{S},s_0,V,\mathcal{T}\myrangle$ where:
 	\begin{itemize}
 		\item[$\bullet$]   $J$ is a  set of indices.
-		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ an initial state
-		  among $\mathcal{S}$.
+		\item[$\bullet$]   $\mathcal{S}$ is a set of states and $s_0$ is an initial state
+		  belonging to $\mathcal{S}$.
 %       \item[$\bullet$] for each state $s$, $vars(s)=\{v_s\}$ is a set of state variables, 
  \item[$\bullet$] $V$ is a set of variables of the automaton
 		and each $v\in V$ may have an initial value $init(v)$.
@@ -816,10 +815,10 @@ An open automaton is  an automaton where each transition is an open transition.
 		
 	\end{itemize}
 
-While the definition and usage of the open transition can be formalised and taken in a pure syntactic acceptance, we take in this article a semantics and logical understanding of open automata. 
-Formally, the open transition sets in open automata are closed by a simple form of refinement that
-allows us to refine the predicate, or substitute any free variable by
-an expression. Formally, for all predicate $\Pred$ for all partial function $\Post$, if $V\!\cap \!\dom(\Post)=\emptyset$, we have: 
+While the definition and usage of the open transition can be considered purely syntactically, we take in this article a semantics and logical understanding of open automata. 
+We  see open transitions as logical formulas with a constrained syntax and logics rather than purely syntactical terms.
+Consequently, the open transition sets in open automata are closed by a simple form of refinement that allows us to refine the predicate, or substitute any free variable by
+an expression. Formally, for each predicate $\Pred$ for each partial function $\Post$, if $V\!\cap \!\dom(\Post)=\emptyset$, we have: 
 		 \begin{mathpar}
     \openrule
          {
