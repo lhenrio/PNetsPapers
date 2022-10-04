@@ -1510,10 +1510,10 @@ synchronisation with their context.
 The notion of non-observable actions varies in different contexts,
 e.g. $tau$ in CCS \cite{Milner:1982,Milner:1989}, and $i$ in Lotos \cite{BOLOGNESI:1987}. We could define classically a set of
 \emph{internal/non-observable actions} depending on a specific action
-algebra. In this paper, to simplify the notations, we will simply use $\tau$ as the single non-observable action; the generalisation of our results to a set of non-observable actions is trivial. 
+algebra. However in this paper, to simplify the notations, we will simply use $\tau$ as the single non-observable action; the generalisation of our results to a set of non-observable actions is trivial. 
 Naturally, a non-observable action cannot be synchronised with
 actions of other systems in its environment. 
-We show here that under such assumption of non-observability of $\tau$ actions, see Definition~\ref{def:Non-ObsTau}, we can define a weak bisimulation relation that is compositional, in the sense of open pNet composition. In this section we will first define a notion of weak open transition similar to open transition. In fact a weak open transition is made of several open transitions labelled as non-observable transitions, plus potentially one observable open transition. This allows us to define weak open automata, and a weak bisimulation relation based on these weak open automata. Finally, we apply this weak bisimulation to open pNets, obtain a weak bisimilarity relationship for open pNets, and prove that this relation has compositional properties.
+We show here that under such assumption of non-observability of $\tau$ actions, see Definition~\ref{def:Non-ObsTau}, we can define a weak bisimulation relation that is compositional, in the sense of open pNet composition. In this section we will first define a notion of weak open transition similar to open transition. In fact a weak open transition is made of several open transitions labelled as non-observable transitions, plus potentially one observable open transition. This allows us to define weak open automata, and a weak bisimulation relation based on these weak open automata. Finally, we apply this weak bisimulation to open pNets, obtain a weak bisimilarity relation for open pNets, and prove that this relation has compositional properties.
 
 %% \TODO{we should understand if it make sense to distinguish invisible
 %%   from synchronised actions: in the Forte paper we wrote ``using  as 
@@ -1530,7 +1530,7 @@ We show here that under such assumption of non-observability of $\tau$ actions, 
 \subsection{Preliminary definitions and notations}
 
 
-We first specify in terms of open transition, what it means for an action to be non-observable. Namely, we constraint ourselves to system where the emission of a $\tau$ action by a sub-pNet cannot be observed by the surrounding pNets. In other words, a pNet cannot change its state, or emit a specific observable action when one of its holes emits a $\tau$ action.
+We first specify in terms of open transition, what it means for an action to be non-observable. We first define (in Definition~\ref{def:Non-ObsTau}) systems that cannot observe $\tau$ actions of sub-systems; namely pNets that cannot change their state, or emit an observable action when one of its holes emits a $\tau$ action.
 
 More precisely, we state that $\tau$ is not observable if the automaton always allows any $\tau$ transition from holes, and additionally the global transition resulting from a $\tau$ action of a hole is a $\tau$ transition not changing the pNet's state.
 We define $\Id(V)$ as the identity function on the set of variables $V$.
@@ -1572,7 +1572,7 @@ As an example the $\vis{\set\beta}$ built from the transition $OT_1$ in Example~
 
 \subsection{Weak open transition definition}
 
-Because of the non-observability property (Definition~\ref{def:Non-ObsTau}), it is possible to add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away $\tau$ transitions from holes in the definition of a weak open transition.
+Because of the non-observability property (Definition~\ref{def:Non-ObsTau}), it is possible to add any number of $\tau$ transitions of the holes before or after any open transition freely. This property justifies the fact that we can abstract away from $\tau$ transitions from holes in the definition of a weak open transition.
 We define weak open transitions similarly to open transitions except that holes can perform \emph{sequences of observable actions} instead of single actions (observable or not). Compared to the definition of open transition, this small change has a significant impact as a single weak transition is the composition of several transitions of the holes.
 
 
@@ -1606,19 +1606,21 @@ A weak open automaton $\mylangle J,\mathcal{S},s_0,V,\WT\myrangle$ is similar to
 A weak open transition labelled $\alpha$ can be seen as a sequence of open transitions that are all labelled $\tau$ except one that is labelled $\alpha$; however conditions on predicates, effects, and states must be verified for this sequence to be fired.
 
 
-We are now able to build a weak open automaton from an open automaton. This is done in a way that resembles the process of $\tau$ saturation: we add  $\tau$ open transitions before or after another (observable or not) open transition.
+We are now able to build a weak open automaton from an open automaton. This is done in a way that resembles the process of $\tau$ saturation: we add  $\tau$ open transitions before or after another open transition, regardless of whether it is observable or not.
 \begin{definition}[Building a weak open automaton]\label{def:buildweakOT}~\\
   Let $A = \mylangle J,\mathcal{S},s_0,V,\mathcal{T}\myrangle$ be an open automaton. 
-The weak open automaton \emph{derived} from $A$ is an open automaton  $\mylangle J,\mathcal{S},s_0,V,\WT\myrangle$ where $\WT$ is derived from $\mathcal{T}$ by saturation, applying the following rules:
+The weak open automaton \emph{derived} from $A$ is an open automaton  $\mylangle J,\mathcal{S},s_0,V,\WT\myrangle$ where $\WT$ is derived from $\mathcal{T}$ by saturation, applying the rules of Figure~\ref{fig:WT}:
 %\noindent{\bf Invisible $\tau$ transitions:}
+\begin{figure}[tb]
 \begin{mathpar}
- \openrule
+ {\openrule
          {
            \emptyset,\symb{True},\Id(V)}
-         {s \OTWeakarrow {\tau} s} \in \WT  \qquad \WTUn
- \end{mathpar}
-and
-\begin{mathpar}
+         {s \OTWeakarrow {\tau} s} \in \WT  \quad \WTUn}
+\qquad\quad
+\text{and}
+%\noindent{\bf Other transitions:}
+\qquad\quad
 \inferrule{
  \openrule
          {
@@ -1679,9 +1681,10 @@ and
          {s \OTWeakarrow {\alpha'} s'} \in\WT
 } \WTTrois
 \end{mathpar}
- 
+\caption{Weak transition definition}\label{fig:WT}
+\end{figure}
 \end{definition}
-Rule $\WTUn$ states that it is always possible to do a non-observable transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition can be considered as a weak open transition. The last rule is the most interesting:  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after any weak open transition. This rules carefully composes predicates, effects, and actions of the holes, indeed in the rule, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their values thus depend on the initial state but also on the effect (as a substitution function $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the substitution defined by the composition $\Post_2\shortodot\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, it must also be applied to observable actions of the holes, and to the global action of the weak open transition.
+Rule $\WTUn$ states that it is always possible to perform a non-observable transition, where the state is unchanged and the holes perform no action. Rule~$\WTDeux$ states that each open transition is a weak open transition. Finally,  Rule~$\WTTrois$ allows any number of $\tau$ transitions before or after any weak open transition. This rule carefully composes predicates, effects, and actions of the holes. Indeed, predicate $\Pred_2$ manipulates variables of $s_1$ that result from the first weak open transition. Their values thus depend on the initial state but also on the effect (as a substitution function $\Post_1$) of the first weak open transition. In the same manner, $\Pred_3$ must be applied the substitution defined by the composition $\Post_2\shortodot\Post_1$. Similarly, effects on variables must be applied to obtain the global effect of the composed weak open transition, to observable actions of the holes, and to the global action of the weak open transition.
 
 %% \begin{figure}[ht]
 %%    \centerline{\includegraphics[width=12cm]{ATG/WOT1}}
