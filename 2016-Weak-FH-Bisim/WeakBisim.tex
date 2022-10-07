@@ -242,7 +242,10 @@ The semantics of pNets can be expressed as a translation to a labelled transitio
 To define a semantics for open pNets we thus need LTSs that have both standard variable parameters, and process parameters, i.e.  holes that can be filled by processes. We call such LTSs with parameters and holes \emph{open automata}. The main goal of this article is to define the theory behind open automata and to use them to provide a semantics and prove compositionality properties for open pNets.
   The transitions of open automata are much more complex than transitions of an LTS as the firing of a transition depends on parameters and actions that are symbolic. This article defines the notion of \emph{open transition}, namely a transition that is symbolic in terms of parameters and coordinated actions.
 
-UNlike pNets, open automata are not hierarchical structures, we consider them here as a mathematical structure that is convenient for formal reasoning but not adapted to the definition of a complex and structured system. 
+\ERIC{Beware that even if open transitions may look similar to the notion of Transition System Specification \cite{GROOTE1992202,GROOTE20063} and other forms of SOS rules, they are \emph{not} structural rules, but rules defining the behaviour of the global states of the system.
+}
+
+Unlike pNets, open automata are not hierarchical structures, we consider them here as a mathematical structure that is convenient for formal reasoning but not adapted to the definition of a complex and structured system. 
 Open transitions are expressed in terms of logics while the communication in pNets is specified as synchronisation vectors that specify synchronised actions.
 Open automata could alternatively be  seen as an algebra that can be studied independently from its application to pNets but their compositionality properties make more sense in a hierarchical model like pNets.
 
@@ -707,8 +710,8 @@ In previous works~\cite{AmeurBoulifa2017}, only closed pNets were equipped with 
 The theory of pNets as operators for open systems is given in the following sections. Comparing formally the existing direct operational semantics and the semantics derived from open automata in the current article would be an interesting partial proof of soundness for our semantics. The proof could only be partial as the formal semantics that exists only consider closed and fully instantiated pNets. Proving 
 % a bisimulation
 an equivalence between the semantics presented in this article and the operational one shown in~\cite{AmeurBoulifa2017} is outside the scope of this article because we focus here on the modelling of holes that were not considered in the previous semantics. 
-\TODO{Check}
-It is however easy to see that, in case there is no hole the structure of the open automaton that defines the semantics here is very close to the pLTS that is used in~\cite{AmeurBoulifa2017} to define the semantics even though the formalisms are different.
+\TODO{Check \ERIC{Ok}}
+It is however easy to see that, in case there is no hole the structure of the open automaton that defines the semantics here is very close to the pLTS that is used to define the semantics, even though the formalisms are slightly different.
 
 
 
@@ -794,10 +797,10 @@ The assignments are applied simultaneously because the variables in $V$ can be i
         modulo logical equivalence on their predicate. 
 \end{definition}
 
-\TODO{Check this paragraph}
+\TODO{Check this paragraph \ERIC{Done}}
 It is important to understand the difference between the red dotted rule and a classical 
 inference rule. They correspond to two different logical levels.
-On one side, classical (black) inference rules act at the mathematical level of the paper proofs. They use  an expressive logic (like any other computer science article).
+On one side, classical (black) inference rules act at the mathematical level of the paper proofs \ERIC{(as e.g. the rules in Definition \ref{def:buildweakOT})}. They use  an expressive logic (like any other computer science article).
  On the other side, open transition rules (with dotted lines) are logical implications that belong to the open automata algebra.
 Their  logic has a specific syntax  that can be mechanized; this logic includes the boolean expressions $\AlgB$, boolean operators, and term equality.
 %  Open transitions could typically be handled in a 
@@ -831,12 +834,12 @@ an expression. Formally, for each predicate $\Pred$ for each partial function $\
     \openrule
          {
            \set{\beta}, \Pred\,',\Post\,'}
-          {t \OTarrow {\alpha} t'}\in\mathcal{T}
+          {s \OTarrow {\alpha} s'}\in\mathcal{T}
 \quad\implies\quad
     \openrule
          {
            \set{\beta}\subst{\Post}, \Pred\,'\subst{\Post}\land\Pred,\Post\shortodot\Post\,'}
-         {\raisemath{-2pt}{t \OTarrow {\alpha\subst{\Post}} {t'}}{}}
+         {\raisemath{-2pt}{s \OTarrow {\alpha\subst{\Post}} {s'}}{}}
  \in\mathcal{T}
 \end{mathpar}
 \end{definition}
@@ -1114,7 +1117,7 @@ variables such that the above formula can be ensured then the predicate is undef
 \TODO{Check new text}
 
 \ERIC{The definition of this predicate is not constructive. In our tool \cite{qin:hal-01823507}, we construct a logical formula encoding the matching 
-and unification condition involved, and we let an SMT engine (in the current implementation Z3) decide its satisfiability.}
+and unification condition involved, and we let an SMT engine (in the current implementation Z3 \cite{Johnson:2014:qosa}) decide its satisfiability.}
 
 
 %\TODO{Eric: rewrite example with new Protocolkeep only OT1, and adapt comments}
@@ -1541,7 +1544,7 @@ We show here that under such assumption of non-observability of $\tau$ actions, 
 
 
 We first specify in terms of open transition, what it means for an action to be non-observable. We first define (in Definition~\ref{def:Non-ObsTau}) systems that cannot observe $\tau$ actions of sub-systems; namely pNets that cannot change their state, or emit an observable action when one of its holes emits a $\tau$ action.
-\TODO{Eric: discuss rel with Vaandrager}
+\TODO{Eric: discuss rel with Vaandrager - ou pas !!}
 
 More precisely, we state that $\tau$ is not observable if the automaton always allows any $\tau$ transition from holes, and additionally the global transition resulting from a $\tau$ action of a hole is a $\tau$ transition not changing the pNet's state.
 We define $\Id(V)$ as the identity function on the set of variables $V$.
@@ -1716,7 +1719,7 @@ Rule $\WTUn$ states that it is always possible to perform a non-observable trans
 \end{figure}
 
 \begin{example} [A weak open-transition]
-Figure \ref{WOT2} shows the construction of one of the weak transitions of the open automaton of \symb{SimpleProtocolSpec}. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 3 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence 3  WOTs.   $\openrule
+Figure \ref{WOT2} shows the construction of one of the weak transitions of the open automaton of \symb{SimpleProtocolSpec}. On the top we show the subset of the original open automaton (from Figure \ref{SimpleProtCounter:SpecOA}) considered here, and at the bottom the generated weak transition.  For readability, we abbreviate the weak open transitions encoded by $\openrule   {\{\}, True,	() } {s \OTWeakarrow \tau s'}$  as $W_\tau$. The weak open transition shown here is the transition delivering the result of the algorithm to hole $Q$ by applying rules: \WTUn,\WTDeux, and \WTTrois. First rule \WTUn~ adds a $WT_\tau$ loop on each state. Rule \WTDeux~ transforms each 2 OTs into WOTs.   Then consider application of Rule \WTTrois~ on a sequence of 3  WOTs.   $\openrule
          {\{\}, True,
 			(\texttt{b\_ec}\gets \texttt{b\_ec}+1) }
          {\texttt{b1}\OTWeakarrow \tau \texttt{b1}}$; $\openrule
@@ -1859,7 +1862,7 @@ We now have two different semantics for open pNets: a strong semantics, defined 
 
 
 \subsection{Weak FH-bisimulation}
-For defining a bisimulation relation between weak open automata, two options are possible. One option is that we define a simulation similar to the strong simulation but based on open automata, this would look like the FH-simulation but would need to be adapted to weak open transitions. Alternatively, we could define directly and classically a weak FH-simulation as a relation between two open automata, relating the open transitions of the first one with the transitions of the weak open automaton derived from the second one. 
+For defining a bisimulation relation between weak open automata, two options are possible. One option is that we define a simulation similar to the strong simulation but based on weak open automata, this would look like the FH-simulation but would need to be adapted to weak open transitions. Alternatively, we could define directly and classically a weak FH-simulation as a relation between two open automata, relating the open transitions of the first one with the transitions of the weak open automaton derived from the second one. 
 
 The definition below specifies how a set of weak open transitions can simulate an open transition, and under which condition; this is used to relate, by weak FH-bisimulation, two open automata by reasoning on the weak open automata that can be derived from the strong ones.
 
@@ -2077,7 +2080,7 @@ Preliminary remarks:
 
   \medskip
   Checking that $\mathcal{R}$ is a weak FH-bisimulation means checking, for each of these triples, that each (strong) OT of one the states corresponds to a set of WOTs of the other, using the conditions from Definition \ref{def-Weak-bisim}.
-  We give here one  example: consider the second triple from the table, and transition $SS_3$ from state \texttt{b0}. Its easy to guess that it will correspond to $WI_3(0)$ of state $202$.
+  We give here one  example: consider the second triple from the table, and transition $SS_3$ from state \texttt{b0}. Its easy to guess that it will correspond to $WI_3(0)$ of state $202$ (and equivalently state $000$, see Figure \ref{SimpleProtCounter:ImplWOA2}):
 
   $ SS_3 = \openrule
   {\{\texttt{P}\mapsto \texttt{p-send(m1)}\}, True,
@@ -2169,8 +2172,8 @@ Research related to the keyword "Symbolic Bisimulation" refer to two very differ
 Calder's work \cite{calder2001symbolic}, that  defines a symbolic semantic for full Lotos, with a symbolic bisimulation over it;
 Borgstrom et al., Liu et al, Delaune et al. and Buscemi et al. providing symbolic semantics and equivalence for different variants of pi calculus respectively \cite{BorgstromBN04,DelauneKR:2007,LiuL:2010,BuscemiM:2008}; and more recently
  Feng et al. provide a symbolic bisimulation for quantum processes \cite{feng2014symbolic}.
-\TODO{check next sentence}
-All the above works are based on models  definitely different from ours, and none of them allows system to be as much parameterised as open pNets; this additional expressiveness due to the open and symbolic nature of our constructs.
+\TODO{check next sentence Ok}
+All the above works are based on models  definitely different from ours, and none of them allows system to be as much parameterised as open pNets; this additional expressiveness is due to the open and symbolic nature of our constructs.
 
 % Another line of research is devising the algorithm for computing symbolic Bisimulation Equivalence.
 % In Dovier's work, they provide a rank-based algorithm, layering the input model to compute bisimulation\cite{dovier2002rank}. 
@@ -2181,19 +2184,19 @@ All the above works are based on models  definitely different from ours, and non
 \section{Conclusion and discussion}
 \label{section:conclusion}
  pNets (Parameterised Networks of Automata) is a formalism adapted to the representation of the behaviour of parallel or distributed systems. One  strength of pNets is their parameterised nature, making them suitable for to the representation of systems of arbitrary size, and making the modelling of parameterised systems possible. Parameters are also crucial to reason about interaction protocols that can address one entity inside an indexed set of processes. pNets have been successfully used to represent behavioural specification of parallel and distributed components and verify their correctness~\cite{AmeurBoulifa2017,HenrioKSM:2016}. VCE is the specification and verification platform that uses pNets as an intermediate representation.
-\ERIC{We have developed tool support for computing the
+\ERIC{In this platform we have developed tool support for computing the
 symbolic semantics in term of open automata; this is presented in \cite{QBMZ-AVOCS18,qin:hal-01823507}, together with a case-study based on the on-board control software of satellites.
 In \cite{bliudze:hal-02143782} we present how to encode reactive systems from the BIP specification language and check their temporal properties using VCE.
-In \cite{hou:hal-02406098,hou:hal-02376147} we describe our strong bisimulation algorithms, with examples in the area of \TODO{HEU, rate, pas d'exemple en dehors de l'equivalence des 2 encodages d'Enable, on n'a jamais publie de case-study de strong FH!}
+In \cite{hou:hal-02406098,hou:hal-02376147} we describe our strong bisimulation algorithms, with illustration on the equivalence of different encodings of operators.
 }
 
 Open pNets are pNets with holes; they are adapted to represent processes parameterised by the behaviour of other processes, like composition operators or interaction 
 protocols that synchronise the actions of processes that can be provided afterwards. Open
 pNets are hierarchical composition of automata with holes and parameters. We
 defined here a semantics for open pNets and a complete bisimulation theory for them. 
-The semantics of open pNets relies on the definition of open automata that are automata with holes and parameters, but no hierarchy. \TODO{check this sentence} Open atomata are a flattened view of the pNet; their behaviour is expressed as open transitions that allow for a more semantic interpretation of parameters than pNets. Open automata are  labelled transition systems with parameters and holes, a notion that is useful to define semantics, but makes less sense when modelling a system, compared to pNets. To be precise, it is on open automata that we define our FH-bisimilarity relations.
+The semantics of open pNets relies on the definition of open automata that are automata with holes and parameters, but no hierarchy. \TODO{check this sentence - \ERIC{nouvelle proposition:}} Open automata are a flattened view of the pNet; their behaviour is expressed as open transitions that allow for a more semantic interpretation of \ERIC{process parameters (holes)} than pNets. In the end, open automata are  labelled transition systems with parameters and holes, a notion that is useful to define semantics, but makes less sense \ERIC{for the high level modelling of a system}, compared to pNets. To be precise, it is on open automata that we define our FH-bisimilarity relations.
 
-This article defines a strong and a weak bisimulation relation that are adapted to parameterised systems and hierarchical composition. Our FH-bisimulation principle handles pNet parameters in the sense that two states might be or not in relation depending on the value of parameters. Our strong  FH-bisimilarity is compositional  in the sense that FH-bisimilarity is maintained when composing processes. We also identified a simple and realistic condition on the semantics of non-observable actions that allows weak FH-bisimilarity to be also compositional \TODO{Eric: recall on rule formats}. Overall we believe that this article paved the way for a solid theoretical foundation for compositional verification of parallel and distributed systems.
+This article defines a strong and a weak bisimulation relation that are adapted to parameterised systems and hierarchical composition. Our FH-bisimulation principle handles pNet parameters in the sense that two states might be or not in relation depending on the value of parameters. Our strong  FH-bisimilarity is compositional  in the sense that FH-bisimilarity is maintained when composing processes. We also identified a simple and realistic condition on the semantics of non-observable actions that allows weak FH-bisimilarity to be also compositional \TODO{Eric: recall on rule formats \ERIC{Non, vu ce qu'on a ecrit dans l'intro}}. Overall we believe that this article paved the way for a solid theoretical foundation for compositional verification of parallel and distributed systems.
 
 pNets support the refinement checking at the automaton level through a simulation approach, with symbolic evaluation of
 the guards and transitions. 
@@ -2573,7 +2576,7 @@ satisfiability of the predicate relating the first state to the last one.
 
 
 For any open transition $OT_{px}$, since
-       	$(t_p,u|\Pred_{p,u})\in\mathcal{R}'$ there exists an indexed set of open transitions
+       	$(t_p,u|\Pred\,'_{p,u})\in\mathcal{R}'$ there exists an indexed set of open transitions
        	$OT_{pxy}^{y\in Y} \subseteq \mathcal{T}_3$: 
        	
        	\begin{mathpar}  	
