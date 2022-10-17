@@ -9,4 +9,4 @@ WeakBisim.pdf:
 
 .PHONY: WeakBisim-diff.pdf
 WeakBisim-diff.pdf:
-	git-latexdiff --whole-tree --main WeakBisim.tex -o WeakBisim-diff.pdf Before-revision-weakbisim-paper
+	git-latexdiff --whole-tree --main WeakBisim.tex -o WeakBisim-diff.pdf Before-revision2-weakbisim-paper
