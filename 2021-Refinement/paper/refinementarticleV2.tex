@@ -11,12 +11,12 @@
 \usepackage{hyperref}
 \usepackage{nccrules}
 \usepackage{comment}
-
+\usepackage{macrospNets}
 
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 
-\DeclareMathOperator{\dom}{dom}
-\newcommand{\rightarrowdbl}{\rightarrow\mathrel{\mkern-14mu}\rightarrow}
+%\DeclareMathOperator{\dom}{dom}
+%\newcommand{\rightarrowdbl}{\rightarrow\mathrel{\mkern-14mu}\rightarrow}
 
 \newcommand{\xrightarrowdbl}[2][]{%
   \xrightarrow[#1]{#2}\mathrel{\mkern-14mu}\rightarrow
@@ -25,11 +25,11 @@
 
 
 
-\newcommand{\symb}[1]{\makebox{\it #1}}
+%\newcommand{\symb}[1]{\makebox{\it #1}}
 \input{common.tex}
 \input{preamble.tex}
 \input{tikzmacros.tex}
-\input{macrospNets.sty}
+%\input{macrospNets.sty}
 
 \begin{document}
 %
@@ -792,15 +792,59 @@ We finally showed that refinement is a preorder that is preserved when filling a
 In the future we will focus on the other composition property that considers the preservation of refinement when automata are placed in the same context, namely filling the hole of the same automaton by an automaton and its refinement. This property should require some restriction on the composed processes.
  Finally, we will investigate under which condition, the composition operation produces a refinement in the sense that filling a hole produces a refined process.
 
+
+
+
  \bibliographystyle{splncs04}
  \bibliography{biblio}
-
-%\section{a recuperer si on se rend compte que c'est utile}
-%When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
 
 \newpage
 
 \appendix
+
+
+\section{Proof of Transitivity for Refinement}\label{sec:proof-transitivity}
+\begin{quote}
+If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
+\end{quote}
+\proof 
+If $\wrel{A_1}{A_2}{H}$ then there is $R_{12}$ a relation between states
+of $A_1$ and of $A_2$;  If $\wrel{A_2}{A_3}{H'}$ then there is $R_{23}$ a relation between states of $A_2$ and of $A_3$. We build a relation between
+ states of $A_1$ and of $A_3$ as follows:  for each pair of states $s_1$, $s_3$, for each state $s_2$ such that $R_{12}$ relates $s_1$ and $s_2$, and $R_{23}$ relates $s_2$ and $s_3$.
+Let $R_{13}$ be the relation:\\
+  \[R_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{R_{12}(s_1,s_2) \land R_{23}(s_2,s_3) } \]
+
+We will show that $\wrel{A_1}{A_3}{H\cap H'}$ by exhibiting  $R_{13}$ as a hole-tracking simulation of $A_1$ by  $A_3$.
+
+We have to prove that the relation $R_{13}$ satisfies the three conditions of the definition of a refinement of open automata.
+\begin{enumerate}
+\item Firstly, we have to $R_{13}$ satisfies initial configurations:
+\[\sigma_{01} \uplus \sigma_{03} \vdash R_{13} \mpar{s_{01}, s_{03}}\]
+By knowing that substitutions only have an effect on the variables of the open automaton they belong to, they also produce terms containing only variables of the open automaton they belong to. We have:
+\begin{align*}
+\mpar{\sigma_{01} \uplus \sigma_{02} \vdash R_{12}\mpar{s_{01}, s_{02}}} \wedge \mpar
+{\sigma_{02} \uplus \sigma_{03} \vdash R_{23}\mpar{s_{02}, s_{03}}}&\implies\\
+R_{12}\mpar{s_{01},s_{02}}\psubst{\sigma_{01} \uplus \sigma_{02}} \wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{02} \uplus \sigma_{03}}&\implies\\
+R_{12}\mpar{s_{01},s_{02}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}} \wedge R_{23}\mpar{s_{02}, s_{03}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}}&\implies\\ 
+\underbrace{R_{12}\mpar{s_{01},s_{02}}\wedge R_{23}\mpar{s_{02}, s_{03}}}_{\implies R_{13} \mpar{s_{01}, s_{03}}}\psubst{\sigma_{01} \uplus \sigma_{02} \uplus \sigma_{03}} %&\implies\\
+ \end{align*}
+Since $\sigma_{02}$ has no effect on variables of $s_{01}$ and $s_{03}$ thus we get the expected result.
+
+\item \TODO{Ref to JLAMP 2023?}
+
+\item Lastly, we have to prove the satisfaction of the deadlock reduction condition:
+According to the relation between A2 and A3 we have for all
+
+
+%\begin{multline*}
+%\forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \wedge \lnot( %\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} )\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} %\fguard{t_2}  )
+%\end{multline*}
+
+\end{enumerate}
+%\section{a recuperer si on se rend compte que c'est utile}
+%When we will introduce refinements in Section \ref{sec:prelref}, setting an undefined variable will be considered a valid refinement, for instance a \(5\) bits register is a particular \(n\) bits register.
+
+
 
 
 
