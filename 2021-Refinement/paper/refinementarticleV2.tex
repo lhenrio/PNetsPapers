@@ -285,7 +285,7 @@ Additionally, we may check that initial states of the automata are related by ch
 %\TODO{I do not think we reason on configurations for the moment, if we want to, we should introduce this:}
 %Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
 
-\subsection{A bisimulation for open automata.}
+\subsection{A bisimulation for open automata}
 
 Bisimulation between OA was defined in~\cite{fhbisim}.  We show below the principles of this bisimulation. We first recall the usual definition of bisimulation.
 Bisimulation can  be defined as follows for standard transition systems: 
@@ -643,7 +643,7 @@ For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to 
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
 From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
 
-\begin{definition}[Non-blocking composition]
+\begin{definition}[Non-blocking composition] \label{Def:Non-block}
 Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
 Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 
@@ -933,7 +933,7 @@ we get the desired result:
 \end{enumerate}
 \section{Proof of Context Refinement (Theorem~\ref{thm:ContextRefinement})}
 \begin{quote}
-Suppose that $\wrel{A_1}{A_2}{H}$, \(k \in H\) \cancel{and that \(A_1\subst{A_3}{k}\) is non-blocking}. We have: 
+Suppose that $\wrel{A_1}{A_2}{H}$, \(k \in H\) and that \(A_1\subst{A_3}{k}\) is non-blocking. We have: 
 \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \mbrc{k}}\]
 \end{quote}
 \smallskip
@@ -1175,31 +1175,37 @@ $g_{23x}  \Leftrightarrow g_{2x}$.\\
 V_{13} \uplus V_{23}  \vdash  R\mpar{s_{13}, s_{23}} \nwedge  \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}) \implies   \neg (\bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}}) 
 \end{multline*}
 
-Let's start  with the hypothesis of the theorem stating that $\wrel{A_1}{A_2}{H}$, thus we have for all  $\mpar{s_1, s_2} \in S_1 \times S_2$ 
+By hypothesis  the second  \(A_1\subst{A_3}{k}\) is non-blocking,  then according to the Definition \ref{Def:Non-block} we have for all state $s_{13}$ which is reachable, i.e. $ \fvars{t_{13}}\vdash \reach{A_{13}}\mpar{s_{13}}$,  the following: 
+
+
+\begin{multline*}
+V_{13} \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1}  \vdash \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \implies \bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}
+\end{multline*}
+From this we can infer:
+\begin{multline*}
+V_{13}  \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash  \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}})  \implies   \neg(\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1})
+\end{multline*}
+
+Furthermore, from the second  hypothesis  stating that $\wrel{A_1}{A_2}{H}$,  we have for all  $\mpar{s_1, s_2} \in S_1 \times S_2$ 
 \begin{multline*}
 V_1 \uplus V_2 \vdash R\mpar{s_1, s_2} \nwedge \neg (\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}) \implies   \neg(\bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2})
 \end{multline*}
-Because the guards from transitions of $A_1$ are still transitions of $A_{13}$, we get:  
+
+From the two previous formula can deduce:
 \begin{multline*}
-V_{13}   \vdash \neg(\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}) \implies \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}})
+V_{13} \uplus V_2 \uplus \biguplus_\subbox{t_1 \in \fOT{s_1}} \fvars{t_1} \vdash\\ R\mpar{s_1, s_2} \nwedge \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}})  \implies   \neg(\bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2})
 \end{multline*}
 
-Similarly, transitions of $A_2$ are still transitions of $A_{23}$,  we get:
+Because the guards from transitions of $A_2$ are still transitions of $A_{23}$,  thus we have:
 \begin{multline*}
 V_{23}   \vdash \neg(\bigvee_\subbox{t_1 \in \fOT{s_2}} \fguard{t_2}) \implies \neg(\bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}})
 \end{multline*}
-From the three previous formulas we deduce:
-  \begin{multline*}
-V_{13} \uplus V_{23} \vdash R\mpar{s_1, s_2} \nwedge \neg (\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}) \implies   \neg(\bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}})
-\end{multline*}
-  
 
-which also implies:
+From the two previous formula and by introducing the following tautology\\ $ \mpar{\,\,\displaystyle \bigwedge_\subbox{v_3\in V_3} v^1_3=v^2_3\wedge s^1_3 = s^2_3}$, we get:
 \begin{multline*}
-V_{13} \uplus V_{23}  \vdash \\ \underbrace{R\mpar{s_1, s_2} \wedge  \mpar{\,\,\bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3 \wedge s^1_3=s^2_3}}_{R^{\prime}(s_{13},s_{23})}  \wedge \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}})   \implies \neg(\bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}})
+V_{13} \uplus V_{23}  \vdash  \underbrace{R\mpar{s_1, s_2} \wedge  \mpar{\,\,\bigwedge_\subbox{v_3\in V_3}  v^1_3=v^2_3 \wedge s^1_3=s^2_3}}_{R^{\prime}(s_{13},s_{23})} \wedge \neg(\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}})   \\ \implies \neg(\bigvee_\subbox{t_{23} \in \fOT{s_{23}}} \fguard{t_{23}})
 \end{multline*}
-which gives us what we needed to demonstrate. \qed
-
+which gives the expected result. \qed
 \end{enumerate}
 
 
@@ -1226,7 +1232,7 @@ Consider any two states $s_{12} = \mpar{s_1,s^1_2}$ and $s_{13} = \mpar{s^2_1,s_
 Let us denote $H'=H\cup J_1 \setminus\{k\}$.
 We want to prove that $\mpar{R', H'}$  is a hole-tracking simulation of $A_{12}$ and $A_{13}$. As for the previous proof we deal with cases:
 \begin{enumerate}
-\item \TODO{Pareil que le theorem precedent}
+\item \TODO{I skip it, I think the same as previous theorem}
 
 \item Second, we need to prove for any OT $t_{12}$ in $T_{12}$ originating from $s_{12}$
 
@@ -1248,7 +1254,7 @@ By definition of composition and open automata refinement we have:
 \begin{align*}
 &V_{12}= V^1_1\uplus V_3 \text{ and }
 V_{13}= V^2_1\uplus V_3\\
-& H'=H_{23}\uplus J_1 \setminus \{k\} \subseteq J_1\uplus \mpar{J_2 \cap J_3} \setminus \{k\} = \mpar{J^1_1\uplus J_2 \setminus \{k\} } \cap \mpar{J^2_1\uplus J_3 \setminus \{k\}} = J_{12 } \cap J_{13} 
+& H'=H_{23}\uplus J_1 \setminus \{k\} \subseteq J_1\uplus \mpar{J_2 \cap J_3} \setminus \{k\}= \mpar{J^1_1\uplus J_2 \setminus \{k\} } \cap \mpar{J^2_1\uplus J_3 \setminus \{k\}} \\ &\,\,\,\, = J_{12 } \cap J_{13} 
 \end{align*}
 We have by hypothesis $\wrel{A_2}{A_3}{H}$, then for any open transition $t_2$ in $T_2$  originating from $s_2$:
 \begin{align*}
@@ -1420,19 +1426,23 @@ $g_{13x}  \Leftrightarrow g_{1}$.\\
 
 \item Lastly, we have to prove the satisfaction of the deadlock reduction condition, i.e., for all $\mpar{s_{12}, s_{13}} \in S_{12} \times S_{13}$
 \begin{multline*}
-V_{12} \uplus V_{13}  \vdash \\ R\mpar{s_{12}, s_{13}} \nwedge  \neg(\bigvee_\subbox{t_{12} \in \fOT{s_{12}}} \fguard{t_{12}}) \implies   \neg (\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}) 
+V_{12} \uplus V_{13}  \vdash  R\mpar{s_{12}, s_{13}} \nwedge  \neg(\bigvee_\subbox{t_{12} \in \fOT{s_{12}}} \fguard{t_{12}}) \implies   \neg (\bigvee_\subbox{t_{13} \in \fOT{s_{13}}} \fguard{t_{13}}) 
 \end{multline*}
 
 Let's start  with the hypothesis of the theorem stating that $\wrel{A_2}{A_3}{H}$, thus we have for all  $\mpar{s_2, s_3} \in S_2 \times S_3$ 
 \begin{multline*}
 V_2 \uplus V_3  \vdash R\mpar{s_2, s_3} \nwedge \neg (\bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}) \implies   \neg(\bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3})
 \end{multline*}
-This implies: 
+
+By adding the same terms to both sides of the implication, we get:
 \begin{multline*}
-V_2 \uplus V_3  \vdash R\mpar{s_2, s_3} \nwedge \neg (\bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}) \vee \neg (\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}) \implies  \\ \neg(\bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3}) \vee \neg (\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1})
+V_2 \uplus V_3  \vdash R\mpar{s_2, s_3} \nwedge \neg (\bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}) \vee \neg (\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1}) \vee \neg \bigcirc \\ \vspace{4em} \implies   \neg(\bigvee_\subbox{t_3 \in \fOT{s_3}} \fguard{t_3})\vee \neg (\bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1})\vee \neg \bigcirc
 \end{multline*}
 
-\RAB{Trop trivial...}
+\RAB{On aurait pas envie d'ecrire  l'egalite des actions de trous}
+
+
+
 ~\qed
 \end{enumerate}
 
