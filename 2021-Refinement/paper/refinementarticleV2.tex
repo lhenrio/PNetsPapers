@@ -90,7 +90,6 @@ show under which conditions these refinements are preserved by composition of op
 
 \TODO{TODO list}
 
-* case 2 of the proofs for both theorems
 
 * example
 
@@ -98,6 +97,7 @@ show under which conditions these refinements are preserved by composition of op
 
 * global rewriting
 
+* choisir terminologie: refinement or simulation
 
 
 
@@ -127,11 +127,11 @@ Then we define  a refinement relation for open automata that has the following c
 \item Good properties relatively to composition: we prove here that filling the same hole  with the same automaton preserves the refinement relation.
 \item Ability to take into account both composition and transitivity: this is a challenge because composition changes the set of holes of the open automaton and refinement takes into account the actions of the holes.
 \end{itemize}
-The refinement relation is introduced in two steps. First we define a refinement that relates two automata with the same holes, which allows us to focus on the automaton aspect. Second we introduce a relation that relates two automata with different sets of holes, which allows us to take into account the open nature of open automata, and to deal with composition.
+The refinement relation is introduced in two steps. First we define a refinement that relates two automata with the same holes, which allows us to focus on the automaton aspect. Second we introduce a relation that relates two automata with different sets of holes, which allows us to take into account the open nature of open automata, and to deal with composition. Properties of the refinement are stated and proven on the second, more general version of the relation, they are thus also valid for the first simpler refinement relation.
 
 The following of this article is organised as follows. 
 Section~\ref{sec:background} recalls the definition of open automata and defines their composition. 
-We  then  define a refinement relation for open automata, first only considering two automata with the same set of holes in Section~\ref{sec:refinement} and generalize it to automata with a different set of holes in Section~\ref{sec:holes}.  Section~\ref{sec:prop} is dedicated to formalize and prove basic properties of refinement in ; here we prove that refinement is a preorder and we focus on one composition property. 
+We  then  define a refinement relation for open automata, first only considering two automata with the same set of holes in Section~\ref{sec:refinement} and generalize it to automata with a different set of holes in Section~\ref{sec:holes}.  Section~\ref{sec:prop} is dedicated to formalize and prove basic properties of refinement in ; here we prove that refinement is a preorder and has good composition property. 
 In Section~\ref{sec:sota} we review related works, and Section~\ref{sec:ccl} concludes the paper.
 
 
@@ -440,24 +440,31 @@ $
 
 % \TODO{do we want formulas for this?}
  \end{definition}
+Note in this definition, instead of matching an instantiated transition  of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$.
 Technically, the following sections do not rely on the definition of strong bisimulation on OA, but they follow the same principles and in particular the same way to faithfully simulate an open transition by a set of other open transitions.
-\begin{comment}
-\subsection{Reachability : check if useful?}
+Intuitively, this means that for every pair of related
+states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update.
+
+%\begin{comment}
+\subsection{Reachability}
+We finally define a predicate abstracting state reachability for open automata, it  allows us to reason on reachable states in an automaton. It can alternatively be seen as an abstraction of the reachable states under the form of a predicate that must stay verified along the execution of the open automaton.
 \begin{definition}[Reachability] \label{Def:Reach}
 For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
 \[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 \end{definition}
 
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
-From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
+From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary.
 
-\end{comment}
+%\end{comment}
 
 \section{Refinement Relations for automata with the same holes}\label{sec:refinement}
 
-Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between configurations of two open automata that contain variables and holes. However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton (at least not among the scenarios originally planned in the specification).
-The refinement relation should be conditioned by the internal states of the automata. More precisely, a refinement relation characterizes when two states are related, and this  characterisation is expressed as a predicate on the variables of the two automata.
-Thus, a refinement relation is a relation on OA configurations.
+Similarly to FH-bisimulation~\cite{fhbisim} we are interested  in finding relations between configurations of two open automata that contain variables and holes. 
+We rely on a classical notion of simulation inspired from~\cite{fhbisim}. The idea is that two configurations related by a relation; if one state can do a transition, then the other can do a transition too. 
+Like for bisimulation, refinement relation characterizes when two states are related, and this  characterisation is expressed as a predicate on the variables of the two automata.
+Refinement defines conditions on a predicate $R$ such that $R\mpar{s_1, s_2}$ is a predicate (possibly involving variables of the automata) that is true when the state $s_1$ of $A_1$ refines the state $s_2$ of $A_2$.
+
 
 %\TODO{check deadlock reduction/reducing in the literature}
 
@@ -505,22 +512,35 @@ An composable automaton cannot transform external non-determinism of the sub-aut
 
 
 %The idea is that 
-We rely on a classical notion of simulation inspired from~\cite{fhbisim}. The idea is that two configurations related by a relation; if one state can do a transition, then the other can do a transition too. But to limit the creation of deadlocks when simulating an automaton, we first define when a relation is preserved along identical transitions before characterising a first simple refinement relation  to compare automata with identical holes. 
+
 
 %\subsection{Deadlock Reduction, Reachability, and Composition}
 
-Let us first explain the reasons why simulation can introduce allow undesired behaviours to emerge and how we want to limit them. 
-The automaton that simulates a specification features any behaviour that contains the behaviour of the specification, or more precisely, for each state that simulates a state of the specification, the simulating automaton must at least feature the behaviour of the specification.
- In this definition, nothing prevents the implementation from adding non-determinism and non-deterministically reaching a state that is unrelated to the specification, this state could even be a deadlock even though we only followed transitions that exist in the specification.
-To avoid the appearance of such deadlocks, we will state that, when both the implementation and the specification do the same transition, they stay related.
-This ensures a form of continuity in the comparison in the sense that the refined system is constrained to follow the behaviour of the simulated system along a given scenario. 
-In terms of traces this amounts to some form of deadlock reduction: for each trace followed by the simulated system if the refined system followed the beginning of the trace, it must be able to keep following the trace. 
-Of course, the classical trace view is a simplified view compared to the guards, states and actions from  the holes that exist in OA, but it gives the right intuition.
+However here we want to build a refinement relation that  also guarantees that no deadlock is introduced when refining the automaton, this property is quite frequent in refinement relation, and referred to as \emph{lack of new deadlocks}~\cite{Kouchnarenko:2007} or \emph{complete simulation}~\cite{sangiorgi:bisim-coind12}.
+The notion of deadlock should however be specialized to our open automata. Indeed, the possible transitions are better characterized by the guards of the outgoing transitions from a given state, rather than the simple existence of a transition. We thus define a deadlock reduction criteria based on how the outgoing transitions are guarded.
+As such, a refinement does not introduce deadlocks if in the conditions where no transition is possible in the refined automaton, no transition are already possible in the more general one. More formally, for any pair of states $s_1$ and $s_2$  we introduce a criteria of the form: 
+\[
+\forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \wedge \lnot( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} )\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\]
 
+
+Which can be rewritten as:
+\[
+\forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\]
+
+Both statements being equivalent and one of them may reveal more intuitive than the other in different conditions, we will use them interchangeably.
+%Let us first explain the reasons why simulation can introduce allow undesired behaviours to emerge and how we want to limit them. 
+%The automaton that simulates a specification features any behaviour that contains the behaviour of the specification, or more precisely, for each state that simulates a state of the specification, the simulating automaton must at least feature the behaviour of the specification.
+% In this definition, nothing prevents the implementation from 
+%
+%adding non-determinism and non-deterministically reaching a state that is unrelated to the specification, this state could even be a deadlock even though we only followed transitions that exist in the specification.
+%To avoid the appearance of such deadlocks, we will state that, when both the implementation and the specification do the same transition, they stay related.
+%This ensures a form of continuity in the comparison in the sense that the refined system is constrained to follow the behaviour of the simulated system along a given scenario. 
+%In terms of traces this amounts to some form of deadlock reduction: for each trace followed by the simulated system if the refined system followed the beginning of the trace, it must be able to keep following the trace. 
+%Of course, the classical trace view is a simplified view compared to the guards, states and actions from  the holes that exist in OA, but it gives the right intuition.
 %
 %Next definition states that if $T_2$ is not in a deadlock position then $T_1$ can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
-
-
 %\begin{definition}[Preservation along identical transitions]\label{def:preservation} \\
 %Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
 %A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
@@ -529,16 +549,11 @@ Of course, the classical trace view is a simplified view compared to the guards,
 %\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \implies  R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\\
 %\end{multline*}
 %\end{definition}
+%We thus define the following property that can be understood as follows. Take a specification automaton and its implementation. Consider two related states for the refinement relation. Suppose an identical transition exist in both automata (with same guards and same label), then either the reached states $s_1'$ and $s_2'$ are related by refinement, or there exists another transition of the specification that is also identical and leads to a state $s_1''$ that is related to $s_2'$ in the refinement relation.
+%Finally, we should take into account that 1) instead of equality, we should check if there is a state such that both transitions are feasible (the conjunction of guards is satisfiable), and that  2) instead of finding another transition of the specification we might find a family of transitions that cover all the cases of the transition of the implementation. 
+We can now state the definition of simulation between OAs that have the same set of holes. 
 
-We thus define the following property that can be understood as follows. Take a specification automaton and its implementation. Consider two related states for the refinement relation. Suppose an identical transition exist in both automata (with same guards and same label), then either the reached states $s_1'$ and $s_2'$ are related by refinement, or there exists another transition of the specification that is also identical and leads to a state $s_1''$ that is related to $s_2'$ in the refinement relation.
-Finally, we should take into account that 1) instead of equality, we should check if there is a state such that both transitions are feasible (the conjunction of guards is satisfiable), and that  2) instead of finding another transition of the specification we might find a family of transitions that cover all the cases of the transition of the implementation. 
-
-
-
-We define now a simulation between OA that have the same set of holes. This relation thus focuses on the simulation of transitions and uses the previous definition to prevent the refined automaton from non-deterministically reaching states that introduce deadlocks in a scenario planned without deadlock in the specification.
-
-
-\begin{definition}[Hole-equal simulation]
+\begin{definition}[Hole-equal simulation]\label{def:HoleEqualSim}
 Consider two OA with identical set of holes:  \(\OAg[1]\) and \(\OAg[2]\) where  \(J_1 = J_2\), the relation on configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a hole-\(\symb{equal}\) simulation from $S_1$ to $S_2$ if the following conditions hold (we could denote it $A_1\leq A_2$): 
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
@@ -564,37 +579,30 @@ V_1 \uplus V_2 \uplus  \fvars{t_1} \uplus \bigcup_x\fvars{t_{2x}}  \vdash \hspac
 		\end{array}} 
 \end{array} 
 \end{multline*}
-\item [(3)] The deadlock reduction:
-\begin{multline*}
-\forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \wedge \lnot( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} )\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
-\end{multline*}
-
-Which can be rewritten as:
-\begin{multline*}
+\item [(3)] Deadlock reduction:
+\[
 \forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
-\end{multline*}
+\]
 
 \end{definition}
 
 
 
-Note in this definition, instead of matching an instantiated transition (with all variables assigned) of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$. %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
+ %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
 The first and second conditions coincide with the natural way to prove inductively that an automaton simulates another by starting with the initial state. The third condition ensures that the refinement relation prevents the introduction of deadlocks.
+Our definition captures a simple kind of sub-classing of open automata with the same holes. It is more expressive than a strict simulation since it matches a transition with a family of transitions. 
+With such a relation we are able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions,  reinforcing  guards, modifying variables, etc.
+We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, and reflexivity.
 
-Intuitively, this means that for every pair of related
-states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update. Our definition captures a simple kind of sub-classing of open automata with the same holes. It is stronger than a strict simulation since it matches a transition with a family of transitions. 
-With such a relation we are able to check the refinement between two open automata with the same level of abstraction but specified differently, for example, by duplicating states, removing transitions,  reinforcing  guards, modifying variables. 
+%The principle of the third requirement is that the relation allows new behaviour to be added in terms of new traces, but doesn't allow new deadlocks to
+%be added, i.e., for every ``path'' of the specification (abstract automaton) the implementation (refined automaton) must not add deadlocks.
 
+%This definition leads to a notion of simulation as refinement similar to the one used in LOTOS \cite{Brinksma:87} and called ``extension refinement''.
+%The extension consists in adding new functionalities by preserving existing ones.
+%In the context of LOTOS, a functionality is roughly an acceptable trace.
+%In this context, the authors define refusal of the trace and constraint refinement so that there is no more refused trace in the refined system than in the original one. Slightly more formally, consider an automaton with transitions $s_0 \xrightarrowdbl{t}$, consider $\mathcal{T}_A$ the set of traces of an automaton $A$; one can define the refusal of a trace $t$ as a set of actions such that all actions in the set can be refused after the automaton $A$ has performed the steps in the trace $t$, more precisely $X$ is a refusal of a trace if $\exists s. s_0  \xrightarrowdbl{t} s \wedge \forall a \in X. s \not{\xrightarrow{a}}$.
 
-The principle of the third requirement is that the relation allows new behaviour to be added in terms of new traces, but doesn't allow new deadlocks to
-be added, i.e., for every ``path'' of the specification (abstract automaton) the implementation (refined automaton) must not add deadlocks.
-
-This definition leads to a notion of simulation as refinement similar to the one used in LOTOS \cite{Brinksma:87} and called ``extension refinement''.
-The extension consists in adding new functionalities by preserving existing ones.
-In the context of LOTOS, a functionality is roughly an acceptable trace.
-In this context, the authors define refusal of the trace and constraint refinement so that there is no more refused trace in the refined system than in the original one. Slightly more formally, consider an automaton with transitions $s_0 \xrightarrowdbl{t}$, consider $\mathcal{T}_A$ the set of traces of an automaton $A$; one can define the refusal of a trace $t$ as a set of actions such that all actions in the set can be refused after the automaton $A$ has performed the steps in the trace $t$, more precisely $X$ is a refusal of a trace if $\exists s. s_0  \xrightarrowdbl{t} s \wedge \forall a \in X. s \not{\xrightarrow{a}}$.
-
-Considering an OA with no  hole and no guard, i.e., in case the definitions of open automata coincide with those of automata, the fact that $R$ is preserved along identical traces ensures that the set  of refusal of valid traces is smaller in the refined automaton than in the specification.
+%Considering an OA with no  hole and no guard, i.e., in case the definitions of open automata coincide with those of automata, the fact that $R$ is preserved along identical traces ensures that the set  of refusal of valid traces is smaller in the refined automaton than in the specification.
 
 
 \begin{example} 
@@ -607,14 +615,14 @@ an open automaton  depicted in Fig. \ref{Fig:RefineOA}.
    \caption{Another variant of the \texttt{database} process.  Two other actions,  in addition to  \texttt{qry} and \texttt{upd},  \texttt{back} representing a request to make a backup copy and    \texttt{cpy} are used to reflect the actual operation of copying. \label{Fig:RefineOA}}
 \end{figure}
 
-The refinement relation  also specifies that the refined process must follow the behaviour of the specification, not only at every compatible state but also along any scenario of the specification.
-We will show in Section~\ref{sec:prop} that this refinement relation has good properties in terms of transitivity, compositionality, and reflexivity.
+%The refinement relation  also specifies that the refined process must follow the behaviour of the specification, not only at every compatible state but also along any scenario of the specification.
+
 
 The refinement relation defined above is insufficient in the setting of composition which is the main advantage of the open automaton-based approach. Indeed, it should be possible to refine an automaton by filling its hole, providing a concrete view of a part of the application that was not specified originally. 
 More generally, it should be possible to relate automata that do not have the same holes because composition is a crucial part of system specification.
-Thus, we believe composition should also be a form of refinement and call this feature \emph{refinement through composition}.
+%Thus, we believe composition should also be a form of refinement and call this feature \emph{refinement through composition}.
 However, filling holes can result in a system with more or less holes than the original system because the plugged subsystem can contain itself many holes.
-Next section will define  a more powerful refinement relation able to reason on automata with different sets of holes.
+Next section  defines  a more powerful refinement relation able to reason on automata with different sets of holes.
 
 
 %Technically,  it expresses how the concepts from the abstract and the refined systems are linked together.
@@ -626,12 +634,12 @@ Next section will define  a more powerful refinement relation able to reason on 
 
 \section{A Refinement Relation that Takes Holes into Account}\label{sec:holes}
 
-This section  extends the preceding relation to automata where the set of holes is not the same. A simple use-case for this is filling a hole with a completely defined automaton. In this case, we want to ensure that the automaton with a filled hole is a refinement of the other automata: actions of the identical holes will be taken into account the same way.
+This section  extends the preceding relation to automata where the set of holes is not the same. Indeed, when composing the set of  holes changes, and for example we want to state whether the automaton after composition is a refinement of the original automaton or not.
 
-\TODO{La section 4.1 reintroduit la notion de reachability et non introduction de blocage}
 \subsection{Deadlock Reduction, Reachability, and Composition}
 
-A notion that is often used in the context of refinement is the notion of deadlock reduction. This property considers that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. This notion is not much interesting in the general case as there is a priori no relation between the two transitions. However, when the relation that relates states is a simulation, this will relate the possible transitions and the deadlock reduction will become a valuable property.
+%A notion that is often used in the context of refinement is the notion of deadlock reduction. This property considers that two states related by a given relation and states that if one state can do a transition, then the other can do a transition too. This notion is not much interesting in the general case as there is a priori no relation between the two transitions. However, when the relation that relates states is a simulation, this will relate the possible transitions and the deadlock reduction will become a valuable property.
+\begin{comment}
 
 Next definition states that if $T_2$ is not in a deadlock position then $T_1$ can do a transition but not necessarily with the same input values. This is very weak but sufficient when composed with the def  of simulation.
 
@@ -645,17 +653,20 @@ A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_
 \end{definition}
 
 Because of the symbolic nature of OAs and their structure, in this definition,  the fact that a guard is true is sufficient to reason on the possible paths. This slightly simplifies the definition and makes the characterisation of transition that can be triggered very symbolic. An equivalent but more classical definition of deadlock reduction could be expressed as well. It states that if there is a transition that can be triggered in the first automaton, then there is a transition from the related state in the second automaton that can be triggered. This second definition is more verbose, in particular because of the multiple quantifiers over transitions and automaton state. The alternative definition is equivalent to this one when reasoning on a refinement relation (but not in general).
+\end{comment}
 
-Unfortunately, this property is not compositional: the composition operator can itself introduce a deadlock. In other words, when filling the hole of two related automata with a third one, even if there is a deadlock reduction between the two original automata, there might not be a deadlock reduction in the composed ones. The same problem may arise when two related automata are composed in the same hole of a third one. 
+Unfortunately, the deadlock reduction property in the definition of refinement is not compositional: the composition operator can itself introduce a deadlock. In other words, when filling the hole of two related automata with a third one, even if there is a deadlock reduction between the two original automata, there might not be a deadlock reduction in the composed ones. The same problem may arise when two related automata are composed in the same hole of a third one. 
 
-This creates a conflict between deadlock reduction and the properties involving composition. One possible solution to avoid this conflict is to only consider a composition that do not introduce deadlocks, we will define such a composition below.
-But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
-\begin{definition}[Reachability] \label{Def:Reach}
-For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
-\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
-\end{definition}
-Reachability takes into account all paths, and can over-approximate the reachable configurations. 
-From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
+This creates a conflict between deadlock reduction and the properties involving composition. 
+%One possible solution to avoid this conflict is to only consider a composition that do not introduce deadlocks, we  define such a composition below.
+%But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
+%\begin{definition}[Reachability] \label{Def:Reach}
+%For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
+%\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
+%\end{definition}
+%Reachability takes into account all paths, and can over-approximate the reachable configurations. 
+%From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. 
+We call \emph{non-blocking composition} a composition that can be safely be used to compose open automata that are involved in a deadlock reducing relation.
 
 \begin{definition}[Non-blocking composition] \label{Def:Non-block}
 Let \(A_i = \OAg[i]\) with \( 0 \leq i \leq n\) be a family of open automata.
@@ -664,13 +675,16 @@ Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
 \[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
 \end{definition}
-Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
+Like in the definition of refinement (Definition~\ref{def:HoleEqualSim}) we use guards to ensure that the transition can occur. 
+In general, one would not want to only consider non-blocking composition as it may reveal a bit restrictive, but it is the best necessary condition that can be identified for compositionality of refinement. It will be used to prove composition theorems in  Section~\ref{sec:prop}. 
+Proving refinement relation in absence of non-blocking composition can always be done specifically for the composed automaton under study.
+%It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
 
 
 
 \subsection{Automaton refinement}
 
-The major challenge in the design of this relation is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterized by a subset of the set of holes that belong to the two automata that we want to take into account.
+One major challenge in the extension of refinement to different sets of holes is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of refinement would ensure that only the holes that are identical in the two open automata are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a refinement between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterized by a subset of the set of holes that belong to the two automata that we want to take into account.
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
@@ -688,10 +702,10 @@ For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}
 		\end{array}}} 
 	\end{array} 
 \end{multline*}
-\item[(3)] $R$ is preserved along identical transitions of \(A_1\) and \(A_2\).
-
-Giving \(R\) and \(H\) is sufficient to characterise the refinement, so we call \(\mpar{R, H}\) a hole-tracking simulation of \(A_1\) by \(A_2\).
-Hole in \(H\) are called tracked holes.
+\item[(3)] Deadlock reduction:
+\[
+\forall \mpar{s_1, s_2} \in S_1 \times S_2, V_1 \uplus V_2  \vdash R\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\]
 \end{definition}
 Note that every action of the holes outside \(H\) is unconstrained in the related automata. 
 
