@@ -91,11 +91,11 @@ show under which conditions these refinements are preserved by composition of op
 \TODO{TODO list}
 
 
-* example
+* example a terminer
 
 * positioning
 
-* global rewriting
+* global rewriting (partly done)
 
 * choisir terminologie: refinement or simulation
 
@@ -234,31 +234,30 @@ A pair consisting of a state and a valuation is called a \emph{configuration}.
 %\end{definition}
 
 
-\TODO{Debut Exemple-1}
-\newpage
-\begin{example} As a running example, we consider a classical producer-consumer pair  interacting through FIFO buffer,  referred to as \texttt{prod-cons}.  Fig. \ref{Fig:Architect} reflects the overall structure of the system involving a producer process, a consumer process and an orchestrator that coordinates  their activities. 
 
-\begin{figure}[h]
+\begin{example}[\texttt{prod-cons}]\label{ex:fifo-system} As a running example, we consider a classical producer-consumer pair  interacting through FIFO buffer,  referred to as \texttt{prod-cons}.  Fig. \ref{Fig:Architect} reflects the overall structure of the system involving a producer process, a consumer process and an orchestrator that coordinates  their activities. 
+
+\begin{figure}[!ht]
  \centering
    \includegraphics[width=.70\textwidth]{Figures/Architecture.pdf}
-   \caption{Structure of the example. Each box corresponds to a process whose ports are the actions it can perform. The  actions observable by the environment are $\texttt{push}$, which indicates the enqueuing of an element, $\texttt{pop}$ which indicates the dequeuing, and $\texttt{print}$ which indicates the outing of results. \label{Fig:Architect}} 
+   \caption{Structure of the example. Each box corresponds to a process whose ports are the actions it can perform. The  actions observable by the environment are $\texttt{push}$, which indicates the enqueuing of an element, $\texttt{pop}$ which indicates the dequeuing, and $\texttt{print}$ which indicates the production of results. \label{Fig:Architect}} 
 \end{figure}
 
+The example uses several kinds of data. Variable $m$ holds a message, message types do not need a concrete definition here. We additionally use arrays of messages with a syntax of the form $M[l]$ for array accesses; $M$ is an array of $N$ elements, from $0$ to $N-1$. Finally we use addition and modulo operation ($\%$) on integers.
 
-The open automaton  modelling the behaviour of such a system  using an  unbounded circular/ring buffer is depicted in Fig. \ref{Fig:RefineOA}.  The automaton has a single state with  two holes: $\texttt{P}$ and  $\texttt{Q}$ reflecting the processes to manage the producer and consumer respectively.  The two pointers $\texttt{l}$ and $\texttt{f}$  indicate resp. the next available position for  enqueuing an element  and the position that contains the next element to be dequeued %\footnote{The  arrow  without any state of origin is a graphical convention to indicate that the pointers are initialized at the beginning}. 
-Whenever the buffer agrees with $\texttt{P}$ on the acquisition of an element, it enqueues it. Similarly, whenever it agrees with $\texttt{Q}$ on the retrieval, it dequeues an element. However, whenever $\texttt{Q}$ produces an item, it is exposed as an external observable  $\texttt{print}$ action. Whereas, when both processes do their internal computation, it is exposed externally as unobservable action $\tau$. 
-\begin{figure}[h]
+The open automaton  modelling the behaviour of such a system  using an  unbounded circular/ring buffer is depicted in Fig. \ref{Fig:RefineOA}.  The automaton has a single state with  two holes: $\texttt{P}$ and  $\texttt{Q}$ that are the two interacting processes.  $\texttt{l}$   indicates the next available position for  enqueuing an element  and  $\texttt{f}$ is the position that contains the next element to be dequeued. %\footnote{The  arrow  without any state of origin is a graphical convention to indicate that the pointers are initialized at the beginning}. 
+The buffer reacts to a push from $\texttt{P}$ and enqueues it. Similarly, whenever it  $\texttt{Q}$ pops an element, it dequeues it. Additionally, whenever $\texttt{Q}$ produces an item, it is exposed as an external observable  $\texttt{print}$ action. 
+When any process do its internal computation, it is exposed externally as unobservable action $\tau$. 
+\begin{figure}[!tb]
  \centering
    \includegraphics[width=.99\textwidth]{Figures/FIFORing.pdf}
    \caption{Open Automaton for the \texttt{prod-cons} system using FIFO circular buffer.
     \label{Fig:RefineOA}} 
 \end{figure}
-
+\qed
 \end{example}
 
 
-\medskip
-\TODO{Fin Example-1}
 
 
 
@@ -285,22 +284,23 @@ T\!=& \mset{\OT{\mpar{s_c, s_p}}{\mpar{s'_c, s'_p}}{\alpha_c}{\beta_j^{j \in J'_
 
 The first OA decides when the second can evolve by involving its hole in a transition: the action emitted when \(A_p\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_c\).
 
-\TODO{Debut -- Exemple 2}
 
-\begin{example} Examples of processes that can fill the holes of the considered automaton can also modelled by open automata as shown is  Fig. \ref{Fig:procandcons}.
- \begin{figure}[h]
+
+\begin{example} 
+ Fig. \ref{Fig:procandcons} shows a producer automaton  and a consumer  automaton that can be used  to fill the holes $P$ and $Q$ of \texttt{prod-cons} defined in Example~\ref{ex:fifo-system}.
+ \begin{figure}[!ht]
  \centering
    \includegraphics[width=.35\textwidth]{Figures/P-proc.pdf}\hfill 
    \includegraphics[width=.45\textwidth]{Figures/Q-proc.pdf}
-   \caption{(Left) An example of a \texttt{producer}.  It produces one item at a time and puts it to the buffer.  (Right)  An example of a \texttt{consumer}. It gets an item from the buffer, does its work and returns the result. \label{Fig:procandcons}}
+   \caption{(Left) A \texttt{producer}.  It produces one item at a time and pushes it.  (Right)  A \texttt{consumer}. It pops an item, does some work and pushes the result. \label{Fig:procandcons}}
 \end{figure}
 
 
 
-The open automaton on Fig. \ref{Fig:ComposeOA} is the composition of the specification on Fig. \ref{Fig:RefineOA} and the producer on Fig. \ref{Fig:procandcons}. The composition produces two states (le product of the states of both automata), the transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton including the hole \texttt{P} and those of the producer filling the hole. Transitions involving \texttt{Q} remain unchanged.
+The open automaton on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons}. The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $P$. Transitions involving \texttt{Q} remain unchanged. \qed
 
 
-\begin{figure}[h]
+\begin{figure}[!ht]
  \centering
    \includegraphics[width=.99\textwidth]{Figures/compos-FIFO-Pro.pdf}
    \caption{Open Automaton of the \texttt{prod-cons}[\texttt{P}/\texttt{producer}]. 
@@ -308,7 +308,7 @@ The open automaton on Fig. \ref{Fig:ComposeOA} is the composition of the specifi
 \end{figure}
 \end{example}
 
-\TODO{Fin -- Exemple 2}
+
 
 \subsection{Relations between open automata}
 A relation (bisimulation, refinement, etc.) between OA requires to compare their states. To do so we will suppose that the variables of the two OA are disjoint (a renaming of variables may have to be applied before comparing OA states).
@@ -629,17 +629,18 @@ We will show in Section~\ref{sec:prop} that this refinement relation has good pr
 
 %Considering an OA with no  hole and no guard, i.e., in case the definitions of open automata coincide with those of automata, the fact that $R$ is preserved along identical traces ensures that the set  of refusal of valid traces is smaller in the refined automaton than in the specification.
 
-\TODO{Debut -- Example 3}
+
 \begin{example} 
 To illustrate the refinement simulation of open automata, consider a variation on the \texttt{prod-cons}.  We suppose that  the two processes  \texttt{P} and  \texttt{Q} communicate through a one-place  buffer. The  corresponding behaviour  is given by  an open automaton  depicted in Fig. \ref{Fig:SpecOA}. 
-\begin{figure}[h]
+\begin{figure}[!t]
  \centering
    \includegraphics[width=.90\textwidth]{Figures/FIFOpen2.pdf}
    \caption{Open Automation of the \texttt{prod-cons} system using one-place  buffer.  \label{Fig:SpecOA}}
 \end{figure}
-We can easily check that the automata on Fig.\ref{Fig:RefineOA} is a refinement of this automaton. $R=\{(r_0,s_0) \mapsto True, (r_0,s_1) \mapsto True \}$ is a simulation.
+We can easily check that this automaton simulates the one on Fig.\ref{Fig:RefineOA}.
+The simulation relation is $R=\{(r_0,s_0) \mapsto l=f, (r_0,s_1) \mapsto f=l+1\% N \}$ is a simulation. \qed
 \end{example}
-\TODO{Fin}
+
 
 %The refinement relation  also specifies that the refined process must follow the behaviour of the specification, not only at every compatible state but also along any scenario of the specification.
 
@@ -843,6 +844,9 @@ We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \m
 
 
 \begin{example} 
+
+
+\texttt{prod-cons[P/producer] < simple-prod-cons[P/producer]}
 
 The composition of the refined \texttt{database} and the \texttt{counter} is again an open automata, depicted in Fig.~\ref{Fig:ComposeRefine}. As stated by the theorem,  it can easily be verified that this automaton is a refinement of the automaton of the figure Fig.~\ref{Def:CompOA}, i.e. the automaton resulting from the composition of the abstract \texttt{database}.
 \end{example}
