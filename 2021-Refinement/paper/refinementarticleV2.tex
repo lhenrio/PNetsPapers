@@ -243,10 +243,10 @@ A pair consisting of a state and a valuation is called a \emph{configuration}.
    \caption{Structure of the example. Each box corresponds to a process whose ports are the actions it can perform. The  actions observable by the environment are $\texttt{push}$, which indicates the enqueuing of an element, $\texttt{pop}$ which indicates the dequeuing, and $\texttt{print}$ which indicates the production of results. \label{Fig:Architect}} 
 \end{figure}
 
-The example uses several kinds of data. Variable $m$ holds a message, message types do not need a concrete definition here. We additionally use arrays of messages with a syntax of the form $M[l]$ for array accesses; $M$ is an array of $N$ elements, from $0$ to $N-1$. Finally we use addition and modulo operation ($\%$) on integers.
+The example uses several kinds of data. Variable $\texttt{m}$ holds a message, message types do not need a concrete definition here. We additionally use arrays of messages with a syntax of the form $\texttt{M[l]}$ for array accesses; $\texttt{M}$ is an array of $\texttt{N}$ elements, from $0$ to $\texttt{N}-1$. Finally we use addition and modulo operation ($\%$) on integers.
 
 The open automaton  modelling the behaviour of such a system  using an  unbounded circular/ring buffer is depicted in Fig. \ref{Fig:RefineOA}.  The automaton has a single state with  two holes: $\texttt{P}$ and  $\texttt{Q}$ that are the two interacting processes.  $\texttt{l}$   indicates the next available position for  enqueuing an element  and  $\texttt{f}$ is the position that contains the next element to be dequeued. %\footnote{The  arrow  without any state of origin is a graphical convention to indicate that the pointers are initialized at the beginning}. 
-The buffer reacts to a push from $\texttt{P}$ and enqueues it. Similarly, whenever it  $\texttt{Q}$ pops an element, it dequeues it. Additionally, whenever $\texttt{Q}$ produces an item, it is exposed as an external observable  $\texttt{print}$ action. 
+The buffer reacts to a push from $\texttt{P}$ and enqueues it. Similarly, whenever   $\texttt{Q}$ pops an element, it dequeues it. Additionally, whenever $\texttt{Q}$ produces an item, it is exposed as an external observable  $\texttt{print}$ action. 
 When any process do its internal computation, it is exposed externally as unobservable action $\tau$. 
 \begin{figure}[!tb]
  \centering
@@ -287,7 +287,7 @@ The first OA decides when the second can evolve by involving its hole in a trans
 
 
 \begin{example} 
- Fig. \ref{Fig:procandcons} shows a producer automaton  and a consumer  automaton that can be used  to fill the holes $P$ and $Q$ of \texttt{prod-cons} defined in Example~\ref{ex:fifo-system}.
+ Fig. \ref{Fig:procandcons} shows a producer automaton  and a consumer  automaton that can be used  to fill the holes $\texttt{P}$ and $\texttt{Q}$ of \texttt{prod-cons} defined in Example~\ref{ex:fifo-system}.
  \begin{figure}[!ht]
  \centering
    \includegraphics[width=.35\textwidth]{Figures/P-proc.pdf}\hfill 
@@ -297,7 +297,7 @@ The first OA decides when the second can evolve by involving its hole in a trans
 
 
 
-The open automaton on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons}. The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $P$. Transitions involving \texttt{Q} remain unchanged. \qed
+The open automaton on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons}. The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $\texttt{P}$. Transitions involving \texttt{Q} remain unchanged. \qed
 
 
 \begin{figure}[!ht]
@@ -373,21 +373,19 @@ Consider the two following simple OA:
   \node[state,inner sep=5pt,minimum size=10pt, below right of=1,right=90pt] (2) {$t$};
   \node[state,inner sep=5pt,minimum size=10pt, above right of=1,right=90pt] (3) {$t'$};
 
-  \draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{x<0}{y\leftarrow -x}}  (2);
-  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{x\geq 0}{y\leftarrow x}} (3);
+  \draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{[x<0]}{(y\leftarrow -x)}}  (2);
+  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{[x\geq 0]}{(y\leftarrow x)}} (3);
 \end{tikzpicture}
 \hfill
 \begin{tikzpicture}
   \node[state,inner sep=5pt,minimum size=10pt] (1) {$s_2$};
   \node[state,inner sep=5pt,minimum size=10pt,  right of=1,right=90pt] (2) {$t_2$};
-
-
-  \draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{tt}{z\leftarrow x}}  (2);
+\draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{True}{(z\leftarrow x)}}  (2);
 %  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{x\geq 0}{y\leftarrow x}} (3);
 \end{tikzpicture}~
 
 We would like these two OA to be considered bisimilar. Both can input any $\beta(x)$ input on their hole and stores the value of $x$, emitting $\alpha(x)$ along the transition.
-The different is the way $x$ is stored. We can then define a configuration relation $R$ such that $R(s,s_2)$ is true and $R(t,t_2)$ holds when $z\geq 0$ and $y=z$, while $R(t',t_2)$ holds when $z< 0$ and $y=-z$. This illustrates relation on configuration, but also allows us to realise that bisimulation is a bit more complex than in the classical case. Indeed, we need two transitions on the left OA to simulate a single transition on the right one. We should check that these two transitions cover all the cases accepted by te right hand side OA, and of course that destination states are in relation. Formally, fh-bisimulation is defined \cite{fhbisim} as follows:
+The different is the way $x$ is stored. We can then define a configuration relation $R$ such that $R(s,s_2)$ is true and $R(t,t_2)$ holds when $z\geq 0$ and $y=z$, while $R(t',t_2)$ holds when $z< 0$ and $y=-z$. This illustrates relation on configuration, but also allows us to realise that bisimulation is a bit more complex than in the classical case. Indeed, we need two transitions on the left OA to simulate a single transition on the right one. We should check that these two transitions cover all the cases accepted by the right hand side OA, and of course that destination states are in relation. Formally, FH-bisimulation is defined \cite{fhbisim} as follows:
 
 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
@@ -631,14 +629,14 @@ We will show in Section~\ref{sec:prop} that this refinement relation has good pr
 
 
 \begin{example} 
-To illustrate the refinement simulation of open automata, consider a variation on the \texttt{prod-cons}.  We suppose that  the two processes  \texttt{P} and  \texttt{Q} communicate through a one-place  buffer. The  corresponding behaviour  is given by  an open automaton  depicted in Fig. \ref{Fig:SpecOA}. 
+To illustrate the refinement simulation of open automata, consider a variation on the \texttt{prod-cons}, referred to as \texttt{Simpleprod-cons}.  We suppose that  the two processes  \texttt{P} and  \texttt{Q} communicate through a one-place  buffer. The  corresponding behaviour  is given by  an open automaton  depicted in Fig. \ref{Fig:SpecOA}. 
 \begin{figure}[!t]
  \centering
    \includegraphics[width=.90\textwidth]{Figures/FIFOpen2.pdf}
    \caption{Open Automation of the \texttt{prod-cons} system using one-place  buffer.  \label{Fig:SpecOA}}
 \end{figure}
-We can easily check that this automaton simulates the one on Fig.\ref{Fig:RefineOA}.
-The simulation relation is $R=\{(r_0,s_0) \mapsto l=f, (r_0,s_1) \mapsto f=l+1\% N \}$ is a simulation. \qed
+We can easily check that this automaton simulates the one on Fig.~\ref{Fig:RefineOA}.
+The simulation relation is $R=\{(r_0,s_0) \mapsto \texttt{l}=\texttt{f}, (r_0,s_1) \mapsto \texttt{f}=\texttt{l}+1\% \texttt{N} \}$ is a simulation. \qed
 \end{example}
 
 
