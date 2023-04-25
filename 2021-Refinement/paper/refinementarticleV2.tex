@@ -723,7 +723,7 @@ One major challenge in the extension of refinement to different sets of holes is
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a refinement relation with guarantees on the actions of the other holes.
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the refinement relation and adapt the definition by ignoring actions of the holes that are not in $H$.
-\begin{definition}[Open automata refinement]\label{Def:OA-Refinement}
+\begin{definition}[Hole-tracking simulation]\label{Def:OA-Refinement}
 For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a refinement of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $R: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash R\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
@@ -744,11 +744,13 @@ For two open automata\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}
 \end{definition}
 Note that every action of the holes outside \(H\) is unconstrained according to the refinement relation.
 
-\begin{example} It is easy to see the  open automaton of Fig.~\ref{Fig:RefineOA} is a refinement the open automaton of Fig.~\ref{Fig:SpecOA} according to this definition.
-\end{example}
+%\begin{example} It is easy to see the  open automaton of Fig.~\ref{Fig:RefineOA} is a refinement the open automaton of Fig.~\ref{Fig:SpecOA} according to this definition.
+%\end{example}
 
-
-
+\begin{property}[Relating simulations]\label{lem-sim-sim}
+Hole-equal simulation is a particular case of hole-tracking refinement when  $J_1=J_2=H$.
+\end{property}
+\TODO{potential ex 4: check if the example with a hole filled is a simulation of the example with holes? at least state \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons}}
 
 
 
@@ -762,15 +764,15 @@ Note that every action of the holes outside \(H\) is unconstrained according to 
 %
 %\TODO{thm: backward compatibility + simulation is equivalent to extension refinement in case there is no hole and no guard, i.e. in case the definitions of automata coincide}
 
-\begin{lemma}[Tracked holes] By construction, if an automaton is the refinement of another one, it is also a refinement by tracking less holes.
+\begin{property}[Tracked holes] By construction, if an automaton is the refinement of another one, it is also a refinement by tracking less holes.
 \[\wrel{A_1}{A_2}{H} \land H'\subseteq H \implies \wrel{A_1}{A_2}{H'}\]
-\end{lemma}
+\end{property}
 
 Now that we have a refinement relation that takes both variable parameters and process parameters into account, we would like to ensure that it has  properties one would expect for a refinement relation.
 
 \section{Properties of our Refinement Relations}\label{sec:prop}
 
-We now  state the properties of our refinement relations, proofs of the properties can be found in the appendices. We express these properties in terms of open automata refinement because hole-equal simulation is a particular case of Definition~\ref{Def:OA-Refinement} when  $J_1=J_2=H$, and thus all the properties shown here are trivially true for hole-equal simulation.
+We now  state the properties of our refinement relations, proofs of the properties can be found in the appendices. We express these properties in terms of hole-tracking simulation because, thanks to Property~\ref{lem-sim-sim}   all the properties  of hole-tracking simulation are also valid  for hole-equal simulation
 The first crucial property of  refinement  is that it is  a  preorder on the set of open automata. This property enables stepwise refinement.
 
 
@@ -829,7 +831,7 @@ Pictorially, the theorem states the following result:
 The bisimulation relation that we consider is the one that makes $A_1$ and $A_2$ bisimilar, complemented with identity of configurations for $A_3$.
 The proof relies on the fact that, by construction, all transitions of the composed automaton $A_1\subst{A_3}{k}$ are specified by open transitions of $A_1$. For the transitions that do not involve hole $k$, the transition of $A_1\subst{A_3}{k}$ is the same and simulation between $A_1$ and $A_2$ allows us to conclude directly. If the hole $k$ is involved the considered relation  implies that valuations in $A_3$ are equal (i.e., the value for each variable are the same in both valuations), after a transition we should obtain ``equal'' valuations because post-conditions are deterministic.
 
-\begin{example}  Consider again the \texttt{prod-cons}  \texttt{Simprod-cons}  automata given in examples above.  Since we have \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons},  hence according to Theorem \ref{thm:ContextRefinement}, we get 
+\begin{example}  Consider again the \texttt{prod-cons} and \texttt{Simprod-cons}  automata given in the examples above.  Since we have \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons},  hence according to Theorem \ref{thm:ContextRefinement}, we get 
 \texttt{prod-cons[P/producer]} $\leq_{\{\texttt{Q}\}}$  \texttt{Simprod-cons[P/producer]}. This can be verified by comparing the behaviour of the automaton of the figure Fig.~\ref{Fig:ComposeOA} and the automaton resulting  from the composition of the \texttt{Simprod} and  \texttt{producer} automata.\qed
 \end{example}
 
