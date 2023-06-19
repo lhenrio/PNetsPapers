@@ -325,7 +325,7 @@ Bisimulation between OA was defined in~\cite{AMHEEMA:2023}.  We show below the p
 Bisimulation can  be defined as follows for standard transition systems: 
 
 \begin{definition}[Classical Bisimulation]
-  A bisimulation is a relation $\mathcal{R}$ such that $s~\mathcal{R}~t$:\\
+  A bisimulation is a relation $\mathcal{R}$ such that if $s~\mathcal{R}~t$ then:\\
   \begin{minipage}[c]{.6\textwidth}
     \[
       \forall l~s',~ {s}\xrightarrow{l}{s'}
@@ -333,7 +333,7 @@ Bisimulation can  be defined as follows for standard transition systems:
       \exists t'.~ s' ~\mathcal{R}~ t'
       \land {t}\xrightarrow{l}{t'}
     \]
-    \begin{center}
+\begin{center}    \vspace{-1.5ex}
       and conversely
     \end{center}
     \vspace{-1ex}
@@ -358,10 +358,10 @@ Bisimulation can  be defined as follows for standard transition systems:
       edge [<-] node[auto,swap] {$l$} (t);
     \end{tikzpicture}
   \end{minipage}
-$s$ and $t$ are bisimilar, written $s\sim t$ iff there is a bisimulation relation $R$ such that  $s ~\mathcal{R}~ t$
+$s$ and $t$ are bisimilar, written $s\sim t$ iff there is a bisimulation relation $\mathcal{R}$ such that  $s ~\mathcal{R}~ t$
 \end{definition}
 
-A  bisimulation relation  relates pair of states and ensures that any behaviour of one automaton can be performed by the other one while staying in relation. We informally explain here the symbolic nature of the bisimulation and the related complexity of its definition. The presence of holes in fact raises no strong difficulty here.
+A  bisimulation relation  relates pair of states and ensures that any behaviour of one automaton can be performed by the other one while staying in relation. We informally explain here the symbolic nature of the bisimulation for OA and the related complexity of its definition. The presence of holes in fact raises no strong difficulty but the variables must be handled carefully.
 Consider the two following simple OA:
 
 \noindent~\begin{tikzpicture}
@@ -380,8 +380,8 @@ Consider the two following simple OA:
 %  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{x\geq 0}{y\leftarrow x}} (3);
 \end{tikzpicture}~
 
-We would like these two OA to be considered bisimilar. Both can input any $\beta(x)$ input on their hole and stores the value of $x$, emitting $\alpha(x)$ along the transition.
-The difference is the way $x$ is stored. We can then define a configuration relation $R$ such that $R(s,s_2)$ is true and $R(t,t_2)$ holds when $z\geq 0$ and $y=z$, while $R(t',t_2)$ holds when $z< 0$ and $y=-z$. This illustrates relation on configuration, but also allows us to realise that bisimulation on OA is a bit more complex than in the classical case. Indeed, we need two transitions on the left OA to simulate a single transition on the right one. We should check that these two transitions cover all the cases accepted by the right hand side OA, and of course that destination states are in relation. Formally, FH-bisimulation is defined \cite{AMHEEMA:2023} as follows:
+We should be able to consider these two OA as bisimilar. Both can input any $\beta(x)$ input on their hole and stores the value of $x$, emitting $\alpha(x)$ along the transition.
+The difference is the way $x$ is stored. We can then define a configuration relation $\mathcal{R}$ such that $\mathcal{R}(s,s_2)$ is true and $\mathcal{R}(t,t_2)$ holds when $z\geq 0$ and $y=z$, while $\mathcal{R}(t',t_2)$ holds when $z< 0$ and $y=-z$. This illustrates relation on configurations, but also shows that bisimulation on OA is more complex than in the classical case. Indeed, we need two transitions on the left OA to simulate a single one on the right OA. We should check that these two transitions cover all the cases accepted by the right hand side OA, and of course that destination states are in relation. Formally, FH-bisimulation is defined as follows \cite{AMHEEMA:2023}:
 
 
  \begin{definition}[Strong FH-bisimulation]\label{def-FH-bisim} ~\\
@@ -461,14 +461,14 @@ Two automata are bisimilar if there exists a strong FH-bisimulation $ \mathcal{R
 
 % \TODO{do we want formulas for this?}
  \end{definition}
-Note in this definition, instead of matching an instantiated transition  of the first automata to another instantiated transition of the second, it matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$.
-Technically, the following sections do not rely on the definition of strong bisimulation on OA, but they follow the same principles and in particular the same way to faithfully simulate an open transition by a set of other open transitions.
+Note that this definition matches an open transition $t_1$ to a family of covering open transitions $t_{2x}^{x\in X}$.
 Intuitively, this means that for every pair of related
 states $(s_1,s_2)$  of the two automata, and for every  transition of the first automaton from $s_1$, there is a set of matching transitions  of the second automaton  from $s_2$ such that the produced action match, the actions of the same holes and the successors are related after variable update.
+Technically, the following sections do not rely on the definition of strong bisimulation on OA, but they follow the same principles and in particular the same way to faithfully simulate an open transition by a set of other open transitions.
 
 %\begin{comment}
 \subsection{Reachability}
-We finally define a predicate abstracting state reachability for OA, it  allows us to reason on reachable states in an automaton. It can alternatively be seen as an abstraction of the reachable states under the form of a predicate that must stay verified along the execution of the OA.
+We finally define a new predicate abstracting state reachability for OA, it  allows us to reason on reachable states in an automaton. It can  be seen as an abstraction of the reachable states under the form of a predicate that must stay verified along the execution of the OA.
 \begin{definition}[Reachability] \label{Def:Reach}
 For any OA \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
 \[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
