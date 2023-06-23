@@ -13,6 +13,8 @@
 \usepackage{comment}
 \usepackage{macrospNets}
 \usepackage{cancel}
+
+\usepackage{paralist}
 \AtBeginDocument{\renewcommand\setminus{\smallsetminus}}
 
 %\DeclareMathOperator{\dom}{dom}
@@ -80,7 +82,7 @@ We define a simulation between open automata that may or may not have the same h
 show under which conditions these refinements are preserved by composition of open automata. 
 
 
-\keywords{Labelled transition systems  \and Refinement \and Simulation \and Composition.}
+\keywords{Labelled transition systems   \and Simulation \and Composition.}
 \end{abstract}
 %
 %
@@ -102,38 +104,39 @@ show under which conditions these refinements are preserved by composition of op
 %* \st{format according to conf: lncs FACS or SEFM}
 %
 %* global rewriting (partly done)
+
+% we do compositional reasoning on systems
  Compositional design is a highly convenient approach 
 for specifying and verifying large systems. 
-Automata are often used as the basic formalism for this approach, but most automata definitions allow only the specifications of finite closed systems. Indeed, those systems are the ones we can verify efficiently, but programming often consists in writing open systems that should be interfaced with others, and with potentially unbound behaviours (at least statically). We investigate in our works the possibility to define open symbolic systems, verify some of their properties, and use them to compose in a structured way more complex systems.
+Automata are often used as the basic formalism for this approach, but most automata definitions allow only the specifications of finite closed systems. These systems  can be verified efficiently, but programming often consists in writing  systems that should be interfaced with others, and with potentially unbound behaviours. We investigate in our works the reasoning on open symbolic systems, with a strong focus on compositionality of properties. More precisely, we say that a system is open if it contains a ``hole'' to be filled by another system. 
+Open systems are typically composition operators~\cite{henrio:01299562} or componentised systems where some of the components are yet to be provided~\cite{AMHEEMA:2023}. This form of composition is more complex to handle than top-level interaction usually found in process algebra, as the behaviour of each entity in the system is parameterised both by classical symbolic variables and by process variables.
 
-\RAB{Many parallel programs  such as skeleton-based parallel programs,  can be characterized  by a collection of high-level patterns with parallel semantics,  but also provide a systematic way of developing practical programs. Skeleton specification is refined by applying a sequence of transformation rules until implementation.  In this high-level parallel design  approach, each skeleton is a parametric process, it accepts as a parameter the kind of computation to be performed according to the behaviour it models.
-}
+% why refinement
+The refinement concept  plays  an important role in software engineering. In addition to helping to cope with the complexity of requirements and design, refinement provides a foundation for ensuring  system  correctness. The correctness of a system can
+be established by proving, that a system refines its specification with the idea that some properties of the specification are preserved in the refined system.
+Refinement entails that one system  can be considered as a more precise version of another one that is considered to be the specification. The refined model features all the specified behaviours with more concrete details. From a formal point of view,  refinement is a mathematical relations between a specification and its implementation, one frequently used relation is trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}.
 
-The refinement concept also plays  an important role in software engineering. In addition to helping to cope with the complexity of requirements and design, refinement provides a foundation for ensuring  system (software) correctness. The correctness of a system can
-be established by proving, that a system refines its specification.
-%Refinement relations verify that an implementation satisfies some properties with respect to a specification. 
-Refinement entails that one system  can be considered as a more precise version of another one that is considered to be the specification. The refined model features all the specified behaviours with more concrete details. From a formal point of view,  refinement can be defined as a mathematical relations between a specification and its implementation, one frequently used relation is trace inclusion or simulation  \cite{Milner:1980,Kouchnarenko:2007}.  Refinement is an approach that specifies how to transform an abstract or coarse-grain specification of a process into a concrete finer grain view of this process while maintaining some desirable properties.
-\RAB{Most  refinement work focused on  the study  of  systems whose behaviour is fully defined.} 
-
-\LUDO{revoir la fin a mon avis: si on veut se distinguer des travaux composants, il faut expliquer} 
-However, adopting a refinement approach in an open system that will later interact 
-It is not well-suited for open systems,  as it requires to reason also about unspecified behaviours.
+% objective: a simulation theory for open systems
+In this article, we design a simulation theory for open symbolic systems.  We build a very generic theory that should allow us to reason on simulation-based verification for most concurrent systems, as our base theory merely relies on automata parameterised by both variables and processes. As we shall see, our composition of automata is also very generic to account for any interaction mechanism found in concurrent systems.
+While our contribution is theoretical, it establishes the foundations for to the verification of any compositionally designed system, like  component systems, algorithmic skeletons.
 
 
 
+% OA
 Open automata (that we abbreviate OA) were defined as a way to provide a semantics for open parameterised hierarchical labelled transition systems (abbreviated LTS). They were proposed as a theoretical foundation for parametrised automata used in verification tools and called \emph{pNets}.
 An OA \cite{henrio:01299562} is similar to a classical automaton but with variables and holes. Variables make automata symbolic and allow them to encode infinite state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is an automaton where the behaviour of one ``process parameter'' % 
  of the main automaton has been provided.
+Because of their the generic nature, the notion of OA model is quite abstract but we already illustrated previously how to derive OAs for process algebra operators~\cite{henrio:01299562} or for component systems~\cite{AMHEEMA:2023,ameurboulifa:01526055}.
 
 In previous works \cite{AMHEEMA:2023,wang:03126313} a bisimulation relation was defined for OA and open parameterised hierarchical LTSs. It has already good properties relatively to bisimulation, but refinement relations were not studied. In this article we go further to  define a theory of simulation for OA. The simulation relation we introduce in the paper  is based on the notion of   simulation,  in a similar way to that defined in classical automata theory \cite{Milner:1989,Bellegarde:2000}.  And with the common behaviour-preserving  property:  all the behaviour of the abstract specification must be followed by its (complex) implementation but additional behaviours may exist. However we also ensure that a whole scenario, made of several steps, of the specification can also be simulated by the refined system, which is slightly richer than the traditional simulation relation and which allows us to obtain a compositionality result.
 
 %This article first introduces OA that were defined in  \cite{henrio:01299562}. %,  but compared to previous works, we and additionally defines the composition of OA.
 Our contribution in this paper is the definition a simulation relation for OA that has the following characteristics:
-\begin{itemize}
+\begin{compactitem}
 \item Classical simulation characterisation but also an additional criteria ensuring that simulation does not introduce deadlocks when following a trace from the simulated automaton.
 \item Good properties relatively to composition: we prove that composition preserves the simulation relation.
 \item Ability to take into account both composition and transitivity: this is a challenge because composition changes the set of holes of the OA and simulation takes into account the actions of the holes.
-\end{itemize}
+\end{compactitem}
  The simulation relation is introduced in two steps. First we define a simulation that relates two automata with the same holes, which allows us to focus on the automaton aspect. Second we introduce a relation that relates two automata with different sets of holes, which allows us to take into account the open nature of OA, and to deal with composition. Properties of the simulation are stated and proven on the second, more general version of the relation, they are thus also valid for the first simpler simulation relation.
 
 This paper is organized as follows. Section~\ref{sec:background} recalls the definition of OA and defines their composition. 
@@ -944,7 +947,7 @@ In this article we investigated the notion of refinement for a symbolic and open
 OA are convenient for compositional software verification. Indeed, OA  model parallel systems that are parameterised both by the use of variables and by the possibility to compose automata. The formalism supports compositional specification through the simulation paradigm.
 In this paper, we introduce a refinement relation  between open automata. It relies on a simulation relation between the two automata;  it  specifies that the refined process must follow the behaviour of the simulated one. We finally showed that simulation is a preorder that is preserved by composition, both when filling a hole and when placing automata in comparable contexts.
 
-In the future, we will investigate under which condition, the composition operation produces a refinement in the sense that filling a hole produces a refined process.
+%In the future, we want to investigate under which condition, the composition operation produces a refinement in the sense that filling a hole produces a refined process.
 
 
 
