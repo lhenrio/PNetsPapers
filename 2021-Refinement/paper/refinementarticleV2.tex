@@ -82,7 +82,7 @@ We define a simulation between open automata that may or may not have the same h
 show under which conditions these refinements are preserved by composition of open automata. 
 
 
-\keywords{Labelled transition systems   \and Simulation \and Composition.}
+\keywords{Labelled transition systems   \and Simulation \and Refinement \and Composition.}
 \end{abstract}
 %
 %
@@ -176,12 +176,12 @@ In a formula, a quantifier followed by a finite set will be used as a shorthand 
 Our expression algebra \(E\) is the disjoint union  of  terms,  actions, and  formulas
 \( E=\terms \uplus \actions \uplus \formulas\).
 \(\terms\) and \(\actions\) are term algebras.
-The formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\). 
+The set of formulas \(\formulas\) contain at least first order formulas and equality\footnote{Equality does not need to be only syntactic.} over \(\terms\) and \(\actions\). 
 %\end{definition}
 For \(e \in E\),
  \(\fvars{e}\) is the set of variables in  $e$ that are not bound by a binder. 
 An expression is closed if \(\fvars{e}=\emptyset\).
-The set \(\values\) denotes values which is a subset of closed terms. \(\rformulas[V]\) is the set of formulas $f$ that only uses variables in $V$, i.e. the formulas such that  \(\fvars{f}\subseteq V\).
+The set \(\values\) denotes values which is a subset of closed terms. \(\rformulas[V]\) is the set of formulas $f$ that only uses variables in $V$, i.e., the formulas such that  \(\fvars{f}\subseteq V\).
 %The substitution in \(e \in E\) of \(x \in \fvars{e}\) by \(t \in \terms\), is denoted \(e\subst{t}{x}\), and its generalisation to t
 The parallel substitution of variables in \(V\) by a map \(\psi: V \to \terms\) is denoted \(e\psubst{\psi}\).
 
@@ -251,11 +251,13 @@ The local variables of a transition \(\fvars{t}\) are all variables appearing in
    \caption{Structure of the example. Each box corresponds to a process whose ports are the actions it can perform. The  actions observable by the environment are $\texttt{push}$, which indicates the enqueuing of an element, $\texttt{pop}$ which indicates the dequeuing, and $\texttt{print}$ which indicates the production of results. \label{Fig:Architect}} 
 \end{figure}
 
-The example uses several kinds of data. Variable $\texttt{m}$ holds a message (we can leave the message type abstract here). We additionally use arrays of messages with a syntax of the form $\texttt{M[l]}$ for array accesses; $\texttt{M}$ is an array of $\texttt{N}$ elements, from $0$ to $\texttt{N}-1$. Finally we use addition and modulo operation ($\%$) on integers.
 
 The OA  modelling the behaviour of such a system  using an  unbounded circular/ring buffer is depicted in Fig. \ref{Fig:RefineOA}.  The automaton has a single state with  two holes: $\texttt{P}$ and  $\texttt{Q}$ that are the two interacting processes.  $\texttt{l}$ (as last)  indicates the next available position for  enqueuing an element  and  $\texttt{f}$ (as first) is the position that contains the next element to be dequeued. %\footnote{The  arrow  without any state of origin is a graphical convention to indicate that the pointers are initialized at the beginning}. 
 The buffer reacts to a push from $\texttt{P}$ and enqueues it. Similarly, whenever   $\texttt{Q}$ pops an element, it dequeues it. Additionally, whenever $\texttt{Q}$ produces an item, it is exposed as an external observable  $\texttt{print}$ action. 
 When any process do its internal computation, it is exposed externally as unobservable action $\tau$. 
+
+The example uses several kinds of data. Variable $\texttt{m}$ holds a message (we can leave the message type abstract here). We additionally use arrays of messages with a syntax of the form $\texttt{M[l]}$ for array accesses; $\texttt{M}$ is an array of $\texttt{N}$ elements, from $0$ to $\texttt{N}-1$. Finally we use addition and modulo operation ($\%$) on integers.
+
 \begin{figure}[!tb]
  \centering
    \includegraphics[width=.99\textwidth]{Figures/FIFORing.pdf}
@@ -322,7 +324,7 @@ Establishing semantic equivalences and simulation relations between different OA
 A relation on configurations of two OA \(\OAg[1]\) and \(\OAg[2]\) is a function \( \mathcal{R}: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\).
 \end{definition}
 %\TODO{C'est etrange, la formulation "the variables they refer to", comme il n'y a plus de variables d'etat... +1}
-The idea is that two states are related depending on the satisfiability of the expression relying their variables i.e., if the variables of the OA verify a certain formula. 
+The idea is that two states are related depending on the satisfiability of the expression relying their variables, i.e., if the variables of the OA verify a certain formula. 
 In other words, to each pair of states is attached a boolean formula that may refer to the  variables of each of the two OA, stating whether the two states are related or not.
 Additionally, we say that the relation $ \mathcal{R}$ \emph{relates the initial states} of the automata if: \(\sigma_{01} \uplus \sigma_{02} \vdash  \mathcal{R}\mpar{s_{01}, s_{02}}\).
 
@@ -485,16 +487,16 @@ For any OA \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[
 \end{definition}
 
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
-From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of OA, but only an over-approximation is necessary.
+From an automation point of view, finding the most precise reachability predicate for a given automaton is not decidable because of the symbolic nature of OA, but only an over-approximation is necessary.
 
 %\end{comment}
 
 \section{Simulation  for Automata with the Same Holes}\label{sec:refinement}
 
 Similarly to FH-bisimulation~\cite{AMHEEMA:2023} we are interested  in finding simulation relations between configurations of two OA that contain variables and holes. When dealing with open systems it is common to define simulation in terms of a simulation relation.
-We rely on a classical notion of simulation inspired from~\cite{AMHEEMA:2023}. The idea is to consider two configurations related by a relation; if one state can do a transition, then the other can do a transition too. 
+We rely on a classical notion of simulation inspired from~\cite{AMHEEMA:2023}. The idea is to consider two configurations related by a relation; if one state can do a transition, then the other can also make this transition. 
 Like for bisimulation, a simulation relation characterises when two states are related, and this  characterisation is expressed as a predicate on the variables of the two automata.
-Simulation defines conditions on a predicate $\mathcal{R}$ such that $\mathcal{R}\mpar{s_1, s_2}$ is a predicate (possibly involving variables of the automata) that is true when the state $s_1$ of $A_1$ refines the state $s_2$ of $A_2$.
+Simulation defines conditions on a relation $\mathcal{R}$ such that $\mathcal{R}\mpar{s_1, s_2}$ is a predicate (possibly involving variables of the automata) that is true when the state $s_1$ of $A_1$ simulates the state $s_2$ of $A_2$.
 
 
 %\TODO{check deadlock reduction/reducing in the literature}
@@ -638,14 +640,14 @@ We will show in Section~\ref{sec:prop} that this simulation relation has good pr
 
 
 \begin{example} \label{example:fifo-system-one}
-To illustrate the simulation simulation of OA, we consider a variation on the \texttt{prod-cons} example. Namely,  we suppose that  the two processes  \texttt{P} and  \texttt{Q} communicate through a one-place  buffer. Fig. \ref{Fig:SpecOA} shows the OA modelling this simpler version of the system, that we refer to as \texttt{simprod-cons}. 
+To illustrate the simulation  of OA, we consider a variation on the \texttt{prod-cons} example. Namely,  we suppose that  the two processes  \texttt{P} and  \texttt{Q} communicate through a one-place  buffer. Fig. \ref{Fig:SpecOA} shows the OA modelling this simpler version of the system, that we refer to as \texttt{simprod-cons}. 
 \begin{figure}[!b]
  \centering
    \includegraphics[width=.90\textwidth]{Figures/FIFOpen2.pdf}
    \caption{  The \texttt{simprod-cons} OA: the system using one-place  buffer.  \label{Fig:SpecOA}}
 \end{figure}
 We can easily check that this automaton simulates the one of Fig.~\ref{Fig:RefineOA}.
-Indeed, one can see that  $\mathcal{R}=\{(r_0,s_0) \mapsto \texttt{l}=\texttt{f}, (r_0,s_1) \mapsto \texttt{f}=\texttt{l}+1\% \texttt{N} \}$ is  a candidate simulation 
+Indeed, one can see that  $\mathcal{R}=\{(r_0,s_0) \mapsto \texttt{l}=\texttt{f}, (r_0,s_1) \mapsto \texttt{f}=\texttt{l}+1\% \texttt{N} \}$ is  a  simulation 
 relation. It follows that  \texttt{prod-cons} $\leq$ \texttt{simprod-cons}. \qed
 \end{example}
 
@@ -675,7 +677,7 @@ Indeed, when composing the set of  holes changes.
 Being able to compare automata with only some of their holes in common seems useful in general.
 
 \medskip
-One major challenge in the extension of simulation to different sets of holes is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of simulation would ensure that only the holes that are identical in the two OA are taken into account in the simulation. Unfortunately considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a simulation between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterised by a subset of the set of holes that belong to the two automata that we want to take into account.
+One major challenge in the extension of simulation to different sets of holes is to maintain a form of transitivity while being able to take into account the actions of some of the holes. A naive definition of simulation would ensure that only the holes that are identical in the two OA are taken into account in the simulation. Unfortunately, considering all the common holes does not ensure transitivity of the simulation for the following reason. If $A_1$ simulates $A_2$ and $A_2$ simulates $A_3$, and one hole $j$ appears in $A_3$ and in $A_1$ but not in $A_2$ then we have no guarantee on the way $A_1$ and $A_3$ take the actions of this his hole into account, thus  a simulation between and $A_1$ and $A_3$ would require conditions involving actions of the hole $j$ which cannot be ensured. The way we solve this issue is to remember in the simulation relation which holes have been compared. This makes the relation parameterised by a subset of the set of holes that belong to the two automata that we want to take into account.
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a simulation relation with guarantees on the actions of the other holes.
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the simulation relation and adapt the definition by ignoring actions of the holes that are not in $H$.
@@ -706,7 +708,7 @@ Note that every action of the holes outside \(H\) is unconstrained according to 
 \begin{property}[Relating simulations]\label{lem-sim-sim}
 Hole-equal simulation is a particular case of hole-tracking simulation when  $J_1=J_2=H$.
 \end{property}
-\begin{example} Consider the automata of examples \ref{Example:fifo-system} and \ref{example:fifo-system-one}. As we saw above, \texttt{prod-cons} $\leq$ \texttt{simprod-cons}, therefore \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons}.
+\begin{example} Consider the automata of Examples \ref{Example:fifo-system} and \ref{example:fifo-system-one}. As we saw above, \texttt{prod-cons} $\leq$ \texttt{simprod-cons}, therefore \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons}.
 \end{example}
 %\TODO{potential ex 4: check if the example with a hole filled is a simulation of the example with holes? }
 
@@ -730,7 +732,7 @@ Now that we have a simulation relation that takes both variable parameters and p
 
 \section{Properties of our Simulation Relations}\label{sec:prop}
 
-Before reasoning on the properties of simulation. we need to introduce one additional notion that characterizes when the composition of two automata does not introduce new blocked transitions.
+Before reasoning on the properties of simulation. we need to introduce one additional notion that characterises when the composition of two automata does not introduce new blocked transitions.
 
 \subsection{Non-blocking Composition}
 
@@ -783,18 +785,18 @@ The composition \(A_1\subst{A_2}{k}\) is non-blocking if   \(A \) has a reachabi
 %\end{multline*}
 \end{definition}
 Like in the definition of simulation (Definition~\ref{def:HoleEqualSim}) we use guards to ensure that the transition can occur. 
-In general, one would not want to only consider non-blocking composition as it may reveal a bit restrictive, but it is the best necessary condition that can be identified for compositionality of simulation. It will be used to prove composition theorems below. 
+In general, one would not want to only consider non-blocking composition as it may reveal a bit restrictive, but it is the best necessary condition that can be identified for compositionality of simulation. It will be used to prove composition theorems given below. 
 In absence of non-blocking composition, simulation may also be checked specifically for a given composed automaton.
 %It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
 
 
 \subsection{Properties}
 
-We now  state the properties of our simulation, proofs of the properties can be found in the appendices. We express these properties in terms of hole-tracking simulation because, thanks to Property~\ref{lem-sim-sim}   all the properties  of hole-tracking simulation are also valid  for hole-equal simulation.
-The first crucial property of  simulation  is that it is  a  preorder on the set of OA. This property enables stepwise refinement.
+We now  state the properties of our simulation, their proofs  can be found in the appendices. We express these properties  in terms of hole-tracking simulation because, thanks to Property~\ref{lem-sim-sim}   all the properties  of hole-tracking simulation are also valid  for hole-equal simulation.
+The first crucial theorem of  simulation  is that it is  a  preorder on the set of OA. This latter enables stepwise refinement.
 
 
-\begin{theorem}[Simulation is a preorder]
+\begin{theorem}[Simulation is a preorder]\label{thm:preoder}
 Hole-tracking simulation
    is reflexive  and  transitive:  it  is  a  preorder on the set of OA.
 \end{theorem}
@@ -850,8 +852,7 @@ Then, by construction, all transitions of the composed automaton $A_1\subst{A_3}
 
 \begin{example}  Consider again the \texttt{prod-cons} and \texttt{simprod-cons}  automata given in the examples above.  Since  \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons},  then according to Theorem \ref{thm:ContextRefinement}, 
 \texttt{prod-cons[producer/P]} $\leq_{\{\texttt{Q}\}}$  \texttt{simprod-cons[producer/P]}. 
-The automaton of \texttt{prod-cons[producer/P]} is shown in Fig.~\ref{Fig:ComposeOA}.
-The automaton resulting  from the composition of  \texttt{Simprod} and \texttt{producer} is bigger and not shown here. \qed
+The automaton of \texttt{prod-cons[producer/P]} is shown in Fig.~\ref{Fig:ComposeOA}. While the automaton resulting  from the composition of  \texttt{simprod-cons} and \texttt{producer} is bigger and not shown here. \qed
 \end{example}
 
 
@@ -926,7 +927,7 @@ There are not a lot of works that study refinement for open systems. Defining re
 (e.g. \cite{GayH:2005,BravettiZ:2021}). The definition of refinement is based on a connection  between session types and communicating automata theories -- a notion of session automata
 based on Communicating Finite-State Machines, that are used for  modelling processes communicating through FIFO channels.    The refinement of open systems is also defined in terms of  alternating simulation \cite{Alur:1998,deAlfaro:2021}.
 Alternating simulation  is originating from the game theory \cite{deAlfaro:2003}, it allows  the study of relation between individual components by viewing them as alternating transition systems. In particular,  a refinement of game-based automata expresses that the refined component can offer more services (input actions) and fewer service demands (output actions). However, the composition of such automata may
-lead to illegal states, where one automaton issues an output that is not acceptable as input in the other one. The theory of alternating simulation provides an optimistic approach to compute compatibility between automata based on the fact that each automaton expects the other to provide  legal inputs, i.e, two components can be composed if there is an environment where they can work together. Our approach  has some commonalities with  the above mentioned simulation \cite{deAlfaro:2021}: both are process-oriented approaches even if they are not based on the same notion of simulation, and both include in the model  how to compose and interact with processes that are accepted as parameters.   Nevertheless, they differ in that our approach focuses on the compositional properties of the simulation, and {not on the fact that entities can be composed}.
+lead to illegal states, where one automaton issues an output that is not acceptable as input in the other one. The theory of alternating simulation provides an optimistic approach to compute compatibility between automata based on the fact that each automaton expects the other to provide  legal inputs, i.e., two components can be composed if there is an environment where they can work together. Our approach  has some commonalities with  the above mentioned simulation \cite{deAlfaro:2021}: both are process-oriented approaches even if they are not based on the same notion of simulation, and both include in the model  how to compose and interact with processes that are accepted as parameters.   Nevertheless, they differ in that our approach focuses on the compositional properties of the simulation, and {not on the fact that entities can be composed}.
 % \LUDO{\st{TODO: what do we do better . in a different context?}}.
 
  
@@ -970,7 +971,7 @@ In this paper, we introduce a refinement relation  between open automata. It rel
 \appendix
 
 
-\section{Proof of Transitivity for Refinement}\label{sec:proof-transitivity}
+\section{Proof of Transitivity for Refinement (Theorem~\ref{thm:preoder})}\label{sec:proof-transitivity}
 \begin{quote}
 If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 \end{quote}
@@ -1015,8 +1016,8 @@ V_1 \uplus  V_3 \uplus \fvars{t_1}
 {R_{12}\mpar{s'_1,s'_{3z}}}\psubst{\psi_1  \uplus \psi_{3z}}
 \end{array}}}
 \end{multline*}	
-\RAB{The proof of this simulation step follows the same principles as the one given in \cite{AMHEEMA:2023} for the proof of transitivity of bisimulation\footnote{In particular, the bisimulation relation exhibited for proving transitivity is the same.}.  It relies on  the fact that one open transition of $A_1$ is simulated by a
-family of open transitions of $A_2$, and one open transition of $A_2$ is simulated by a family of open transitions of $A_3$. Transitivity leads to a doubly indexed family of simulating open transition.}
+The proof of this simulation step follows the same principles as the one given in \cite{AMHEEMA:2023} for the proof of transitivity of bisimulation\footnote{In particular, the bisimulation relation exhibited for proving transitivity is the same.}.  It relies on  the fact that one open transition of $A_1$ is simulated by a
+family of open transitions of $A_2$, and one open transition of $A_2$ is simulated by a family of open transitions of $A_3$. Transitivity leads to a doubly indexed family of simulating open transition.
 
  
 
@@ -1373,7 +1374,7 @@ which gives the expected result. \qed
 
 
 
-\section{Proof of Congruence}
+\section{Proof of Congruence (Theorem~\ref{thm:CongurenceRefinement})}
 \begin{quote}
 Suppose $\wrel{A_2}{A_3}{H}$ and  $k \in H$.  and the composition $A_1\subst{A_2}{k}$ is non-blocking. We have: \[\wrel{A_1\subst{A_2}{k}}{A_1\subst{A_3}{k}}{J_1 \uplus H \setminus \mbrc{k}}\]
 \end{quote}
@@ -1401,7 +1402,7 @@ We want to prove that $\mpar{\mathcal{R}', H'}$  is a hole-tracking simulation o
 \item First, we have to prove the relation for initial states:
 \[\sigma_{012} \uplus \sigma_{013} \vdash \mathcal{R}'\mpar{s_{012}, s_{013}}\]
 with $\sigma_{012} = \sigma_{01}^1 \uplus \sigma_{03}$, $\sigma_{013} = \sigma_{01}^2 \uplus \sigma_{03}$, $s_{012}=(s_{01}^1,s_{02})$, and $s_{013}=(s_{01}^2,s_{03})$.\\
-\RAB{The proof of this point is similar to that of Theorem \ref{thm:ContextRefinement}.}
+The proof of this point is similar to that of Theorem \ref{thm:ContextRefinement}.
 \item Second, we need to prove for any OT $t_{12}$ in $T_{12}$ originating from $s_{12}$
 
 \begin{align*}
@@ -1458,7 +1459,7 @@ t_{12} = \OT{\mpar{s^1_1, s_2}}{\mpar{{s^1_1}',s'_2 }}{\alpha^1_1}{{\beta^1_{1j}
 \]
 
 We then obtain a family of OTs by the simulation of $A_2$ by $A_3$ (as stated above).
-By hypothesis we have $k \in H$, so in the case where $k \in {J^1_{1}}^{\prime}$, we deduce that $k \in J'_{3x}$ we can  then build  a family of OTs $t_{13x}^{x\in X}$ with the same transition, up to renaming, as the one used to build $t_{12}$ (i.e. $t_1^1$), where ${s^2_{1}}^\prime$ is the same as ${s^1_{1}}^\prime$ up to renaming.
+By hypothesis we have $k \in H$, so in the case where $k \in {J^1_{1}}^{\prime}$, we deduce that $k \in J'_{3x}$ we can  then build  a family of OTs $t_{13x}^{x\in X}$ with the same transition, up to renaming, as the one used to build $t_{12}$ (i.e., $t_1^1$), where ${s^2_{1}}^\prime$ is the same as ${s^1_{1}}^\prime$ up to renaming.
 \[
 t_{13x} = \left(\OT{\mpar{s^2_1, s_3}}{\mpar{{s^2_{1}}',s'_{3x}}}{\alpha^2_{1}}  {{(\beta^2_{1j})^{j \in J^{2 \prime}_1}}\uplus \beta_{3xj}^{j \in J'_{3x}  \setminus \{k\}} }{g_{3x} \wedge g^2_1 \wedge \alpha^2_1 = \beta_{3xk}}{\psi_{3x} \uplus \psi^2_1}
 \right)^{x\in X}\]
