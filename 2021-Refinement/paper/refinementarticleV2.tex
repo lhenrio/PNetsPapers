@@ -299,7 +299,7 @@ T\!=& \mset{\OT{\mpar{s_c, s_p}}{\mpar{s'_c, s'_p}}{\alpha_c}{\beta_j^{j \in J'_
 \end{definition}
 
 The first OA decides when the second can evolve by involving its hole in a transition: the action emitted when \(A_p\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_c\).
-
+The condition $ \alpha_p = \beta_k$ ensures that the action emitted by the automaton $A_p$ filling the hole is the one expected in the hole $h$ of the open automaton $A_c$.
 
 
 \begin{example} \label{Example:prodandcons} Fig. \ref{Fig:procandcons} shows a producer automaton  and a consumer  automaton that can be used  to fill the holes $\texttt{P}$ and $\texttt{Q}$ of \texttt{prod-cons} defined in Example~\ref{Example:fifo-system}.
@@ -564,14 +564,15 @@ The notion of deadlock should however be specialised to our OA.
 Indeed, it is not very useful to check the  existence of a transition, instead it makes more sense to use the guards to check if a transition can be taken.
  We thus define a deadlock reduction criterion based on how the outgoing transitions are guarded.
 As such, a simulation does not introduce deadlocks if in the conditions where no transition is possible in the refined automaton, no transition were already possible in the more general one. More formally, for any pair of states $s_1$ and $s_2$  we introduce a criterion of the form: 
-\[
-\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2} \wedge \lnot( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} )\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
-\]
+\begin{multline*}
+\left(\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2} \wedge \lnot( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1})\right) \\\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\end{multline*}
 
 
 Which can be rewritten as:
 \[
-\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\left(
+\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2}\right) \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
 \]
 
 Both statements being equivalent, as each of them may reveal more intuitive than the other in different situations, we  use them interchangeably.
@@ -695,8 +696,11 @@ One major challenge in the extension of simulation to different sets of holes is
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a simulation relation with guarantees on the actions of the other holes.
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the simulation relation and adapt the definition by ignoring actions of the holes that are not in $H$.
+\TODO{add comments} we do not have any guarantee on the action of the holes inside $H$.
+The idea is that we will provide composition properties on the h but not outside
+
 \begin{definition}[Hole-tracking simulation]\label{Def:OA-Refinement}
-For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that:
+For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that\footnote{Note that the definition below is identical to the hole equal simulation except $\cap H$ is added in a few places.}:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash \mathcal{R}\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
 \begin{multline*}
