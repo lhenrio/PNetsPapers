@@ -309,13 +309,13 @@ The condition $ \alpha_p = \beta_k$ ensures that the action emitted by the autom
 
 
 
-The OA on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons} (left). The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $\texttt{P}$, this is why there is no more action from hole $P$ in the composed automaton. Transitions involving \texttt{Q} remain unchanged. \qed
+The OA on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons} (left). The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $\texttt{P}$, this is why there is no more action from hole $P$ in the composed automaton. Only elements related to the hole $P$ are changed and in particular, transitions involving \texttt{Q} remain unchanged. \qed
 
 
 \begin{figure}[!t]
  \centering
    \includegraphics[width=.99\textwidth]{Figures/compos-FIFO-Pro.pdf}
-   \caption{OA for \texttt{prod-cons}[\texttt{P}/\texttt{producer}]. 
+   \caption{OA for filling the hole $\texttt{P}$ in \texttt{prod-cons}: \texttt{prod-cons}[\texttt{P}/\texttt{producer}]. 
    \label{Fig:ComposeOA}} 
 \end{figure}
 \end{example}
@@ -631,6 +631,7 @@ If there is a hole-equal simulation from $A_1$ to $A_2$, then we say that  $A_2$
 
  %Note also the second part of the conjunction of condition (2) expresses the deadlock reduction between automata (as introduced in Definition \ref{def:dpwd}).   
 The first and second conditions coincide with the natural way to prove inductively that an automaton simulates another by starting with the initial state. The third condition ensures that  simulation  prevents the introduction of deadlocks.
+\LUDO{Similarly to bisimulation, the second condition states that, for any transition of the simulating automaton $A_1$, it corresponds to a transition of the automaton $A_2$ that does the same thing and ends up in a similar state. However a family is needed in $A_2$ because of the symbolic nature of transitions, and because depending on the values of the variables, $t_1$ may correspond to different transitions in $A_2$.}
 Our definition captures a simple simulation for OA with the same holes that is more expressive than a strict simulation since it matches a transition with a family of transitions. 
 For example, with such a relation we are able to check the simulation between two OA that differ by duplicated states, removed duplicated transitions,  reinforced  guards, different variables, etc.
 We will show in Section~\ref{sec:prop} that this simulation relation has good properties in terms of transitivity, compositionality, and reflexivity.
@@ -688,8 +689,10 @@ One major challenge in the extension of simulation to different sets of holes is
 This way, in the example above, we would have no guarantee on actions the hole $j$ by transitivity but can state a simulation relation with guarantees on the actions of the other holes.
 
 In the following definition we add a parameter $H$ which is the set of holes tracked by the simulation relation and adapt the definition by ignoring actions of the holes that are not in $H$.
-\TODO{add comments} we do not have any guarantee on the action of the holes inside $H$.
-The idea is that we will provide composition properties on the h but not outside
+\LUDO{
+Consequently, there is no guarantee related to the actions of the holes outside $H$.
+We provide compositionality properties when plugging an automaton inside a hole in $H$ but cannot state anything when plugging an automaton outside $H$. The principle is that any property concerning holes that are not in $H$ should be proven specifically for the considered automaton or the considered composition of automata.
+}
 
 \begin{definition}[Hole-tracking simulation]\label{Def:OA-Refinement}
 For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that\footnote{Note that the definition below is identical to the hole equal simulation except $\cap H$ is added in a few places.}:
@@ -719,6 +722,10 @@ Note that every action of the holes outside \(H\) is unconstrained according to 
 \begin{property}[Relating simulations]\label{lem-sim-sim}
 Hole-equal simulation is a particular case of hole-tracking simulation when  $J_1=J_2=H$.
 \end{property}
+\LUDO{
+In particular if an OA has no holes, the two definitions are equivalent and result in a  ``symbolic simulation'', if additionally there is no variable in the OA, we obtain the classical simulation of process algebra theory.}
+
+
 \begin{example} Consider the automata of Examples \ref{Example:fifo-system} and \ref{example:fifo-system-one}. As we saw above, \texttt{simprod-cons} $\leq$ \texttt{prod-cons}, therefore \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons}.
 \end{example}
 %\TODO{potential ex 4: check if the example with a hole filled is a simulation of the example with holes? }
