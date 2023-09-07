@@ -130,7 +130,7 @@ While our contribution is theoretical, it establishes the foundations for to the
 
 % OA
 Open automata (that we abbreviate OA) were defined as a way to provide a semantics for open parameterised hierarchical labelled transition systems (abbreviated LTS). They were proposed as a theoretical foundation for parametrised automata used in verification tools and called \emph{pNets}.
-An OA \cite{henrio:01299562} is similar to a classical automaton but with variables and holes. Variables make automata symbolic and allow them to encode infinite state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is an automaton where the behaviour of one ``process parameter'' % 
+An OA \cite{henrio:01299562} is similar to a classical automaton but with variables and holes. Variables make automata symbolic and allow them to encode infinite-state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is an automaton where the behaviour of one ``process parameter'' % 
  of the main automaton has been provided.
 Due to their the generic nature, the notion of OA model is quite abstract but we already illustrated previously how to derive OAs for process algebra operators~\cite{henrio:01299562} or for component systems~\cite{AMHEEMA:2023,ameurboulifa:01526055}.
 
@@ -211,7 +211,7 @@ We will use two variants of the satisfiability relation:
 \begin{definition}[Open transition, Open automaton]
 An \emph{open automaton} is a tuple \(\OAg\) with \(S\) a set of states, \(s_0 \in S\) the initial state, \(V\) the finite set of variable names, \(\sigma_0: V \to \values\) the initial valuation of variables, \(J\) the set of hole names and \(T\) the set of open transitions. 
 
-An \emph{open transition} is a tuple \nmm{\OTg} with \(s, s' \in S\) the source and target states, \(\alpha \in \actions\) the produced action, \(J' \subseteq J\) the holes involved in the transition, \(g \in \formulas\) the guard and \(\psi: V \to \terms\) the variable  assignments. Each \(\beta_j \in \actions\) is an action of the holes $j$,
+An \emph{open transition} is a structure \nmm{\OTg} made of several composing entities, equivalent to a tuple. In an open transition \(s, s' \in S\) are the source and target states, \(\alpha \in \actions\) is the resulting action that can be observed from the outside, \(J' \subseteq J\) are the holes involved in the transition, \(g \in \formulas\) is the guard that may constraint the transition, and \(\psi: V \to \terms\) are the variable  assignments that have an effect on the state of the automaton. Each \(\beta_j \in \actions\) is an action of the holes $j$,
 To be well-formed, an open transition should use only variables of the automaton and variables appearing in the involved actions, formally: 
 \begin{align*}
 \fvars{g}&\subseteq \fvars{\alpha}\cup \bigcup_{j \in J'} \fvars{\beta_j} \cup V \\ \forall v\in V.\, \fvars{\psi(v)}&\subseteq \fvars{\alpha}\cup \bigcup_{j \in J'} \fvars{\beta_j} \cup V
@@ -222,11 +222,12 @@ We use two operators to access pieces of information of the OA.
 
 %\TODO{useful or not?}
 \begin{definition}[Out-transition, Transition variables]
-Let \(V\) be the variable names of a considered automaton, \(T\) its transitions and \(r\) one of its states.
-\(\fOT[T]{r} \subset T\) are called the out-transitions of the state \(r\).
+Let $\OAg$ be an automaton and let $r$ be a state in  $S$.
+%Let \(V\) be the set of variable names of a considered automaton, \(T\) the set of transitions and \(r\) one of its states.
+\(\fOT[T]{r} \subset T\) are the transition outgoing from state $r$\footnote{When the set \(T\) is clear from the context, it will be omitted and we will use $\fOT{r}$}.
 %\(\fIT[T]{r} \subset T\) are called the in-transitions of the state \(r\).
-When the set \(T\) is clear from the context, it will be omitted.
 The local variables of a transition \(\fvars{t}\) are all variables appearing in transition \(t\) except the variables of the automaton.
+Outgoing transitions and variables are formally defined as follows.
 %\begin{align*}
 % %&
 %%	\fIT[T]{r} & = \mset{\OTg \in T}{s' = r} \\
@@ -612,7 +613,8 @@ Consider two OA with identical set of holes:
          {
            \beta_{2 x j}^{j\in J'_{2x}}, g_{2 x},\psi_{2 x}}
          {s_2 \OTarrow {\alpha_{2 x}} s_{2 x}'}
-}^{x \in X}\in \fOT{s_2}.\,~~\\ 
+}^{x \in X}\in \fOT{s_2}.\,~~\\[2pt]
+\mpar{\forall x \in X, J'_{2x} = J'_1 } \nwedge\hfill\\[1pt]
 %\everymath{\displaystyle}\begin{array}{l}
 V_1 \uplus V_2 \uplus  \fvars{t_1} \vdash \bigsymb{\bigexists} \mpar{\bigcup_x\fvars{t_{2x}}}. \hspace{7cm}
 \\
@@ -620,7 +622,7 @@ V_1 \uplus V_2 \uplus  \fvars{t_1} \vdash \bigsymb{\bigexists} \mpar{\bigcup_x\f
  \operatorname*{\bigsymb{\bigvee}}_{x \in X}
 {\everymath{\displaystyle}
 \mpar{\begin{array}{l}
-			\alpha_{2x} = \alpha_{1} \wedge \bigwedge_\subbox{j \in J} \beta_{2xj} = \beta_{1j} \nwedge\\[12pt]
+			\alpha_{2x} = \alpha_{1} \wedge \bigwedge_\subbox{j \in J'_1} \beta_{2xj} = \beta_{1j} \nwedge\\[12pt]
 			 g_{2x} \wedge\mathcal{R}\mpar{ s'_{1},s'_{2x}}\psubst{\psi_{2x} \uplus \psi_{1}}
 		\end{array}} }
 %\end{array} 
@@ -702,7 +704,7 @@ For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and
 		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\[12pt]
 		\quad \mpar{\forall x \in X, J'_{2x} \cap H = J'_1 \cap H} \nwedge\\[1pt]
 		 V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\\hspace{5em} \mpar{\mathcal{R}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
-			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{2x} \cap H} \beta_{1j} = \beta_{2xj}   \nwedge\\
+			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{1} \cap H} \beta_{1j} = \beta_{2xj}   \nwedge\\
 			 g_{2x} \wedge \mathcal{R}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}} 
 	\end{array} 
