@@ -46,7 +46,7 @@
 %
 \author{
 Rabéa Ameur-Boulifa\inst{1}\orcidID{0000-0002-2471-8012} \and
-Quentin Corradi\inst{4}\orcidID{0000-0003-4218-3987} \and
+Quentin Corradi\inst{2}\orcidID{0000-0003-4218-3987} \and
 Ludovic Henrio \inst{2}\orcidID{0000-0001-7137-3523} \and
 Eric Madelaine \inst{3}\orcidID{0000-0002-5552-5993}}
 %
@@ -61,10 +61,7 @@ Universit\'e Lyon, EnsL, UCBL, CNRS, Inria,  LIP, France\\
 \email{first.last@ens-lyon.fr}
  \and
 INRIA Sophia Antipolis M\'edit\'erann\'ee, UCA,  France\\
-\email{first.last@inria.fr}
-\and
-Imperial College London, United Kingdom (previously Universit\'e Lyon)\\
-\email{qc322[at]ic.ac.uk}}
+\email{first.last@inria.fr}}
 %
 \maketitle              % typeset the header of the contribution
 %
@@ -192,15 +189,15 @@ The set \(\values\) denotes values which is a subset of closed terms. \(\rformul
 The parallel substitution of variables in \(e\) by a map \(\psi: V \to \terms\) is denoted \(e\psubst{\psi}\).
 
 
- We suppose given a satisfiability relation on closed formulas, denoted \({\vdash} f\).
+ We suppose given a satisfiability relation on closed formulas, denoted \({\models} f\).
 % In practice one of our objective is to be able to use a SMT solver to reason automatically on the properties of open automata, in this case
-%\(\vdash\) can hence be interpreted as an indicator of what is given to the SMT; it separates the external logic and the logic on \(\formulas\).
+%\(\models\) can hence be interpreted as an indicator of what is given to the SMT; it separates the external logic and the logic on \(\formulas\).
 We will use two variants of the satisfiability relation:
 \begin{itemize}
 \item The satisfiability of a formula \(f \in \formulas\) under some valuation \(\sigma: V \to \values\) is defined as follows:
-\( \sigma \vdash f \iff \vdash \exists \fvars{f\psubst{\sigma}}, f\psubst{\sigma} \)
+\( \sigma \models f \iff \models \exists \fvars{f\psubst{\sigma}}, f\psubst{\sigma} \)
 \item The satisfiability of a formula \(f \in \formulas\) with some variable set \(V\) as context is defined as follows:
-\( V \vdash f \iff  \vdash \forall V, \exists\mpar{\fvars{f} \setminus V}, f \)
+\( V \models f \iff  \models \forall V, \exists\mpar{\fvars{f} \setminus V}, f \)
 \end{itemize}
 
 %For instance a formula with quantifiers on variables might not be provable even if it is true for all values of these variables.
@@ -333,11 +330,11 @@ A relation on configurations of two OA \(\OAg[1]\) and \(\OAg[2]\) is a function
 %\TODO{C'est etrange, la formulation "the variables they refer to", comme il n'y a plus de variables d'etat... +1}
 The idea is that two states are related depending on the satisfiability of the expression relying their variables, i.e., if the variables of the OA verify a certain formula. 
 In other words, to each pair of states is attached a boolean formula that may refer to the  variables of each of the two OA, stating whether the two states are related or not.
-Additionally, we say that the relation $ \mathcal{R}$ \emph{relates the initial states} of the automata if: \(\sigma_{01} \uplus \sigma_{02} \vdash  \mathcal{R}\mpar{s_{01}, s_{02}}\).
+Additionally, we say that the relation $ \mathcal{R}$ \emph{relates the initial states} of the automata if: \(\sigma_{01} \uplus \sigma_{02} \models  \mathcal{R}\mpar{s_{01}, s_{02}}\).
 We illustrate such a relation over automata with bisimulation relation below.
 
 %\TODO{I do not think we reason on configurations for the moment, if we want to, we should introduce this:}
-%Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \vdash R\mpar{s_1, s_2}\).
+%Two configurations \(\mpar{s_1, \sigma_1} \in S_1 \times\mpar{V_1 \to \values}, \mpar{s_2, \sigma_2} \in S_2 \times \mpar{V_2 \to \values}\) are related iff \(\sigma_1 \uplus \sigma_2 \models R\mpar{s_1, s_2}\).
 
 \subsection{A Bisimulation for Open Automata}
 
@@ -392,15 +389,15 @@ Consider the two following simple OA:
   \node[state,inner sep=5pt,minimum size=10pt, below right of=1,right=90pt] (2) {$t$};
   \node[state,inner sep=5pt,minimum size=10pt, above right of=1,right=90pt] (3) {$t'$};
 
-  \draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{x<0}{(y\leftarrow -x)}}  (2);
-  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{x\geq 0}{(y\leftarrow x)}} (3);
+  \draw (1) edge[pos=.4] node[below=6pt]{\OTd{\alpha(x)}{h\mapsto\beta(x)}[x<0]{y\leftarrow -x}}  (2);
+  \draw (1) edge[pos=.4] node[above]{\OTd{\alpha(x)}{h\mapsto\beta(x)}[x\geq 0]{y\leftarrow x}} (3);
 \end{tikzpicture}
 \hfill
 \begin{tikzpicture}
   \node[state,inner sep=5pt,minimum size=10pt] (1) {$s_2$};
   \node[state,inner sep=5pt,minimum size=10pt,  right of=1,right=90pt] (2) {$t_2$};
-\draw (1) edge[align=center] node[below]{\OT{}{}{\alpha(x)}{\{h\mapsto\beta(x)\}}{True}{(z\leftarrow x)}}  (2);
-%  \draw (1) edge[align=center] node[above]{\OT{}{}{\alpha(x)}{h\mapsto\beta(x)}{x\geq 0}{y\leftarrow x}} (3);
+\draw (1) edge[align=center] node[below]{\OTd{\alpha(x)}{h\mapsto\beta(x)}{z\leftarrow x}}  (2);
+%  \draw (1) edge[align=center] node[above]{\OTd{\alpha(x)}{h\mapsto\beta(x)}{x\geq 0}{y\leftarrow x}} (3);
 \end{tikzpicture}~
 
 We should be able to consider these two OA as bisimilar. Both can input any $\beta(x)$ input on their hole and stores the value of $x$, emitting $\alpha(x)$ along the transition.
@@ -424,14 +421,14 @@ the following:
  \item   
 For any open transition $OT$ in ${T}_1$:
 $
-     \OTbase{s \xrightarrow{\alpha} s'}
+     \OTbase{s \OTarrow{\alpha} s'}
          {
            \beta_j^{j\in J'}}{g_{OT}}{\psi_{OT}}
 $
  there exists an indexed set of  open transitions $OT_x^{x\in X} \subseteq {T}_2$:
 $
 %    \left( fresh \ \set{\alpha_i}, \set{b_j}, v_x.\ \
-    \OTbase{t \xrightarrow{\alpha_x} t_x}
+    \OTbase{t \OTarrow{\alpha_x} t_x}
          {
            \beta_{j x}^{j\in J_{x}}}{ g_{OT_x}}{\psi_{OT_x}}   
 %         \right)
@@ -494,7 +491,7 @@ Technically, the following sections do not rely on the definition of strong bisi
 We finally define a new predicate abstracting state reachability for OA, it  allows us to reason on reachable states in an automaton. It can  be seen as an abstraction of the reachable states under the form of a predicate that must stay verified along the execution of the OA.
 \begin{definition}[Reachability] \label{Def:Reach}
 For any OA \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
-\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
+\[\sigma_0 \models \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \models \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 \end{definition}
 
 Reachability takes into account all paths, and can over-approximate the reachable configurations. 
@@ -518,7 +515,7 @@ Simulation defines conditions on a relation $\mathcal{R}$ such that $\mathcal{R}
 %A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if  it satisfies the following\footnote{Note that variables of $T_1$ are existentially quantified in the proposition.}:
 %\begin{multline*}
 % \forall \mpar{s_1, s_2} \in S_1 \times S_2,
-% \\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
+% \\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \models \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
 %\end{multline*}
 %\end{definition}
 
@@ -550,7 +547,7 @@ A composable automaton cannot transform external non-determinism of the sub-auto
 %Let \(A = A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) and $A= \OAg$.
 %
 %The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
-%\[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
+%\[ \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \models \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)\]
 %\end{definition}
 %Again we use guards to ensure that the transition can occur. It is not sufficient to ensure the existence of equivalent transitions in general, but it will be sufficient in the context of refinement.
 
@@ -566,14 +563,15 @@ Indeed, it is not very useful to check the  existence of a transition, instead i
  We thus define a deadlock reduction criterion based on how the outgoing transitions are guarded.
 As such, a simulation does not introduce deadlocks if in the conditions where no transition is possible in the refined automaton, no transition were already possible in the more general one. More formally, for any pair of states $s_1$ and $s_2$  we introduce a criterion of the form: 
 \begin{multline*}
-\left(\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2} \wedge \lnot( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1})\right) \\\implies \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\forall \mpar{s_1, s_2} \in S_1 \times S_2, \\
+	V_1 \uplus V_2 \models \biggl( \mathcal{R}\mpar{s_1, s_2} \wedge \lnot \Bigl( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \Bigr) \implies \lnot \Bigl( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \Bigr) \biggr)
 \end{multline*}
 
 
 Which can be rewritten as:
 \[
-\left(
-\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2}\right) \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2
+	\models\! \biggl(\! \mathcal{R}\mpar{s_1, s_2} \!\implies\! \Bigl(\!\! \bigvee_\subbox{t_1 \in \fOT{s_1}}\! \fguard{t_1} \Bigr) \lor \lnot \Bigl(\!\!  \bigvee_\subbox{t_2 \in \fOT{s_2}}\! \fguard{t_2} \Bigr) \!\biggr)
 \]
 
 Both statements being equivalent, as each of them may reveal more intuitive than the other in different situations, we  use them interchangeably.
@@ -593,7 +591,7 @@ Both statements being equivalent, as each of them may reveal more intuitive than
 %A relation \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) between  \(\OAg[1]\) and \(\OAg[2]\)
 %  is preserved along identical transitions if  it satisfies the following:
 %\begin{multline*}
-%\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \vdash \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \implies  R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\\
+%\forall \mpar{s_1, s_2} \in S_1 \times S_2, \bigsymb{\forall} \mpar{t_1, t_2} = \mpar{\OTx{1}{}{1}{1}, \OTx{2}{}{2}{2}} \in \fOT{s_1} \times \fOT{s_2} \\  V_1 \uplus V_2 \uplus \fvars{t_1} \uplus \fvars{t_2} \models \hspace{6cm}\\  R\mpar{s_1, s_2} \wedge 	g_1 \wedge g_2 \wedge \alpha_1 = \alpha_2 \wedge \bigwedge_\subbox{j \in J'_1 \cap J'_2} \beta_{1j} = \beta_{2j} \implies  R\mpar{s'_1, s'_2}\psubst{\psi_1 \uplus \psi_2}\\
 %\end{multline*}
 %\end{definition}
 %We thus define the following property that can be understood as follows. Take a specification automaton and its implementation. Consider two related states for the refinement relation. Suppose an identical transition exist in both automata (with same guards and same label), then either the reached states $s_1'$ and $s_2'$ are related by refinement, or there exists another transition of the specification that is also identical and leads to a state $s_1''$ that is related to $s_2'$ in the refinement relation.
@@ -603,22 +601,15 @@ We can now state the definition of simulation between OA that have the same set 
 \begin{definition}[Hole-equal simulation]\label{def:HoleEqualSim}
 Consider two OA with identical set of holes:
 \(A_1 = \OA{S_1}{s_{01}}{V_1}{\sigma_{01}}{J}{T_1}\) and \(A_2 = \OA{S_2}{s_{02}}{V_2}{\sigma_{02}}{J}{T_2}\), the relation on configurations \(\mathcal{R}: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is a hole-\(\symb{equal}\) simulation from $A_1$ to $A_2$ if the following conditions hold : 
-\item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash \mathcal{R}\mpar{s_{01}, s_{02}}\)
+\item[(1)] \(\sigma_{01} \uplus \sigma_{02} \models \mathcal{R}\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)\vspace{-8pt}
 \noindent\begin{multline*}
- \bigsymb{\forall} {t_1} = \openrule
-         {
-           \beta_{1 j}^{j\in J'_{1}}, g_1,\psi_1}
-         {s_1 \OTarrow {\alpha_1} s_1'} \in \fOT{s_1} .\,~~
+ \bigsymb{\forall} {t_1} = \OTx{1}{}{1}{1} \in \fOT{s_1} .\,~~
 \bigsymb{\bigexists} 
-\mpar{t_{2x} \!=\! \openrule
-         {
-           \beta_{2 x j}^{j\in J'_{2x}}, g_{2 x},\psi_{2 x}}
-         {s_2 \OTarrow {\alpha_{2 x}} s_{2 x}'}
-}^{x \in X}\in \fOT{s_2}.\,~~\\[2pt]
+\mpar{t_{2x} \!=\! \OTx{2}{x}{2x}{2x}}^{x \in X}\in \fOT{s_2}.\,~~\\[2pt]
 \mpar{\forall x \in X, J'_{2x} = J'_1 } \nwedge\hfill\\[1pt]
 %\everymath{\displaystyle}\begin{array}{l}
-V_1 \uplus V_2 \uplus  \fvars{t_1} \vdash 
+V_1 \uplus V_2 \uplus  \fvars{t_1} \models 
  \mathcal{R}\mpar{s_1, s_2} \wedge g_1 \implies
  \operatorname*{\bigsymb{\bigvee}}_{x \in X}
 {\everymath{\displaystyle}
@@ -630,7 +621,8 @@ V_1 \uplus V_2 \uplus  \fvars{t_1} \vdash
 \end{multline*}
 \item [(3)] Deadlock reduction:
 \[
-\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \!\vdash\! \mathcal{R}\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2
+	\models\! \biggl(\! \mathcal{R}\mpar{s_1, s_2} \!\implies\! \Bigl(\!\! \bigvee_\subbox{t_1 \in \fOT{s_1}}\! \fguard{t_1} \Bigr) \lor \lnot \Bigl(\!\! \bigvee_\subbox{t_2 \in \fOT{s_2}}\! \fguard{t_2} \Bigr) \!\biggr)
 \]
 If there is a hole-equal simulation from $A_1$ to $A_2$, then we say that  $A_2$ simulates $A_1$; we  denote it $A_2\leq A_1$.
 \end{definition}
@@ -701,13 +693,13 @@ The idea is that we will provide composition properties on the h but not outside
 
 \begin{definition}[Hole-tracking simulation]\label{Def:OA-Refinement}
 For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that\footnote{Note that the definition below is identical to the hole equal simulation except $\cap H$ is added in a few places.}:
-\item[(1)] \(\sigma_{01} \uplus \sigma_{02} \vdash \mathcal{R}\mpar{s_{01}, s_{02}}\)
+\item[(1)] \(\sigma_{01} \uplus \sigma_{02} \models \mathcal{R}\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
 \begin{multline*}
 	\everymath{\displaystyle}\begin{array}{l}
 		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\[12pt]
 		\quad \mpar{\forall x \in X, J'_{2x} \cap H = J'_1 \cap H} \nwedge\hfill\\[1pt]
-		 V_1 \uplus V_2 \uplus \fvars{t_1} \vdash\\\hspace{5em} \mpar{\mathcal{R}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
+		 V_1 \uplus V_2 \uplus \fvars{t_1} \models\\\hspace{5em} \mpar{\mathcal{R}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{1} \cap H} \beta_{1j} = \beta_{2xj}   \nwedge\\
 			 g_{2x} \wedge \mathcal{R}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
 		\end{array}}} 
@@ -715,7 +707,8 @@ For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and
 \end{multline*}
 \item[(3)] Deadlock reduction:
 \[
-\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2  \vdash \mathcal{R}\mpar{s_1, s_2} \implies( \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} ) \lor¢ \lnot( \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2}  )
+\forall \mpar{s_1, s_2} \!\in\! S_1 \!\times\! S_2, V_1 \uplus V_2
+	\models\! \biggl(\! \mathcal{R}\mpar{s_1, s_2} \!\implies\! \Bigl(\!\! \bigvee_\subbox{t_1 \in \fOT{s_1}}\! \fguard{t_1} \Bigr) \lor \lnot \Bigl(\!\! \bigvee_\subbox{t_2 \in \fOT{s_2}}\! \fguard{t_2} \Bigr) \!\biggr)
 \]
 \end{definition}
 Note that every action of the holes outside \(H\) is unconstrained according to the simulation relation.
@@ -764,7 +757,7 @@ Next definition states that if $T_2$ is not in a deadlock position then $T_1$ ca
 Let \(\OAg[1]\) and \(\OAg[2]\) be two OAs.
 A relation on OA configurations \(R: S_1 \times S_2 \to \rformulas[V_1 \uplus V_2]\) is deadlock reducing if  it satisfies the following\footnote{Note that variables of $T_1$ are existentially quantified in the proposition.}:
 \begin{multline*}
- \forall \mpar{s_1, s_2} \in S_1 \times S_2,\\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \vdash \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
+ \forall \mpar{s_1, s_2} \in S_1 \times S_2,\\ V_1 \uplus V_2 \uplus \biguplus_\subbox{t_2 \in \fOT{s_2}} \fvars{t_2} \models \left(R\mpar{s_1, s_2} \wedge \bigvee_\subbox{t_2 \in \fOT{s_2}} \fguard{t_2} \implies \bigvee_\subbox{t_1 \in \fOT{s_1}} \fguard{t_1} \right)
 \end{multline*}
 \end{definition}
 
@@ -778,7 +771,7 @@ This creates a conflict between deadlock reduction and the properties involving 
 %But before defining non-blocking composition, we first introduce a notion of state reachability for open automata. 
 %\begin{definition}[Reachability] \label{Def:Reach}
 %For any open automata \(A = \OAg\), a reachability predicate \(\reach{A}: S \to \rformulas[V]\) is any predicate on states that is valid on initial state, and preserved across transitions:
-%\[\sigma_0 \vdash \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \vdash \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
+%\[\sigma_0 \models \reach{A}\mpar{s_0}\quad\land\quad\forall t = \OTg \in T, \fvars{t} \models \left(\reach{A}\mpar{s} \wedge g \implies \reach{A}\mpar{s'}\psubst{\psi}\right)\]
 %\end{definition}
 %Reachability takes into account all paths, and can over-approximate the reachable configurations. 
 %From an automation point of view, finding the most precise reachability predicate for a given automata is not decidable because of the symbolic nature of open automata, but only an over-approximation is necessary. An automatic tool would only need to find an over approximation of reachability to reason on composition that is compatible with deadlock reduction. 
@@ -790,7 +783,7 @@ We call \emph{non-blocking composition} a composition that can  safely be used t
 %
 %The composition \(A_0\mdbrk{j_i \mapsto A_i \middle| 1 \leq i \leq n}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_0\) then there is a possible transition in \(A\):
 %\begin{multline*}
-% \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \vdash \\ \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)
+% \forall s = \mpar{s_0, s_1,..,s_n} \in S, V \uplus \biguplus_\subbox{t_0 \in \fOT{s_0}} \fvars{t_0} \models \\ \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t_0 \in \fOT{s_0}} \fguard{t_0} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)
 %\end{multline*}
 %\end{definition}
 \begin{definition}[Non-blocking composition] \label{Def:Non-block}
@@ -798,7 +791,7 @@ Consider two OA:\\ \(A_1 \defobject \OAg[1]\) and \( A_2 \defobject \OAg[2]\).
 Let $A$ be the OA resulting from the composition \(A = A_1\subst{A_2}{k}= \OAg\). 
 The composition \(A_1\subst{A_2}{k}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_1\) then there is a possible transition in \(A\):
 %\begin{multline*}
-\[ \forall s = \mpar{s_1, s_2} \in S, V \uplus \biguplus_\subbox{t \in \fOT{s_1}} \fvars{t} \vdash  \left(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t \in \fOT{s_1}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \right)
+\[ \forall s = \mpar{s_1, s_2} \in S, V \uplus \biguplus_\subbox{t \in \fOT{s_1}} \fvars{t} \models  \biggl(\reach{A}\mpar{s} \wedge \bigvee_\subbox{t \in \fOT{s_1}} \fguard{t} \implies \bigvee_\subbox{t \in \fOT{s}} \fguard{t} \biggr)
 \]
 %\end{multline*}
 \end{definition}
