@@ -129,7 +129,7 @@ While our contribution is theoretical, it establishes the foundations for to the
 Open automata (that we abbreviate OA) were defined as a way to provide a semantics for open parameterised hierarchical labelled transition systems (abbreviated LTS). They were proposed as a theoretical foundation for parametrised automata used in verification tools and called \emph{pNets}.
 An OA \cite{henrio:01299562} is similar to a classical automaton but with variables and holes. Variables make automata symbolic and allow them to encode infinite-state systems. Holes enable the composition of automata: an automaton with a hole is an operator that takes another automaton as parameter and reacts to the actions it emits; the composed automaton is an automaton where the behaviour of one ``process parameter'' % 
  of the main automaton has been provided.
-Due to their the generic nature, the notion of OA model is quite abstract but we already illustrated previously how to derive OAs for process algebra operators~\cite{henrio:01299562} or for component systems~\cite{AMHEEMA:2023,ameurboulifa:01526055}.
+Due to their generic nature, the notion of OA model is quite abstract but we already illustrated previously how to derive OAs for process algebra operators~\cite{henrio:01299562} or for component systems~\cite{AMHEEMA:2023,ameurboulifa:01526055}.
 
 In previous works \cite{AMHEEMA:2023,wang:03126313} a bisimulation relation was defined for OA and open parameterised hierarchical LTSs. It exhibited good properties concerning bisimulation, but refinement relations were not studied. In this article we go further to  define a theory of simulation for OA. The simulation relation we introduce in the paper  is based on the notion of   simulation,  in a similar way to that defined in classical automata theory \cite{Milner:1989,Bellegarde:2000}.   It possesses the common behaviour-preserving  property:  all the behaviour of the abstract specification must be followed by its (complex) implementation but additional behaviours may exist. However we also ensure that a whole scenario, made of several steps, of the specification can also be simulated by the refined system, which is slightly richer than the traditional simulation relation and  allows us to obtain a compositionality result.
 
@@ -296,7 +296,9 @@ T\!=& \mset{\OT{\mpar{s_c, s_p}}{\mpar{s'_c, s'_p}}{\alpha_c}{\beta_j^{j \in J'_
 \end{definition}
 
 The first OA decides when the second can evolve by involving its hole in a transition: the action emitted when \(A_p\) makes a transition is synchronised with the action of the hole \(k\) in transitions of \(A_c\).
-The condition $ \alpha_p = \beta_k$ ensures that the action emitted by the automaton $A_p$ filling the hole is the one expected in the hole $h$ of the open automaton $A_c$.
+The condition $ \alpha_p = \beta_k$ ensures that the action emitted by the automaton $A_p$ filling the hole is the one expected in the hole $k$ of the open automaton $A_c$.
+
+
 
 
 \begin{example} \label{Example:prodandcons} Fig. \ref{Fig:procandcons} shows a producer automaton  and a consumer  automaton that can be used  to fill the holes $\texttt{P}$ and $\texttt{Q}$ of \texttt{prod-cons} defined in Example~\ref{Example:fifo-system}.
@@ -309,7 +311,7 @@ The condition $ \alpha_p = \beta_k$ ensures that the action emitted by the autom
 
 
 
-The OA on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons} (left). The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $\texttt{P}$, this is why there is no more action from hole $P$ in the composed automaton. Only elements related to the hole $P$ are changed and in particular, transitions involving \texttt{Q} remain unchanged. \qed
+The OA on Fig. \ref{Fig:ComposeOA} is the composition of the system in Fig.~\ref{Fig:RefineOA} and the producer in Fig. \ref{Fig:procandcons} (left). The composition consists of two states (the product of the states of both automata). The transitions from one state to another come from  the synchronisation  of the transitions of the encompassing automaton with those of the producer filling the hole $\texttt{P}$, this is why there is no more action from hole $\texttt{P}$ in the composed automaton. Only elements related to the hole $\texttt{P}$ are changed and in particular, transitions involving \texttt{Q} remain unchanged. \qed
 
 
 \begin{figure}[!t]
@@ -439,15 +441,15 @@ $
 %\vspace{-2em}
 %{	\includegraphics[width=1.02\linewidth]{XFIG/Bisim}}
 %\end{minipage}
- such that  $\forall x.\, J'=J_{x}$ and there exists $Pred_{s',t_x}$ such that $\mathcal{R}(s',t_x) 
- $ holds
+ such that  $\forall x.\, J'=J_{x}$ and there exists \hl{ $Pred_{s',t_x}$ such that} $\mathcal{R}(s',t_x)  
+ $ holds \RAB{On n'a pas  de Pred dans la def}
  and  
 \begin{multline*}
  \mathcal{R}(s,t) \land g_{OT}\implies\\
  \displaystyle{\bigvee_{x\in X}
    \left( \forall j. \beta_j=\beta_{jx}  \land g_{OT_x}
      \land \alpha\!=\!\alpha_x \land  
-     \mathcal{R}\left(s',t_x{\psi_{OT}\!\uplus\!\psi_{OT_x}}\right)\right)}
+     \mathcal{R}\left(s',t_x\right)\psubst{\psi_{OT}\!\uplus\!\psi_{OT_x}}\right)}
 \end{multline*}
      %     \symb{Subst}(\Pred_{target_x}, \Post_{OT} o \Post_{OT_x})
      %     \right)$.
@@ -695,13 +697,13 @@ We provide compositionality properties when plugging an automaton inside a hole 
 }
 
 \begin{definition}[Hole-tracking simulation]\label{Def:OA-Refinement}
-For two OA\\ \(A_1 \defobject \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 \defobject \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that\footnote{Note that the definition below is identical to the hole equal simulation except $\cap H$ is added in a few places.}:
+For two OA\\ \(A_1 = \OA{S_1}{s_{01}}{J_1}{V_1}{\sigma_{01}}{T_1}\) and \(A_2 = \OA{S_2}{s_{02}}{J_2}{V_2}{\sigma_{02}}{T_2}\), \(A_1\) is a simulation of \(A_2\) tracking holes \(H\), noted \(\wrel{A_1}{A_2}{H}\), with \(H \subseteq J_1 \cap J_2\), if there is a relation on configurations $\mathcal{R}: \mpar{S_1 \times S_2} \to \rformulas[V_1 \uplus V_2]$ such that\footnote{Note that the definition below is identical to the hole equal simulation except $\cap H$ is added in a few places.}:
 \item[(1)] \(\sigma_{01} \uplus \sigma_{02} \models \mathcal{R}\mpar{s_{01}, s_{02}}\)
 \item[(2)] \(\forall \mpar{s_1, s_2} \in S_1 \times S_2,\)
 \begin{multline*}
 	\everymath{\displaystyle}\begin{array}{l}
 		\bigsymb{\forall} \OTx{1}{}{1}{1} \in \fOT{s_1}, \bigsymb{\exists} \mpar{\OTx{2}{x}{2x}{2x} \in \fOT{s_2}}^{x \in X}, \\[12pt]
-		\quad \mpar{\forall x \in X, J'_{2x} \cap H = J'_1 \cap H} \nwedge\hfill\\[1pt]
+		 \mpar{\forall x \in X, J'_{2x} \cap H = J'_1 \cap H} \nwedge\hfill\\[1pt]
 		 V_1 \uplus V_2 \uplus \fvars{t_1} \models\\\hspace{5em} \mpar{\mathcal{R}\mpar{s_1, s_2} \wedge g_1 \implies \operatorname*{\bigsymb{\bigvee}}_{x \in X} \mpar{\begin{array}{l}
 			\alpha_1 = \alpha_{2x} \wedge \bigwedge_\subbox{j \in J'_{1} \cap H} \beta_{1j} = \beta_{2xj}   \nwedge\\
 			 g_{2x} \wedge \mathcal{R}\mpar{s'_1, s'_{2x}}\psubst{\psi_1 \uplus \psi_{2x}}
@@ -723,7 +725,7 @@ Note that every action of the holes outside \(H\) is unconstrained according to 
 Hole-equal simulation is a particular case of hole-tracking simulation when  $J_1=J_2=H$.
 \end{property}
 \LUDO{
-In particular if an OA has no holes, the two definitions are equivalent and result in a  ``symbolic simulation'', if additionally there is no variable in the OA, we obtain the classical simulation of process algebra theory.}
+In particular, if an OA has no holes, the two definitions are equivalent and result in a  ``symbolic simulation'', if additionally there is no variable in the OA, we obtain the classical simulation of process algebra theory.}
 
 
 \begin{example} Consider the automata of Examples \ref{Example:fifo-system} and \ref{example:fifo-system-one}. As we saw above, \texttt{simprod-cons} $\leq$ \texttt{prod-cons}, therefore \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons}.
@@ -794,7 +796,7 @@ We call \emph{non-blocking composition} a composition that can  safely be used t
 %\end{multline*}
 %\end{definition}
 \begin{definition}[Non-blocking composition] \label{Def:Non-block}
-Consider two OA:\\ \(A_1 \defobject \OAg[1]\) and \( A_2 \defobject \OAg[2]\).
+Consider two OA:\\ \(A_1 = \OAg[1]\) and \( A_2 = \OAg[2]\).
 Let $A$ be the OA resulting from the composition \(A = A_1\subst{A_2}{k}= \OAg\). 
 The composition \(A_1\subst{A_2}{k}\) is non-blocking if   \(A \) has a reachability predicate such that, for each reachable configuration, if there is a possible transition in \(A_1\) then there is a possible transition in \(A\):
 %\begin{multline*}
@@ -829,7 +831,7 @@ The relation  \(\wrel{}{}{H}\) is reflexive,  \(\wrel{A}{A}{H}\). This is shown 
 %If $\wrel{A_1}{A_2}{H}$ and $\wrel{A_2}{A_3}{H'}$, then $\wrel{A_1}{A_3}{H\cap H'}$.
 %\end{theorem}
 In \cite{henrio:hal-04193421}, we give proof of transitivity. It is done classically by identifying the relation between $A_1$ and $A_3$ that is a simulation. What is less classical is the definition of this relation because it is a boolean formula. For each couple of states  $s_1$ and $s_3$ of $A_1$ and $A_3$ we build a  formula that defines the simulation. To do this, we take the disjunction of formulas relating $s_1$ and $s_3$, and passing by all states $s_2$ of $A_2$. More precisely, we define a relation of the following form:
-  \[\mathcal{R}_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\mpar{\mathcal{R}_{12}(s_1,s_2) \land \mathcal{R}_{23}(s_2,s_3) } \]
+  \[\mathcal{R}_{13}(s_1,s_3)=\bigvee_{s_2\in S_2}\left(\mathcal{R}_{12}(s_1,s_2) \land \mathcal{R}_{23}(s_2,s_3) \right) \]
 We then prove that this relation  is a simulation, according to Definition~\ref{Def:OA-Refinement}.
 \end{proofsketch}
 
@@ -866,7 +868,7 @@ We have: \[\wrel{A_1\subst{A_3}{k}}{A_2\subst{A_3}{k}}{J_3 \uplus H \setminus \m
 
 \begin{proofsketch}
 The proof relies on a simulation relation that we consider is the one that makes $A_1$ and $A_2$ similar, complemented with identity of configurations for $A_3$.
-Then, by construction, all transitions of the composed automaton $A_1\subst{A_3}{k}$ are specified by open transitions of $A_1$. For the transitions that do not involve hole $k$, the transition of $A_1\subst{A_3}{k}$ is the same and simulation between $A_1$ and $A_2$ allows us to conclude directly. If the hole $k$ is involved the considered relation  implies that valuations in $A_3$ are equal (i.e., the value for each variable are the same in both valuations), after a transition we should obtain ``equal'' valuations because post-conditions are deterministic.
+Then, by construction, all transitions of the composed automaton $A_1\subst{A_3}{k}$ are specified by open transitions of $A_1$. For the transitions that do not involve hole $k$, the transition of $A_1\subst{A_3}{k}$ is the same and simulation between $A_1$ and $A_2$ allows us to conclude directly. If the hole $k$ is involved the considered relation  implies that valuations in $A_3$ are equal (i.e., the value for each variable are the same in both valuations), after a transition we should obtain ``equal'' valuations because post-conditions are deterministic. \RAB{The requirement $A_1\subst{A_3}{k}$ ensures  compatibility with deadlock reduction, i.e., it ensures that deadlocks in the refined model  are not introduced through composition.}
 \end{proofsketch}
 
 \begin{example}  Consider again the \texttt{prod-cons} and \texttt{simprod-cons}  automata given in the examples above.  Since  \texttt{prod-cons} $\leq_{\{\texttt{P,Q}\}}$ \texttt{simprod-cons},  then according to Theorem \ref{thm:ContextRefinement}, 
